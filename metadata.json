@@ -1,0 +1,8 @@
+{
+  "name": "Alexura",
+  "description": "Créateur de vidéos de paroles animées  Lyric Motion avec synchronisation vocale instantanée et export MP4.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
