@@ -17,7 +17,7 @@ BODY = {
     "<strong>ここにドロップして読み込み</strong><span>曲（mp3 / wav など）・歌詞（LRC / SRT / テキスト）・プロジェクト（.json）</span>": "<strong>Glissez-déposez pour charger</strong><span>A song (mp3, wav …), lyrics (LRC / SRT / text) or a project (.json)</span>",
     "1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class=\"kbd\">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。": "If a line has several cuts, press <span class=\"kbd\">Tab</span> the moment the cut should change to time the cuts of that line too.",
     "<label>速さ <select id=\"tapRate\" aria-label=\"タップ中の再生速度\">": "<label>Vitesse <select id=\"tapRate\" aria-label=\"Vitesse de lecture pendant la synchronisation\">",
-    "<button id=\"btnVocalSync\" class=\"ghost\" title=\"曲の歌声・ボーカルの開始瞬間に各行を即座に自動同期します\">⚡ ボーカル同期</button>": "<button id=\"btnVocalSync\" class=\"ghost\" title=\"Synchronise instantanément chaque ligne de parole avec le chant dès qu'on entend la voix\">⚡ Synchro Voix</button>",
+    "<button id=\"btnVocalSync\" class=\"ghost\" title=\"根据歌声人声起始瞬间，自动精准同步各行歌词\">⚡ 人声同步</button>": "<button id=\"btnVocalSync\" class=\"ghost\" title=\"Synchronise instantanément chaque ligne de parole avec le chant dès qu'on entend la voix\">⚡ Synchro Voix</button>",
     "<input type=\"checkbox\" id=\"tapCount\"> カウントダウン</label>": "<input type=\"checkbox\" id=\"tapCount\"> Compte à rebours</label>",
     "title=\"LRC ファイル（タイムスタンプ付きの歌詞）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）\">LRC を読み込む": "title=\"Load an LRC file (lyrics with time stamps) in place of the current lyrics (Annuler brings them back)\">Charger LRC",
     "aria-label=\"おまかせのテーマ\" title=\"おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）\"": "aria-label=\"Aléatoire theme\" title=\"Aléatoire theme (when set, Aléatoire stays within that direction and turns on the part sets it needs)\"",

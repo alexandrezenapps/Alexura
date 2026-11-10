@@ -1214,7 +1214,7 @@ button.small.primary { padding: 5px 13px; }
         <div id="audioName" class="muted audio-name">尚未匯入歌曲（匯入後會偵測節拍並對齊片段）</div>
         <div class="row">
           <label class="file" title="mp3 / wav / m4a 等格式">匯入歌曲<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
-          <button id="btnVocalSync" class="ghost" title="曲の歌声・ボーカルの開始瞬間に各行を即座に自動同期します">⚡ ボーカル同期</button>
+          <button id="btnVocalSync" class="ghost" title="根據歌聲人聲起始瞬間，自動精準同步各行歌詞">⚡ 人聲同步</button>
           <button id="btnTap" title="播放歌曲時，在每一行開頭點一下">點擊對拍</button>
         </div>
         <div class="fields pro-only">
@@ -61319,27 +61319,29 @@ function bind() {
   const bvs = $('btnVocalSync');
   if (bvs) {
     bvs.addEventListener('click', async () => {
+      const isFr = document.documentElement.lang === 'fr';
+      const isEn = document.documentElement.lang === 'en';
       if (!S.audio) {
-        toast('先に曲を読み込んでください');
+        toast(isFr ? "Veuillez d'abord charger un fichier audio" : isEn ? 'Please load an audio file first' : '请先导入音频文件');
         return;
       }
       if (!S.plan.lines.length) {
-        toast('先に歌詞を入力してください');
+        toast(isFr ? "Veuillez d'abord saisir les paroles" : isEn ? 'Please enter lyrics first' : '请先输入歌词内容');
         return;
       }
-      toast('ボーカルの歌声に合わせて自動同期中…');
+      toast(isFr ? "Synchronisation vocale automatique en cours…" : isEn ? 'Aligning lyrics with vocal track…' : '正在识别人声歌唱节奏并自动同步…');
       pushEdit();
       try {
         const times = await J.aiAlignVocals(S.audio, S.plan.lines, J.resolveLang(S.project));
         if (times && Object.keys(times).length) {
           S.project.timing.lineTimes = times;
           replan(); flushSave(); syncUI();
-          toast('歌声に合わせて各行の表示を最適化しました！');
+          toast(isFr ? "Synchronisation vocale réussie !" : isEn ? 'Vocal synchronization complete!' : '已根据人声歌唱节奏完成歌词精准对齐！');
         } else {
-          toast('同期できませんでした');
+          toast(isFr ? "Échec de la synchronisation vocale" : isEn ? 'Could not synchronize vocals' : '未能成功识别人声同步');
         }
       } catch (err) {
-        toast('同期錯誤：' + (err && err.message ? err.message : ''));
+        toast((isFr ? 'Erreur de synchro: ' : isEn ? 'Sync error: ' : '同步出错: ') + (err && err.message ? err.message : ''));
       }
     });
   }
