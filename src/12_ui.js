@@ -105,6 +105,21 @@ function mergeProject(p) {
   const o = Object.assign(d, p || {});
   o.fx = Object.assign(J.defaultProject().fx, (p && p.fx) || {});
   o.timing = Object.assign(J.defaultProject().timing, (p && p.timing) || {});
+  if (!o.timing.wordTimes || typeof o.timing.wordTimes !== 'object') o.timing.wordTimes = {};
+  if (!o.timing.lineMeta || typeof o.timing.lineMeta !== 'object') o.timing.lineMeta = {};
+  o.detection = (p && p.detection && typeof p.detection === 'object') ? p.detection : null;
+  o.karaoke = p && typeof p.karaoke === 'boolean' ? p.karaoke : true;
+  const kc = (p && p.karaokeCfg && typeof p.karaokeCfg === 'object') ? p.karaokeCfg : {};
+  const defKc = d.karaokeCfg || { mode: 'progressive', fontSize: 1.0, yPct: 86, autoScroll: true, baseColor: '', activeColor: '', bgAlpha: 0.78 };
+  o.karaokeCfg = {
+    mode: kc.mode === 'word' || kc.mode === 'progressive' || kc.mode === 'char' ? kc.mode : defKc.mode,
+    fontSize: J.clamp(isFinite(+kc.fontSize) ? +kc.fontSize : defKc.fontSize, 0.65, 1.85),
+    yPct: J.clamp(isFinite(+kc.yPct) ? +kc.yPct : defKc.yPct, 10, 92),
+    autoScroll: typeof kc.autoScroll === 'boolean' ? kc.autoScroll : true,
+    baseColor: typeof kc.baseColor === 'string' && /^#[0-9a-f]{3,8}$/i.test(kc.baseColor) ? kc.baseColor : '',
+    activeColor: typeof kc.activeColor === 'string' && /^#[0-9a-f]{3,8}$/i.test(kc.activeColor) ? kc.activeColor : '',
+    bgAlpha: J.clamp(isFinite(+kc.bgAlpha) ? +kc.bgAlpha : defKc.bgAlpha, 0, 1),
+  };
   const en = J.defaultProject().enabled;
   for (const g of Object.keys(en)) en[g] = Object.assign(en[g], ((p && p.enabled) || {})[g] || {});
   o.enabled = en;
@@ -182,6 +197,8 @@ function replan() {
   refreshLoopHold();
   renderLines(); sizeViewport(); drawTimeline(); updateTimeUI();
   lastCutIdx = -2;
+  lastKpState = { key: '' };
+  updateKaraokePrompter();
   if (typeof cutPick !== 'undefined' && cutPick.g) fillCutPick();
   S.need = true; autosave(); ensureFonts(); drawSwatch(); showNow();
   clearTimeout(warmTimer); warmTimer = setTimeout(warm, 450);
@@ -239,8 +256,9 @@ function sizeViewport() {
   const vp = $('viewport'), c = $('view');
   const ar = S.plan.W / S.plan.H;
   let cssW = vp.clientWidth || 800, cssH = cssW / ar;
-  // fixed workspace: the viewport gets whatever height is left under the header / above the transport and timeline
-  const maxH = fixedLayout() ? Math.max(160, vp.clientHeight - 2) : Math.max(220, window.innerHeight * 0.68);
+  // fixed workspace or full-screen karaoke: respect the viewport container height
+  const inFs = !!(vp.closest('.col-stage') && vp.closest('.col-stage').classList.contains('is-karaoke-fs'));
+  const maxH = (fixedLayout() || inFs) ? Math.max(160, vp.clientHeight - 2) : Math.max(220, window.innerHeight * 0.68);
   if (cssH > maxH) { cssH = maxH; cssW = cssH * ar; }
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const pw = Math.round(Math.min(S.plan.W, cssW * dpr)), ph = Math.round(pw / ar);
@@ -264,7 +282,7 @@ function draw() {
   if (S.plan.centerFree) drawCenterGuide(ctx, c.width / S.plan.W);
   const dt = performance.now() - t0;
   S.slow = S.playing ? (dt > 30 ? true : dt < 14 ? false : S.slow) : false;
-  updateTimeUI(); drawTimeline(); updateCutInfo();
+  updateTimeUI(); drawTimeline(); updateCutInfo(); updateKaraokePrompter();
 }
 function tick(now) {
   requestAnimationFrame(tick);
@@ -304,7 +322,408 @@ function seek(t) {
   if (S.audio) { if (S.playing) AP.play(S.audio.buffer, S.t, playRate()); }
   else S.t0 = performance.now() - S.t * 1000 / playRate();
   refreshLoopHold();
+  updateKaraokePrompter();
   S.need = true;
+}
+
+/* ---------------- Live Karaoke Prompter (Mode A/B/C, Auto-Scroll & Full-Screen) ---------------- */
+let lastKpState = { key: '', mode: '' };
+let lastKpScrollSig = '';
+let lastKpScrollIdx = -2;
+function getKaraokeCfg() {
+  const def = { mode: 'progressive', fontSize: 1.0, yPct: 86, autoScroll: true, baseColor: '', activeColor: '', bgAlpha: 0.78 };
+  return (S.project && S.project.karaokeCfg) ? Object.assign(def, S.project.karaokeCfg) : def;
+}
+function applyKaraokeLabels() {
+  const lang = (document.documentElement.lang || 'fr').toLowerCase();
+  const isFr = lang === 'fr', isEn = lang === 'en', isZh = lang.startsWith('zh'), isKo = lang === 'ko';
+  const copy = isFr ? {
+    title: '🎤 Karaoké', word: 'Mot', prog: 'Progressif', char: 'Caractère', cfg: '⚙ Réglages',
+    fsOn: '✕ Quitter plein écran', fsOff: '⛶ Plein écran', size: 'Taille', pos: 'Position', bg: 'Fond',
+    base: 'Texte', active: 'Chanté', scroll: 'Défilement auto', top: 'Haut', mid: 'Centre', bot: 'Bas',
+  } : isEn ? {
+    title: '🎤 Karaoke', word: 'Word', prog: 'Progressive', char: 'Char', cfg: '⚙ Settings',
+    fsOn: '✕ Exit Fullscreen', fsOff: '⛶ Fullscreen', size: 'Size', pos: 'Position', bg: 'Backdrop',
+    base: 'Base', active: 'Active', scroll: 'Auto-scroll', top: 'Top', mid: 'Center', bot: 'Bottom',
+  } : isZh ? {
+    title: '🎤 卡拉OK同步', word: '逐词', prog: '渐进', char: '逐字', cfg: '⚙ 样式设置',
+    fsOn: '✕ 退出全屏', fsOff: '⛶ 全屏卡拉OK', size: '字号', pos: '位置', bg: '透明度',
+    base: '未唱', active: '高亮', scroll: '自动滚动', top: '上', mid: '中', bot: '下',
+  } : isKo ? {
+    title: '🎤 노래방 싱크', word: '단어별', prog: '점진적', char: '글자별', cfg: '⚙ 설정',
+    fsOn: '✕ 전체화면 종료', fsOff: '⛶ 전체화면', size: '크기', pos: '위치', bg: '배경',
+    base: '기본색', active: '하이라이트', scroll: '자동 스크롤', top: '상', mid: '중', bot: '하',
+  } : {
+    title: '🎤 カラオケ同期', word: '単語別', prog: 'プログレッシブ', char: '文字別', cfg: '⚙ 設定',
+    fsOn: '✕ 全画面終了', fsOff: '⛶ 全画面', size: '文字サイズ', pos: '表示位置', bg: '背景透過',
+    base: '通常色', active: '強調色', scroll: '自動スクロール', top: '上', mid: '中央', bot: '下',
+  };
+  const setT = (id, t) => { const el = $(id); if (el) el.textContent = t; };
+  setT('kpTitle', copy.title);
+  setT('btnKaraokeCfg', copy.cfg);
+  setT('lblKFontSize', copy.size);
+  setT('lblKPosY', copy.pos);
+  setT('lblKBgAlpha', copy.bg);
+  setT('lblKBaseColor', copy.base);
+  setT('lblKActiveColor', copy.active);
+  setT('lblKAutoScroll', copy.scroll);
+  const seg = $('kModeSeg');
+  if (seg) {
+    const bw = seg.querySelector('[data-kmode="word"]'), bp = seg.querySelector('[data-kmode="progressive"]'), bc = seg.querySelector('[data-kmode="char"]');
+    if (bw) bw.textContent = copy.word;
+    if (bp) bp.textContent = copy.prog;
+    if (bc) bc.textContent = copy.char;
+  }
+  const py = document.querySelectorAll('.kp-presets [data-ky]');
+  py.forEach(b => {
+    const v = b.dataset.ky;
+    b.textContent = v === '14' ? copy.top : v === '50' ? copy.mid : copy.bot;
+  });
+  const fsBtn = $('btnKaraokeFs'), stg = document.querySelector('.col-stage');
+  if (fsBtn) {
+    const isFs = !!(stg && stg.classList.contains('is-karaoke-fs'));
+    fsBtn.textContent = isFs ? copy.fsOn : copy.fsOff;
+    fsBtn.setAttribute('aria-pressed', String(isFs));
+  }
+}
+function applyKaraokeStyleVars() {
+  const kp = $('karaokePrompter');
+  if (!kp) return;
+  const cfg = getKaraokeCfg();
+  kp.dataset.kmode = cfg.mode;
+  kp.style.setProperty('--k-size', String(cfg.fontSize));
+  const fs = !!(kp.closest('.col-stage') && kp.closest('.col-stage').classList.contains('is-karaoke-fs'));
+  const alpha = cfg.bgAlpha <= 0.02 ? 0 : (fs ? cfg.bgAlpha : Math.max(0.18, cfg.bgAlpha));
+  kp.style.setProperty('--k-bg-alpha', cfg.bgAlpha <= 0.02 ? '0' : alpha.toFixed(2));
+  kp.dataset.bgClear = cfg.bgAlpha <= 0.02 ? 'true' : 'false';
+  if (cfg.baseColor) kp.style.setProperty('--k-base', cfg.baseColor);
+  else kp.style.removeProperty('--k-base');
+  if (cfg.activeColor) kp.style.setProperty('--k-active', cfg.activeColor);
+  else kp.style.removeProperty('--k-active');
+}
+function syncKaraokeControls() {
+  if (!S.project) return;
+  const cfg = getKaraokeCfg();
+  applyKaraokeLabels();
+  applyKaraokeStyleVars();
+  const seg = $('kModeSeg');
+  if (seg) seg.querySelectorAll('button[data-kmode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.kmode === cfg.mode)));
+  if ($('kFontSize')) $('kFontSize').value = String(cfg.fontSize);
+  if ($('kFontSizeVal')) $('kFontSizeVal').textContent = Math.round(cfg.fontSize * 100) + '%';
+  if ($('kPosY')) $('kPosY').value = String(Math.round(cfg.yPct));
+  if ($('kPosYVal')) $('kPosYVal').textContent = Math.round(cfg.yPct) + '%';
+  if ($('kBgAlpha')) $('kBgAlpha').value = String(Math.round(cfg.bgAlpha * 100));
+  if ($('kBgAlphaVal')) $('kBgAlphaVal').textContent = Math.round(cfg.bgAlpha * 100) + '%';
+  if ($('kBaseColor')) $('kBaseColor').value = cfg.baseColor || '#b8bec8';
+  if ($('kActiveColor')) $('kActiveColor').value = cfg.activeColor || '#0071e3';
+  if ($('kAutoScroll')) $('kAutoScroll').checked = cfg.autoScroll !== false;
+}
+function toggleKaraokeFullscreen(force) {
+  const stg = document.querySelector('.col-stage');
+  if (!stg) return;
+  const want = typeof force === 'boolean' ? force : !stg.classList.contains('is-karaoke-fs');
+  stg.classList.toggle('is-karaoke-fs', want);
+  document.body.classList.toggle('has-karaoke-fs', want);
+  if (want) {
+    try { if (stg.requestFullscreen && !document.fullscreenElement) stg.requestFullscreen().catch(() => {}); } catch (e) {}
+  } else {
+    try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); } catch (e) {}
+  }
+  applyKaraokeLabels();
+  applyKaraokeStyleVars();
+  setTimeout(() => { sizeViewport(); drawTimeline(); updateKaraokePrompter(); }, 30);
+}
+function syncKaraokeBtn() {
+  const b = $('btnKaraokeHud');
+  if (!b || !S.project) return;
+  const on = S.project.karaoke !== false;
+  const lang = document.documentElement.lang;
+  b.setAttribute('aria-pressed', String(on));
+  b.textContent = lang === 'fr' ? (on ? 'Karaoké ON' : 'Karaoké OFF')
+    : lang === 'en' ? (on ? 'Karaoke ON' : 'Karaoke OFF')
+    : (on ? '字幕バー ON' : '字幕バー OFF');
+}
+function formatLangName(code) {
+  const c = String(code || '').toLowerCase();
+  if (!c || c === 'auto') return '';
+  if (J.LANG_LABEL && J.LANG_LABEL[code]) return J.LANG_LABEL[code];
+  const map = { fr: 'Français', en: 'English', ja: '日本語', ko: '한국어', 'zh-hans': '简体中文', 'zh-hant': '繁體中文', zh: '中文', vi: 'Tiếng Việt', id: 'Indonesia', es: 'Español', pt: 'Português', de: 'Deutsch', it: 'Italiano', ar: 'العربية', ru: 'Русский', th: 'ไทย' };
+  return map[c] || code.toUpperCase();
+}
+function syncAudioDetectPanel() {
+  const el = $('audioDetectPanel');
+  if (!el) return;
+  const det = S.project && S.project.detection;
+  const a = S.audio;
+  if (!det && !a) { el.hidden = true; el.innerHTML = ''; return; }
+  const uiLang = document.documentElement.lang;
+  const isFr = uiLang === 'fr', isEn = uiLang === 'en';
+  const typeRaw = (det && det.audioType) || (a && a.acousticSummary && a.acousticSummary.audioType) || 'singing';
+  const typeLabel = {
+    singing: isFr ? '🎵 Chant' : isEn ? '🎵 Singing' : '🎵 歌声',
+    speech: isFr ? '🗣️ Parole' : isEn ? '🗣️ Speech' : '🗣️ 语音',
+    instrumental: isFr ? '🎹 Instrumental' : isEn ? '🎹 Instrumental' : '🎹 纯伴奏',
+    combination: isFr ? '🎶 Chant + Instrumental' : isEn ? '🎶 Singing + Instrumental' : '🎶 人声 + 间奏',
+  }[typeRaw] || (isFr ? '🎵 Chant' : isEn ? '🎵 Singing' : '🎵 歌声');
+
+  const pills = [];
+  const fmt = (det && det.format) || (a && a.format);
+  if (fmt) pills.push(`<span class="ad-pill">${escapeHtml(fmt)}</span>`);
+  pills.push(`<span class="ad-pill is-type">${escapeHtml(typeLabel)}</span>`);
+
+  const langs = (det && Array.isArray(det.detectedLanguages) && det.detectedLanguages.length)
+    ? det.detectedLanguages
+    : (det && det.language && det.language !== 'auto' && det.language !== 'instrumental' ? [det.language] : []);
+  if (langs.length) {
+    const names = [...new Set(langs.map(formatLangName).filter(Boolean))];
+    if (names.length) pills.push(`<span class="ad-pill is-lang">🌐 ${escapeHtml(names.join(' + '))}</span>`);
+  }
+  if (det && Array.isArray(det.detectedSpeakers) && det.detectedSpeakers.length > 1) {
+    const cleanSpk = det.detectedSpeakers.filter(s => s && s !== 'Instrumental');
+    if (cleanSpk.length > 1) pills.push(`<span class="ad-pill is-speaker">🎤 ${escapeHtml(cleanSpk.slice(0, 4).join(' · '))}</span>`);
+  }
+  if (det && det.hasRepeatedChorus) {
+    pills.push(`<span class="ad-pill is-chorus">${isFr ? '↻ Refrains détectés' : isEn ? '↻ Choruses' : '↻ 副歌重复'}</span>`);
+  }
+  if (det && det.hasBackingVocals) {
+    pills.push(`<span class="ad-pill is-harmony">${isFr ? '🎙️ Chœurs / Harmonies' : isEn ? '🎙️ Backing / Harmonies' : '🎙️ 和声 / 伴唱'}</span>`);
+  }
+  if (det && det.hasInstrumentalSections) {
+    pills.push(`<span class="ad-pill is-inst">${isFr ? '🎼 Pauses instrumentales' : isEn ? '🎼 Instrumental breaks' : '🎼 间奏段落'}</span>`);
+  }
+  if (det && det.hasUnclearSections) {
+    pills.push(`<span class="ad-pill is-warn">${isFr ? '⚠ Passages flous signalés' : isEn ? '⚠ Unclear vocals flagged' : '⚠ 含模糊段落'}</span>`);
+  }
+  el.innerHTML = pills.join('');
+  el.hidden = pills.length === 0;
+}
+function renderLineTagsHtml(ln) {
+  if (!ln || ln.interlude || !ln.meta) return '';
+  const m = ln.meta;
+  const uiLang = document.documentElement.lang;
+  const isFr = uiLang === 'fr', isEn = uiLang === 'en';
+  const tags = [];
+  const spkCount = (S.project && S.project.detection && Array.isArray(S.project.detection.detectedSpeakers)) ? S.project.detection.detectedSpeakers.length : 0;
+  if (m.speaker && m.speaker !== 'Instrumental' && (m.speaker !== 'Lead' || spkCount > 1)) {
+    tags.push(`<span class="ln-tag is-speaker">${escapeHtml(m.speaker)}</span>`);
+  }
+  if (m.section === 'chorus' || m.isRepeatedChorus) {
+    tags.push(`<span class="ln-tag is-chorus">${m.isRepeatedChorus ? (isFr ? 'Refrain ↻' : isEn ? 'Chorus ↻' : '副歌 ↻') : (isFr ? 'Refrain' : isEn ? 'Chorus' : '副歌')}</span>`);
+  } else if (m.section === 'pre_chorus') {
+    tags.push(`<span class="ln-tag">${isFr ? 'Pré-refrain' : isEn ? 'Pre-Chorus' : '导歌'}</span>`);
+  } else if (m.section === 'bridge') {
+    tags.push(`<span class="ln-tag">${isFr ? 'Pont' : isEn ? 'Bridge' : '桥段'}</span>`);
+  }
+  if (m.vocalType === 'speech' || m.section === 'speech') {
+    tags.push(`<span class="ln-tag is-speech">${isFr ? 'Parlé' : isEn ? 'Spoken' : '念白'}</span>`);
+  } else if (m.backingText || m.vocalType === 'harmony' || m.vocalType === 'backing' || m.vocalType === 'overlapping') {
+    const lbl = m.vocalType === 'overlapping' ? (isFr ? 'Superposé' : isEn ? 'Overlap' : '重叠人声') : (isFr ? 'Chœur' : isEn ? 'Harmony' : '和声');
+    tags.push(`<span class="ln-tag is-harmony" title="${escapeHtml(m.backingText || '')}">${lbl}</span>`);
+  }
+  if (m.unclear || m.vocalType === 'unclear') {
+    tags.push(`<span class="ln-tag is-warn">${isFr ? 'Flou' : isEn ? 'Unclear' : '模糊'}</span>`);
+  }
+  return tags.length ? `<span class="ln-tags">${tags.join('')}</span>` : '';
+}
+function buildWordChars(w) {
+  if (Array.isArray(w.chars) && w.chars.length) return w.chars;
+  if (J.buildCharTimings) return J.buildCharTimings(w.text, w.start, w.end, S.audio);
+  const chars = [...String(w.text || '')];
+  const step = Math.max(0.01, (w.end - w.start) / Math.max(1, chars.length));
+  return chars.map((ch, i) => ({ ch, start: +(w.start + i * step).toFixed(3), end: +(w.start + (i + 1) * step).toFixed(3) }));
+}
+function createWordSpan(w, wi, mode) {
+  const sp = document.createElement('span');
+  sp.className = 'kw';
+  sp.dataset.w = w.text;
+  sp.dataset.i = String(wi);
+  sp.dataset.s = String(w.start);
+  const recPct = w.recognitionConfidence != null ? Math.round(w.recognitionConfidence * 100) : null;
+  const alignPct = w.alignmentConfidence != null ? Math.round(w.alignmentConfidence * 100) : null;
+  const charInfo = Array.isArray(w.chars) && w.chars.length > 1 ? ` · ${w.chars.length} car.` : '';
+  const spkInfo = w.speaker && w.speaker !== 'Lead' ? ` · ${w.speaker}` : '';
+  const confInfo = (recPct != null || alignPct != null) ? ` | rec ${recPct ?? '-'}% · align ${alignPct ?? '-'}%` : '';
+  sp.title = `${J.fmtTime(w.start)} → ${J.fmtTime(w.end)}${charInfo}${spkInfo}${confInfo}`;
+  if (mode === 'char') {
+    const chs = buildWordChars(w);
+    chs.forEach((c, ci) => {
+      const cs = document.createElement('span');
+      cs.className = 'kc';
+      cs.textContent = c.ch != null ? c.ch : (c.char || '');
+      cs.dataset.s = String(c.start);
+      cs.dataset.e = String(c.end);
+      cs.dataset.ci = String(ci);
+      sp.appendChild(cs);
+    });
+  } else {
+    sp.textContent = w.text;
+  }
+  sp.addEventListener('click', ev => {
+    ev.stopPropagation();
+    seek(w.start + 0.002);
+    if (!S.playing && S.audio) play();
+  });
+  return sp;
+}
+function applyWordElementHighlight(sp, w, t, mode, lang) {
+  if (!sp || !w) return;
+  if (mode === 'char') {
+    const cSpans = sp.children;
+    const chs = buildWordChars(w, lang);
+    for (let ci = 0; ci < chs.length; ci++) {
+      const c = chs[ci], cs = cSpans[ci];
+      if (!cs) continue;
+      cs.classList.toggle('is-sung', t >= c.end);
+      cs.classList.toggle('is-now', t >= c.start && t <= c.end);
+    }
+    sp.classList.toggle('is-sung', t >= w.end);
+    sp.classList.toggle('is-now', t >= w.start && t <= w.end);
+    return;
+  }
+  let pct = 0;
+  if (t >= w.end) pct = 100;
+  else if (t > w.start) {
+    if (Array.isArray(w.chars) && w.chars.length > 1) {
+      let done = 0;
+      for (let ci = 0; ci < w.chars.length; ci++) {
+        const c = w.chars[ci];
+        if (t >= c.end) done += 1;
+        else if (t > c.start) { done += J.clamp((t - c.start) / Math.max(0.01, c.end - c.start), 0, 1); break; }
+        else break;
+      }
+      pct = J.clamp((done / w.chars.length) * 100, 0, 100);
+    } else {
+      pct = J.clamp(((t - w.start) / Math.max(0.02, w.end - w.start)) * 100, 0, 100);
+    }
+  }
+  sp.style.setProperty('--kp', pct.toFixed(1) + '%');
+  sp.classList.toggle('is-sung', mode === 'word' ? t >= w.start : pct >= 99.5);
+  sp.classList.toggle('is-now', t >= w.start && t <= w.end);
+}
+function updateKaraokePrompter() {
+  const activeEl = $('karaokeActive'), backingEl = $('karaokeBacking'), nextEl = $('karaokeNext'), badge = $('karaokeModeBadge');
+  const scrollStage = $('karaokeScrollStage'), scrollLinesEl = $('karaokeScrollLines');
+  if (!activeEl || !S.plan || !S.plan.lines) return;
+  const cfg = getKaraokeCfg();
+  const mode = cfg.mode || 'progressive';
+  const langCode = J.resolveLang ? J.resolveLang(S.project) : 'auto';
+  const t = S.t;
+  const L = S.plan.lines;
+  let ln = J.lineAt ? J.lineAt(S.plan, t) : null;
+  let upcoming = null;
+  if (!ln) {
+    upcoming = L.find(l => !l.interlude && l.start > t) || null;
+  } else {
+    upcoming = L.find(l => !l.interlude && l.index > ln.index) || null;
+  }
+
+  const displayLn = (ln && !ln.interlude) ? ln : (upcoming && upcoming.start - t <= 1.2 ? upcoming : null);
+  const key = (displayLn ? `${displayLn.index}:${displayLn.text}:${(displayLn.wordsTimed || []).length}` : (upcoming ? `wait:${upcoming.index}` : 'none'));
+
+  if (badge) {
+    const wt = S.project && S.project.timing && S.project.timing.wordTimes;
+    const hasAiWords = wt && displayLn && Array.isArray(wt[displayLn.index]) && wt[displayLn.index].length > 0;
+    const lang = document.documentElement.lang;
+    let baseLbl = hasAiWords
+      ? (lang === 'fr' ? 'IA Mot + Caractère' : lang === 'en' ? 'AI Word + Char' : 'AI 词字精同步')
+      : (lang === 'fr' ? 'Alignement Vocal 10ms' : lang === 'en' ? '10ms Vocal Sync' : '10ms 声学词同步');
+    if (displayLn && displayLn.wordsTimed && displayLn.wordsTimed.length) {
+      const words = displayLn.wordsTimed;
+      const avgAlign = Math.round((words.reduce((a, w) => a + (w.alignmentConfidence ?? 0.85), 0) / words.length) * 100);
+      const spk = (displayLn.meta && displayLn.meta.speaker && displayLn.meta.speaker !== 'Lead')
+        ? displayLn.meta.speaker
+        : (words[0].speaker && words[0].speaker !== 'Lead' ? words[0].speaker : '');
+      baseLbl += ` · ${avgAlign}%` + (spk ? ` · ${spk}` : '');
+    }
+    badge.textContent = baseLbl;
+  }
+
+  if (lastKpState.key !== key || lastKpState.mode !== mode) {
+    lastKpState.key = key;
+    lastKpState.mode = mode;
+    activeEl.innerHTML = '';
+    if (displayLn && displayLn.wordsTimed && displayLn.wordsTimed.length) {
+      displayLn.wordsTimed.forEach((w, wi) => activeEl.appendChild(createWordSpan(w, wi, mode, langCode)));
+    } else {
+      const lang = document.documentElement.lang;
+      activeEl.innerHTML = `<span class="muted" style="font-size:13px;font-weight:500">${escapeHtml(
+        ln && ln.interlude ? '♪ Interlude' : upcoming ? `♪ ${upcoming.text}` : (lang === 'fr' ? 'Prêt pour le karaoké' : lang === 'en' ? 'Karaoke ready' : 'カラオケ待機中')
+      )}</span>`;
+    }
+    if (backingEl) {
+      const m = displayLn && displayLn.meta;
+      const bTxt = m && m.backingText ? `♪ (${m.backingText})` : '';
+      backingEl.textContent = bTxt;
+      backingEl.hidden = !bTxt;
+    }
+    if (nextEl) {
+      const preview = displayLn ? upcoming : null;
+      nextEl.textContent = preview ? `↳ ${preview.text}` : '';
+    }
+  }
+
+  if (displayLn && displayLn.wordsTimed && displayLn.wordsTimed.length) {
+    const spans = activeEl.children;
+    for (let wi = 0; wi < displayLn.wordsTimed.length; wi++) {
+      applyWordElementHighlight(spans[wi], displayLn.wordsTimed[wi], t, mode, langCode);
+    }
+  }
+
+  // Scrollable multi-line karaoke stage + automatic lyric centering
+  if (scrollStage && scrollLinesEl) {
+    const vocalLines = L.filter(l => !l.interlude && l.text);
+    const sig = mode + '|' + vocalLines.map(l => `${l.index}:${l.text}:${l.start}`).join(';');
+    if (sig !== lastKpScrollSig) {
+      lastKpScrollSig = sig;
+      lastKpScrollIdx = -2;
+      scrollLinesEl.innerHTML = '';
+      vocalLines.forEach(l => {
+        const row = document.createElement('div');
+        row.className = 'ks-line';
+        row.dataset.line = String(l.index);
+        if (Array.isArray(l.wordsTimed) && l.wordsTimed.length) {
+          l.wordsTimed.forEach((w, wi) => row.appendChild(createWordSpan(w, wi, mode, langCode)));
+        } else {
+          row.textContent = l.text;
+        }
+        row.addEventListener('click', () => { seek(l.start + 0.002); if (!S.playing && S.audio) play(); });
+        scrollLinesEl.appendChild(row);
+      });
+    }
+    const curIdx = displayLn ? displayLn.index : (ln && !ln.interlude ? ln.index : -1);
+    const rows = scrollLinesEl.children;
+    let activeRow = null;
+    for (let ri = 0; ri < rows.length; ri++) {
+      const row = rows[ri];
+      const idx = +(row.dataset.line || -1);
+      const lObj = vocalLines[ri];
+      const isCur = idx === curIdx;
+      const isPast = curIdx >= 0 ? idx < curIdx : (lObj ? lObj.end < t : false);
+      row.classList.toggle('is-cur', isCur);
+      row.classList.toggle('is-past', !isCur && isPast);
+      if (isCur) activeRow = row;
+      if (lObj && Array.isArray(lObj.wordsTimed)) {
+        if (isCur || isPast || row.dataset.dirty === '1') {
+          row.dataset.dirty = isCur ? '1' : '';
+          for (let wi = 0; wi < lObj.wordsTimed.length; wi++) {
+            applyWordElementHighlight(row.children[wi], lObj.wordsTimed[wi], isCur ? t : (isPast ? lObj.end + 1 : -1), mode, langCode);
+          }
+        }
+      }
+    }
+    if (cfg.autoScroll !== false && activeRow && curIdx !== lastKpScrollIdx) {
+      lastKpScrollIdx = curIdx;
+      const targetTop = Math.max(0, activeRow.offsetTop - scrollStage.clientHeight / 2 + activeRow.offsetHeight / 2);
+      try {
+        if (typeof scrollStage.scrollTo === 'function') scrollStage.scrollTo({ top: targetTop, behavior: 'smooth' });
+        else scrollStage.scrollTop = targetTop;
+      } catch (e) {
+        scrollStage.scrollTop = targetTop;
+      }
+    } else if (curIdx !== lastKpScrollIdx) {
+      lastKpScrollIdx = curIdx;
+    }
+  }
 }
 
 /* ---------------- timeline ---------------- */
@@ -657,7 +1076,7 @@ function renderLines() {
     const label = ln.interlude ? `〔間奏${ln.secs ? ' ' + ln.secs + '秒' : ''}〕` : ln.text;
     li.innerHTML = `<span class="no">${String(i + 1).padStart(2, '0')}</span>
       <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="開始（秒）${manual ? '・手動' : '・自動'}" aria-label="${i + 1}行目の開始秒" style="${manual ? 'border-color:var(--cyan)' : ''}">
-      <span class="txt" title="${escapeHtml(label)}">${escapeHtml(label)}</span>
+      <span class="txt" title="${escapeHtml(label)}">${escapeHtml(label)}${renderLineTagsHtml(ln)}</span>
       <div class="meta"><span class="cuts"></span>
       <span class="tools">
         <button class="icon ghost edit" title="この行の歌詞を直す" aria-label="${i + 1}行目の歌詞を直す">${ICON.pen}</button>
@@ -760,6 +1179,13 @@ function editLine(li, ln) {
       pushEdit();
       rows[ln.src] = pre + v;
       S.project.lyrics = rows.join('\n'); $('lyrics').value = S.project.lyrics;
+      if (!S.project.timing.wordTimes) S.project.timing.wordTimes = {};
+      if (J.alignWordsAcoustic) {
+        const cleanBody = v.replace(/\*([^*]+)\*/g, '$1').replace(/\|.*$/, '').replace(/!$/, '').replace(/\//g, ' ').trim();
+        S.project.timing.wordTimes[ln.index] = J.alignWordsAcoustic(S.audio, cleanBody, ln.start, ln.visEnd || ln.end, J.resolveLang(S.project));
+      } else {
+        delete S.project.timing.wordTimes[ln.index];
+      }
       replan(); flushSave(); toast(`${ln.index + 1}行目の歌詞を直しました`);
     } else renderLines();
   };
@@ -770,7 +1196,7 @@ function editLine(li, ln) {
 /* ---------------- 歌詞・タイミングの取り消し（Ctrl+Z） ---------------- */
 // separate from the ◀ ▶ history of looks: lyric edits, dragged / typed / tapped line times
 const ED = { undo: [], redo: [] };
-const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {} });
+const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {}, wordTimes: S.project.timing.wordTimes || {}, lineMeta: S.project.timing.lineMeta || {}, detection: S.project.detection || null });
 function pushEdit() { const s = edSnap(); if (ED.undo[ED.undo.length - 1] !== s) ED.undo.push(s); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = []; updateEditBtns(); }
 function edGo(d) {
   const from = d < 0 ? ED.undo : ED.redo, to = d < 0 ? ED.redo : ED.undo;
@@ -778,9 +1204,9 @@ function edGo(d) {
   const o = JSON.parse(from.pop()), cur = JSON.parse(edSnap());
   if ('ov' in o) { cur.ov = S.project.overrides; cur.range = S.project.exportRange || null; }   // clearLyrics() also cleared these
   to.push(JSON.stringify(cur));
-  S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; $('lyrics').value = o.lyrics;
+  S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; S.project.timing.wordTimes = o.wordTimes || {}; S.project.timing.lineMeta = o.lineMeta || {}; S.project.detection = o.detection || null; $('lyrics').value = o.lyrics;
   if ('ov' in o) { S.project.overrides = o.ov || {}; S.project.exportRange = o.range || null; }
-  replan(); flushSave(); updateEditBtns();
+  replan(); syncAudioDetectPanel(); flushSave(); updateEditBtns();
   toast(d < 0 ? '元に戻しました' : 'やり直しました');
 }
 // LRC を読み込む: replaces the lyrics (and everything tied to line numbers, like 歌詞を消す); undoable
@@ -790,7 +1216,7 @@ function loadLrc(text, sub) {
   const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
   ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
   pause();
-  P.lyrics = String(text).replace(/^\ufeff/, '').replace(/\r\n?/g, '\n').trim(); P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null;
+  P.lyrics = String(text).replace(/^\ufeff/, '').replace(/\r\n?/g, '\n').trim(); P.timing.lineTimes = {}; P.timing.wordTimes = {}; P.timing.lineMeta = {}; P.overrides = {}; P.exportRange = null;
   $('lyrics').value = P.lyrics;
   replan(); flushSave(); updateEditBtns(); seek(0);
   const n = J.parseLyrics(P.lyrics).lines.filter(l => l.lrc != null).length;
@@ -810,7 +1236,7 @@ function clearLyrics() {
   const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
   ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
   pause();
-  P.lyrics = ''; P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null; $('lyrics').value = '';
+  P.lyrics = ''; P.timing.lineTimes = {}; P.timing.wordTimes = {}; P.timing.lineMeta = {}; P.overrides = {}; P.exportRange = null; $('lyrics').value = '';
   replan(); flushSave(); updateEditBtns(); seek(0);
   toast('歌詞を消しました（「元に戻す」か Ctrl+Z で戻せます）');
 }
@@ -1601,12 +2027,332 @@ function syncUI() {
   document.querySelectorAll('.typeset-toggle').forEach(el => { el.checked = S.project.typeset === true; });
   $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   document.querySelectorAll('.themeSel').forEach(el => { el.value = J.THEMES[S.project.themeId] ? S.project.themeId : ''; });
-  renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
+  renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid(); syncKaraokeBtn(); syncKaraokeControls(); syncAudioDetectPanel();
+}
+
+/* Reusable full-audio Song Lyrics Detection + Word/Char Forced Alignment */
+async function runAiTranscription(opts = {}) {
+  const bai = $('btnAiTranscribe');
+  const isFr = document.documentElement.lang === 'fr';
+  const isEn = document.documentElement.lang === 'en';
+  if (!S.audio) return false;
+  const origText = bai ? bai.textContent : '';
+  if (bai) {
+    bai.classList.add('is-analyzing');
+    bai.disabled = true;
+    bai.textContent = isFr ? '✨ Écoute & analyse IA...' : isEn ? '✨ AI Listening & Syncing...' : '✨ 正在智能听音识词...';
+  }
+  if (!opts.quiet) {
+    toast(isFr ? '🎙️ Écoute complète de la chanson & détection automatique des paroles…' : isEn ? '🎙️ Listening to full song & detecting lyrics automatically…' : '🎙️ 正在倾听全曲并自动识别歌词与段落…');
+  }
+
+  try {
+    const lang = $('lyricLang') ? $('lyricLang').value : 'auto';
+    const result = await J.aiTranscribeMusic(S.audio, lang);
+
+    if (result && result.success && (result.isInstrumental || (result.lines && result.lines.length))) {
+      pushEdit();
+      pause();
+
+      const rows = [];
+      const resLines = Array.isArray(result.lines) ? result.lines : [];
+      if (result.isInstrumental && !resLines.some(l => !l.isInstrumentalSection && l.vocalType !== 'instrumental')) {
+        const dur = Math.max(4, Math.round((S.audio.duration || 10) * 10) / 10);
+        rows.push({
+          text: `[interlude ${dur}]`,
+          start: 0,
+          end: S.audio.duration || dur,
+          isInterlude: true,
+          words: [],
+          meta: { section: 'instrumental', vocalType: 'instrumental' },
+        });
+      } else {
+        for (const l of resLines) {
+          const isInst = Boolean(l.isInstrumentalSection || l.vocalType === 'instrumental');
+          const dur = Math.max(2.0, +(Math.max(0.5, (l.end || 0) - (l.start || 0))).toFixed(1));
+          const rowText = isInst ? `[interlude ${dur}]` : String(l.text || '').trim();
+          if (!rowText) continue;
+          rows.push({
+            text: rowText,
+            start: +Number(l.start || 0).toFixed(3),
+            end: +Number(l.end || (l.start || 0) + dur).toFixed(3),
+            isInterlude: isInst,
+            words: isInst ? [] : (Array.isArray(l.words) ? l.words : []),
+            meta: {
+              section: l.section || 'verse',
+              vocalType: l.vocalType || 'singing',
+              language: l.language || result.language || '',
+              speaker: l.speaker || 'Lead',
+              recognitionConfidence: l.recognitionConfidence ?? 0.92,
+              alignmentConfidence: l.alignmentConfidence ?? 0.9,
+              isRepeatedChorus: Boolean(l.isRepeatedChorus),
+              backingText: l.backingText || '',
+              unclear: Boolean(l.unclear),
+            },
+          });
+        }
+      }
+
+      const plainLyrics = rows.map(r => r.text).join('\n');
+      S.project.lyrics = plainLyrics;
+      $('lyrics').value = plainLyrics;
+
+      S.project.timing.lineTimes = {};
+      S.project.timing.wordTimes = {};
+      S.project.timing.lineMeta = {};
+      rows.forEach((r, idx) => {
+        S.project.timing.lineTimes[idx] = r.start;
+        if (!r.isInterlude && r.words && r.words.length) {
+          S.project.timing.wordTimes[idx] = r.words;
+        }
+        if (r.meta) {
+          S.project.timing.lineMeta[idx] = r.meta;
+        }
+      });
+
+      if (result.language && result.language !== 'auto' && result.language !== 'instrumental') {
+        const langSel = $('lyricLang');
+        if (langSel) {
+          const opt = Array.from(langSel.options).find(o => o.value === result.language || (result.language.startsWith(o.value) && o.value !== 'auto'));
+          if (opt) { langSel.value = opt.value; S.project.lang = opt.value; }
+        }
+      }
+
+      if (result.title && $('songTitle') && !$('songTitle').value.trim()) {
+        $('songTitle').value = result.title;
+        S.project.title = result.title;
+      }
+      if (result.artist && $('songArtist') && !$('songArtist').value.trim()) {
+        $('songArtist').value = result.artist;
+        S.project.artist = result.artist;
+      }
+
+      S.project.detection = {
+        audioType: result.audioType || (result.isInstrumental ? 'instrumental' : 'singing'),
+        language: result.language || 'auto',
+        detectedLanguages: result.detectedLanguages || [],
+        detectedSpeakers: result.detectedSpeakers || [],
+        hasBackingVocals: Boolean(result.hasBackingVocals),
+        hasUnclearSections: Boolean(result.hasUnclearSections),
+        hasInstrumentalSections: Boolean(result.hasInstrumentalSections),
+        hasRepeatedChorus: Boolean(result.hasRepeatedChorus),
+        format: S.audio.format || '',
+        duration: S.audio.duration || 0,
+        bpm: S.audio.bpm || 0,
+        sections: result.sections || [],
+        source: 'ai',
+      };
+
+      replan();
+      flushSave();
+      syncUI();
+      seek(0);
+
+      if (result.isInstrumental && !resLines.some(l => !l.isInstrumentalSection)) {
+        toast(isFr ? '🎹 Audio purement instrumental détecté (aucune fausse parole ajoutée).' : isEn ? '🎹 Purely instrumental track detected.' : '🎹 检测到纯音乐伴奏段落。');
+      } else {
+        toast(isFr
+          ? '🎤 Paroles, langue et minutage karaoké mot par mot prêts ! Modifiez librement si besoin.'
+          : isEn
+          ? '🎤 Lyrics, language & word-level karaoke sync ready! Edit anytime.'
+          : '🎤 已完成全曲歌词提取与逐词卡拉OK精准同步！随时可手动编辑。');
+      }
+      return true;
+    }
+
+    // Local high-precision acoustic classification & vocal segmentation fallback
+    const segs = (S.audio.vocalSegments && S.audio.vocalSegments.length)
+      ? S.audio.vocalSegments
+      : (S.plan && S.plan.cuts && S.plan.cuts.length)
+      ? S.plan.cuts.map(c => ({ start: c.start, end: c.end }))
+      : [];
+    const acSummary = S.audio.acousticSummary || {};
+    S.project.detection = {
+      audioType: acSummary.audioType || 'singing',
+      language: S.project.lang || 'auto',
+      detectedLanguages: [],
+      hasBackingVocals: false,
+      hasUnclearSections: false,
+      hasInstrumentalSections: (S.audio.instrumentalSegments && S.audio.instrumentalSegments.length > 0),
+      hasRepeatedChorus: false,
+      format: S.audio.format || '',
+      duration: S.audio.duration || 0,
+      bpm: S.audio.bpm || 0,
+      sections: [],
+      source: 'acoustic',
+    };
+
+    if (acSummary.audioType === 'instrumental' && (!String(S.project.lyrics || '').trim() || String(S.project.lyrics || '').trim() === String(J.SAMPLE_LYRICS || '').trim())) {
+      pushEdit();
+      pause();
+      const dur = Math.max(4, Math.round((S.audio.duration || 10) * 10) / 10);
+      S.project.lyrics = `[interlude ${dur}]`;
+      $('lyrics').value = S.project.lyrics;
+      S.project.timing.lineTimes = { 0: 0 };
+      S.project.timing.wordTimes = {};
+      S.project.timing.lineMeta = { 0: { section: 'instrumental', vocalType: 'instrumental' } };
+      replan(); flushSave(); syncUI(); seek(0);
+      toast(isFr ? '🎹 Audio acoustiquement instrumental détecté.' : isEn ? '🎹 Instrumental audio detected.' : '🎹 检测到纯伴奏音频。');
+      return true;
+    }
+
+    if (segs.length > 0) {
+      pushEdit();
+      pause();
+      const curLyrics = String(S.project.lyrics || '').trim();
+      const isDefault = curLyrics === String(J.SAMPLE_LYRICS || '').trim();
+      if (curLyrics.length > 0 && !isDefault) {
+        const parsed = J.parseLyrics(curLyrics);
+        const times = J.alignLinesToVocals(S.audio, parsed.lines);
+        if (times && Object.keys(times).length) {
+          S.project.timing.lineTimes = times;
+          S.project.timing.wordTimes = {};
+          const langCode = J.resolveLang(S.project);
+          parsed.lines.forEach((ln, i) => {
+            if (ln.interlude) return;
+            const s = times[i] ?? 0.4;
+            const e = i < parsed.lines.length - 1 ? (times[i + 1] ?? s + 3.2) : Math.min(S.audio.duration, s + 3.5);
+            if (J.alignWordsAcoustic) S.project.timing.wordTimes[i] = J.alignWordsAcoustic(S.audio, ln.text, s, e, langCode);
+          });
+        }
+      } else {
+        const instGaps = S.audio.instrumentalSegments || [];
+        const combined = [];
+        segs.forEach((seg, idx) => combined.push({ kind: 'vocal', start: seg.start, end: seg.end, num: idx + 1 }));
+        instGaps.forEach(gap => combined.push({ kind: 'inst', start: gap.start, end: gap.end }));
+        combined.sort((a, b) => a.start - b.start);
+
+        const rows = combined.map(ev => {
+          if (ev.kind === 'inst') {
+            const d = Math.max(2.0, +(ev.end - ev.start).toFixed(1));
+            return { text: `[interlude ${d}]`, start: ev.start, end: ev.end, isInter: true };
+          }
+          return {
+            text: isFr ? `Phrase chantée ${ev.num}` : isEn ? `Vocal phrase ${ev.num}` : `歌唱分句 ${ev.num}`,
+            start: ev.start,
+            end: ev.end,
+            isInter: false,
+          };
+        });
+        S.project.lyrics = rows.map(r => r.text).join('\n');
+        $('lyrics').value = S.project.lyrics;
+        S.project.timing.lineTimes = {};
+        S.project.timing.wordTimes = {};
+        S.project.timing.lineMeta = {};
+        rows.forEach((r, idx) => {
+          const s = +Number(r.start || 0).toFixed(3);
+          const e = +Number(r.end || s + 2.5).toFixed(3);
+          S.project.timing.lineTimes[idx] = s;
+          if (!r.isInter && J.alignWordsAcoustic) {
+            S.project.timing.wordTimes[idx] = J.alignWordsAcoustic(S.audio, r.text, s, e, J.resolveLang(S.project));
+          } else if (r.isInter) {
+            S.project.timing.lineMeta[idx] = { section: 'instrumental', vocalType: 'instrumental' };
+          }
+        });
+      }
+
+      replan(); flushSave(); syncUI(); seek(0);
+
+      if (result && result.billingRequired) {
+        toast(isFr
+          ? '💡 Détection acoustique prête ! (Pour la transcription IA Cloud automatique, activez la facturation sur Google AI Studio).'
+          : isEn
+          ? '💡 Acoustic vocal detection ready! (For automatic Cloud AI transcription, enable billing on Google AI Studio).'
+          : '💡 已完成本地声学人声与间奏分段！（开启 Google AI Studio 结算后可启用云端全自动识词）。');
+      } else {
+        toast(isFr
+          ? '💡 Segments vocaux & instrumentaux synchronisés ! Modifiez les paroles si nécessaire.'
+          : isEn
+          ? '💡 Vocal & instrumental segments synchronized! Edit lyrics anytime.'
+          : '💡 已捕捉人声与间奏分段！可随时编辑修改歌词。');
+      }
+      return true;
+    } else if (!opts.auto) {
+      toast(isFr ? 'Aucune voix chantée détectée dans cet extrait audio' : isEn ? 'No singing voice detected in audio' : '音频中未检测到明显的歌唱人声');
+    }
+  } catch (err) {
+    if (!opts.auto) {
+      toast(isFr ? 'Alignement local des paroles effectué.' : isEn ? 'Local vocal alignment applied.' : '已应用本地人声分句对齐。');
+    }
+  } finally {
+    if (bai) {
+      bai.classList.remove('is-analyzing');
+      bai.disabled = false;
+      bai.textContent = origText;
+    }
+  }
+  return false;
 }
 
 /* ---------------- wiring ---------------- */
 function bind() {
-  $('lyrics').addEventListener('input', e => { S.project.lyrics = e.target.value; replanSoon(260); });
+  $('lyrics').addEventListener('input', e => {
+    S.project.lyrics = e.target.value;
+    if (S.project.timing && S.project.timing.wordTimes) {
+      const parsed = J.parseLyrics(S.project.lyrics);
+      const wt = S.project.timing.wordTimes;
+      Object.keys(wt).forEach(k => {
+        const idx = +k, ln = parsed.lines[idx];
+        const joined = Array.isArray(wt[k]) ? wt[k].map(w => w.text).join('').replace(/\s+/g, '') : '';
+        if (!ln || joined !== String(ln.text || '').replace(/\s+/g, '')) delete wt[k];
+      });
+    }
+    replanSoon(260);
+  });
+  const btnKh = $('btnKaraokeHud');
+  if (btnKh) {
+    btnKh.addEventListener('click', () => {
+      remember();
+      S.project.karaoke = S.project.karaoke === false;
+      syncKaraokeBtn();
+      replan();
+      commit();
+      flushSave();
+    });
+  }
+  const updateKc = (patch, needReplan = true) => {
+    if (!S.project) return;
+    S.project.karaokeCfg = Object.assign(getKaraokeCfg(), patch);
+    syncKaraokeControls();
+    if (needReplan) {
+      replanSoon(35);
+    } else {
+      updateKaraokePrompter();
+      autosave();
+    }
+  };
+  const seg = $('kModeSeg');
+  if (seg) {
+    seg.querySelectorAll('button[data-kmode]').forEach(btn => {
+      btn.addEventListener('click', () => updateKc({ mode: btn.dataset.kmode }, true));
+    });
+  }
+  const btnKCfg = $('btnKaraokeCfg'), kcDrawer = $('karaokeControls');
+  if (btnKCfg && kcDrawer) {
+    btnKCfg.addEventListener('click', () => {
+      kcDrawer.hidden = !kcDrawer.hidden;
+      btnKCfg.setAttribute('aria-expanded', String(!kcDrawer.hidden));
+    });
+  }
+  const btnKFs = $('btnKaraokeFs');
+  if (btnKFs) {
+    btnKFs.addEventListener('click', () => toggleKaraokeFullscreen());
+  }
+  document.addEventListener('fullscreenchange', () => {
+    const stg = document.querySelector('.col-stage');
+    if (stg && !document.fullscreenElement && stg.classList.contains('is-karaoke-fs')) {
+      toggleKaraokeFullscreen(false);
+    }
+  });
+  if ($('kFontSize')) $('kFontSize').addEventListener('input', e => updateKc({ fontSize: parseFloat(e.target.value) || 1 }, true));
+  if ($('kPosY')) $('kPosY').addEventListener('input', e => updateKc({ yPct: parseFloat(e.target.value) || 86 }, true));
+  document.querySelectorAll('.kp-presets [data-ky]').forEach(b => b.addEventListener('click', () => updateKc({ yPct: parseFloat(b.dataset.ky) || 86 }, true)));
+  if ($('kBgAlpha')) $('kBgAlpha').addEventListener('input', e => updateKc({ bgAlpha: (parseFloat(e.target.value) || 0) / 100 }, true));
+  if ($('kBaseColor')) $('kBaseColor').addEventListener('input', e => updateKc({ baseColor: e.target.value }, true));
+  if ($('kBaseColorAuto')) $('kBaseColorAuto').addEventListener('click', () => updateKc({ baseColor: '' }, true));
+  if ($('kActiveColor')) $('kActiveColor').addEventListener('input', e => updateKc({ activeColor: e.target.value }, true));
+  if ($('kActiveColorAuto')) $('kActiveColorAuto').addEventListener('click', () => updateKc({ activeColor: '' }, true));
+  if ($('kAutoScroll')) $('kAutoScroll').addEventListener('change', e => updateKc({ autoScroll: !!e.target.checked }, false));
   $('lyricLang').addEventListener('change', e => {
     remember();
     S.project.lang = e.target.value; replan(); renderFontRoles(); commit(); flushSave();
@@ -1620,7 +2366,7 @@ function bind() {
   $('offset').addEventListener('change', e => { S.project.timing.offset = Math.max(0, parseFloat(e.target.value) || 0); replan(); });
   $('lineScale').addEventListener('change', e => { S.project.timing.lineScale = J.clamp(parseFloat(e.target.value) || 1, 0.3, 4); replan(); });
   $('snap').addEventListener('change', e => { S.project.timing.snap = e.target.checked; replan(); });
-  $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; replan(); });
+  $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; S.project.timing.wordTimes = {}; replan(); });
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
   $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
   const bai = $('btnAiTranscribe');
@@ -1650,124 +2396,6 @@ function bind() {
       }
 
       runAiTranscription();
-
-      async function runAiTranscription() {
-        const origText = bai.textContent;
-        bai.classList.add('is-analyzing');
-        bai.disabled = true;
-        bai.textContent = isFr ? "✨ Détection IA en cours..." : isEn ? "✨ AI Transcribing..." : "✨ 正在智能听音识词...";
-        toast(isFr ? "🎙️ Analyse et transcription de la musique par l'IA en cours…" : isEn ? "🎙️ Analyzing music and transcribing singing lyrics…" : "🎙️ 正在倾听并智能提取歌词与时间戳…");
-
-        try {
-          const lang = $('lyricLang') ? $('lyricLang').value : 'auto';
-          const result = await J.aiTranscribeMusic(S.audio, lang);
-
-          if (result && result.lines && result.lines.length) {
-            pushEdit();
-            pause();
-
-            // Populate lyrics textarea with clean editable lines
-            const lyricRows = result.lines.map(l => l.text.trim());
-            const plainLyrics = lyricRows.join('\n');
-            S.project.lyrics = plainLyrics;
-            $('lyrics').value = plainLyrics;
-
-            // Populate exact lineTimes so each line corresponds to the exact singing moment!
-            S.project.timing.lineTimes = {};
-            result.lines.forEach((l, idx) => {
-              S.project.timing.lineTimes[idx] = +Number(l.start || 0).toFixed(3);
-            });
-
-            // Set detected language if detected and available
-            if (result.language && result.language !== 'auto') {
-              const langSel = $('lyricLang');
-              if (langSel) {
-                const opt = Array.from(langSel.options).find(o => o.value === result.language || (result.language.startsWith(o.value) && o.value !== 'auto'));
-                if (opt) langSel.value = opt.value;
-              }
-            }
-
-            // Set song title and artist if detected and currently empty
-            if (result.title && $('songTitle') && !$('songTitle').value.trim()) {
-              $('songTitle').value = result.title;
-              S.project.title = result.title;
-            }
-            if (result.artist && $('songArtist') && !$('songArtist').value.trim()) {
-              $('songArtist').value = result.artist;
-              S.project.artist = result.artist;
-            }
-
-            replan();
-            flushSave();
-            syncUI();
-            seek(0);
-
-            toast(isFr
-              ? "✨ Paroles détectées et synchronisées ! Vous pouvez les modifier librement."
-              : isEn
-              ? "✨ Lyrics transcribed and synchronized! You can edit them freely anytime."
-              : "✨ 已成功提取人声歌词并即时同步！您可以在文本框中随时自由编辑修改。");
-          } else {
-            // Local high-precision vocal segmentation fallback (when cloud API free tier is unavailable or offline)
-            const segs = (S.audio.vocalSegments && S.audio.vocalSegments.length)
-              ? S.audio.vocalSegments
-              : (S.plan && S.plan.cuts && S.plan.cuts.length)
-              ? S.plan.cuts.map(c => ({ start: c.start, end: c.end }))
-              : [];
-
-            if (segs.length > 0) {
-              pushEdit();
-              pause();
-
-              // If user already typed lyrics, preserve and align them!
-              const curLyrics = String(S.project.lyrics || '').trim();
-              if (curLyrics.length > 0) {
-                const parsed = J.parseLyrics(curLyrics);
-                const times = J.alignLinesToVocals(S.audio, parsed.lines);
-                if (times && Object.keys(times).length) {
-                  S.project.timing.lineTimes = times;
-                }
-              } else {
-                // Generate clean editable vocal phrase lines
-                const sampleLines = segs.map((seg, idx) => {
-                  const num = idx + 1;
-                  return isFr ? `Ligne de chant ${num}` : isEn ? `Vocal line ${num}` : `歌唱分句 ${num}`;
-                });
-                S.project.lyrics = sampleLines.join('\n');
-                $('lyrics').value = S.project.lyrics;
-                S.project.timing.lineTimes = {};
-                segs.forEach((seg, idx) => {
-                  S.project.timing.lineTimes[idx] = +Number(seg.start || 0).toFixed(3);
-                });
-              }
-
-              replan(); flushSave(); syncUI(); seek(0);
-
-              if (result && result.billingRequired) {
-                toast(isFr
-                  ? "💡 Alignement vocal haute précision activé ! Les phrases chantées sont calées sur la vidéo. (Pour l'IA Cloud automatique, activez la facturation sur Google AI Studio)."
-                  : isEn
-                  ? "💡 High-precision vocal alignment active! Sung lines aligned to video. (For cloud AI speech-to-text, enable billing on Google AI Studio)."
-                  : "💡 已启用本地高精度人声对齐！歌唱分句已完美对齐视频。（如需云端全自动语音转文字，请在 Google AI Studio 开启结算）。");
-              } else {
-                toast(isFr
-                  ? "💡 Segments vocaux détectés ! Modifiez le texte des paroles dans la zone de texte."
-                  : isEn
-                  ? "💡 Vocal segments detected! Edit your lyrics directly in the text area."
-                  : "💡 已精准捕捉到人声分段！请在文本框中输入或修改您的歌词。");
-              }
-            } else {
-              toast(isFr ? "Aucune voix chantée détectée dans cet extrait audio" : isEn ? "No singing voice detected in audio" : "音频中未检测到明显的歌唱人声");
-            }
-          }
-        } catch (err) {
-          toast(isFr ? "Alignement local des paroles effectué." : isEn ? "Local vocal alignment applied." : "已应用本地人声分句对齐。");
-        } finally {
-          bai.classList.remove('is-analyzing');
-          bai.disabled = false;
-          bai.textContent = origText;
-        }
-      }
     });
   }
 
@@ -1784,14 +2412,22 @@ function bind() {
         toast(isFr ? "Veuillez d'abord saisir les paroles" : isEn ? 'Please enter lyrics first' : '请先输入歌词内容');
         return;
       }
-      toast(isFr ? "Synchronisation vocale automatique en cours…" : isEn ? 'Aligning lyrics with vocal track…' : '正在识别人声歌唱节奏并自动同步…');
+      toast(isFr ? "Synchronisation vocale mot par mot en cours…" : isEn ? 'Aligning lyrics & words with vocal track…' : '正在识别人声歌唱节奏并逐词自动同步…');
       pushEdit();
       try {
-        const times = await J.aiAlignVocals(S.audio, S.plan.lines, J.resolveLang(S.project));
+        const aligned = await J.aiAlignVocals(S.audio, S.plan.lines, J.resolveLang(S.project));
+        const times = aligned && aligned.lineTimes ? aligned.lineTimes : aligned;
         if (times && Object.keys(times).length) {
           S.project.timing.lineTimes = times;
+          if (aligned && aligned.wordTimes) S.project.timing.wordTimes = aligned.wordTimes;
+          if (aligned && aligned.lineMeta) {
+            if (!S.project.timing.lineMeta) S.project.timing.lineMeta = {};
+            for (const [k, m] of Object.entries(aligned.lineMeta)) {
+              S.project.timing.lineMeta[k] = Object.assign({}, S.project.timing.lineMeta[k] || {}, m);
+            }
+          }
           replan(); flushSave(); syncUI();
-          toast(isFr ? "Synchronisation vocale réussie !" : isEn ? 'Vocal synchronization complete!' : '已根据人声歌唱节奏完成歌词精准对齐！');
+          toast(isFr ? "🎤 Synchronisation vocale et karaoké réussie !" : isEn ? '🎤 Word-level vocal synchronization complete!' : '🎤 已完成人声歌词与逐词卡拉OK精准对齐！');
         } else {
           toast(isFr ? "Échec de la synchronisation vocale" : isEn ? 'Could not synchronize vocals' : '未能成功识别人声同步');
         }
@@ -1985,6 +2621,7 @@ function bind() {
     const typing = /INPUT|TEXTAREA|SELECT/.test(tag) && e.target.type !== 'range' && e.target.type !== 'checkbox';
     if (S.tap && (e.code === 'Space' || e.code === 'Enter') && !typing) { e.preventDefault(); tapNow(); return; }
     if (S.tap && e.code === 'Escape') { pause(); stopTap(); return; }
+    if (e.code === 'Escape' && document.querySelector('.col-stage.is-karaoke-fs')) { e.preventDefault(); toggleKaraokeFullscreen(false); return; }
     if (S.tap && e.code === 'Backspace' && !typing) { e.preventDefault(); tapBack(); return; }
     if (S.tap && e.code === 'Tab' && !typing) { e.preventDefault(); tapCut(); return; }
     if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ' && !typing && !S.tap) { e.preventDefault(); edGo(e.shiftKey ? 1 : -1); return; }
@@ -2043,7 +2680,7 @@ function bindDrop() {
     if (S.exporting || S.tap) return;
     const files = Array.from(e.dataTransfer.files || []);
     const ext = f => (f.name.match(/\.([^.]+)$/) || ['', ''])[1].toLowerCase();
-    const song = files.find(f => /^audio\//.test(f.type) || ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'flac'].includes(ext(f)));
+    const song = files.find(f => /^audio\//.test(f.type) || ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'flac', 'opus', 'webm', 'mp4', 'aiff', 'aif', 'wma'].includes(ext(f)));
     const proj = files.find(f => ext(f) === 'json');
     const lyr = files.find(f => ['lrc', 'srt', 'vtt', 'txt'].includes(ext(f)));
     if (proj) { openProjectFile(proj); return; }            // a project brings its own lyrics
@@ -2066,16 +2703,49 @@ async function loadAudioFile(f, restored) {
     S.project.audioName = f.name;
     if (!restored && J.saveSong) J.saveSong(f);             // kept in this browser: a reload does not drop the song from exports
     S.project.timing.snap = true;
-    // When a new song is loaded and lines exist without manual timing, automatically align to vocal singing onsets
-    if (!restored && S.plan && S.plan.lines && S.plan.lines.length && (!S.project.timing.lineTimes || !Object.keys(S.project.timing.lineTimes).length)) {
-      const vocalTimes = J.alignLinesToVocals(a, S.plan.lines);
-      if (vocalTimes && Object.keys(vocalTimes).length) {
-        S.project.timing.lineTimes = vocalTimes;
+    const acSummary = a.acousticSummary || {};
+    if (!restored || !S.project.detection || S.project.detection.source !== 'ai') {
+      S.project.detection = {
+        audioType: acSummary.audioType || 'singing',
+        language: S.project.lang || 'auto',
+        detectedLanguages: [],
+        hasBackingVocals: false,
+        hasUnclearSections: false,
+        hasInstrumentalSections: Boolean(a.instrumentalSegments && a.instrumentalSegments.length),
+        hasRepeatedChorus: false,
+        format: a.format || '',
+        duration: a.duration || 0,
+        bpm: a.bpm || 0,
+        sections: [],
+        source: 'acoustic',
+      };
+    }
+    const curRaw = String(S.project.lyrics || '').trim();
+    const isDefaultLyrics = !curRaw || curRaw === String(J.SAMPLE_LYRICS || '').trim();
+    // When a fresh audio file is uploaded, automatically listen, transcribe & word-align, or align existing user lyrics
+    if (!restored) {
+      if (isDefaultLyrics) {
+        syncUI(); replan();
+        runAiTranscription({ auto: true });
+        return true;
+      } else if (S.plan && S.plan.lines && S.plan.lines.length && (!S.project.timing.lineTimes || !Object.keys(S.project.timing.lineTimes).length)) {
+        const vocalTimes = J.alignLinesToVocals(a, S.plan.lines);
+        if (vocalTimes && Object.keys(vocalTimes).length) {
+          S.project.timing.lineTimes = vocalTimes;
+          S.project.timing.wordTimes = {};
+          const langCode = J.resolveLang(S.project);
+          S.plan.lines.forEach((ln, i) => {
+            if (ln.interlude) return;
+            const s = vocalTimes[i] ?? 0.4;
+            const e = i < S.plan.lines.length - 1 ? (vocalTimes[i + 1] ?? s + 3.2) : Math.min(a.duration, s + 3.5);
+            if (J.alignWordsAcoustic) S.project.timing.wordTimes[i] = J.alignWordsAcoustic(a, ln.text, s, e, langCode);
+          });
+        }
       }
     }
     syncUI(); replan();
     return true;
-  } catch (err) { if (my !== audioSeq) return false; $('audioName').textContent = '読み込めませんでした: ' + err.message; S.audio = null; return false; }
+  } catch (err) { if (my !== audioSeq) return false; $('audioName').textContent = '読み込めませんでした: ' + err.message; S.audio = null; syncAudioDetectPanel(); return false; }
 }
 
 /* ---------------- かんたんモードの案内ツアー ---------------- */

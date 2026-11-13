@@ -32,7 +32,18 @@ J.defaultProject = () => ({
   aspect: '16:9', res: 1080, fps: 24,
   fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35, hideNo: false, hideTime: false },
   enabled: Object.fromEntries(J.GROUP_KEYS.map(g => [g, Object.fromEntries(J.order(g).map(k => [k, true]))])),
-  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1 },
+  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, wordTimes: {}, lineMeta: {}, lineScale: 1 },
+  detection: null,                // song lyrics detection summary (audioType, detectedLanguages, structure, layers)
+  karaoke: true,                  // real-time karaoke word/character highlight overlay
+  karaokeCfg: {
+    mode: 'progressive',          // 'word' (Mode A) | 'progressive' (Mode B) | 'char' (Mode C)
+    fontSize: 1.0,                // 0.65 .. 1.80 multiplier
+    yPct: 86,                     // 12 .. 92 vertical position (%)
+    autoScroll: true,             // automatic multi-line lyric scrolling
+    baseColor: '',                // '' = auto from style palette, or #RRGGBB
+    activeColor: '',              // '' = auto from style accent, or #RRGGBB
+    bgAlpha: 0.78,                // 0 .. 1 background opacity (0 = transparent)
+  },
   overrides: {},
   locks: { tech: {}, params: {} },   // groups and values Randomize / Shuffle must not change (UI side only)
   colors: { enabled: false },
@@ -317,6 +328,10 @@ J.plan = (project, audio) => {
     keyBg: J.keyMode ? J.keyMode(project) : null,   // 'green' | 'black' | null — 合成用の背景
     centerFree: !!zones, zones,
     typeset: !!project.typeset, unify: !!project.unify,
+    karaoke: project.karaoke !== false,
+    karaokeCfg: Object.assign({
+      mode: 'progressive', fontSize: 1.0, yPct: 86, autoScroll: true, baseColor: '', activeColor: '', bgAlpha: 0.78,
+    }, project.karaokeCfg || {}),
     lang: J.resolveLang ? J.resolveLang(project) : 'ja',   // 歌詞の言語 (auto → detected)
   };
   if (J.setLang) J.setLang(plan.lang);                     // chunking + measuring below use this language
@@ -367,7 +382,43 @@ J.plan = (project, audio) => {
     const n = [...ln.text.replace(/\s+/g, '')].length;
     const visEnd = Math.min(e, s + Math.max(3.6, n * 0.5 + 1.2));
     const D = visEnd - s;
-    plan.lines.push({ index: li, src: ln.src, lrc: ln.lrc, text: ln.text, start: s, end: e, visEnd, note: ln.note, impact: ln.impact, emph: ln.emph, chunks: null, seed: lineSeed });
+    const normLineText = String(ln.text || '').replace(/\s+/g, '');
+    const savedWords = project.timing && project.timing.wordTimes && project.timing.wordTimes[li];
+    const lineMeta = (project.timing && project.timing.lineMeta && project.timing.lineMeta[li]) || null;
+    const lineSpeaker = (lineMeta && lineMeta.speaker) || 'Lead';
+    const leadShift = project.typeset ? 0.2 : 0;
+    let wordsTimed = null;
+    if (Array.isArray(savedWords) && savedWords.length) {
+      const joinedSaved = savedWords.map(w => String(w.text || '')).join('').replace(/\s+/g, '');
+      if (joinedSaved === normLineText) {
+        wordsTimed = savedWords.map(w => {
+          const ws = +J.clamp((Number(w.start) || s) - leadShift, s, Math.max(s, visEnd - 0.02)).toFixed(3);
+          const we = +J.clamp((Number(w.end) || ws + 0.15) - leadShift, ws + 0.018, Math.max(ws + 0.018, visEnd)).toFixed(3);
+          const chars = Array.isArray(w.chars) && w.chars.length
+            ? w.chars.map(ch => {
+                const cs = +J.clamp((Number(ch.start) || ws) - leadShift, ws, Math.max(ws, we - 0.006)).toFixed(3);
+                const ce = +J.clamp((Number(ch.end) || cs + 0.015) - leadShift, cs + 0.006, we).toFixed(3);
+                return { ch: ch.ch, start: cs, end: ce };
+              })
+            : (J.buildCharTimings ? J.buildCharTimings(w.text, ws, we, audio) : []);
+          const recC = Number.isFinite(Number(w.recognitionConfidence)) ? +J.clamp(Number(w.recognitionConfidence), 0, 1).toFixed(3) : (lineMeta && Number.isFinite(lineMeta.recognitionConfidence) ? lineMeta.recognitionConfidence : 0.92);
+          const alignC = Number.isFinite(Number(w.alignmentConfidence)) ? +J.clamp(Number(w.alignmentConfidence), 0, 1).toFixed(3) : (lineMeta && Number.isFinite(lineMeta.alignmentConfidence) ? lineMeta.alignmentConfidence : 0.88);
+          return {
+            text: w.text,
+            start: ws,
+            end: we,
+            chars,
+            recognitionConfidence: recC,
+            alignmentConfidence: alignC,
+            speaker: String(w.speaker || lineSpeaker).trim(),
+          };
+        });
+      }
+    }
+    if (!wordsTimed && J.alignWordsAcoustic) {
+      wordsTimed = J.alignWordsAcoustic(audio, ln.text, s, visEnd, plan.lang, lineSpeaker, lineMeta && lineMeta.recognitionConfidence != null ? lineMeta.recognitionConfidence : 0.88);
+    }
+    plan.lines.push({ index: li, src: ln.src, lrc: ln.lrc, text: ln.text, start: s, end: e, visEnd, note: ln.note, impact: ln.impact, emph: ln.emph, chunks: null, wordsTimed: wordsTimed || [], meta: lineMeta, seed: lineSeed });
     const chunks = ln.manual || (plan.lang === 'en' ? J.phraseChunks(J.chunkText(ln.text)) : J.chunkText(ln.text));
     plan.lines[li].chunks = chunks;
     const L = J.lerp(1.3, 0.5, fx.density);
@@ -1063,5 +1114,42 @@ J.outputSize = (project) => {
   const [W, H] = J.designSize(project.aspect);
   const k = (project.res || 1080) / Math.min(W, H);
   return [Math.round(W * k / 2) * 2, Math.round(H * k / 2) * 2];
+};
+
+/* Active lyric line and word/character wipe progress at timestamp t */
+J.lineAt = (plan, t) => {
+  if (!plan || !plan.lines || !plan.lines.length) return null;
+  const L = plan.lines;
+  for (let i = 0; i < L.length; i++) {
+    if (t >= L[i].start && t < L[i].end) return L[i];
+  }
+  return null;
+};
+
+J.wordAt = (linePlan, t) => {
+  if (!linePlan || !Array.isArray(linePlan.wordsTimed) || !linePlan.wordsTimed.length) return null;
+  const W = linePlan.wordsTimed;
+  let activeIdx = -1, progress = 0, charIdx = -1, charProgress = 0;
+  for (let i = 0; i < W.length; i++) {
+    const w = W[i];
+    if (t < w.start) break;
+    if (t <= w.end || (i === W.length - 1 && t <= linePlan.end)) {
+      activeIdx = i;
+      progress = J.clamp((t - w.start) / Math.max(0.02, w.end - w.start), 0, 1);
+      if (Array.isArray(w.chars) && w.chars.length) {
+        for (let ci = 0; ci < w.chars.length; ci++) {
+          const c = w.chars[ci];
+          if (t < c.start) break;
+          charIdx = ci;
+          charProgress = J.clamp((t - c.start) / Math.max(0.01, c.end - c.start), 0, 1);
+          if (t <= c.end) break;
+        }
+      }
+      break;
+    }
+    activeIdx = i;
+    progress = 1;
+  }
+  return { index: activeIdx, word: activeIdx >= 0 ? W[activeIdx] : null, progress, charIndex: charIdx, charProgress };
 };
 })();

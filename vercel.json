@@ -1,0 +1,33 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "echo 'Static editions and API functions ready'",
+  "outputDirectory": ".",
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
+      ]
+    }
+  ],
+  "rewrites": [
+    { "source": "/", "destination": "/fr/index.html" },
+    { "source": "/fr", "destination": "/fr/index.html" },
+    { "source": "/fr/", "destination": "/fr/index.html" },
+    { "source": "/en", "destination": "/en/index.html" },
+    { "source": "/en/", "destination": "/en/index.html" },
+    { "source": "/zh-hant", "destination": "/zh-hant/index.html" },
+    { "source": "/zh-hant/", "destination": "/zh-hant/index.html" },
+    { "source": "/zh-hans", "destination": "/zh-hans/index.html" },
+    { "source": "/zh-hans/", "destination": "/zh-hans/index.html" },
+    { "source": "/ko", "destination": "/ko/index.html" },
+    { "source": "/ko/", "destination": "/ko/index.html" },
+    { "source": "/id", "destination": "/id/index.html" },
+    { "source": "/id/", "destination": "/id/index.html" },
+    { "source": "/vi", "destination": "/vi/index.html" },
+    { "source": "/vi/", "destination": "/vi/index.html" }
+  ]
+}

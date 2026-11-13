@@ -216,10 +216,255 @@ class Renderer {
       const env = this.makeEnv(ctx, plan, mainCut, sc, { pass: 'main', t: tq, lt: 0, ltb: 0, step, scale, allowFilter, energy, beat: beatInfo });
       J.drawHUD(env, plan);
     }
+    // ---------- Real-Time Karaoke Bar (raw unquantized t for smooth 60fps word/char sweep) ----------
+    if (plan.karaoke && !opt.noHud && !opt.noKaraoke && layer !== 'back' && !opt.glyphLog) {
+      this.drawKaraokeBar(ctx, plan, t, sc);
+    }
     ctx.restore();
     // ---------- post ----------
     if (!opt.noPost) this.post(ctx, plan, t, tq, step, sc, scale, opt, allowFilter);
     if (key && !opt.noPost) this.keyFinish(ctx, key, opt);
+  }
+
+  drawKaraokeBar(ctx, plan, t, sc) {
+    if (!plan.lines || !plan.lines.length) return;
+    let ln = J.lineAt ? J.lineAt(plan, t) : null;
+    if (!ln || ln.interlude || !ln.wordsTimed || !ln.wordsTimed.length) {
+      // Show subtle upcoming count-in preview up to 0.7s before the next sung line
+      const upcoming = plan.lines.find(l => !l.interlude && l.wordsTimed && l.wordsTimed.length && l.start > t && l.start - t <= 0.7);
+      if (!upcoming) return;
+      ln = upcoming;
+    }
+    const W = plan.W, H = plan.H;
+    const isPortrait = H > W * 1.1;
+    const cfg = plan.karaokeCfg || {};
+    const mode = cfg.mode === 'word' || cfg.mode === 'char' ? cfg.mode : 'progressive';
+    const fontScale = J.clamp(Number(cfg.fontSize) || 1.0, 0.65, 1.85);
+    const yPct = J.clamp(cfg.yPct != null ? Number(cfg.yPct) : 86, 10, 92);
+    const bgAlpha = J.clamp(cfg.bgAlpha != null ? Number(cfg.bgAlpha) : 0.78, 0, 1);
+
+    const fontKey = (J.fontsOf ? J.fontsOf(plan.style, ['display', 'body'])[0] : null) || 'display';
+    let px = Math.round(Math.min(W, H) * (isPortrait ? 0.036 : 0.032) * fontScale);
+    const words = ln.wordsTimed;
+    const hasSpaces = /[A-Za-zÀ-ÿ\u1e00-\u1eff]/.test(ln.text);
+    const sep = hasSpaces ? ' ' : '';
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+    ctx.filter = 'none';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+
+    // Measure and auto-fit line width into stage width
+    const maxTextW = W * 0.88;
+    let fontCss = J.fontCSS ? J.fontCSS(fontKey, px, 700) : `700 ${px}px sans-serif`;
+    ctx.font = fontCss;
+    const sepW = sep ? (ctx.measureText(sep).width || px * 0.28) : 0;
+    const measureTotal = () => {
+      let tot = 0;
+      for (let i = 0; i < words.length; i++) {
+        tot += (ctx.measureText(words[i].text).width || words[i].text.length * px * 0.6);
+        if (i < words.length - 1) tot += sepW;
+      }
+      return tot;
+    };
+    let totalW = measureTotal();
+    if (totalW > maxTextW && totalW > 0) {
+      const shrink = Math.max(0.45, maxTextW / totalW);
+      px = Math.round(px * shrink);
+      fontCss = J.fontCSS ? J.fontCSS(fontKey, px, 700) : `700 ${px}px sans-serif`;
+      ctx.font = fontCss;
+      totalW = measureTotal();
+    }
+
+    const padX = Math.round(px * 0.85), padY = Math.round(px * 0.48);
+    const boxW = Math.min(W * 0.94, totalW + padX * 2);
+    const boxH = Math.round(px * 1.75 + padY * 0.5);
+    const bx = Math.round((W - boxW) / 2);
+    const by = Math.round(J.clamp(H * (yPct / 100) - boxH / 2, H * 0.03, H - boxH - H * 0.03));
+    const rr = Math.min(20, boxH * 0.42);
+    const darkBg = J.lum(sc.bg) < 0.5;
+
+    // Configurable background box with transparency control (0 = pure transparent floating lyrics)
+    if (bgAlpha > 0.015) {
+      ctx.beginPath();
+      ctx.moveTo(bx + rr, by);
+      ctx.arcTo(bx + boxW, by, bx + boxW, by + boxH, rr);
+      ctx.arcTo(bx + boxW, by + boxH, bx, by + boxH, rr);
+      ctx.arcTo(bx, by + boxH, bx, by, rr);
+      ctx.arcTo(bx, by, bx + boxW, by, rr);
+      ctx.closePath();
+      ctx.fillStyle = plan.keyBg
+        ? `rgba(0,0,0,${(bgAlpha * 0.88).toFixed(3)})`
+        : darkBg
+          ? `rgba(10,12,18,${(bgAlpha * 0.9).toFixed(3)})`
+          : `rgba(255,255,255,${bgAlpha.toFixed(3)})`;
+      ctx.fill();
+      if (bgAlpha > 0.12) {
+        ctx.lineWidth = Math.max(1, px * 0.045);
+        ctx.strokeStyle = darkBg
+          ? `rgba(255,255,255,${(bgAlpha * 0.22).toFixed(3)})`
+          : `rgba(0,0,0,${(bgAlpha * 0.14).toFixed(3)})`;
+        ctx.stroke();
+      }
+    }
+
+    const parseRgba = (c, fallback) => {
+      const s = String(c || '').trim();
+      if (/^#[0-9a-f]{6}$/i.test(s)) {
+        return [parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), parseInt(s.slice(5, 7), 16), 1];
+      }
+      if (/^#[0-9a-f]{3}$/i.test(s)) {
+        return [parseInt(s[1] + s[1], 16), parseInt(s[2] + s[2], 16), parseInt(s[3] + s[3], 16), 1];
+      }
+      const m = s.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)/i);
+      if (m) return [+m[1], +m[2], +m[3], m[4] != null ? +m[4] : 1];
+      return fallback;
+    };
+    const mixColor = (a, b, k) => {
+      const tK = J.clamp(k, 0, 1);
+      const r = Math.round(a[0] + (b[0] - a[0]) * tK);
+      const g = Math.round(a[1] + (b[1] - a[1]) * tK);
+      const bl = Math.round(a[2] + (b[2] - a[2]) * tK);
+      const al = +(a[3] + (b[3] - a[3]) * tK).toFixed(3);
+      return `rgba(${r},${g},${bl},${al})`;
+    };
+
+    const autoBase = (plan.keyBg || darkBg || bgAlpha < 0.25) ? 'rgba(255,255,255,0.48)' : 'rgba(18,20,28,0.38)';
+    const baseFill = (cfg.baseColor && /^#[0-9a-f]{3,6}$/i.test(cfg.baseColor)) ? cfg.baseColor : autoBase;
+    const sungFill = (cfg.activeColor && /^#[0-9a-f]{3,6}$/i.test(cfg.activeColor))
+      ? cfg.activeColor
+      : (plan.keyBg ? '#ffffff' : (sc.accent || '#0071e3'));
+    const baseRgba = parseRgba(baseFill, [255, 255, 255, 0.48]);
+    const sungRgba = parseRgba(sungFill, [0, 113, 227, 1]);
+    const sp = sep ? (ctx.measureText(sep).width || px * 0.28) : 0;
+
+    let x = Math.round((W - totalW) / 2);
+    const cy = Math.round(by + boxH / 2);
+    const needLegibleShadow = bgAlpha < 0.25;
+
+    for (let i = 0; i < words.length; i++) {
+      const w = words[i];
+      const wWidth = ctx.measureText(w.text).width || Math.max(px * 0.5, w.text.length * px * 0.58);
+      const isActive = t >= w.start && t <= w.end;
+
+      // Mode C — Character-by-character highlighting
+      if (mode === 'char') {
+        const charList = Array.isArray(w.chars) && w.chars.length
+          ? w.chars
+          : (J.buildCharTimings ? J.buildCharTimings(w.text, w.start, w.end) : [{ ch: w.text, start: w.start, end: w.end }]);
+        let cx = x;
+        for (let ci = 0; ci < charList.length; ci++) {
+          const chObj = charList[ci];
+          const cw = ctx.measureText(chObj.ch).width || (wWidth / charList.length);
+          const dur = Math.max(0.015, (chObj.end || w.end) - (chObj.start || w.start));
+          let cf = 0;
+          if (t >= chObj.end) cf = 1;
+          else if (t > chObj.start) {
+            const lin = J.clamp((t - chObj.start) / dur, 0, 1);
+            cf = lin * lin * (3 - 2 * lin); // smooth cubic transition
+          }
+          const chActive = t >= chObj.start && t <= chObj.end;
+          const liftY = chActive ? -Math.sin(cf * Math.PI) * px * 0.1 : 0;
+          ctx.save();
+          ctx.fillStyle = mixColor(baseRgba, sungRgba, cf);
+          if (chActive) {
+            ctx.shadowColor = sungFill;
+            ctx.shadowBlur = Math.round(px * 0.34);
+          } else if (needLegibleShadow) {
+            ctx.shadowColor = 'rgba(0,0,0,0.72)';
+            ctx.shadowBlur = Math.round(px * 0.2);
+          }
+          ctx.fillText(chObj.ch, cx, cy + liftY);
+          ctx.restore();
+          cx += cw;
+        }
+        x += wWidth + sp;
+        continue;
+      }
+
+      // Mode A — Word-by-word highlighting (smooth color transition per whole word)
+      if (mode === 'word') {
+        let blend = 0;
+        if (t >= w.end) blend = 1;
+        else if (t >= w.start) {
+          const ramp = Math.min(0.075, Math.max(0.025, (w.end - w.start) * 0.35));
+          const u = J.clamp((t - w.start) / ramp, 0, 1);
+          blend = u * u * (3 - 2 * u);
+        }
+        const prog = isActive ? J.clamp((t - w.start) / Math.max(0.02, w.end - w.start), 0, 1) : 0;
+        const liftY = isActive ? -Math.sin(prog * Math.PI) * px * 0.08 : 0;
+        ctx.save();
+        ctx.fillStyle = mixColor(baseRgba, sungRgba, blend);
+        if (isActive) {
+          ctx.shadowColor = sungFill;
+          ctx.shadowBlur = Math.round(px * 0.3);
+        } else if (needLegibleShadow) {
+          ctx.shadowColor = 'rgba(0,0,0,0.72)';
+          ctx.shadowBlur = Math.round(px * 0.2);
+        }
+        ctx.fillText(w.text, x, cy + liftY);
+        ctx.restore();
+        x += wWidth + sp;
+        continue;
+      }
+
+      // Mode B — Progressive highlighting (smooth horizontal sweep inside word & chars)
+      let fillFrac = 0;
+      if (t >= w.end) fillFrac = 1;
+      else if (t > w.start) {
+        if (Array.isArray(w.chars) && w.chars.length > 1) {
+          let charWAcc = 0;
+          let matched = false;
+          for (let ci = 0; ci < w.chars.length; ci++) {
+            const chObj = w.chars[ci];
+            const cw = ctx.measureText(chObj.ch).width || (wWidth / w.chars.length);
+            if (t >= chObj.end) {
+              charWAcc += cw;
+            } else if (t > chObj.start) {
+              const cf = J.clamp((t - chObj.start) / Math.max(0.01, chObj.end - chObj.start), 0, 1);
+              fillFrac = J.clamp((charWAcc + cw * cf) / Math.max(1, wWidth), 0, 1);
+              matched = true;
+              break;
+            } else {
+              fillFrac = J.clamp(charWAcc / Math.max(1, wWidth), 0, 1);
+              matched = true;
+              break;
+            }
+          }
+          if (!matched) fillFrac = J.clamp((t - w.start) / Math.max(0.02, w.end - w.start), 0, 1);
+        } else {
+          fillFrac = J.clamp((t - w.start) / Math.max(0.02, w.end - w.start), 0, 1);
+        }
+      }
+
+      const liftY = isActive ? -Math.sin(fillFrac * Math.PI) * px * 0.08 : 0;
+      ctx.save();
+      if (needLegibleShadow) {
+        ctx.shadowColor = 'rgba(0,0,0,0.72)';
+        ctx.shadowBlur = Math.round(px * 0.2);
+      }
+      ctx.fillStyle = baseFill;
+      ctx.fillText(w.text, x, cy + liftY);
+      ctx.restore();
+
+      if (fillFrac > 0.005) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x - 1, by, wWidth * fillFrac + 2, boxH);
+        ctx.clip();
+        if (isActive) {
+          ctx.shadowColor = sungFill;
+          ctx.shadowBlur = Math.round(px * 0.28);
+        }
+        ctx.fillStyle = sungFill;
+        ctx.fillText(w.text, x, cy + liftY);
+        ctx.restore();
+      }
+      x += wWidth + sp;
+    }
+    ctx.restore();
   }
 
   /* 合成用の背景: make the finished frame monochrome (white text + effects only) and put it on the key colour.

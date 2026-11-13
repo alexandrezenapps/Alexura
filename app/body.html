@@ -63,8 +63,9 @@
       <div class="sec">
         <div class="sec-h"><h2>曲とタイミング</h2></div>
         <div id="audioName" class="muted audio-name">曲なし（読み込むと拍を検出してカットを合わせます）</div>
+        <div id="audioDetectPanel" class="audio-detect" hidden aria-live="polite"></div>
         <div class="row">
-          <label class="file" title="mp3 / wav / m4a など">曲を読み込む<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
+          <label class="file" title="mp3 / wav / m4a など">曲を読み込む<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.opus,.webm,.mp4,.aiff,.aif,.wma"></label>
           <button id="btnAiTranscribe" class="accent" title="AI听音识词：自动分析歌曲音频，多语言（中文、法文、英文等）识别人声歌词并即时同步到视频">✨ AI 识词与同步</button>
           <button id="btnVocalSync" class="ghost" title="根据歌声人声起始瞬间，自动精准同步各行歌词">⚡ 人声同步</button>
           <button id="btnTap" title="曲を再生しながら各行の頭でタップ">タップで同期</button>
@@ -89,6 +90,62 @@
     <!-- ================= center: stage ================= -->
     <section class="col col-stage" aria-label="プレビュー">
       <div class="viewport" id="viewport"><canvas id="view" width="1280" height="720"></canvas><div id="viewMsg" class="overlay-msg" hidden></div><div id="keyBadge" class="key-badge" hidden></div><div id="toast" class="toast" role="status" aria-live="polite" hidden></div></div>
+      <div id="karaokePrompter" class="karaoke-prompter" data-kmode="progressive" aria-label="カラオケ同期プロンプター">
+        <div class="kp-head">
+          <span class="kp-title" id="kpTitle">🎤 カラオケ同期</span>
+          <span id="karaokeModeBadge" class="kp-meta">自動同期</span>
+          <div id="kModeSeg" class="kp-seg" role="group" aria-label="Mode de surbrillance">
+            <button type="button" data-kmode="word" aria-pressed="false" title="Mode A : mot par mot">Mot</button>
+            <button type="button" data-kmode="progressive" aria-pressed="true" title="Mode B : balayage progressif">Progressif</button>
+            <button type="button" data-kmode="char" aria-pressed="false" title="Mode C : caractère par caractère (Chinois, Japonais, Coréen…)">Caractère</button>
+          </div>
+          <button type="button" id="btnKaraokeCfg" class="ghost small kp-cfg-btn" aria-expanded="false" aria-controls="karaokeControls" title="Taille, position, couleurs, transparence">⚙ Réglages</button>
+          <button type="button" id="btnKaraokeFs" class="ghost small kp-fs-btn" aria-pressed="false" title="Mode Karaoké Plein Écran">⛶ Plein écran</button>
+          <button type="button" id="btnKaraokeHud" class="ghost small kp-toggle" aria-pressed="true" title="動画内のカラオケ字幕バーを表示／非表示">字幕バー ON</button>
+        </div>
+        <div id="karaokeControls" class="kp-controls" hidden>
+          <label class="kp-ctrl">
+            <span id="lblKFontSize">Taille</span>
+            <input id="kFontSize" type="range" min="0.65" max="1.85" step="0.05" value="1">
+            <output id="kFontSizeVal" class="mono">100%</output>
+          </label>
+          <div class="kp-ctrl">
+            <span id="lblKPosY">Position</span>
+            <input id="kPosY" type="range" min="10" max="92" step="1" value="86">
+            <div class="kp-presets">
+              <button type="button" class="ghost small" data-ky="14">Haut</button>
+              <button type="button" class="ghost small" data-ky="50">Centre</button>
+              <button type="button" class="ghost small" data-ky="86">Bas</button>
+            </div>
+            <output id="kPosYVal" class="mono">86%</output>
+          </div>
+          <label class="kp-ctrl">
+            <span id="lblKBgAlpha">Fond</span>
+            <input id="kBgAlpha" type="range" min="0" max="100" step="1" value="78">
+            <output id="kBgAlphaVal" class="mono">78%</output>
+          </label>
+          <div class="kp-ctrl">
+            <span id="lblKBaseColor">Texte</span>
+            <input id="kBaseColor" type="color" value="#b8bec8">
+            <button type="button" id="kBaseColorAuto" class="ghost small">Auto</button>
+          </div>
+          <div class="kp-ctrl">
+            <span id="lblKActiveColor">Chanté</span>
+            <input id="kActiveColor" type="color" value="#0071e3">
+            <button type="button" id="kActiveColorAuto" class="ghost small">Auto</button>
+          </div>
+          <label class="kp-ctrl kp-ctrl-chk">
+            <input id="kAutoScroll" type="checkbox" checked>
+            <span id="lblKAutoScroll">Défilement auto</span>
+          </label>
+        </div>
+        <div id="karaokeActive" class="kp-active" role="region" aria-live="off"></div>
+        <div id="karaokeBacking" class="kp-backing muted" hidden></div>
+        <div id="karaokeScrollStage" class="kp-scroll" aria-label="Paroles synchronisées">
+          <div id="karaokeScrollLines" class="kp-scroll-lines"></div>
+        </div>
+        <div id="karaokeNext" class="kp-next muted"></div>
+      </div>
       <div class="transport">
         <button id="btnPlay" class="play" aria-label="再生">▶</button>
         <span id="timeNow" class="tc">00:00.00</span><span class="tc muted">/</span><span id="timeDur" class="tc muted">00:00.00</span>
