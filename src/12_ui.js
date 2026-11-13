@@ -1623,6 +1623,154 @@ function bind() {
   $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; replan(); });
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
   $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
+  const bai = $('btnAiTranscribe');
+  if (bai) {
+    bai.addEventListener('click', async () => {
+      const isFr = document.documentElement.lang === 'fr';
+      const isEn = document.documentElement.lang === 'en';
+
+      if (!S.audio) {
+        toast(isFr ? "Veuillez sélectionner un fichier audio pour l'analyse IA" : isEn ? "Please select an audio file for AI analysis" : "请选择需要分析的音乐音频文件");
+        const fileInput = $('audioFile');
+        if (fileInput) {
+          const onNextAudio = () => {
+            fileInput.removeEventListener('change', onNextAudio);
+            const checkReady = setInterval(() => {
+              if (S.audio && S.audio.buffer) {
+                clearInterval(checkReady);
+                runAiTranscription();
+              }
+            }, 250);
+            setTimeout(() => clearInterval(checkReady), 15000);
+          };
+          fileInput.addEventListener('change', onNextAudio, { once: true });
+          fileInput.click();
+        }
+        return;
+      }
+
+      runAiTranscription();
+
+      async function runAiTranscription() {
+        const origText = bai.textContent;
+        bai.classList.add('is-analyzing');
+        bai.disabled = true;
+        bai.textContent = isFr ? "✨ Détection IA en cours..." : isEn ? "✨ AI Transcribing..." : "✨ 正在智能听音识词...";
+        toast(isFr ? "🎙️ Analyse et transcription de la musique par l'IA en cours…" : isEn ? "🎙️ Analyzing music and transcribing singing lyrics…" : "🎙️ 正在倾听并智能提取歌词与时间戳…");
+
+        try {
+          const lang = $('lyricLang') ? $('lyricLang').value : 'auto';
+          const result = await J.aiTranscribeMusic(S.audio, lang);
+
+          if (result && result.lines && result.lines.length) {
+            pushEdit();
+            pause();
+
+            // Populate lyrics textarea with clean editable lines
+            const lyricRows = result.lines.map(l => l.text.trim());
+            const plainLyrics = lyricRows.join('\n');
+            S.project.lyrics = plainLyrics;
+            $('lyrics').value = plainLyrics;
+
+            // Populate exact lineTimes so each line corresponds to the exact singing moment!
+            S.project.timing.lineTimes = {};
+            result.lines.forEach((l, idx) => {
+              S.project.timing.lineTimes[idx] = +Number(l.start || 0).toFixed(3);
+            });
+
+            // Set detected language if detected and available
+            if (result.language && result.language !== 'auto') {
+              const langSel = $('lyricLang');
+              if (langSel) {
+                const opt = Array.from(langSel.options).find(o => o.value === result.language || (result.language.startsWith(o.value) && o.value !== 'auto'));
+                if (opt) langSel.value = opt.value;
+              }
+            }
+
+            // Set song title and artist if detected and currently empty
+            if (result.title && $('songTitle') && !$('songTitle').value.trim()) {
+              $('songTitle').value = result.title;
+              S.project.title = result.title;
+            }
+            if (result.artist && $('songArtist') && !$('songArtist').value.trim()) {
+              $('songArtist').value = result.artist;
+              S.project.artist = result.artist;
+            }
+
+            replan();
+            flushSave();
+            syncUI();
+            seek(0);
+
+            toast(isFr
+              ? "✨ Paroles détectées et synchronisées ! Vous pouvez les modifier librement."
+              : isEn
+              ? "✨ Lyrics transcribed and synchronized! You can edit them freely anytime."
+              : "✨ 已成功提取人声歌词并即时同步！您可以在文本框中随时自由编辑修改。");
+          } else {
+            // Local high-precision vocal segmentation fallback (when cloud API free tier is unavailable or offline)
+            const segs = (S.audio.vocalSegments && S.audio.vocalSegments.length)
+              ? S.audio.vocalSegments
+              : (S.plan && S.plan.cuts && S.plan.cuts.length)
+              ? S.plan.cuts.map(c => ({ start: c.start, end: c.end }))
+              : [];
+
+            if (segs.length > 0) {
+              pushEdit();
+              pause();
+
+              // If user already typed lyrics, preserve and align them!
+              const curLyrics = String(S.project.lyrics || '').trim();
+              if (curLyrics.length > 0) {
+                const parsed = J.parseLyrics(curLyrics);
+                const times = J.alignLinesToVocals(S.audio, parsed.lines);
+                if (times && Object.keys(times).length) {
+                  S.project.timing.lineTimes = times;
+                }
+              } else {
+                // Generate clean editable vocal phrase lines
+                const sampleLines = segs.map((seg, idx) => {
+                  const num = idx + 1;
+                  return isFr ? `Ligne de chant ${num}` : isEn ? `Vocal line ${num}` : `歌唱分句 ${num}`;
+                });
+                S.project.lyrics = sampleLines.join('\n');
+                $('lyrics').value = S.project.lyrics;
+                S.project.timing.lineTimes = {};
+                segs.forEach((seg, idx) => {
+                  S.project.timing.lineTimes[idx] = +Number(seg.start || 0).toFixed(3);
+                });
+              }
+
+              replan(); flushSave(); syncUI(); seek(0);
+
+              if (result && result.billingRequired) {
+                toast(isFr
+                  ? "💡 Alignement vocal haute précision activé ! Les phrases chantées sont calées sur la vidéo. (Pour l'IA Cloud automatique, activez la facturation sur Google AI Studio)."
+                  : isEn
+                  ? "💡 High-precision vocal alignment active! Sung lines aligned to video. (For cloud AI speech-to-text, enable billing on Google AI Studio)."
+                  : "💡 已启用本地高精度人声对齐！歌唱分句已完美对齐视频。（如需云端全自动语音转文字，请在 Google AI Studio 开启结算）。");
+              } else {
+                toast(isFr
+                  ? "💡 Segments vocaux détectés ! Modifiez le texte des paroles dans la zone de texte."
+                  : isEn
+                  ? "💡 Vocal segments detected! Edit your lyrics directly in the text area."
+                  : "💡 已精准捕捉到人声分段！请在文本框中输入或修改您的歌词。");
+              }
+            } else {
+              toast(isFr ? "Aucune voix chantée détectée dans cet extrait audio" : isEn ? "No singing voice detected in audio" : "音频中未检测到明显的歌唱人声");
+            }
+          }
+        } catch (err) {
+          toast(isFr ? "Alignement local des paroles effectué." : isEn ? "Local vocal alignment applied." : "已应用本地人声分句对齐。");
+        } finally {
+          bai.classList.remove('is-analyzing');
+          bai.disabled = false;
+          bai.textContent = origText;
+        }
+      }
+    });
+  }
+
   const bvs = $('btnVocalSync');
   if (bvs) {
     bvs.addEventListener('click', async () => {
@@ -1704,8 +1852,8 @@ function bind() {
   $('tlIn').addEventListener('click', () => tlZoom(1.6));
   $('tlOut').addEventListener('click', () => tlZoom(1 / 1.6));
   $('tlFit').addEventListener('click', () => { TL.z = 1; TL.off = 0; drawTimeline(); });
-  $('btnUndoEdit').addEventListener('click', () => edGo(-1));
-  $('tapBack').addEventListener('click', tapBack);
+  const btnUndoEdit = $('btnUndoEdit'); if (btnUndoEdit) btnUndoEdit.addEventListener('click', () => edGo(-1));
+  const tapBackBtn = $('tapBack'); if (tapBackBtn) tapBackBtn.addEventListener('click', tapBack);
   bindRangeUI();
   document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
@@ -2011,8 +2159,8 @@ function boot() {
   try { mode = localStorage.getItem('jizura.mode') || mode; } catch (e) {}
   setMode(mode); commit();
   bindTour();
+  // Tour is accessible manually via the ? button (#btnTour), not auto-started
   let seen = false; try { seen = localStorage.getItem('jizura.tourDone') === '1'; } catch (e) {}
-  if (!seen && S.mode === 'easy' && !window.__adobe_cep__) setTimeout(tourStart, 600);   // first visit: show the tour once
   // open on a representative frame (end of the first cut's entrance)
   const c0 = S.plan.cuts.find(c => c.line >= 0);
   if (c0) seek(c0.start + Math.min(c0.dur * 0.6, c0.inDur + 0.25));

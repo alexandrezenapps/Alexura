@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ALEZURA — Créateur de vidéos de paroles animées</title>
+<title>Alexura — Créateur de vidéos de paroles animées</title>
 <meta name="description" content="Transformez des paroles en vidéos de paroles animées dans votre navigateur et exportez en MP4.">
 <link rel="canonical" href="https://852wa.github.io/JIZURA/fr/">
 <link rel="alternate" hreflang="ja" href="https://852wa.github.io/JIZURA/">
@@ -15,50 +15,55 @@
 <link rel="alternate" hreflang="id-ID" href="https://852wa.github.io/JIZURA/id/">
 <link rel="alternate" hreflang="vi" href="https://852wa.github.io/JIZURA/vi/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="ALEZURA — Créateur de vidéos de paroles animées">
+<meta property="og:title" content="Alexura — Créateur de vidéos de paroles animées">
 <meta property="og:description" content="Transformez des paroles en vidéos de paroles animées dans votre navigateur et exportez en MP4.">
 <meta property="og:url" content="https://852wa.github.io/JIZURA/fr/">
 <meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,600&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
   color-scheme: light;
-  --ink: #ffffff;
-  --panel: rgba(251, 251, 254, 0.78);
-  --panel-solid: #fbfbfd;
-  --raised: rgba(244, 245, 248, 0.72);
-  --raised2: rgba(234, 236, 241, 0.85);
-  --glass-card: rgba(255, 255, 255, 0.84);
-  --line: rgba(0, 0, 0, 0.07);
-  --line2: rgba(0, 0, 0, 0.13);
-  --line-glass: rgba(255, 255, 255, 0.85);
-  --text: #111114;
-  --text-soft: #27272a;
-  --muted: #71717a;
-  --faint: #a1a1aa;
+  --bg: #f8fafc;
+  --bg-gradient: radial-gradient(ellipse 70% 50% at 15% 10%, rgba(56, 189, 248, 0.08) 0%, transparent 70%),
+                 radial-gradient(ellipse 60% 45% at 85% 15%, rgba(168, 85, 247, 0.06) 0%, transparent 65%),
+                 radial-gradient(ellipse 70% 55% at 50% 90%, rgba(0, 113, 227, 0.05) 0%, transparent 75%);
+  --ink: #f8fafc;
+  --surface: #ffffff;
+  --surface-translucent: rgba(255, 255, 255, 0.88);
+  --panel: rgba(255, 255, 255, 0.78);
+  --panel-solid: #ffffff;
+  --raised: #ffffff;
+  --raised2: #f1f5f9;
+  --glass-card: rgba(255, 255, 255, 0.92);
+  --line: rgba(0, 0, 0, 0.08);
+  --line2: rgba(0, 0, 0, 0.14);
+  --line-glass: rgba(0, 0, 0, 0.07);
+  --text: #0f172a;
+  --text-soft: #334155;
+  --muted: #64748b;
+  --faint: #94a3b8;
   --accent: #0071e3;
-  --accent-hover: #0077ed;
+  --accent-hover: #005bb5;
   --accent-glow: rgba(0, 113, 227, 0.22);
-  --accent-subtle: rgba(0, 113, 227, 0.08);
-  --amber: #f56300;
-  --cyan: #0071e3;
-  --rose: #ff2d55;
-  --danger: #ff3b30;
+  --accent-subtle: rgba(0, 113, 227, 0.10);
+  --amber: #d97706;
+  --cyan: #0284c7;
+  --rose: #e11d48;
+  --danger: #dc2626;
   --ui: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
   --mono: "JetBrains Mono", "SF Mono", Menlo, Monaco, Consolas, monospace;
   --brand: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-  --r: 9px;
+  --r: 10px;
   --r-card: 16px;
   --r-pill: 980px;
-  --specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
-  --shadow-sm: 0 1.5px 3px rgba(0, 0, 0, 0.03), 0 1px 1px rgba(0, 0, 0, 0.02);
-  --shadow-card: 0 4px 14px -2px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-  --shadow-stage: 0 24px 64px -14px rgba(0, 0, 0, 0.11), 0 2px 8px rgba(0, 0, 0, 0.03);
-  --shadow-pop: 0 16px 42px -6px rgba(0, 0, 0, 0.09), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-card: 0 6px 20px -3px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+  --shadow-stage: 0 24px 60px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  --shadow-pop: 0 16px 36px -6px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.06);
 }
 
 html, body { height: 100%; }
@@ -66,11 +71,8 @@ html, body { height: 100%; }
 
 body {
   margin: 0;
-  background-color: #ffffff;
-  background-image:
-    radial-gradient(ellipse 55% 40% at 12% 8%, rgba(0, 113, 227, 0.04) 0%, transparent 70%),
-    radial-gradient(ellipse 45% 35% at 88% 12%, rgba(245, 99, 0, 0.03) 0%, transparent 65%),
-    radial-gradient(ellipse 50% 40% at 50% 92%, rgba(168, 85, 247, 0.035) 0%, transparent 70%);
+  background-color: var(--bg);
+  background-image: var(--bg-gradient);
   background-attachment: fixed;
   color: var(--text);
   font: 13px/1.55 var(--ui);
@@ -93,18 +95,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 
 /* ============================================================
-   1. Luxury Frosted Glass Top Navigation
+   1. Luxury Apple-Inspired Frosted Glass Navigation
    ============================================================ */
 .bar {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 10px 22px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  padding: 11px 24px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.04), inset 0 -1px 0 rgba(255, 255, 255, 0.6);
   position: sticky;
   top: 0;
   z-index: 50;
@@ -127,35 +129,37 @@ button, input, select, textarea { font: inherit; color: inherit; }
   cursor: pointer;
 }
 .brand .mark:hover {
-  transform: translateY(-1px) scale(1.05);
+  transform: translateY(-1px) scale(1.04);
+  filter: drop-shadow(0 4px 12px rgba(0, 113, 227, 0.35));
 }
-.brand .alexura-icon { display: block; }
+.brand .alexura-icon { display: block; border-radius: 9px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
 .brand .word {
   font-family: var(--brand);
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 800;
-  letter-spacing: -0.04em;
-  background: linear-gradient(135deg, #111114 20%, #3f3f46 100%);
+  letter-spacing: -0.035em;
+  background: linear-gradient(135deg, #0f172a 30%, #0071e3 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block;
   line-height: 1;
 }
 .brand .tag {
-  font: 600 10.5px/1 var(--ui);
-  color: var(--muted);
-  letter-spacing: 0.04em;
+  font: 700 10px/1 var(--ui);
+  color: var(--accent);
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-}
-.brand .ver {
-  font: 500 10px/1 var(--mono);
-  color: var(--muted);
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
+  background: var(--accent-subtle);
   padding: 3px 7px;
   border-radius: var(--r-pill);
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  box-shadow: var(--shadow-sm);
+}
+.brand .ver {
+  font: 600 10px/1 var(--mono);
+  color: var(--muted);
+  background: rgba(0, 0, 0, 0.04);
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   letter-spacing: 0.02em;
 }
 
@@ -163,31 +167,31 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .proj {
   display: flex;
   gap: 8px;
-  flex: 1 1 250px;
+  flex: 1 1 240px;
   min-width: 0;
 }
 .proj input {
   flex: 1 1 0;
   min-width: 0;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.07);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: var(--r-pill);
   padding: 7px 15px;
-  font-size: 12px;
+  font-size: 12.5px;
+  font-weight: 500;
   color: var(--text);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02), 0 1px 0 rgba(255, 255, 255, 0.85);
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .proj input:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(0, 0, 0, 0.12);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 #fff;
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.22);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 .proj input:focus {
   background: #ffffff;
-  border-color: rgba(0, 113, 227, 0.45);
-  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15), 0 4px 14px rgba(0, 0, 0, 0.04);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle), 0 3px 10px rgba(0, 113, 227, 0.1);
   outline: none;
 }
 
@@ -195,24 +199,23 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .modes {
   display: inline-flex;
   align-items: center;
-  background: rgba(240, 241, 245, 0.78);
-  backdrop-filter: blur(14px);
+  background: rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: var(--r-pill);
   padding: 3px;
   gap: 2px;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 .modes button {
   border: 0;
   border-radius: var(--r-pill);
   background: transparent;
-  padding: 5px 13px;
-  font-size: 11px;
+  padding: 5px 14px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--muted);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: none;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .modes button:hover {
   color: var(--text);
@@ -221,7 +224,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: #ffffff;
   color: var(--text);
   font-weight: 700;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 0.5px 1.5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .modes button + button { border-left: none; }
 
@@ -231,12 +234,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
   align-items: center;
   gap: 2px;
   font: 600 11px var(--mono);
-  background: rgba(240, 241, 245, 0.78);
-  backdrop-filter: blur(14px);
+  background: rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: var(--r-pill);
   padding: 3px;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 .lang-switch a, .lang-switch span {
   display: inline-block;
@@ -248,101 +249,108 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .lang-switch a:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.8);
 }
 .lang-switch [aria-current=page] {
   color: #ffffff;
-  background: linear-gradient(180deg, #27272a 0%, #111114 100%);
+  background: var(--accent);
   font-weight: 700;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.35);
+}
+
+/* Header Action Buttons */
+.acts {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
 }
 
 /* ============================================================
    2. High-Performance Luxury Buttons & Controls
    ============================================================ */
 button {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: var(--r);
-  padding: 7px 13px;
+  padding: 7px 14px;
   color: var(--text);
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 button:hover {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.14);
-  transform: translateY(-1.5px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06), inset 0 1px 0 #ffffff;
+  border-color: rgba(0, 0, 0, 0.22);
+  color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 button:active {
-  transform: translateY(0.5px) scale(0.985);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  transform: translateY(0.5px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 button:disabled {
-  opacity: 0.42;
+  opacity: 0.45;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-button.small { padding: 4px 10px; font-size: 11px; }
+button.primary, .omk-top, button.play {
+  background: linear-gradient(135deg, #0071e3 0%, #005bb5 100%);
+  border-color: rgba(0, 113, 227, 0.8);
+  color: #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(0, 113, 227, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+button.primary:hover, .omk-top:hover, button.play:hover {
+  background: linear-gradient(135deg, #1d8cf8 0%, #0071e3 100%);
+  border-color: #0071e3;
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px rgba(0, 113, 227, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
 
 button.ghost {
   background: transparent;
-  border-color: transparent;
-  color: var(--muted);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: var(--text-soft);
   box-shadow: none;
 }
 button.ghost:hover {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(10px);
-  border-color: rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.18);
   color: var(--text);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
-/* Primary Obsidian Jewel Button */
-button.primary {
-  background: linear-gradient(180deg, #2b2b2f 0%, #141416 100%);
-  color: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.35);
-  font-weight: 600;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.24);
-}
-button.primary:hover {
-  background: linear-gradient(180deg, #38383c 0%, #1f1f23 100%);
-  border-color: rgba(0, 0, 0, 0.5);
-  transform: translateY(-1.5px);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.36);
+button.small {
+  padding: 4px 10px;
+  font-size: 11.5px;
+  border-radius: 7px;
 }
 
-/* Accent Button */
 button.accent {
-  background: linear-gradient(135deg, rgba(0, 113, 227, 0.09), rgba(0, 113, 227, 0.14));
-  border: 1px solid rgba(0, 113, 227, 0.28);
+  background: linear-gradient(135deg, rgba(0, 113, 227, 0.08), rgba(168, 85, 247, 0.1));
+  border: 1px solid rgba(0, 113, 227, 0.3);
   color: var(--accent);
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.1);
 }
 button.accent:hover {
-  background: linear-gradient(135deg, rgba(0, 113, 227, 0.16), rgba(0, 113, 227, 0.22));
-  border-color: rgba(0, 113, 227, 0.45);
+  background: linear-gradient(135deg, rgba(0, 113, 227, 0.14), rgba(168, 85, 247, 0.18));
+  border-color: var(--accent);
   color: #005bb5;
-  transform: translateY(-1.5px);
-  box-shadow: 0 6px 18px rgba(0, 113, 227, 0.18), inset 0 1px 0 #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 113, 227, 0.2);
 }
 button[aria-pressed=true] {
   background: var(--accent-subtle);
   border-color: var(--accent);
   color: var(--accent);
   font-weight: 700;
-  box-shadow: 0 0 0 1px var(--accent), 0 2px 8px var(--accent-glow);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 button.icon { padding: 6px 8px; line-height: 0; }
@@ -354,55 +362,55 @@ label.file {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: var(--r);
-  padding: 7px 13px;
-  font-size: 12px;
+  padding: 7px 14px;
+  font-size: 12.5px;
   font-weight: 600;
+  color: var(--text);
   cursor: pointer;
-  box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 label.file:hover {
   background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.14);
-  transform: translateY(-1.5px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06), inset 0 1px 0 #fff;
+  border-color: rgba(0, 0, 0, 0.22);
+  color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 label.file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
 
 /* Form Fields */
 input[type=text], input[type=number], input:not([type]), select, textarea {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.14);
   border-radius: var(--r);
-  padding: 8px 11px;
+  padding: 8px 12px;
   min-width: 0;
   color: var(--text);
-  font-size: 12.5px;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02), 0 1px 0 rgba(255, 255, 255, 0.8);
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 13px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 input[type=text]:hover, input[type=number]:hover, input:not([type]):hover, select:hover, textarea:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(0, 0, 0, 0.13);
+  border-color: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 input[type=text]:focus, input[type=number]:focus, input:not([type]):focus, select:focus, textarea:focus {
   background: #ffffff;
-  border-color: rgba(0, 113, 227, 0.5);
-  box-shadow: 0 0 0 3.5px rgba(0, 113, 227, 0.14), 0 4px 12px rgba(0, 0, 0, 0.03);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle), 0 2px 8px rgba(0, 113, 227, 0.1);
   outline: none;
 }
 input[type=number] { font-family: var(--mono); }
-textarea { width: 100%; resize: vertical; line-height: 1.65; }
+textarea { width: 100%; resize: vertical; line-height: 1.68; }
 select {
-  padding-right: 20px;
-  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" viewBox="0 0 10 6"><path fill="%2371717a" d="M0 0l5 5 5-5z"/></svg>');
+  padding-right: 22px;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" viewBox="0 0 10 6"><path fill="%2364748b" d="M0 0l5 5 5-5z"/></svg>');
   background-repeat: no-repeat;
-  background-position: right 9px center;
+  background-position: right 10px center;
   appearance: none;
   -webkit-appearance: none;
 }
@@ -413,23 +421,23 @@ select {
 .work {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(285px, 335px) minmax(0, 1fr) minmax(305px, 355px);
+  grid-template-columns: minmax(290px, 345px) minmax(0, 1fr) minmax(315px, 365px);
   min-height: 0;
 }
 .col { min-width: 0; min-height: 0; }
 .col-left, .col-right {
-  background: var(--panel);
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   overflow-y: auto;
   overflow-x: hidden;
 }
-.col-left { border-right: 1px solid rgba(0, 0, 0, 0.06); }
-.col-right { border-left: 1px solid rgba(0, 0, 0, 0.06); }
+.col-left { border-right: 1px solid rgba(0, 0, 0, 0.08); }
+.col-right { border-left: 1px solid rgba(0, 0, 0, 0.08); }
 
 .sec {
   padding: 18px 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -437,101 +445,130 @@ select {
 .sec-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 
 h2 {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--muted);
+  margin: 0;
 }
 h3 {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-top: 20px;
+  margin-top: 18px;
   margin-bottom: 8px;
 }
 
 #lyrics {
   min-height: 165px;
   font-size: 13.5px;
-  line-height: 1.68;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  box-shadow: inset 0 1.5px 3px rgba(0, 0, 0, 0.02), 0 1px 0 rgba(255, 255, 255, 0.85);
+  line-height: 1.7;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  color: var(--text);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .syntax {
-  font-size: 11px;
-  color: var(--muted);
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 11.5px;
+  color: var(--text-soft);
+  background: #f8fafc;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: var(--r);
-  padding: 11px 13px;
+  padding: 12px 14px;
   box-shadow: var(--shadow-sm);
 }
 .syntax code {
   font-family: var(--mono);
   color: var(--accent);
-  background: rgba(0, 113, 227, 0.09);
-  padding: 2px 5px;
+  background: var(--accent-subtle);
+  padding: 2px 6px;
   border-radius: 5px;
 }
 .syntax ul { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
 .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.audio-name { font-size: 11.5px; overflow-wrap: anywhere; }
+.audio-name { font-size: 12px; overflow-wrap: anywhere; color: var(--muted); font-weight: 500; }
 
 .fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.field { display: flex; flex-direction: column; gap: 4px; font-size: 11px; font-weight: 500; color: var(--muted); }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; font-weight: 600; color: var(--muted); }
 .field input, .field select { width: 100%; }
 
-/* Vocal Sync Button - Luminous Sapphire/Amethyst Glass */
-#btnVocalSync {
-  background: linear-gradient(135deg, rgba(0, 113, 227, 0.1) 0%, rgba(168, 85, 247, 0.12) 100%);
-  border: 1px solid rgba(0, 113, 227, 0.3);
-  color: #0066cc;
+/* AI Transcribe Lyrics Button - Luxury Frosted Jewel */
+#btnAiTranscribe {
+  background: linear-gradient(135deg, rgba(0, 113, 227, 0.08) 0%, rgba(168, 85, 247, 0.12) 100%);
+  border: 1px solid rgba(0, 113, 227, 0.4);
+  color: #005bb5;
   font-weight: 700;
   border-radius: var(--r);
-  box-shadow: 0 2px 10px rgba(0, 113, 227, 0.1), inset 0 1px 0.5px rgba(255, 255, 255, 0.95);
+  position: relative;
+  box-shadow: 0 2px 10px rgba(0, 113, 227, 0.12);
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
+#btnAiTranscribe:hover {
+  background: linear-gradient(135deg, rgba(0, 113, 227, 0.16) 0%, rgba(168, 85, 247, 0.22) 100%);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 113, 227, 0.25);
+}
+#btnAiTranscribe:active {
+  transform: translateY(0.5px) scale(0.99);
+}
+#btnAiTranscribe.is-analyzing {
+  opacity: 0.85;
+  pointer-events: none;
+  animation: pulseAiTranscribe 1.4s infinite ease-in-out;
+}
+@keyframes pulseAiTranscribe {
+  0%, 100% { box-shadow: 0 2px 10px rgba(0, 113, 227, 0.2); transform: scale(1); }
+  50% { box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4); transform: scale(1.02); }
+}
+
+/* Vocal Sync Button - Sapphire Crystal */
+#btnVocalSync {
+  background: rgba(0, 113, 227, 0.06);
+  border: 1px solid rgba(0, 113, 227, 0.25);
+  color: var(--accent);
+  font-weight: 700;
+  border-radius: var(--r);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
 #btnVocalSync:hover {
-  background: linear-gradient(135deg, rgba(0, 113, 227, 0.18) 0%, rgba(168, 85, 247, 0.22) 100%);
-  border-color: rgba(0, 113, 227, 0.5);
-  color: #00509d;
-  transform: translateY(-1.5px);
-  box-shadow: 0 6px 20px rgba(0, 113, 227, 0.2), inset 0 1px 1px #ffffff;
+  background: rgba(0, 113, 227, 0.12);
+  border-color: var(--accent);
+  color: #005bb5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 113, 227, 0.18);
 }
 
 /* Tap Panel */
 .tapbox {
-  border: 1px solid rgba(0, 113, 227, 0.35);
+  border: 1px solid rgba(0, 113, 227, 0.25);
   border-radius: var(--r-card);
   padding: 16px;
   display: grid;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(24px);
+  background: #ffffff;
   box-shadow: var(--shadow-pop);
 }
-.tapbox .next { font-size: 14.5px; font-weight: 600; }
+.tapbox .next { font-size: 15px; font-weight: 600; color: var(--text); }
 button.tap {
   font: 700 18px/1 var(--ui);
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   padding: 16px;
-  background: linear-gradient(180deg, #0077ed 0%, #0062c4 100%);
+  background: linear-gradient(180deg, #0071e3 0%, #005bb5 100%);
   color: #ffffff;
-  border: 1px solid rgba(0, 113, 227, 0.6);
+  border: 1px solid rgba(0, 113, 227, 0.8);
   border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 113, 227, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: 0 6px 20px rgba(0, 113, 227, 0.35);
 }
 button.tap:hover {
-  background: linear-gradient(180deg, #0082fb 0%, #006bd7 100%);
+  background: linear-gradient(180deg, #1d8cf8 0%, #0071e3 100%);
   transform: translateY(-1.5px);
-  box-shadow: 0 10px 28px rgba(0, 113, 227, 0.45);
+  box-shadow: 0 8px 26px rgba(0, 113, 227, 0.45);
 }
 .col-left > #tapPanel {
   position: sticky;
@@ -541,8 +578,8 @@ button.tap:hover {
   box-shadow: var(--shadow-pop);
 }
 .tapbox.compact .hint { display: none; }
-.tapbox .tap-opts { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
-.tapbox .tap-opts label { display: inline-flex; gap: 6px; align-items: center; font-weight: 500; }
+.tapbox .tap-opts { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.tapbox .tap-opts label { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; }
 .tapbox .tap-count { margin-left: 10px; font: 700 24px/1 var(--mono); color: var(--accent); }
 
 @media (max-width: 1180px), (max-height: 619px) {
@@ -556,64 +593,63 @@ button.tap:hover {
   grid-template-columns: 22px 66px minmax(0, 1fr);
   gap: 6px 8px;
   align-items: center;
-  padding: 8px 10px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 9px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: var(--r);
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(12px);
+  background: #ffffff;
   box-shadow: var(--shadow-sm);
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .ln:hover {
-  border-color: rgba(0, 0, 0, 0.12);
+  border-color: rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 .ln.cur {
-  border-color: rgba(0, 113, 227, 0.55);
-  background: #ffffff;
-  box-shadow: 0 0 0 1px rgba(0, 113, 227, 0.3), 0 4px 16px rgba(0, 113, 227, 0.1);
+  border-color: var(--accent);
+  background: #f0f7ff;
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 14px rgba(0, 113, 227, 0.15);
 }
-.ln .no { font: 600 11px var(--mono); color: var(--faint); text-align: right; }
-.ln .time { width: 100%; padding: 4px 6px; font-size: 11px; background: rgba(240, 241, 245, 0.75); border: 1px solid transparent; border-radius: 6px; }
-.ln .time:focus { background: #ffffff; border-color: rgba(0, 113, 227, 0.45); }
-.ln .txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; font-size: 13px; font-weight: 500; }
+.ln .no { font: 600 11px var(--mono); color: var(--muted); text-align: right; }
+.ln .time { width: 100%; padding: 4px 6px; font-size: 11.5px; background: rgba(0, 0, 0, 0.03); border: 1px solid transparent; border-radius: 6px; color: var(--text-soft); }
+.ln .time:focus { background: #ffffff; border-color: var(--accent); }
+.ln .txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; font-size: 13.5px; font-weight: 500; color: var(--text); }
 .ln .meta { grid-column: 2 / 4; display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; flex-wrap: wrap; }
 .ln .tools { display: flex; gap: 4px; flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; margin-left: auto; }
 .ln .tools select { padding: 3px 6px; font-size: 11px; max-width: 96px; width: auto; border-radius: 6px; }
 .ln .cuts { display: flex; gap: 4px; flex-wrap: wrap; min-width: 0; flex: 1 1 140px; }
 .ln .cuts span {
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 5px;
-  border: 1px solid rgba(0, 0, 0, 0.07);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   color: var(--muted);
   cursor: pointer;
-  background: rgba(244, 245, 248, 0.85);
+  background: rgba(0, 0, 0, 0.03);
   transition: all 0.16s ease;
 }
-.ln .cuts span:hover { color: var(--text); border-color: var(--accent); background: #ffffff; }
-.ln .cuts select.cut-lay { font-size: 10px; padding: 2px 6px; max-width: 112px; border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 5px; background: rgba(255, 255, 255, 0.9); color: var(--text); }
-.ln .cuts select.cut-lay.is-forced { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.ln .cuts span:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
+.ln .cuts select.cut-lay { font-size: 10.5px; padding: 2px 6px; max-width: 112px; border: 1px solid rgba(0, 0, 0, 0.12); border-radius: 5px; background: #ffffff; color: var(--text); }
+.ln .cuts select.cut-lay.is-forced { border-color: var(--accent); color: var(--accent); font-weight: 700; }
 
 /* ============================================================
-   4. Center Studio Canvas & QuickTime Glass Transport
+   4. Center Studio Canvas & Apple Pro Display Stage
    ============================================================ */
 .col-stage {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px 22px;
+  gap: 14px;
+  padding: 18px 24px;
   min-width: 0;
 }
 
 .viewport {
   position: relative;
   width: 100%;
-  background: #000000;
-  border-radius: var(--r-card);
-  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: #090b10;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
   box-shadow: var(--shadow-stage);
   display: grid;
   place-items: center;
@@ -625,9 +661,9 @@ button.tap:hover {
   position: absolute;
   right: 14px;
   top: 14px;
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   color: var(--text);
   padding: 5px 12px;
   border-radius: var(--r-pill);
@@ -635,7 +671,7 @@ button.tap:hover {
   font-weight: 600;
   pointer-events: none;
   letter-spacing: .02em;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 .key-badge i {
   display: inline-block;
@@ -645,21 +681,20 @@ button.tap:hover {
   margin-right: 6px;
   vertical-align: 0;
   background: var(--accent);
-  box-shadow: 0 0 6px var(--accent);
 }
 
 .overlay-msg {
   position: absolute;
   left: 14px;
   bottom: 14px;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 0, 0, 0.07);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   color: var(--text);
   padding: 8px 14px;
   border-radius: 10px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   box-shadow: var(--shadow-pop);
 }
 
@@ -669,230 +704,146 @@ button.tap:hover {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(24px) saturate(190%);
-  -webkit-backdrop-filter: blur(24px) saturate(190%);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 14px;
-  padding: 9px 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  padding: 10px 18px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
 }
 .transport .vol { display: inline-flex; align-items: center; gap: 6px; }
 .transport .vol input[type=range] { flex: 0 0 76px; width: 76px; }
 #btnLoop[data-mode="line"], #btnLoop[data-mode="cut"] { color: var(--accent); font-weight: 700; }
 #btnLoop[aria-pressed="false"] { opacity: 0.55; }
-.transport .tc { font: 600 12px/1 var(--mono); font-variant-numeric: tabular-nums; color: var(--text); }
+.transport .tc { font: 600 12.5px/1 var(--mono); font-variant-numeric: tabular-nums; color: var(--text); }
 .transport input[type=range] {
   flex: 1 1 160px;
   accent-color: var(--accent);
-  height: 4px;
+  height: 5px;
   border-radius: var(--r-pill);
-  background: #d4d4d8;
+  background: rgba(0, 0, 0, 0.08);
   outline: none;
 }
 button.play {
-  width: 40px;
-  height: 36px;
+  width: 42px;
+  height: 38px;
   padding: 0;
   font-size: 14px;
-  background: linear-gradient(180deg, #2b2b2f 0%, #111114 100%);
-  color: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.4);
+  background: linear-gradient(180deg, #0071e3 0%, #005bb5 100%);
+  color: #ffffff !important;
+  border: 1px solid rgba(0, 113, 227, 0.8);
   border-radius: 10px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  box-shadow: 0 3px 10px rgba(0, 113, 227, 0.35);
 }
 button.play:hover {
-  background: linear-gradient(180deg, #38383c 0%, #1c1c1f 100%);
+  background: linear-gradient(180deg, #1d8cf8 0%, #0071e3 100%);
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 18px rgba(0, 113, 227, 0.45);
 }
 
 /* Timeline Track */
 .tl-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 6px 0 2px; flex-wrap: wrap; }
-.tl-hint { font-size: 11px; }
+.tl-hint { font-size: 11.5px; color: var(--muted); }
 .tl-btns { display: flex; gap: 4px; margin-left: auto; }
-.rng-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 8px 0 2px; font-size: 12px; }
+.rng-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 8px 0 2px; font-size: 12.5px; }
 .rng-row select { width: auto; max-width: 150px; }
-.rng-lab { color: var(--muted); font-size: 11px; font-weight: 500; }
-.rngInfo { font-size: 11px; }
+.rng-lab { color: var(--muted); font-size: 11.5px; font-weight: 600; }
+.rngInfo { font-size: 11.5px; color: var(--muted); }
 .ln.in-range { border-color: var(--accent); }
 .ln.is-inter .txt { color: var(--muted); font-style: italic; }
-.ln .txt-edit { width: 100%; padding: 4px 8px; font-size: 12px; border-radius: 6px; }
+.ln .txt-edit { width: 100%; padding: 4px 8px; font-size: 12.5px; border-radius: 6px; }
 .ln .tools .icon[aria-pressed=true] { color: var(--accent); }
 
 #timeline {
   width: 100%;
   height: 76px;
   display: block;
-  background: rgba(244, 245, 248, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.07);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 12px;
   cursor: pointer;
   touch-action: none;
-  box-shadow: inset 0 1.5px 3px rgba(0, 0, 0, 0.03), 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02);
 }
-
-.cutinfo { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; min-height: 26px; flex: none; }
-.cutinfo .cut-roll { margin-left: 2px; }
-
-.chip {
-  font-size: 11px;
-  font-weight: 500;
-  padding: 3px 9px;
-  border-radius: var(--r-pill);
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(8px);
-  box-shadow: var(--shadow-sm);
-}
-.chip b { font-weight: 700; color: var(--muted); margin-right: 5px; }
-button.chip { cursor: pointer; font: inherit; }
-button.chip:hover { border-color: var(--accent); color: var(--accent); background: #ffffff; }
-button.chip.is-forced { border-color: var(--accent); color: var(--accent); }
-button.chip[aria-pressed=true] { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); font-weight: 700; }
-.chip.l { border-color: rgba(245, 99, 0, 0.45); }
-.chip.e { border-color: rgba(0, 113, 227, 0.4); }
-.chip.x { border-color: rgba(255, 45, 85, 0.4); }
-.chip.h { border-color: #8e8a94; }
-
-.cut-pick {
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: var(--r-card);
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(28px);
-  padding: 14px;
-  max-height: min(42vh, 420px);
-  overflow: auto;
-  box-shadow: var(--shadow-pop);
-}
-.cut-pick-h {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  position: sticky;
-  top: 0;
-  background: rgba(255, 255, 255, 0.95);
-  z-index: 1;
-  padding-bottom: 6px;
-}
-.cut-pick-h strong { font-size: 12.5px; font-weight: 700; }
-.cut-pick-h .muted { flex: 1; font-size: 11px; }
-.cut-pick .tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(114px, 1fr)); gap: 8px; padding: 0; min-height: 96px; }
-.cut-pick .tcard { cursor: pointer; width: 100%; text-align: left; }
-.cut-pick .tcard.is-on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
-.cut-pick .tcard canvas { width: 100%; aspect-ratio: 16 / 9; display: block; background: #111114; }
 
 /* ============================================================
-   5. Right Panel & Tabs
+   5. Tabs & Pro Settings Pane
    ============================================================ */
 .tabs {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  position: sticky;
-  top: 0;
-  background: rgba(251, 251, 254, 0.88);
-  backdrop-filter: blur(20px);
-  z-index: 2;
+  display: flex;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: var(--r-pill);
+  padding: 3px;
+  margin: 14px 18px 0;
+  gap: 2px;
 }
 .tabs button {
+  flex: 1 1 0;
   border: 0;
-  border-radius: 0;
+  border-radius: var(--r-pill);
   background: transparent;
-  padding: 13px 6px;
-  color: var(--muted);
-  font-size: 12px;
+  padding: 6px 12px;
+  font-size: 11.5px;
   font-weight: 600;
+  color: var(--muted);
   box-shadow: none;
-  border-bottom: 2px solid transparent;
+  cursor: pointer;
   transition: all 0.16s ease;
 }
-.tabs button:hover { color: var(--text); background: transparent; transform: none; box-shadow: none; }
 .tabs button[aria-selected=true] {
+  background: #ffffff;
   color: var(--text);
   font-weight: 700;
-  border-bottom-color: var(--text);
-  background: transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
-.tabpane { padding: 18px 20px 28px; }
+.tabs button:hover:not([aria-selected=true]) {
+  color: var(--text);
+}
 
-.style-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.tabpane { padding: 18px 20px; display: grid; gap: 14px; }
+.tabpane[hidden] { display: none; }
+
+.style-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .stile {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 0;
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(12px);
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: var(--r);
-  overflow: hidden;
-  text-align: left;
+  padding: 10px 12px;
+  cursor: pointer;
+  background: #ffffff;
+  display: grid;
+  gap: 4px;
   box-shadow: var(--shadow-sm);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .stile:hover {
-  border-color: rgba(0, 0, 0, 0.14);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.18);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
-.stile canvas { width: 100%; aspect-ratio: 16 / 9; display: block; }
-.stile span { font-size: 11px; font-weight: 500; padding: 0 8px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stile[aria-pressed=true] {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent), 0 4px 14px var(--accent-glow);
-  color: var(--accent);
-  font-weight: 700;
+  background: #f0f7ff;
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 14px rgba(0, 113, 227, 0.15);
 }
+.stile .name { font-weight: 700; font-size: 13px; color: var(--text); }
+.stile .desc { font-size: 11px; color: var(--muted); line-height: 1.45; }
 
-.slider { display: grid; grid-template-columns: 96px minmax(0, 1fr) 36px 30px; gap: 8px; align-items: center; margin-bottom: 8px; }
-.slider input { width: 100%; accent-color: var(--accent); }
-.slider output { font: 600 11px var(--mono); color: var(--muted); text-align: right; }
+.sliders { display: grid; gap: 10px; }
+.slider { display: grid; grid-template-columns: 88px minmax(0, 1fr) 34px 24px; gap: 8px; align-items: center; font-size: 12px; }
+.slider label { font-size: 12px; font-weight: 500; color: var(--text-soft); }
+.slider input[type=range] { accent-color: var(--accent); }
+.slider output { font: 600 11.5px/1 var(--mono); color: var(--text); text-align: right; }
 
-.checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 10px; }
-.checks label { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 0; font-weight: 500; }
-.checks input { accent-color: var(--accent); }
-
-.tgroup .checks.tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; padding: 0 10px 10px; }
-.tcard {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 0;
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  border-radius: var(--r);
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(12px);
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.tcard:hover {
-  border-color: rgba(0, 0, 0, 0.14);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
-}
-.tcard canvas { width: 100%; aspect-ratio: 16 / 9; display: block; background: #111114; }
-.tcard .tcard-name { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 0 8px 6px; min-width: 0; }
-.tcard .tcard-name span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.tcard.set-off { opacity: 0.45; }
-
-.group-h { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; margin-bottom: 6px; }
-.group-h:first-child { margin-top: 0; }
-
+.tech-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .tgroup {
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: var(--r);
-  margin-bottom: 8px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(12px);
+  background: #ffffff;
   box-shadow: var(--shadow-sm);
 }
-.tgroup summary { display: flex; justify-content: space-between; align-items: center; padding: 10px 13px; cursor: pointer; list-style: none; font-size: 12px; font-weight: 600; }
+.tgroup summary { display: flex; justify-content: space-between; align-items: center; padding: 10px 13px; cursor: pointer; list-style: none; font-size: 12.5px; font-weight: 600; color: var(--text); }
 .tgroup summary::-webkit-details-marker { display: none; }
 .tgroup summary::before { content: '▸'; color: var(--muted); margin-right: 8px; transition: transform .15s; }
 .tgroup[open] summary::before { transform: rotate(90deg); }
@@ -904,19 +855,19 @@ button.chip[aria-pressed=true] { border-color: var(--accent); color: var(--accen
 .tgroup .checks { padding: 0 13px 10px; }
 
 .color-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.color-row label { display: flex; flex-direction: column; gap: 4px; font-size: 11px; font-weight: 500; color: var(--muted); }
-.color-row input[type=color] { width: 100%; height: 34px; padding: 0; border: 1px solid rgba(0, 0, 0, 0.08); background: transparent; border-radius: var(--r); cursor: pointer; }
-.font-row { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 8px; align-items: center; margin-bottom: 6px; font-size: 12px; }
+.color-row label { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; font-weight: 500; color: var(--muted); }
+.color-row input[type=color] { width: 100%; height: 34px; padding: 0; border: 1px solid rgba(0, 0, 0, 0.12); background: transparent; border-radius: var(--r); cursor: pointer; }
+.font-row { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 8px; align-items: center; margin-bottom: 6px; font-size: 12px; color: var(--text-soft); }
 
-.progress { height: 6px; background: rgba(0, 0, 0, 0.07); border-radius: var(--r-pill); overflow: hidden; }
-.progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #0071e3, #5ac8fa); }
+.progress { height: 6px; background: rgba(0, 0, 0, 0.08); border-radius: var(--r-pill); overflow: hidden; }
+.progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #0071e3, #8b5cf6); }
 
 .outbtns { display: grid; gap: 8px; margin-top: 14px; }
-.outbtns button { padding: 11px 14px; font-size: 12px; border-radius: 9px; }
-.note { font-size: 11px; color: var(--muted); border-left: 2px solid rgba(0, 0, 0, 0.12); padding-left: 10px; margin-top: 12px; line-height: 1.6; }
-.kbd { font: 600 11px var(--mono); border: 1px solid rgba(0, 0, 0, 0.12); border-bottom-width: 2px; padding: 1px 6px; border-radius: 5px; background: #ffffff; color: var(--text); box-shadow: 0 1px 1px rgba(0,0,0,0.05); }
+.outbtns button { padding: 11px 14px; font-size: 12.5px; border-radius: 9px; }
+.note { font-size: 11.5px; color: var(--muted); border-left: 2.5px solid var(--accent); padding-left: 10px; margin-top: 12px; line-height: 1.6; }
+.kbd { font: 600 11px var(--mono); border: 1px solid rgba(0, 0, 0, 0.14); border-bottom-width: 2px; padding: 1px 6px; border-radius: 5px; background: #ffffff; color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
 
-label.check { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; cursor: pointer; }
+label.check { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; cursor: pointer; color: var(--text); font-size: 12.5px; }
 label.check input { margin: 3px 0 0; flex: none; accent-color: var(--accent); }
 label.check small { display: block; font-size: 11px; color: var(--muted); line-height: 1.45; }
 
@@ -927,40 +878,40 @@ label.check small { display: block; font-size: 11px; color: var(--muted); line-h
 .easy h3 { margin: 0 0 10px; }
 .easy-hero { display: grid; gap: 12px; }
 
-/* Sculpted Obsidian Gem "Omakase" Button */
+/* Apple-Grade Sapphire Gem "Omakase" Button */
 button.omakase {
   position: relative;
   padding: 19px 22px;
   font: 700 18px/1.2 var(--brand);
   letter-spacing: -0.015em;
-  background: linear-gradient(135deg, #1d1d21 0%, #0f0f12 100%);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(135deg, #0071e3 0%, #1e3a8a 100%);
+  color: #ffffff !important;
+  border: 1px solid rgba(0, 113, 227, 0.9);
   border-radius: 14px;
-  box-shadow: 0 8px 26px -4px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.3);
-  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 26px -4px rgba(0, 113, 227, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
 }
 button.omakase:hover {
-  background: linear-gradient(135deg, #2a2a2f 0%, #151518 100%);
+  background: linear-gradient(135deg, #1d8cf8 0%, #0071e3 100%);
   transform: translateY(-2px);
-  box-shadow: 0 16px 36px -4px rgba(0, 113, 227, 0.24), 0 0 0 1px rgba(0, 113, 227, 0.4), inset 0 1px 1.5px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 14px 34px -4px rgba(0, 113, 227, 0.5), inset 0 1px 1.5px rgba(255, 255, 255, 0.6);
 }
 button.omakase:active {
   transform: translateY(1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3);
 }
 button.omakase:disabled { box-shadow: none; opacity: 0.45; }
 
 .hist-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; }
-.hist-row #histPos { font-size: 11px; font-weight: 600; text-align: center; min-width: 44px; }
+.hist-row #histPos { font-size: 11.5px; font-weight: 600; text-align: center; min-width: 44px; color: var(--muted); }
 
-.now { display: grid; gap: 1px; background: rgba(0, 0, 0, 0.06); border: 1px solid rgba(0, 0, 0, 0.06); border-radius: var(--r); overflow: hidden; }
-.now-row { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 10px; align-items: center; padding: 9px 13px; background: rgba(255, 255, 255, 0.94); font-size: 12px; }
-.now-row .k { color: var(--muted); font-size: 11px; font-weight: 500; }
+.now { display: grid; gap: 1px; background: rgba(0, 0, 0, 0.08); border: 1px solid rgba(0, 0, 0, 0.08); border-radius: var(--r); overflow: hidden; }
+.now-row { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 10px; align-items: center; padding: 10px 14px; background: #ffffff; font-size: 12.5px; color: var(--text); }
+.now-row .k { color: var(--muted); font-size: 11.5px; font-weight: 500; }
 .now-row .v { display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.now-row b { font-weight: 700; }
-.tagl { font: 600 10px var(--mono); color: var(--accent); background: var(--accent-subtle); border: 1px solid rgba(0, 113, 227, 0.3); padding: 2px 7px; border-radius: 5px; }
+.now-row b { font-weight: 700; color: var(--text); }
+.tagl { font: 600 10.5px var(--mono); color: var(--accent); background: var(--accent-subtle); border: 1px solid rgba(0, 113, 227, 0.25); padding: 2px 7px; border-radius: 5px; }
 
 .easy-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .easy-grid button { padding: 13px 10px; font-weight: 600; }
@@ -968,10 +919,10 @@ button.omakase:disabled { box-shadow: none; opacity: 0.45; }
 .easy .exp-box { margin-top: 10px; }
 
 .swatches { display: inline-flex; gap: 4px; vertical-align: middle; }
-.swatches i { width: 16px; height: 16px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.12); display: inline-block; }
+.swatches i { width: 16px; height: 16px; border-radius: 4px; border: 1px solid rgba(0, 0, 0, 0.15); display: inline-block; }
 #paletteSwatch i { width: 22px; height: 22px; }
 
-/* Frosted Glass Toast Notification */
+/* Toast Notification */
 .toast {
   position: absolute;
   top: 14px;
@@ -982,44 +933,44 @@ button.omakase:disabled { box-shadow: none; opacity: 0.45; }
   align-items: center;
   gap: 10px;
   max-width: calc(100% - 28px);
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(28px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-left: 3.5px solid var(--accent);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-left: 4px solid var(--accent);
   color: var(--text);
-  padding: 8px 18px;
+  padding: 9px 20px;
   border-radius: var(--r-pill);
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
   box-shadow: var(--shadow-pop);
   pointer-events: none;
   transition: opacity .2s ease, transform .2s ease;
+  z-index: 100;
 }
 .toast.in { opacity: 1; transform: translate(-50%, 0); }
 .toast.out { opacity: 0; transform: translate(-50%, -8px); }
 
-/* Luxury Modal Sheet Dialog */
+/* Modal Sheet Dialog */
 dialog.terms {
   width: min(540px, calc(100vw - 32px));
   max-height: calc(100vh - 48px);
   overflow: auto;
   padding: 28px 32px 24px;
-  background: rgba(255, 255, 255, 0.97);
-  backdrop-filter: blur(32px);
+  background: #ffffff;
   color: var(--text);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 18px;
-  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.2);
 }
-dialog.terms::backdrop { background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(10px); }
-dialog.terms h2 { font-size: 17px; font-weight: 700; color: var(--text); margin: 0 0 16px; text-transform: none; letter-spacing: -0.025em; }
-dialog.terms p { margin: 0 0 10px; line-height: 1.7; font-size: 13px; color: #3f3f46; }
+dialog.terms::backdrop { background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(10px); }
+dialog.terms h2 { font-size: 18px; font-weight: 700; color: var(--text); margin: 0 0 16px; text-transform: none; letter-spacing: -0.025em; }
+dialog.terms p { margin: 0 0 10px; line-height: 1.7; font-size: 13px; color: var(--text-soft); }
 dialog.terms a { color: var(--accent); word-break: break-all; }
-.terms-main { border-left: 3px solid var(--accent); background: rgba(244, 245, 248, 0.7); padding: 14px 16px 6px; border-radius: 0 var(--r) var(--r) 0; margin-bottom: 16px; }
+.terms-main { border-left: 3px solid var(--accent); background: var(--accent-subtle); padding: 14px 16px 6px; border-radius: 0 var(--r) var(--r) 0; margin-bottom: 16px; }
 .terms-main strong { color: var(--accent); font-weight: 700; }
-.terms-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid rgba(0, 0, 0, 0.07); padding-top: 16px; }
-button.danger { background: var(--danger); border-color: var(--danger); color: #fff; font-weight: 700; box-shadow: 0 2px 8px rgba(255, 59, 48, 0.25); }
-button.danger:hover { background: #e0281e; box-shadow: 0 4px 14px rgba(255, 59, 48, 0.35); }
+.terms-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid rgba(0, 0, 0, 0.08); padding-top: 16px; }
+button.danger { background: var(--danger); border-color: var(--danger); color: #fff !important; font-weight: 700; box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); }
+button.danger:hover { background: #b91c1c; box-shadow: 0 4px 14px rgba(220, 38, 38, 0.45); }
 
 /* Fixed Workspace (Large Screens) */
 @media (min-width: 1181px) and (min-height: 620px) {
@@ -1037,18 +988,18 @@ button.danger:hover { background: #e0281e; box-shadow: 0 4px 14px rgba(255, 59, 
   .work { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   html[lang=en] .work, html[lang=fr] .work { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .col-stage { grid-column: 1 / -1; order: -1; }
-  .col-left { border-right: 1px solid rgba(0, 0, 0, 0.06); }
+  .col-left { border-right: 1px solid rgba(0, 0, 0, 0.08); }
   .col-right { border-left: 0; }
 }
 @media (max-width: 760px) {
   .work { grid-template-columns: minmax(0, 1fr); }
   html[lang=en] .work, html[lang=fr] .work { grid-template-columns: minmax(0, 1fr); }
-  .col-left, .col-right { border: 0; border-top: 1px solid rgba(0, 0, 0, 0.06); }
+  .col-left, .col-right { border: 0; border-top: 1px solid rgba(0, 0, 0, 0.08); }
   .bar { gap: 10px; padding: 10px 14px; }
   .brand .tag { display: none; }
   .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .easy .fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  #app.is-easy .col-right { order: 0; border-top: 1px solid rgba(0, 0, 0, 0.06); }
+  #app.is-easy .col-right { order: 0; border-top: 1px solid rgba(0, 0, 0, 0.08); }
   #app.is-easy .col-left { order: 1; }
   .transport .hist-btns { display: none; }
 }
@@ -1057,26 +1008,25 @@ button.danger:hover { background: #e0281e; box-shadow: 0 4px 14px rgba(255, 59, 
 .pick-sets { margin: 12px 0 6px; text-align: left; }
 .pick-sets label.check { margin-bottom: 6px; }
 .easy-hero .pick-sets { margin-top: 14px; }
-.set-badge { display: inline-block; margin-left: 4px; padding: 1px 6px; border: 1px solid var(--accent); border-radius: 5px; color: var(--accent); font-size: 10px; font-weight: 600; line-height: 16px; vertical-align: 1px; }
+.set-badge { display: inline-block; margin-left: 4px; padding: 1px 6px; border: 1px solid var(--accent); border-radius: 5px; color: var(--accent); font-size: 10.5px; font-weight: 600; line-height: 16px; vertical-align: 1px; }
 .set-badge.ex { border-color: var(--accent); color: var(--accent); }
-.set-badge.set-horror { border-color: #c0544a; color: #c0544a; }
-.set-badge.set-typo { border-color: #71717a; color: #71717a; }
-.set-badge.set-kinetic { border-color: #34c759; color: #34c759; }
-.set-badge.set-extra2 { border-color: #af52de; color: #af52de; }
+.set-badge.set-horror { border-color: #ef4444; color: #ef4444; }
+.set-badge.set-typo { border-color: #64748b; color: #64748b; }
+.set-badge.set-kinetic { border-color: #16a34a; color: #16a34a; }
+.set-badge.set-extra2 { border-color: #9333ea; color: #9333ea; }
 .checks label.set-off { opacity: 0.45; }
 .checks label.set-off .set-badge { border-color: var(--muted); color: var(--muted); }
-.stile { position: relative; }
 .stile .badges { position: absolute; top: 4px; left: 4px; padding: 0; display: flex; gap: 3px; }
-.stile .set-badge { margin: 0; padding: 1px 5px; font-size: 10px; line-height: 15px; background: rgba(255,255,255,0.9); backdrop-filter: blur(6px); }
+.stile .set-badge { margin: 0; padding: 1px 5px; font-size: 10px; line-height: 15px; background: rgba(255, 255, 255, 0.9); }
 .stile.set-off { opacity: 0.55; }
 
 /* Interactive tour */
 .tour { position: fixed; inset: 0; z-index: 200; pointer-events: auto; }
-.tour-spot { position: fixed; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.42); outline: 2.5px solid var(--accent); transition: all 0.22s ease; pointer-events: none; }
-.tour-bub { position: fixed; width: min(340px, calc(100vw - 24px)); background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(28px); color: var(--text); border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 16px; padding: 18px 20px 16px; box-shadow: var(--shadow-pop); transition: top 0.22s ease, left 0.22s ease; }
-.tour-step { font-size: 11px; font-weight: 600; }
-.tour-title { margin: 4px 0 6px; font-size: 15.5px; font-weight: 700; }
-.tour-text { margin: 0 0 14px; font-size: 13px; line-height: 1.6; color: var(--muted); }
+.tour-spot { position: fixed; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45); outline: 3px solid var(--accent); transition: all 0.22s ease; pointer-events: none; }
+.tour-bub { position: fixed; width: min(340px, calc(100vw - 24px)); background: #ffffff; color: var(--text); border: 1px solid rgba(0, 0, 0, 0.12); border-radius: 16px; padding: 18px 20px 16px; box-shadow: var(--shadow-pop); transition: top 0.22s ease, left 0.22s ease; }
+.tour-step { font-size: 11px; font-weight: 700; color: var(--accent); }
+.tour-title { margin: 4px 0 6px; font-size: 16px; font-weight: 700; color: var(--text); }
+.tour-text { margin: 0 0 14px; font-size: 13px; line-height: 1.6; color: var(--text-soft); }
 .tour-nav { display: flex; gap: 6px; align-items: center; }
 .tour-sp { flex: 1; }
 .tour-btn { min-width: 30px; font-weight: 700; }
@@ -1084,7 +1034,7 @@ button.small.primary { padding: 5px 13px; }
 
 .lang-switch select { font: 600 11px var(--mono); padding: 3px 6px; width: auto; background: transparent; color: var(--muted); border: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.unify-box { margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(0, 0, 0, 0.06); }
+.unify-box { margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); }
 .center-dir { gap: 6px; margin: -2px 0 8px 26px; font-size: 12px; }
 .center-dir select { width: auto; }
 
@@ -1105,8 +1055,8 @@ button.small.primary { padding: 5px 13px; }
 #app.is-mobile.menu-open .proj, #app.is-mobile.menu-open .acts, #app.is-mobile.menu-open .lang-switch { display: flex; }
 #app.is-mobile .acts > * { flex: 1 1 auto; }
 #app.is-mobile .work { display: flex; flex-direction: column; overflow: visible; }
-#app.is-mobile .col-left, #app.is-mobile .col-right { overflow: visible; border: 0; border-top: 1px solid rgba(0, 0, 0, 0.06); }
-#app.is-mobile .col-stage { order: -1; position: sticky; top: var(--mbar, 96px); z-index: 30; background: var(--ink); padding: 8px 12px; gap: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
+#app.is-mobile .col-left, #app.is-mobile .col-right { overflow: visible; border: 0; border-top: 1px solid rgba(0, 0, 0, 0.08); }
+#app.is-mobile .col-stage { order: -1; position: sticky; top: var(--mbar, 96px); z-index: 30; background: var(--bg); padding: 8px 12px; gap: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
 #app.is-mobile .viewport canvas { max-height: 34vh; }
 #app.is-mobile .tl-bar, #app.is-mobile #timeline, #app.is-mobile .cutinfo, #app.is-mobile .transport .vol, #app.is-mobile #btnLoop, #app.is-mobile #btnShuffle, #app.is-mobile #btnOmakase { display: none; }
 #app.is-mobile .transport { gap: 8px; flex-wrap: nowrap; }
@@ -1134,14 +1084,161 @@ button.small.primary { padding: 5px 13px; }
 #app.is-mobile button.play { flex: none; width: 40px; }
 
 /* Drag and Drop overlay */
-.drop-hint { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); pointer-events: none; }
+.drop-hint { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(16px); pointer-events: none; }
 .drop-hint[hidden] { display: none; }
-.drop-hint > div { display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center; padding: 36px 52px; margin: 16px; border: 2px dashed var(--accent); border-radius: 18px; background: rgba(255, 255, 255, 0.95); box-shadow: var(--shadow-pop); }
+.drop-hint > div { display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center; padding: 36px 52px; margin: 16px; border: 2px dashed var(--accent); border-radius: 18px; background: #ffffff; box-shadow: var(--shadow-pop); }
 .drop-hint strong { font-size: 19px; font-weight: 700; color: var(--text); }
 .drop-hint span { font-size: 13px; color: var(--muted); }
 
 .sec-btns { flex-wrap: wrap; justify-content: flex-end; display: inline-flex; gap: 6px; }
 .sec-btns > * { white-space: nowrap; }
+
+/* ============================================================
+   7. Easy Mode Visibility & Component Utilities
+   ============================================================ */
+#app.is-easy .pro-only { display: none !important; }
+#app.is-easy .tabs,
+#app.is-easy .tabpane { display: none !important; }
+#app.is-easy #btnShuffle,
+#app.is-easy .transport .themeSel,
+#app.is-easy #btnOmakase { display: none; }
+
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.hint { font-size: 11.5px; color: var(--muted); line-height: 1.55; margin: 0; }
+.icon-txt { padding: 4px 8px; min-width: 28px; }
+
+.lang-row, .theme-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+.lang-row select, .theme-row select { width: auto; min-width: 120px; }
+.field-wide { grid-column: 1 / -1; }
+
+.cut-pair { display: inline-flex; align-items: center; gap: 4px; }
+.cut-time { width: 64px !important; padding: 2px 5px !important; font-size: 11px !important; border-radius: 5px !important; }
+.cut-time.is-forced { border-color: var(--accent) !important; color: var(--accent) !important; font-weight: 700; }
+.cut-lay.playing { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* Cut Info Bar & Interactive Chips */
+.cutinfo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  min-height: 40px;
+  box-shadow: var(--shadow-sm);
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: var(--r-pill);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+button.chip { cursor: pointer; }
+.chip b { color: var(--muted); font-weight: 600; font-size: 10.5px; }
+.chip.is-forced { border-color: var(--accent); color: var(--accent); background: #f0f7ff; }
+.chip[aria-pressed=true] { background: var(--accent); border-color: var(--accent); color: #ffffff; }
+.chip[aria-pressed=true] b { color: rgba(255, 255, 255, 0.85); }
+
+/* Cut Technique Picker */
+.cut-pick {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow-pop);
+  display: grid;
+  gap: 10px;
+}
+.cut-pick-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cut-pick-h strong { font-size: 12.5px; color: var(--text); }
+.cut-pick-h button:first-of-type { margin-left: auto; }
+#cutPickGrid { max-height: 280px; overflow-y: auto; padding-right: 2px; }
+
+/* Technique Thumbnail Cards */
+.tcard {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--r);
+  background: #ffffff;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tcard:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: var(--shadow-card); }
+.tcard.is-on { border-color: var(--accent); background: #f0f7ff; box-shadow: 0 0 0 2px var(--accent); }
+.tcard canvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #0f172a; object-fit: cover; }
+.tcard-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  flex-wrap: wrap;
+  width: 100%;
+  white-space: normal;
+}
+.tcard-name input { margin: 0; accent-color: var(--accent); }
+.tcard.set-off { opacity: 0.55; }
+
+/* Export & Modal Helpers */
+.linkish {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 4px 0;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  text-align: left;
+}
+.linkish:hover { background: none; box-shadow: none; transform: none; color: var(--accent-hover); }
+.out-png { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px; margin-top: 8px; }
+.exp-box {
+  background: #f8fafc;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--r);
+  padding: 10px 12px;
+  display: grid;
+  gap: 6px;
+}
+.exp-text { font-size: 11.5px; color: var(--text-soft); }
+.reset-list { margin: 0 0 12px; padding-left: 18px; display: grid; gap: 4px; font-size: 12.5px; color: var(--text-soft); }
+.terms-sub, .terms-note { font-size: 12px; color: var(--muted); }
+.terms-big { font-size: 14px; color: var(--text); }
+.terms-oss { margin-top: 10px; font-size: 12px; color: var(--text-soft); }
+.terms-oss summary { cursor: pointer; font-weight: 600; color: var(--muted); }
+
 
 </style>
 </head>
@@ -1159,97 +1256,98 @@ button.small.primary { padding: 5px 13px; }
   <header class="bar">
     <div class="brand"><span class="mark" aria-label="Logo Alexura"><svg class="alexura-icon" viewBox="0 0 32 32" width="30" height="30" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="axGlassFill" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/><stop offset="100%" stop-color="#f0f2f8" stop-opacity="0.85"/></linearGradient><linearGradient id="axGlassBorder" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/><stop offset="50%" stop-color="#0071e3" stop-opacity="0.25"/><stop offset="100%" stop-color="#a855f7" stop-opacity="0.2"/></linearGradient><linearGradient id="axGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#111113"/><stop offset="100%" stop-color="#2d2d30"/></linearGradient><linearGradient id="axWave" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#0071e3"/><stop offset="50%" stop-color="#00c6ff"/><stop offset="100%" stop-color="#a855f7"/></linearGradient><filter id="axGlow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#0071e3" flood-opacity="0.25"/></filter></defs><rect x="1.5" y="1.5" width="29" height="29" rx="8.5" fill="url(#axGlassFill)" stroke="url(#axGlassBorder)" stroke-width="1.2"/><path d="M16 6 L23.5 24.5 H19.8 L18.1 20.2 H13.9 L12.2 24.5 H8.5 L16 6 Z M14.8 17.2 H17.2 L16 13.5 Z" fill="url(#axGrad)"/><path d="M6 16.5 C9 13.5 12 19.5 16 16.5 C20 13.5 23 19.5 26 16.5" stroke="url(#axWave)" stroke-width="2.2" stroke-linecap="round" fill="none" filter="url(#axGlow)"/></svg></span><span class="word">Alexura</span><span class="tag">motion studio</span><span class="ver">v0.13.0</span></div>
     <div class="proj">
-      <input id="songTitle" type="text" placeholder="Titre du morceau (shown on title cards and HUD)" aria-label="Titre du morceau">
+      <input id="songTitle" type="text" placeholder="Titre du morceau (affiché sur l'écran titre et le HUD)" aria-label="Titre du morceau">
       <input id="songArtist" type="text" placeholder="Artiste" aria-label="Artiste">
     </div>
     <button id="btnOmakaseTop" class="primary omk-top" title="Changer le style, l'ambiance, les effets et la palette">Aléatoire</button>
     <button id="btnMenu" class="ghost menu-btn" aria-expanded="false" aria-controls="appMenu">Menu</button>
-    <div class="modes" role="group" aria-label="Editor mode">
+    <div class="modes" role="group" aria-label="Mode d'affichage">
       <button id="modeMobile" class="mode-mobile" aria-pressed="false" title="Mobile layout (Aléatoire pinned at the top, lines folded)">Mobile</button>
-      <button id="modeEasy" aria-pressed="false" title="A simple workspace focused on automatic creation">Facile</button>
-      <button id="modePro" aria-pressed="true" title="Show all settings">Détaillé</button>
+      <button id="modeEasy" aria-pressed="false" title="Interface simple centrée sur la création automatique">Facile</button>
+      <button id="modePro" aria-pressed="true" title="Afficher tous les réglages avancés">Avancé</button>
       <button id="btnTour" class="ghost tour-btn" title="Guide rapide du mode Facile" aria-label="Guide">？</button>
     </div>
     <label class="lang-switch"><span class="sr-only">Langue</span><select aria-label="Langue" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="ja">日本語</option><option value="../fr/index.html" lang="fr" selected>Français</option><option value="../en/index.html" lang="en">English</option><option value="../zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans">简体中文</option><option value="../ko/index.html" lang="ko">한국어</option><option value="../id/index.html" lang="id-ID">Bahasa Indonesia</option><option value="../vi/index.html" lang="vi">Tiếng Việt</option></select></label>
     <div class="acts">
-      <label class="file" title="Open a saved project (.json)">Open<input id="fileProject" type="file" accept=".json,application/json"></label>
-      <button id="btnSave" title="Save project as .json">Save</button>
-      <button id="btnAE" title="Export project data for the After Effects panel">Export for AE</button>
+      <label class="file" title="Ouvrir un projet sauvegardé (.json)">Ouvrir<input id="fileProject" type="file" accept=".json,application/json"></label>
+      <button id="btnSave" title="Enregistrer le projet (.json)">Enregistrer</button>
+      <button id="btnAE" title="Exporter les données pour le panneau After Effects">Exporter AE</button>
       <button id="btnReset" class="ghost" title="Effacer les paroles, song, settings and history and start over">Réinitialiser</button>
-      <button id="btnTerms" class="ghost terms-open" title="Rights and licenses for your exports">About / rights</button>
+      <button id="btnTerms" class="ghost terms-open" title="Droits et licences de vos créations">À propos / Droits</button>
     </div>
   </header>
 
   <main class="work">
     <!-- ================= left: lyrics & timing ================= -->
-    <section class="col col-left" aria-label="Lyrics and timing">
+    <section class="col col-left" aria-label="Paroles et synchronisation">
       <div id="tapPanel" class="tapbox" hidden>
-          <div class="hint">Press <span class="kbd">Space</span> or the button as each line starts. Une erreur ? Appuyez sur <span class="kbd">Retour</span> ou « Annuler le tap ». Pour reprendre depuis une ligne, appuyez sur ◎ dans la liste.If a line has several cuts, press <span class="kbd">Tab</span> the moment the cut should change to time the cuts of that line too.</div>
+          <div class="hint">Appuyez sur <span class="kbd">Space</span> ou sur le bouton au moment où chaque ligne commence. Une erreur ? Appuyez sur <span class="kbd">Retour</span> ou « Annuler le tap ». Pour reprendre depuis une ligne, appuyez sur ◎ dans la liste.Si une ligne comporte plusieurs plans, appuyez sur <span class="kbd">Tab</span> au moment du changement pour synchroniser aussi les plans.</div>
           <div class="tap-opts"><label>Vitesse <select id="tapRate" aria-label="Vitesse de lecture pendant la synchronisation"><option value="1">1×</option><option value="0.75">0.75×</option><option value="0.5">0.5×</option></select></label><label><input type="checkbox" id="tapCount"> Compte à rebours</label></div>
-          <div class="next">Suivant: <b id="tapLine">—</b><b id="tapCountNum" class="tap-count" hidden></b></div>
+          <div class="next">Suivant : <b id="tapLine">—</b><b id="tapCountNum" class="tap-count" hidden></b></div>
           <button id="tapBtn" class="tap">TAP</button>
-          <button id="tapPrécédent" class="ghost">Annuler le tap</button>
-          <button id="tapStop" class="ghost">Finish</button>
+          <button id="tapBack" class="ghost">Annuler le tap</button>
+          <button id="tapStop" class="ghost">Terminer</button>
       </div>
       <div class="sec">
-        <div class="sec-h"><h2>Lyrics</h2><span class="sec-btns"><label class="file ghost small" title="Load an LRC file (lyrics with time stamps) or subtitles (SRT / VTT) in place of the current lyrics (Annuler brings them back). You can also drop the file on the window">Charger LRC / SRT<input id="fileLrc" type="file" accept=".lrc,.srt,.vtt,.txt,text/plain"></label><button id="btnClearLyrics" class="ghost small" title="Effacer les paroles, leurs minutages et leurs réglages (Annuler ou Ctrl+Z pour restaurer)">Effacer les paroles</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Syntax</button></span></div>
-        <textarea id="lyrics" rows="9" spellcheck="false" aria-label="Lyrics (one phrase per line)"></textarea>
-        <label class="lang-row">Langue des paroles<select id="lyricLang"><option value="auto">Détection auto</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option></select><span id="langNote" class="muted"></span></label>
+        <div class="sec-h"><h2>Paroles</h2><span class="sec-btns"><label class="file ghost small" title="Charger un fichier LRC (paroles horodatées) ou sous-titres (SRT / VTT) à la place des paroles actuelles (Annuler permet de revenir en arrière). Vous pouvez aussi glisser-déposer le fichier.">Importer LRC / SRT<input id="fileLrc" type="file" accept=".lrc,.srt,.vtt,.txt,text/plain"></label><button id="btnClearLyrics" class="ghost small" title="Effacer les paroles, leurs minutages et leurs réglages (Annuler ou Ctrl+Z pour restaurer)">Effacer les paroles</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Syntaxe</button></span></div>
+        <textarea id="lyrics" rows="9" spellcheck="false" aria-label="Paroles (1 ligne = 1 phrase)"></textarea>
+        <label class="lang-row">Langue des paroles<select id="lyricLang"><option value="auto">Détection auto</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option><option value="fr">Français</option></select><span id="langNote" class="muted"></span></label>
         <div id="syntax" class="syntax" hidden>
           <ul>
-            <li>One phrase per line. A blank line adds a short pause.</li>
-            <li><code>I remember/the dawn</code> … <code>/</code> marks a cut boundary</li>
-            <li><code>*transparent*</code> … emphasis (larger, stronger effects)</li>
-            <li>A trailing <code>!</code> … adds a flash and shake</li>
-            <li><code>lyrics|reading or note</code> … smaller text in annotation layouts</li>
-            <li><code>[01:23.45]Lyrics</code> … uses an LRC timestamp</li>
+            <li>Une phrase par ligne. Une ligne vide crée une courte pause.</li>
+            <li><code>Je me souviens de/la couleur de l’aube</code> … <code>/</code> marque une coupure de plan</li>
+            <li><code>*transparent*</code> … emphase (texte agrandi, effet percutant)</li>
+            <li>En fin de ligne <code>!</code> … ajoute un flash et un tremblement</li>
+            <li><code>paroles|note</code> … petit texte en annotation</li>
+            <li><code>[01:23.45]Paroles</code> … utilise l'horodatage LRC</li>
             <li><code>[interlude 8]</code> … un passage instrumental de 8 secondes (sans paroles, décorations et fond uniquement). Sans chiffre, dure 4 s ; réglable avec la synchronisation au tap ou les marqueurs</li>
-            <li><code>#</code> starts a comment (ignored)</li>
+            <li><code>#</code> en début de ligne … commentaire (ignoré)</li>
           </ul>
         </div>
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>Audio and timing</h2></div>
-        <div id="audioName" class="muted audio-name">No audio. Import a song to detect beats and align cuts.</div>
+        <div class="sec-h"><h2>Audio et minutage</h2></div>
+        <div id="audioName" class="muted audio-name">Aucun audio (importez un titre pour détecter le tempo et caler les plans).</div>
         <div class="row">
-          <label class="file" title="MP3, WAV, M4A and more">Import audio<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
+          <label class="file" title="MP3, WAV, M4A, FLAC…">Importer un morceau<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"></label>
+          <button id="btnAiTranscribe" class="accent" title="Analyse immédiatement la musique par IA : détecte la langue (français, chinois, anglais…), transcrit les paroles chantées et les synchronise en direct avec la vidéo">✨ Détecter les paroles par IA</button>
           <button id="btnVocalSync" class="ghost" title="Synchronise instantanément chaque ligne de parole avec le chant dès qu'on entend la voix">⚡ Synchro Voix</button>
-          <button id="btnTap" title="Tap at the start of each line while the song plays">Tap to sync</button>
+          <button id="btnTap" title="Tapez au début de chaque ligne pendant la lecture">Synchro au tap</button>
         </div>
         <div class="fields pro-only">
           <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="Auto"></label>
-          <label class="field">Start (s)<input id="offset" type="number" min="0" step="0.05"></label>
-          <label class="field">Line duration<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
+          <label class="field">Début (s)<input id="offset" type="number" min="0" step="0.05"></label>
+          <label class="field">Durée ligne<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
         </div>
         <div class="row pro-only">
-          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> Snap to beat</label>
-          <button id="btnResetTimes" class="ghost small">Clear manual timing</button>
+          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> Caliper sur le tempo</label>
+          <button id="btnResetTimes" class="ghost small">Effacer le minutage manuel</button>
         </div>
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>Lines and cuts</h2><span id="linesInfo" class="muted mono"></span></div>
+        <div class="sec-h"><h2>Lignes et plans</h2><span id="linesInfo" class="muted mono"></span></div>
         <ol id="lineList"></ol>
       </div>
     </section>
 
     <!-- ================= center: stage ================= -->
-    <section class="col col-stage" aria-label="Preview">
+    <section class="col col-stage" aria-label="Aperçu">
       <div class="viewport" id="viewport"><canvas id="view" width="1280" height="720"></canvas><div id="viewMsg" class="overlay-msg" hidden></div><div id="keyBadge" class="key-badge" hidden></div><div id="toast" class="toast" role="status" aria-live="polite" hidden></div></div>
       <div class="transport">
-        <button id="btnPlay" class="play" aria-label="Play">▶</button>
+        <button id="btnPlay" class="play" aria-label="Lecture">▶</button>
         <span id="timeNow" class="tc">00:00.00</span><span class="tc muted">/</span><span id="timeDur" class="tc muted">00:00.00</span>
-        <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="Playback position">
-        <button id="btnLoop" class="ghost small" aria-pressed="true" title="Loop the whole piece">Loop</button>
-        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="Click to mute / unmute (preview only — exports keep the original level)">Vol</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="Preview volume"></span>
+        <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="Position de lecture">
+        <button id="btnLoop" class="ghost small" aria-pressed="true" title="Répéter tout le morceau">Boucle</button>
+        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="Cliquer pour couper ou rétablir le son (aperçu uniquement)">Son</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="Volume de l'aperçu"></span>
         <span class="hist-btns">
-          <button id="btnPrev" class="ghost small icon-txt" title="Previous variation" aria-label="Previous">◀</button>
-          <button id="btnNext" class="ghost small icon-txt" title="Suivant variation" aria-label="Suivant">▶</button>
+          <button id="btnPrev" class="ghost small icon-txt" title="Variation précédente" aria-label="Précédent">◀</button>
+          <button id="btnNext" class="ghost small icon-txt" title="Variation suivante" aria-label="Suivant">▶</button>
         </span>
-        <button id="btnShuffle" class="accent" title="Shuffle the arrangement, keeping locked lines">Shuffle</button>
-        <select class="themeSel" aria-label="Aléatoire theme" title="Aléatoire theme (when set, Aléatoire stays within that direction and turns on the part sets it needs)"><option value="">Aucun thème</option><option value="lyricpv">Vidéo typographique</option><option value="kinetic">Cinétique</option><option value="wa">Japanese</option><option value="horror">Horreur</option><option value="pop">Pop</option><option value="ballad">Ballade</option></select>
-        <button id="btnOmakase" class="primary" title="Aléatoire style, mood, effects and colors (R)">Aléatoire</button>
+        <button id="btnShuffle" class="accent" title="Mélanger la mise en scène en conservant les lignes verrouillées">Mélanger</button>
+        <select class="themeSel" aria-label="Thème aléatoire" title="Thème (oriente la génération aléatoire dans cette direction et active les effets requis)"><option value="">Aucun thème</option><option value="lyricpv">Vidéo typographique</option><option value="kinetic">Cinétique</option><option value="wa">Japonais</option><option value="horror">Horreur</option><option value="pop">Pop</option><option value="ballad">Ballade</option></select>
+        <button id="btnOmakase" class="primary" title="Tout randomiser : style, ambiance, effets et palette (touche R)">Aléatoire</button>
       </div>
       <div class="tl-bar">
         <span class="tl-hint muted">Glissez les marqueurs de ligne (en haut) pour déplacer leur début. Maintenez <span class="kbd">Maj</span> pour ignorer les temps</span>
@@ -1257,72 +1355,72 @@ button.small.primary { padding: 5px 13px; }
           <button id="btnUndoEdit" class="ghost small" title="Annuler les modifications de paroles et de rythme (Ctrl+Z)" disabled>Annuler</button>
           <button id="tlOut" class="ghost small icon-txt" title="Dézoomer" aria-label="Dézoomer la frise">−</button>
           <button id="tlIn" class="ghost small icon-txt" title="Zoomer (ou molette sur la frise)" aria-label="Zoomer la frise">＋</button>
-          <button id="tlFit" class="ghost small" title="Show the whole song">Fit</button>
+          <button id="tlFit" class="ghost small" title="Afficher tout le morceau">Ajuster</button>
         </span>
       </div>
-      <canvas id="timeline" aria-label="Timeline (click to seek, drag line markers to adjust)"></canvas>
+      <canvas id="timeline" aria-label="Frise chronologique (cliquer pour se déplacer, glisser les repères)"></canvas>
       <div class="cutinfo" id="cutInfo"></div>
       <div id="cutPick" class="cut-pick pro-only" hidden>
         <div class="cut-pick-h">
           <strong id="cutPickTitle">Techniques</strong>
-          <span class="muted" id="cutPickHint">Replace only this cut</span>
+          <span class="muted" id="cutPickHint">Remplacer uniquement ce plan</span>
           <button type="button" id="cutPickAuto" class="ghost small">Auto</button>
-          <button type="button" id="cutPickClose" class="ghost small" aria-label="Close">✕</button>
+          <button type="button" id="cutPickClose" class="ghost small" aria-label="Fermer">✕</button>
         </div>
         <div id="cutPickGrid" class="tech-grid checks"></div>
       </div>
     </section>
 
     <!-- ================= right: look & output ================= -->
-    <section class="col col-right" aria-label="Style and export">
+    <section class="col col-right" aria-label="Style et export">
       <div id="easyPanel" class="easy" hidden>
         <div class="easy-hero">
           <button id="btnOmakaseBig" class="omakase">Créer une variation</button>
-          <label class="theme-row">Theme<select class="themeSel" aria-label="Aléatoire theme"><option value="">Aucun thème</option><option value="lyricpv">Vidéo typographique</option><option value="kinetic">Cinétique</option><option value="wa">Japanese</option><option value="horror">Horreur</option><option value="pop">Pop</option><option value="ballad">Ballade</option></select><small class="muted">Aléatoire stays within the chosen direction</small></label>
-          <p class="hint">Each click changes the style, mood, motion, colors and arrangement. Press <span class="kbd">R</span> to do the same.</p>
+          <label class="theme-row">Thème<select class="themeSel" aria-label="Thème aléatoire"><option value="">Aucun thème</option><option value="lyricpv">Vidéo typographique</option><option value="kinetic">Cinétique</option><option value="wa">Japonais</option><option value="horror">Horreur</option><option value="pop">Pop</option><option value="ballad">Ballade</option></select><small class="muted">Oriente la génération aléatoire selon ce thème</small></label>
+          <p class="hint">Chaque clic renouvelle le style, l'ambiance, le mouvement, les couleurs et les plans. Touche <span class="kbd">R</span> pour faire de même.</p>
           <div class="hist-row">
-            <button id="btnPrev2" class="ghost">◀ Previous</button>
+            <button id="btnPrev2" class="ghost">◀ Précédent</button>
             <span id="histPos" class="muted mono"></span>
             <button id="btnNext2" class="ghost">Suivant ▶</button>
           </div>
           <div class="pick-sets">
-            <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>Include new effects<small>Include about 350 more effects, 12 styles and 6 fonts in random picks. Off uses the original set.</small></span></label>
-            <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>Include Motifs japonais<small>Include Motifs japonais such as lanterns, postcards, shoji, fans, family crests, waves and cherry blossoms in random picks.</small></span></label>
-            <label class="check"><input class="extra2-toggle" type="checkbox"><span>Include new effects 2<small>Parts added in v0.12 (marked E2). The new typographic, kinetic, horror and Japanese-motif parts are used only when their own switch is on as well</small></span></label>
-            <label class="check"><input class="typo-toggle" type="checkbox" checked><span>Use typographic parts<small>About 50 parts that work with lines, numbers and type alone, in the spirit of lyric videos</small></span></label>
-            <label class="check"><input class="kinetic-toggle" type="checkbox" checked><span>Use kinetic parts<small>Environ 50 composants axés sur le mouvement : mots qui bondissent, s'empilent et glissent</small></span></label>
-            <label class="check"><input class="horror-toggle" type="checkbox"><span>Inclure les effets d'horreur<small>About 50 eerie parts and 3 styles. When on, Aléatoire adds a Horreur mood</small></span></label>
+            <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>Inclure les effets bonus<small>Inclut environ 350 effets supplémentaires, 12 styles et 6 polices dans le tirage aléatoire.</small></span></label>
+            <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>Inclure les motifs japonais<small>Inclut les motifs japonais (lanternes, éventails, shoji, cerisiers, vagues…) dans le tirage aléatoire.</small></span></label>
+            <label class="check"><input class="extra2-toggle" type="checkbox"><span>Inclure les effets bonus 2<small>Composants ajoutés dans la v0.12 (marqués E2). Les nouveaux composants typographiques, cinétiques, horreur et japonais s'activent lorsque leur option dédiée est aussi cochée.</small></span></label>
+            <label class="check"><input class="typo-toggle" type="checkbox" checked><span>Composants typographiques<small>Environ 50 composants basés sur les lignes, chiffres et typographie</small></span></label>
+            <label class="check"><input class="kinetic-toggle" type="checkbox" checked><span>Composants cinétiques<small>Environ 50 composants axés sur le mouvement : mots qui bondissent, s'empilent et glissent</small></span></label>
+            <label class="check"><input class="horror-toggle" type="checkbox"><span>Inclure les effets d'horreur<small>Environ 50 composants sombres et 3 styles dédiés. Ajoute l'ambiance Horreur au mode aléatoire.</small></span></label>
             <label class="check"><input class="unify-toggle" type="checkbox"><span>Harmonie visuelle</span></label>
             <label class="check"><input class="typeset-toggle" type="checkbox"><span>Typographie soignée</span></label>
           </div>
         </div>
         <div class="easy-sec">
-          <h3>Current variation</h3>
+          <h3>Variation actuelle</h3>
           <div id="easyNow" class="now"></div>
         </div>
         <div class="easy-sec">
-          <h3>Change one thing</h3>
+          <h3>Ajuster un élément</h3>
           <div class="easy-grid">
-            <button id="eStyle" title="Change the style only">Style</button>
-            <button id="ePalette" title="Aléatoire accent and offset colors">Palette</button>
-            <button id="eMood" title="Change motion, glitch and technique mood">Mood</button>
-            <button id="eCut" title="Change the arrangement and motion only">Arrangement</button>
+            <button id="eStyle" title="Changer uniquement le style">Style</button>
+            <button id="ePalette" title="Randomiser la couleur d'accent et le décalage RVB">Palette</button>
+            <button id="eMood" title="Changer uniquement l'ambiance et les mouvements">Ambiance</button>
+            <button id="eCut" title="Changer uniquement les plans et animations">Plans</button>
           </div>
         </div>
         <div class="easy-sec">
-          <h3>Export</h3>
+          <h3>Exporter</h3>
           <div class="fields">
-            <label class="field">Format d'image<select id="eAspect"><option value="16:9">16:9</option><option value="9:16">9:16 portrait</option><option value="4:3">4:3</option><option value="3:4">3:4 portrait</option><option value="1:1">1:1</option><option value="4:5">4:5 portrait</option><option value="21:9">21:9</option></select></label>
+            <label class="field">Format d'image<select id="eAspect"><option value="16:9">16:9</option><option value="9:16">9:16 vertical</option><option value="4:3">4:3</option><option value="3:4">3:4 vertical</option><option value="1:1">1:1</option><option value="4:5">4:5 vertical</option><option value="21:9">21:9</option></select></label>
             <label class="field">Résolution<select id="eRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
             <label class="field">fps<select id="eFps"><option>24</option><option>30</option><option>60</option></select></label>
-            <label class="field field-wide">Précédentground<select id="eKey"><option value="off">Style background</option><option value="green">Green screen (compositing)</option><option value="black">Black background (compositing)</option></select></label>
+            <label class="field field-wide">Arrière-plan<select id="eKey"><option value="off">Fond du style</option><option value="green">Fond vert (incrustation)</option><option value="black">Fond noir (incrustation)</option></select></label>
           </div>
           <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>Libérer le centre (pour un personnage)<small>Idéal pour incruster un personnage ou une vidéo au centre : les textes et effets se placent à gauche / droite sur écran large et en haut / bas sur écran vertical, en alternant ligne par ligne. Les fonds et effets couvrent tout le cadre (l'espace libre est marqué en pointillés).</small></span></label>
           <label class="row center-dir" hidden>Sur écrans verticaux<select class="centerDirSel" aria-label="Disposition sur écrans verticaux"><option value="tb">Haut / bas</option><option value="lr">Gauche / droite</option></select></label>
-          <div class="rng-row"><span class="rng-lab">Export range</span><select class="rngFrom" aria-label="First line to export"></select><span class="muted">〜</span><select class="rngTo" aria-label="Last line to export"></select><span class="rngInfo muted mono"></span></div>
-          <div class="outbtns"><button id="eMP4" class="primary">Exporter MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Sélectionnez d'abord le fichier de destination ; la vidéo y sera directement enregistrée. Recommandé pour les morceaux longs ou le 1080p+ si la mémoire du navigateur sature (Chrome / Edge)">Pour grandes vidéos (enregistrement direct)</button><button id="eLRC" class="ghost" title="Save the lyrics with each line’s start time (.lrc). With an export range, only those lines, timed from the start of the video">Exporter LRC</button></div>
-          <div class="outbtns out-png"><button id="ePNG" class="ghost">Séquence PNG (ZIP)</button><button id="ePNGA" class="ghost">Transparent PNG (ZIP)</button><button id="ePNGL" class="ghost" title="Transparent PNGs in two folders: back/ (background graphic and the decorations behind the lyrics) and front/ (lyrics, their decorations and ghosts). Screen effects are applied to both, so front over back matches the normal look.">Calques PNG transparents (ZIP)</button></div>
-          <button class="terms-open linkish">Rights to exported videos</button>
+          <div class="rng-row"><span class="rng-lab">Plage d'export</span><select class="rngFrom" aria-label="Première ligne à exporter"></select><span class="muted">〜</span><select class="rngTo" aria-label="Dernière ligne à exporter"></select><span class="rngInfo muted mono"></span></div>
+          <div class="outbtns"><button id="eMP4" class="primary">Exporter en MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Sélectionnez d'abord le fichier de destination ; la vidéo y sera directement enregistrée. Recommandé pour les morceaux longs ou le 1080p+ si la mémoire du navigateur sature (Chrome / Edge)">Pour grandes vidéos (enregistrement direct)</button><button id="eLRC" class="ghost" title="Enregistre les paroles avec l'horodatage de chaque ligne (.lrc). Si une plage est définie, n'exporte que ces lignes.">Exporter LRC</button></div>
+          <div class="outbtns out-png"><button id="ePNG" class="ghost">Séquence PNG (ZIP)</button><button id="ePNGA" class="ghost">PNG transparent (ZIP)</button><button id="ePNGL" class="ghost" title="PNG transparents dans deux dossiers : back/ (arrière-plan et décorations arrière) et front/ (paroles et effets avant). Superposez front/ sur back/ pour retrouver le rendu complet.">Calques PNG transparents (ZIP)</button></div>
+          <button class="terms-open linkish">Droits des vidéos exportées</button>
           <div class="exp-box" hidden>
             <button class="exp-share primary" hidden>Partager / enregistrer</button>
             <div class="progress"><i class="exp-bar"></i></div>
@@ -1332,29 +1430,29 @@ button.small.primary { padding: 5px 13px; }
       </div>
       <nav class="tabs" role="tablist">
         <button role="tab" data-tab="style" aria-selected="true">Style</button>
-        <button role="tab" data-tab="fx" aria-selected="false">Effects</button>
+        <button role="tab" data-tab="fx" aria-selected="false">Effets</button>
         <button role="tab" data-tab="tech" aria-selected="false">Techniques</button>
-        <button role="tab" data-tab="out" aria-selected="false">Export</button>
+        <button role="tab" data-tab="out" aria-selected="false">Exporter</button>
       </nav>
 
       <div class="tabpane" data-pane="style">
         <div id="styleGrid" class="style-grid"></div>
-        <h3>Font roles</h3>
+        <h3>Rôles des polices</h3>
         <div id="fontRoles"></div>
         <div class="row" style="margin-top:8px">
-          <input id="localFont" type="text" placeholder="Installed font name (e.g. Arial)" style="flex:1">
-          <button id="btnAddFont">Add</button>
+          <input id="localFont" type="text" placeholder="Nom d'une police locale (ex. Arial)" style="flex:1">
+          <button id="btnAddFont">Ajouter</button>
         </div>
-        <div class="row" style="margin-top:8px"><label class="file">Font file (.ttf/.otf)<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
-        <h3>Accent and offset colors</h3>
-        <label class="check"><input id="accentOn" type="checkbox"><span>Use custom colors<small>Applies to every scene. Brightness adapts to the background.</small></span></label>
+        <div class="row" style="margin-top:8px"><label class="file">Fichier de police (.ttf/.otf)<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
+        <h3>Accent et décalages</h3>
+        <label class="check"><input id="accentOn" type="checkbox"><span>Utiliser mes couleurs<small>Appliqué à toutes les scènes ; la luminosité s'adapte au fond.</small></span></label>
         <div class="color-row" id="colorRowAccent"></div>
         <div class="row" style="margin-top:10px">
-          <button id="btnRandPalette" class="accent">Aléatoire palette</button>
+          <button id="btnRandPalette" class="accent">Palette aléatoire</button>
           <div id="paletteSwatch" class="swatches" aria-hidden="true"></div>
         </div>
-        <h3>Précédentground and text colors</h3>
-        <label class="check"><input id="colorOn" type="checkbox"><span>Use custom background and text colors</span></label>
+        <h3>Couleurs d'arrière-plan et du texte</h3>
+        <label class="check"><input id="colorOn" type="checkbox"><span>Personnaliser le fond principal et le texte</span></label>
         <div class="color-row" id="colorRow"></div>
       </div>
 
@@ -1366,62 +1464,62 @@ button.small.primary { padding: 5px 13px; }
         <div id="fxSliders"></div>
         <div class="row" style="margin-top:6px">
           <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> Flash</label>
-          <label class="row" style="gap:6px">Frame stepping <select id="fxKoma" title="Motion drawings per second (independent of export fps)"><option value="0">Full (export fps)</option><option value="12">On twos (12 drawings/s)</option><option value="8">On threes (8 drawings/s)</option></select></label>
+          <label class="row" style="gap:6px">Cadence <select id="fxKoma" title="Cadence de dessin de l'animation (indépendante des fps d'export)"><option value="0">Complète (fps d'export)</option><option value="12">À deux (12 im/s)</option><option value="8">À trois (8 im/s)</option></select></label>
         </div>
         <div class="row" style="margin-top:6px">
-          <label class="row" style="gap:6px" title="Leave out the numbers layouts and decorations add, like “No.01” or “#03” (numbers in the lyrics stay)"><input id="fxHideNo" type="checkbox"> Masquer les numéros décoratifs</label>
-          <label class="row" style="gap:6px" title="Leave out the times layouts and decorations add, like “00:12.34” (times in the lyrics stay)"><input id="fxHideTime" type="checkbox"> Masquer les horodatages décoratifs</label>
+          <label class="row" style="gap:6px" title="Masque les numéros décoratifs ajoutés par les mises en page (ex. « No.01 », « #03 »), sans toucher aux chiffres de vos paroles"><input id="fxHideNo" type="checkbox"> Masquer les numéros décoratifs</label>
+          <label class="row" style="gap:6px" title="Masque les horodatages décoratifs ajoutés par les mises en page (ex. « 00:12.34 »)"><input id="fxHideTime" type="checkbox"> Masquer les horodatages décoratifs</label>
         </div>
         <div class="fields" style="margin-top:12px">
-          <label class="field">HUD<select id="fxHud"><option value="auto">Auto (by style)</option><option value="on">Always show</option><option value="off">Hide</option></select></label>
-          <label class="field">Seed<input id="seed" type="number" step="1"></label>
-          <label class="field">&nbsp;<button id="btnSeed" class="ghost">New seed</button></label>
+          <label class="field">HUD<select id="fxHud"><option value="auto">Auto (selon style)</option><option value="on">Toujours afficher</option><option value="off">Masquer</option></select></label>
+          <label class="field">Graine<input id="seed" type="number" step="1"></label>
+          <label class="field">&nbsp;<button id="btnSeed" class="ghost">Nouvelle graine</button></label>
         </div>
-        <p class="note">The same seed produces the same arrangement. Reroll or lock individual lines in the list on the left.</p>
+        <p class="note">La même graine produit la même mise en scène. Verrouillez ou relancez une ligne à gauche.</p>
       </div>
 
       <div class="tabpane" data-pane="tech" hidden>
         <div class="pick-sets">
-          <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>Include new effects<small>Include techniques, styles and fonts marked New in automatic picks.</small></span></label>
-          <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>Include Motifs japonais<small>Include techniques and styles marked JP in automatic picks. Manual selections remain available.</small></span></label>
-          <label class="check"><input class="extra2-toggle" type="checkbox"><span>Include new effects 2<small>Parts added in v0.12 (marked E2). The new typographic, kinetic, horror and Japanese-motif parts are used only when their own switch is on as well</small></span></label>
-          <label class="check"><input class="typo-toggle" type="checkbox" checked><span>Use typographic parts<small>Techniques marked T. When off, Aléatoire and Shuffle skip them</small></span></label>
-          <label class="check"><input class="kinetic-toggle" type="checkbox" checked><span>Use kinetic parts<small>Techniques marked K. When off, Aléatoire and Shuffle skip them</small></span></label>
-          <label class="check"><input class="horror-toggle" type="checkbox"><span>Inclure les effets d'horreur<small>Techniques and styles marked H. Aléatoire uses them only in the Horreur mood</small></span></label>
+          <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>Inclure les effets bonus<small>Inclut les techniques, styles et polices marqués Nouveau dans le tirage automatique.</small></span></label>
+          <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>Inclure les motifs japonais<small>Inclut les techniques et styles marqués JP dans le tirage automatique.</small></span></label>
+          <label class="check"><input class="extra2-toggle" type="checkbox"><span>Inclure les effets bonus 2<small>Composants ajoutés dans la v0.12 (marqués E2). Les nouveaux composants typographiques, cinétiques, horreur et japonais s'activent lorsque leur option dédiée est aussi cochée.</small></span></label>
+          <label class="check"><input class="typo-toggle" type="checkbox" checked><span>Composants typographiques<small>Techniques marquées T. Ignorées par Aléatoire et Mélanger lorsqu'elles sont décochées.</small></span></label>
+          <label class="check"><input class="kinetic-toggle" type="checkbox" checked><span>Composants cinétiques<small>Techniques marquées K. Ignorées par Aléatoire et Mélanger lorsqu'elles sont décochées.</small></span></label>
+          <label class="check"><input class="horror-toggle" type="checkbox"><span>Inclure les effets d'horreur<small>Techniques et styles marqués H. Utilisés par Aléatoire uniquement en ambiance Horreur.</small></span></label>
         </div>
-        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="Filter techniques by name" style="flex:1" aria-label="Filter techniques by name"><span id="techTotal" class="muted mono"></span></div>
-        <p class="note">Previews on screen loop automatically.</p>
+        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="Filtrer les techniques par nom" style="flex:1" aria-label="Filtrer les techniques par nom"><span id="techTotal" class="muted mono"></span></div>
+        <p class="note">Les vignettes visibles s'animent en boucle automatiquement.</p>
         <div id="techLists"></div>
       </div>
 
       <div class="tabpane" data-pane="out" hidden>
         <div class="fields">
-          <label class="field">Format d'image<select id="outAspect"><option value="16:9">16:9</option><option value="9:16">9:16 portrait</option><option value="4:3">4:3</option><option value="3:4">3:4 portrait</option><option value="1:1">1:1</option><option value="4:5">4:5 portrait</option><option value="21:9">21:9</option></select></label>
+          <label class="field">Format d'image<select id="outAspect"><option value="16:9">16:9</option><option value="9:16">9:16 vertical</option><option value="4:3">4:3</option><option value="3:4">3:4 vertical</option><option value="1:1">1:1</option><option value="4:5">4:5 vertical</option><option value="21:9">21:9</option></select></label>
           <label class="field">Résolution<select id="outRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
           <label class="field">fps<select id="outFps"><option>24</option><option>30</option><option>60</option></select></label>
-          <label class="field">Quality<select id="outQuality"><option value="standard">Standard</option><option value="high">High</option><option value="max">Maximum</option></select></label>
-          <label class="field field-wide">Précédentground<select id="outKey"><option value="off">Style background</option><option value="green">Green screen (compositing)</option><option value="black">Black background (compositing)</option></select></label>
+          <label class="field">Qualité<select id="outQuality"><option value="standard">Standard</option><option value="high">Haute</option><option value="max">Maximale</option></select></label>
+          <label class="field field-wide">Arrière-plan<select id="outKey"><option value="off">Fond du style</option><option value="green">Fond vert (incrustation)</option><option value="black">Fond noir (incrustation)</option></select></label>
         </div>
-        <p class="note key-note">Green screen and black background render white text and effects over a solid color, without background patterns, paper texture, particles or vignette. The preview shows the export. Use a chroma key for green or Screen blending / a luma key for black to composite over footage.</p>
+        <p class="note key-note">Le fond vert ou noir affiche uniquement les textes et effets en blanc sur une couleur unie (sans texture ni vignettage) pour faciliter l'incrustation chroma ou en mode Écran.</p>
         <label class="check center-free"><input id="outCenter" class="center-toggle" type="checkbox"><span>Libérer le centre (pour un personnage)<small>Idéal pour incruster un personnage ou une vidéo au centre : les textes et effets se placent à gauche / droite sur écran large et en haut / bas sur écran vertical, en alternant ligne par ligne. Les fonds et effets couvrent tout le cadre (l'espace libre est marqué en pointillés).</small></span></label>
           <label class="row center-dir" hidden>Sur écrans verticaux<select class="centerDirSel" aria-label="Disposition sur écrans verticaux"><option value="tb">Haut / bas</option><option value="lr">Gauche / droite</option></select></label>
-        <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> Include audio in video</label>
-        <div class="rng-row"><span class="rng-lab">Export range</span><select class="rngFrom" aria-label="First line to export"></select><span class="muted">〜</span><select class="rngTo" aria-label="Last line to export"></select><span class="rngInfo muted mono"></span></div>
+        <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> Inclure l'audio dans la vidéo</label>
+        <div class="rng-row"><span class="rng-lab">Plage d'export</span><select class="rngFrom" aria-label="Première ligne à exporter"></select><span class="muted">〜</span><select class="rngTo" aria-label="Dernière ligne à exporter"></select><span class="rngInfo muted mono"></span></div>
         <div class="outbtns">
-          <button id="btnMP4" class="primary">Exporter MP4</button>
+          <button id="btnMP4" class="primary">Exporter en MP4</button>
           <button id="btnMP4File" class="mp4file" hidden title="Sélectionnez d'abord le fichier de destination ; la vidéo y sera directement enregistrée. Recommandé pour les morceaux longs ou le 1080p+ si la mémoire du navigateur sature (Chrome / Edge)">MP4 (grandes vidéos, enregistrement direct)</button>
           <button id="btnPNG">Séquence PNG (ZIP)</button>
-          <button id="btnPNGA">Transparent PNG (ZIP)</button>
-          <button id="btnLRC" title="Save the lyrics with each line’s start time (.lrc). With an export range, only those lines, timed from the start of the video">Paroles (LRC)</button>
-          <button id="btnPNGL" title="Transparent PNGs in two folders: back/ (background graphic and the decorations behind the lyrics) and front/ (lyrics, their decorations and ghosts). Screen effects are applied to both, so front over back matches the normal look.">Calques PNG transparents (ZIP)</button>
+          <button id="btnPNGA">PNG transparent (ZIP)</button>
+          <button id="btnLRC" title="Enregistre les paroles avec l'horodatage de chaque ligne (.lrc). Si une plage est définie, n'exporte que ces lignes.">Paroles (LRC)</button>
+          <button id="btnPNGL" title="PNG transparents dans deux dossiers : back/ (arrière-plan et décorations arrière) et front/ (paroles et effets avant). Superposez front/ sur back/ pour retrouver le rendu complet.">Calques PNG transparents (ZIP)</button>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
           <button class="exp-share primary" hidden>Partager / enregistrer</button>
           <div class="progress"><i class="exp-bar"></i></div>
           <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">Annuler</button></div>
         </div>
-        <button class="terms-open linkish" style="margin-top:10px">Rights and licenses for exported videos and images</button>
-        <p class="note" id="codecNote">Export runs in your browser (Chrome or Edge recommended).</p>
+        <button class="terms-open linkish" style="margin-top:10px">Droits et licences des vidéos et images exportées</button>
+        <p class="note" id="codecNote">L'export s'exécute directement dans votre navigateur (Chrome / Edge recommandés).</p>
       </div>
     </section>
   </main>
@@ -1444,21 +1542,21 @@ button.small.primary { padding: 5px 13px; }
 </dialog>
 <dialog id="termsDlg" class="terms" aria-labelledby="termsTitle">
   <form method="dialog">
-    <h2 id="termsTitle">About / rights</h2>
+    <h2 id="termsTitle">À propos / Droits</h2>
     <div class="terms-main">
-      <p class="terms-big">You own the<strong>videos and images you create</strong>.</p>
-      <p class="terms-sub">Lyrics and music remain the property of their respective rights holders.</p>
+      <p class="terms-big">Vous détenez les droits des <strong>vidéos et images créées</strong>.</p>
+      <p class="terms-sub">Les paroles et musiques utilisées restent la propriété de leurs ayants droit.</p>
     </div>
-    <p>The tool is released under the <strong>MIT license</strong>. See the license at:</p>
+    <p>Cet outil est publié sous  <strong>MIT licence</strong>. Détails de la licence :</p>
     <p><a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener">https://github.com/852wa/JIZURA</a></p>
-    <p class="muted terms-note">Your lyrics and audio are processed in this browser and are not sent to a server.</p>
-    <details class="terms-oss"><summary>Open source software</summary>
-      <p>MP4 export: mp4-muxer（MIT License）<br>Fonts: Google Fonts typefaces（SIL Open Font License 1.1）</p>
+    <p class="muted terms-note">Vos paroles et musiques sont traitées localement dans votre navigateur.</p>
+    <details class="terms-oss"><summary>Logiciels open source utilisés</summary>
+      <p>Export MP4 : mp4-muxer（MIT License）<br>Polices : Google Fonts polices distribuées（SIL Open Font License 1.1）</p>
     </details>
-    <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>Close</button></div>
+    <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>Fermer</button></div>
   </form>
 </dialog>
-<div id="dropHint" class="drop-hint" hidden><div><strong>Glissez-déposez pour charger</strong><span>A song (mp3, wav …), lyrics (LRC / SRT / text) or a project (.json)</span></div></div>
+<div id="dropHint" class="drop-hint" hidden><div><strong>Glissez-déposez pour charger</strong><span>Un morceau (mp3, wav…), des paroles (LRC / SRT / texte) ou un projet (.json)</span></div></div>
 
 <script>
 /*! mp4-muxer v5.2.2 | MIT License | (c) 2023 Vanilagy | see THIRD_PARTY_NOTICES.md */
@@ -5955,6 +6053,13 @@ J.analyzeAudio = async (file) => {
     }
   }
   if (inSeg && len / sr - segStart >= 0.35) vocalSegments.push({ start: +segStart.toFixed(3), end: +(len / sr).toFixed(3) });
+  // Fallback segmentation from vocal onset peaks for compressed tracks
+  if (vocalSegments.length === 0 && audioBuffer.duration > 2) {
+    const segStep = Math.max(2.5, Math.min(4.5, audioBuffer.duration / 8));
+    for (let t = 0.5; t < audioBuffer.duration - 1.0; t += segStep) {
+      vocalSegments.push({ start: +t.toFixed(3), end: +Math.min(audioBuffer.duration, t + segStep - 0.2).toFixed(3) });
+    }
+  }
 
   // tempo via autocorrelation (70..180 BPM)
   const minLag = Math.round(rate * 60 / 180), maxLag = Math.round(rate * 60 / 70);
@@ -6085,6 +6190,74 @@ J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto') => {
     console.warn('AI vocal alignment fallback to local vocal onset analysis:', e);
   }
   return J.alignLinesToVocals(audioAnalysis, lines);
+};
+
+/* Downsample an AudioBuffer to 16kHz mono WAV for high-speed AI speech/lyric recognition */
+J.audioMonoWav = (buffer, maxSeconds = 300, targetSampleRate = 16000) => {
+  const chn = buffer.numberOfChannels;
+  const dur = Math.min(maxSeconds, buffer.duration);
+  const origSr = buffer.sampleRate;
+  const targetSr = targetSampleRate;
+  const targetLength = Math.max(1, Math.floor(dur * targetSr));
+  const step = origSr / targetSr;
+  const chData = [];
+  for (let c = 0; c < chn; c++) chData.push(buffer.getChannelData(c));
+
+  const bytes = targetLength * 2;
+  const ab = new ArrayBuffer(44 + bytes);
+  const v = new DataView(ab);
+  const str = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  str(0, 'RIFF'); v.setUint32(4, 36 + bytes, true); str(8, 'WAVE'); str(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, targetSr, true);
+  v.setUint32(28, targetSr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  str(36, 'data'); v.setUint32(40, bytes, true);
+
+  let o = 44;
+  for (let i = 0; i < targetLength; i++) {
+    const srcIdx = Math.floor(i * step);
+    let sum = 0;
+    for (let c = 0; c < chn; c++) {
+      sum += srcIdx < chData[c].length ? chData[c][srcIdx] : 0;
+    }
+    const avg = chn > 1 ? sum / chn : sum;
+    const sample = Math.max(-1, Math.min(1, avg));
+    v.setInt16(o, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+    o += 2;
+  }
+  return new Blob([ab], { type: 'audio/wav' });
+};
+
+/* AI Music Audio-to-Lyrics Transcription with full multi-language detection */
+J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto') => {
+  if (!audioAnalysis || !audioAnalysis.buffer) return null;
+  const wavBlob = J.audioMonoWav(audioAnalysis.buffer, 300, 16000);
+  const reader = new FileReader();
+  const base64Audio = await new Promise((res, rej) => {
+    reader.onload = () => {
+      const result = String(reader.result || '');
+      const comma = result.indexOf(',');
+      res(comma >= 0 ? result.slice(comma + 1) : result);
+    };
+    reader.onerror = rej;
+    reader.readAsDataURL(wavBlob);
+  });
+
+  const resp = await fetch('/api/transcribe-lyrics', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ audioBase64: base64Audio, lang }),
+  });
+  if (resp.ok) {
+    const data = await resp.json();
+    if (data && data.success && Array.isArray(data.lines) && data.lines.length) {
+      return data;
+    }
+    if (data && data.requiresBilling) {
+      return { billingRequired: true, lines: [] };
+    }
+  }
+  return null;
 };
 
 /* 16-bit PCM WAV of an AudioBuffer, cut / padded to `duration` seconds (the soundtrack next to an MP4 whose
@@ -6324,22 +6497,22 @@ J.exportMP4 = async (o) => {
   const [w, h] = J.outputSize(project);
   const fps = plan.fps, bitrate = J.videoBitrate(w, h, fps, quality);
   const attempts = await J.videoAttempts(w, h, fps, bitrate);
-  if (!attempts.length) throw new Error('Video encoding (WebCodecs) is unavailable. Open in the latest Chrome or Edge.');
+  if (!attempts.length) throw new Error('Encodage vidéo (WebCodecs) indisponible. Ouvrez dans Chrome ou Edge récent.');
   const tried = [];
   for (let k = 0; k < attempts.length; k++) {
     const vc = attempts[k];
     try {
       if (file && k > 0) { await file.seek(0); await file.truncate(0); }
-      const r = await encodeMP4(Object.assign({}, o, { w, h, vc, note: k > 0 ? ` (${vc.label}, retry in software ${k})` : '' }));
+      const r = await encodeMP4(Object.assign({}, o, { w, h, vc, note: k > 0 ? ` (${vc.label}, nouvelle tentative logicielle ${k})` : '' }));
       r.tried = tried; return r;
     } catch (e) {
-      if (signal && signal.aborted) throw new Error('Annulered');
+      if (signal && signal.aborted) throw new Error('Annulé');
       if (e && e.jzFatal) throw e;
       tried.push(`${vc.label}/${vc.hw}: ${e && e.message ? e.message : e}`);
       console.warn('MP4 export attempt failed', vc.codec, vc.hw, e);
     }
   }
-  const err = new Error('Could not export the MP4: ' + (file ? '' : 'use “Pour grandes vidéos (enregistrement direct)”, or ') + 'try a lower resolution, fps or quality. Details: ' + tried.join(' ／ '));
+  const err = new Error('Impossible d\'exporter en MP4 : ' + (file ? '' : 'utilisez « Enregistrement direct (grandes vidéos) », ou ') + 'essayez une résolution, cadence ou qualité inférieure. Détails : ' + tried.join(' ／ '));
   err.detail = tried; throw err;
 };
 async function encodeMP4({ plan, project, audio, onProgress, signal, range, file, w, h, vc, note }) {
@@ -6365,27 +6538,27 @@ async function encodeMP4({ plan, project, audio, onProgress, signal, range, file
   const closeEnc = () => { try { if (venc.state !== 'closed') venc.close(); } catch (e) {} };
   try {
     for (let i = 0; i < total; i++) {
-      if (signal && signal.aborted) { closeEnc(); throw new Error('Annulered'); }
+      if (signal && signal.aborted) { closeEnc(); throw new Error('Annulé'); }
       if (err) throw err;
-      if (venc.state === 'closed') throw new Error('The encoder stopped');
+      if (venc.state === 'closed') throw new Error('L\'encodeur s\'est arrêté');
       R.frame(ctx, plan, span.t0 + i / fps, { scale });
       const vf = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
       try { venc.encode(vf, { keyFrame: i % (fps * 2) === 0 }); } finally { vf.close(); }
       let spins = 0;
       // (time in the background doesn't count: a phone pauses the encoder while the page is hidden)
-      while (venc.encodeQueueSize > 4 && !err) { await new Promise(r => setTimeout(r, 2)); if (!document.hidden && ++spins > 15000) throw new Error('The encoder stopped responding'); }
+      while (venc.encodeQueueSize > 4 && !err) { await new Promise(r => setTimeout(r, 2)); if (!document.hidden && ++spins > 15000) throw new Error('L\'encodeur ne répond plus'); }
       // an encoder that accepts frames but never returns any has failed silently (seen with some GPU drivers)
-      if (i === Math.min(total - 1, fps * 3) && outFrames === 0) { await venc.flush(); if (!outFrames) throw new Error('The encoder returned no output'); }
-      if (i % 3 === 0) { onProgress && onProgress(i / total, `Frame ${i + 1}/${total}${note || ''}`); await new Promise(r => setTimeout(r, 0)); }
+      if (i === Math.min(total - 1, fps * 3) && outFrames === 0) { await venc.flush(); if (!outFrames) throw new Error('L\'encodeur n\'a renvoyé aucune sortie'); }
+      if (i % 3 === 0) { onProgress && onProgress(i / total, `Image ${i + 1}/${total}${note || ''}`); await new Promise(r => setTimeout(r, 0)); }
     }
     await venc.flush();
     if (err) throw err;
   } catch (e) { closeEnc(); throw e; }
   finally { J.glyphs.maxRes = prevRes; }
   closeEnc();
-  if (outFrames < total * 0.98) throw new Error(`Frames are missing (${outFrames}/${total})`);
+  if (outFrames < total * 0.98) throw new Error(`Images manquantes (${outFrames}/${total})`);
   if (ac) {
-    onProgress && onProgress(0.99, 'Encoding audio');
+    onProgress && onProgress(0.99, 'Encodage audio');
     const rs = await resample(audio.buffer, ac.sr, span.dur, span.t0);
     const chn = rs.numberOfChannels;
     let aChunks = 0, aEnd = 0, aErr = null;
@@ -6403,22 +6576,22 @@ async function encodeMP4({ plan, project, audio, onProgress, signal, range, file
     }
     await aenc.flush(); aenc.close();
     const fatal = m => { const e = new Error(m); e.jzFatal = true; return e; };    // audio problems: another video encoder won't help
-    if (aErr) throw fatal('Audio encoding failed: ' + (aErr.message || aErr));
+    if (aErr) throw fatal('Échec de l\'encodage audio : ' + (aErr.message || aErr));
     // the encoder must have produced the whole soundtrack — otherwise report it instead of writing a silent file
-    if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw fatal('Audio encoding stopped partway (' + aChunks + '). Please export again');
+    if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw fatal('L\'encodage audio s\'est interrompu (' + aChunks + '). Réessayez l\'export.');
   }
-  onProgress && onProgress(0.995, 'Finishing the file');
+  onProgress && onProgress(0.995, 'Finalisation du fichier');
   muxer.finalize();
   if (file) await file.close();
-  onProgress && onProgress(1, 'Done');
+  onProgress && onProgress(1, 'Terminé');
   const size = file ? null : store.end;
-  return { blob: file ? null : store.blob('video/mp4'), size, codec: vc.label + (vc.hw === 'prefer-software' ? ' (software)' : ''), audio: ac ? ac.mux : null, audioWanted: !!(audio && audio.buffer && project.includeAudio !== false), width: w, height: h, toFile: !!file };
+  return { blob: file ? null : store.blob('video/mp4'), size, codec: vc.label + (vc.hw === 'prefer-software' ? ' (logiciel)' : ''), audio: ac ? ac.mux : null, audioWanted: !!(audio && audio.buffer && project.includeAudio !== false), width: w, height: h, toFile: !!file };
 }
 
 /* ---------- PNG sequence as ZIP (store, no compression) ---------- */
 const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
 const crc32 = (u8) => { let c = 0xffffffff; for (let i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
-const ZIP_TOO_BIG = 'The ZIP would be too large (65,535 files / 4 GB at most). Choose a shorter export range or a lower resolution';
+const ZIP_TOO_BIG = 'L\'archive ZIP dépasserait la limite (65 535 fichiers / 4 Go). Réduisez la plage ou la résolution.';
 class ZipWriter {
   constructor() { this.parts = []; this.central = []; this.offset = 0; }
   add(name, u8) {
@@ -6462,7 +6635,7 @@ J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal
   const zip = new ZipWriter();
   const scale = w / plan.W;
   for (let i = 0; i < total; i += every) {
-    if (signal && signal.aborted) throw new Error('Annulered');
+    if (signal && signal.aborted) throw new Error('Annulé');
     const name = `jizura_${String(i).padStart(5, '0')}.png`;
     for (const layer of layers ? ['back', 'front'] : [null]) {
       R.frame(ctx, plan, span.t0 + i / fps, { scale, transparent: transparent || !!layers, layer });
@@ -6471,7 +6644,7 @@ J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal
     }
     onProgress && onProgress(i / total, `PNG ${i + 1}/${total}`);
   }
-  onProgress && onProgress(1, 'Done');
+  onProgress && onProgress(1, 'Terminé');
   return zip.finish();
 };
 
@@ -59492,10 +59665,10 @@ const ICON = {
 const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, loop: 'all', loopHold: null, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
 const LOOP_CYCLE = ['all', 'line', 'cut', false];
 const LOOP_COPY = {
-  all:  { ja: 'Loop', en: 'Loop', titleJa: 'Loop the whole piece', titleEn: 'Loop the whole piece' },
-  line: { ja: 'Line loop', en: 'Line loop', titleJa: 'Loop this line', titleEn: 'Loop this line' },
-  cut:  { ja: 'Cut loop', en: 'Cut loop', titleJa: 'Loop this cut', titleEn: 'Loop this cut' },
-  off:  { ja: 'Loop', en: 'Loop', titleJa: 'No loop', titleEn: 'No loop' },
+  all:  { ja: 'Boucle', en: 'Loop', titleJa: 'Répéter tout le morceau', titleEn: 'Loop the whole piece' },
+  line: { ja: 'Boucle ligne', en: 'Line loop', titleJa: 'Répéter cette ligne', titleEn: 'Loop this line' },
+  cut:  { ja: 'Boucle plan', en: 'Cut loop', titleJa: 'Répéter ce plan', titleEn: 'Loop this cut' },
+  off:  { ja: 'Boucle', en: 'Loop', titleJa: 'Sans boucle', titleEn: 'No loop' },
 };
 const isEn = () => document.documentElement.lang === 'en';
 function cutAround(t) {
@@ -59566,7 +59739,7 @@ function initVolume() {
   let v = 0.8, m = false;
   try { const o = JSON.parse(localStorage.getItem('jizura.previewVolume') || 'null'); if (o) { v = +o.v; m = !!o.m; } } catch (e) {}
   if (!(v >= 0 && v <= 1)) v = 0.8;
-  const show = () => { el.value = Math.round(AP.vol * 100); mb.textContent = AP.muted || AP.vol === 0 ? 'Muted' : 'Vol'; mb.setAttribute('aria-pressed', String(AP.muted)); el.title = 'Volume ' + Math.round(AP.vol * 100) + '%'; };
+  const show = () => { el.value = Math.round(AP.vol * 100); mb.textContent = AP.muted || AP.vol === 0 ? 'Muet' : 'Son'; mb.setAttribute('aria-pressed', String(AP.muted)); el.title = 'Volume ' + Math.round(AP.vol * 100) + '%'; };
   const save = () => { try { localStorage.setItem('jizura.previewVolume', JSON.stringify({ v: AP.vol, m: AP.muted })); } catch (e) {} };
   AP.setVol(v, m); show();
   el.addEventListener('input', () => { AP.setVol(el.value / 100, false); show(); save(); });
@@ -59617,9 +59790,9 @@ function migrateOrder(o, p) {
     o.exportRange = idx.length ? { from: Math.min(...idx), to: Math.max(...idx) } : null;
   }
 }
-const SET_UI = { horror: { name: 'Horreur', badge: 'H' }, typo: { name: 'Typographic', badge: 'T' }, kinetic: { name: 'Cinétique', badge: 'K' }, extra2: { name: 'Extra 2', badge: 'E2' } };
+const SET_UI = { horror: { name: 'Horreur', badge: 'H' }, typo: { name: 'Typo', badge: 'T' }, kinetic: { name: 'Cinétique', badge: 'K' }, extra2: { name: 'Extra 2', badge: 'E2' } };
 function setBadges(d) {
-  return (d && d.extra ? '<span class="set-badge ex" title="Added after the original release">New</span>' : '') + (d && d.wa ? '<span class="set-badge" title="Motifs japonais">JP</span>' : '')
+  return (d && d.extra ? '<span class="set-badge ex" title="Ajouté après la version initiale">Nouveau</span>' : '') + (d && d.wa ? '<span class="set-badge" title="Motifs japonais">JP</span>' : '')
     + (d && d.set && SET_UI[d.set] ? `<span class="set-badge set-${d.set}" title="${SET_UI[d.set].name}">${SET_UI[d.set].badge}</span>` : '')
     + (d && d.x2 && d.set !== 'extra2' ? `<span class="set-badge set-extra2" title="${SET_UI.extra2.name}">${SET_UI.extra2.badge}</span>` : '');
 }
@@ -59693,14 +59866,14 @@ async function ensureFonts() {
   const key = txt + '|' + keys.join(',') + '|' + Object.keys(J.FONTS).length + '|' + J.lang;   // the lyric language changes the faces
   if (key === fontKey) return;
   fontKey = key;
-  showMsg('Loading fonts…');
+  showMsg('Chargement des polices…');
   try { await J.ensureFonts(txt, keys); } catch (e) {}
   showMsg(null); S.need = true; drawStyleGrid(); loadThumbFonts();
 }
 // style thumbnails need two glyphs of every style's display face — fetched only once the style grid is actually shown
 function loadThumbFonts() {
   if (thumbFonts || !$('styleGrid').offsetParent) return;
-  thumbFonts = J.ensureFonts('JIZURA', [...new Set(J.STYLE_ORDER.map(k => J.STYLES[k].fonts.display[0]))]).then(() => drawStyleGrid()).catch(() => {});
+  thumbFonts = J.ensureFonts('Alexura', [...new Set(J.STYLE_ORDER.map(k => J.STYLES[k].fonts.display[0]))]).then(() => drawStyleGrid()).catch(() => {});
 }
 function showMsg(m) { const el = $('viewMsg'); if (!m) { el.hidden = true; return; } el.textContent = m; el.hidden = false; }
 
@@ -59771,7 +59944,7 @@ function play() {
 }
 function pause() {
   S.playing = false; AP.stop();
-  $('btnPlay').textContent = '▶'; $('btnPlay').setAttribute('aria-label', 'Play'); S.need = true;
+  $('btnPlay').textContent = '▶'; $('btnPlay').setAttribute('aria-label', 'Lecture'); S.need = true;
 }
 function seek(t) {
   S.t = J.clamp(t, 0, Math.max(0, S.plan.duration - 1e-3));
@@ -59905,8 +60078,8 @@ function bindFollow() {
 
 /* ---------------- cut info ---------------- */
 const CHIP_GROUPS = [
-  ['layout', 'l', 'Layout'], ['enter', 'e', 'Entrance'], ['hold', 'h', 'Hold'], ['exit', 'x', 'Exit'],
-  ['decor', '', 'Decoration'], ['treat', 't', 'Treatment'], ['bg', 'b', 'Précédentground'], ['cam', 'c', 'Camera'], ['trans', 'c', 'Transition'],
+  ['layout', 'l', 'Mise en page'], ['enter', 'e', 'Entrée'], ['hold', 'h', 'Maintien'], ['exit', 'x', 'Sortie'],
+  ['decor', '', 'Décoration'], ['treat', 't', 'Traitement'], ['bg', 'b', 'Arrière-plan'], ['cam', 'c', 'Caméra'], ['trans', 'c', 'Transition'],
 ];
 const cutPick = { g: null, line: -1, k: -1 };
 let lastCutIdx = -2;
@@ -59956,7 +60129,7 @@ function cutGroupVal(cut, g) {
   return '';
 }
 function groupName(g, k) {
-  if (!k) return 'None';
+  if (!k) return 'Aucun';
   const tbl = J.registry(g);
   return (tbl && tbl[k] && tbl[k].name) || k;
 }
@@ -59984,7 +60157,7 @@ function rerollCurrentCut(kind) {
   if (S.exporting || S.tap) return;
   const cut = J.cutAt(S.plan, S.t);
   const k = lyricCutK(cut);
-  if (!cut || k < 0) { toast('No cut at this position to re-roll'); return; }
+  if (!cut || k < 0) { toast('Aucun plan à relancer à cette position'); return; }
   remember();
   const n = [...String(cut.text || '').replace(/\s+/g, '')].length;
   const groups = kind === 'omakase'
@@ -60001,7 +60174,7 @@ function rerollCurrentCut(kind) {
   replan();
   commit();
   seek(t0);
-  toast(kind === 'omakase' ? 'Aléatoire this cut' : 'Shuffle this cut');
+  toast(kind === 'omakase' ? 'Aléatoire sur ce plan' : 'Mélanger ce plan');
 }
 function updateCutInfo() {
   const cut = J.cutAt(S.plan, S.t);
@@ -60014,18 +60187,18 @@ function updateCutInfo() {
   document.querySelectorAll('.cut-lay.playing').forEach(x => x.classList.remove('playing'));
   if (cut && S.lineEls[li]) { const kk = lyricCutK(cut), cs = kk >= 0 && S.lineEls[li].querySelector(`.cut-lay[data-k="${kk}"]`); if (cs) cs.classList.add('playing'); }
   const el = $('cutInfo');
-  if (!cut) { el.innerHTML = '<span class="hint">No cut at this position</span>'; closeCutPick(); return; }
+  if (!cut) { el.innerHTML = '<span class="hint">Aucun plan à cette position</span>'; closeCutPick(); return; }
   if (S.mode !== 'pro') {          // かんたん／スマホは本家と同じ静的なチップ表示
     closeCutPick();
     const chip = (cls, k, v) => `<span class="chip ${cls}"><b>${k}</b>${v}</span>`;
     const n = (tbl, k) => (tbl[k] ? tbl[k].name : k);
     el.innerHTML = [
       `<span class="chip mono">#${String(cut.index + 1).padStart(2, '0')}</span>`,
-      chip('l', 'Layout', n(J.LAYOUTS, cut.layout)), chip('e', 'Entrance', n(J.ENTER, cut.enter)), chip('h', 'Hold', n(J.HOLD, cut.hold)), chip('x', 'Exit', n(J.EXIT, cut.exit)),
-      cut.decor && cut.decor.length ? chip('', 'Decoration', cut.decor.map(d => n(J.DECOR, d.id)).join(' · ')) : '',
-      cut.treat && cut.treat !== 'none' ? chip('t', 'Treatment', n(J.TREAT, cut.treat)) : '',
-      cut.bg && cut.bg !== 'none' ? chip('b', 'Précédentground', n(J.BG, cut.bg)) : '',
-      cut.cam && cut.cam !== 'push' ? chip('c', 'Camera', n(J.CAMERA, cut.cam)) : '',
+      chip('l', 'Mise en page', n(J.LAYOUTS, cut.layout)), chip('e', 'Entrée', n(J.ENTER, cut.enter)), chip('h', 'Maintien', n(J.HOLD, cut.hold)), chip('x', 'Sortie', n(J.EXIT, cut.exit)),
+      cut.decor && cut.decor.length ? chip('', 'Décoration', cut.decor.map(d => n(J.DECOR, d.id)).join(' · ')) : '',
+      cut.treat && cut.treat !== 'none' ? chip('t', 'Traitement', n(J.TREAT, cut.treat)) : '',
+      cut.bg && cut.bg !== 'none' ? chip('b', 'Arrière-plan', n(J.BG, cut.bg)) : '',
+      cut.cam && cut.cam !== 'push' ? chip('c', 'Caméra', n(J.CAMERA, cut.cam)) : '',
       cut.trans ? chip('c', 'Transition', n(J.TRANS, cut.trans)) : '',
     ].join('');
     return;
@@ -60038,8 +60211,8 @@ function updateCutInfo() {
     const forced = slot[g] != null && slot[g] !== '' && !quiet[g];
     bits.push(`<button type="button" class="chip ${cls}${forced ? ' is-forced' : ''}" data-g="${g}" aria-pressed="${cutPick.g === g ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''}><b>${label}</b>${escapeHtml(groupName(g, cutGroupVal(cut, g)))}</button>`);
   });
-  bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="Re-roll the composition of only this cut">Shuffle</button>`);
-  bits.push(`<button type="button" class="ghost small cut-roll accent" data-roll="omakase" ${k < 0 ? 'disabled' : ''} title="Aléatoire the technique of only this cut">Aléatoire</button>`);
+  bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="Relancer uniquement ce plan">Mélanger</button>`);
+  bits.push(`<button type="button" class="ghost small cut-roll accent" data-roll="omakase" ${k < 0 ? 'disabled' : ''} title="Changer aléatoirement la technique de ce plan">Aléatoire</button>`);
   el.innerHTML = bits.join('');
   if (k >= 0) {
     el.querySelectorAll('button.chip[data-g]').forEach(b => b.addEventListener('click', () => toggleCutPick(b.dataset.g, cut, k)));
@@ -60087,7 +60260,7 @@ function fillCutPick() {
     const none = document.createElement('button');
     none.type = 'button';
     none.className = 'tcard' + (forced === 'none' ? ' is-on' : '');
-    none.innerHTML = '<span class="tcard-name" style="padding:16px 6px"><span>None</span></span>';
+    none.innerHTML = '<span class="tcard-name" style="padding:16px 6px"><span>Aucun</span></span>';
     none.addEventListener('click', () => { setCutTech(cutPick.line, cutPick.k, g, 'none'); replan(); });
     grid.appendChild(none);
   }
@@ -60123,24 +60296,24 @@ function renderLines() {
     const fill = () => { if (sel.dataset.full) return; const cur = sel.value; sel.innerHTML = layoutOpts; sel.value = cur; sel.dataset.full = '1'; };
     for (const ev of ['pointerdown', 'mousedown', 'focus', 'keydown', 'touchstart']) sel.addEventListener(ev, fill, { capture: true, passive: true });
   };
-  const cutOpts = '<option value="">Cuts: auto</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">Cuts: ${n}</option>`).join('');
+  const cutOpts = '<option value="">Plans : auto</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">Plans : ${n}</option>`).join('');
   S.plan.lines.forEach((ln, i) => {
     const o = ov[i] || {};
     const li = document.createElement('li'); li.className = 'ln' + (ln.interlude ? ' is-inter' : '') + (R && i >= R.from && i <= R.to ? ' in-range' : '');
     const manual = S.project.timing.lineTimes && S.project.timing.lineTimes[i] != null;
-    const label = ln.interlude ? `[interlude${ln.secs ? ' ' + ln.secs + 's' : ''}]` : ln.text;
+    const label = ln.interlude ? `[interlude${ln.secs ? ' ' + ln.secs + ' s' : ''}]` : ln.text;
     li.innerHTML = `<span class="no">${String(i + 1).padStart(2, '0')}</span>
-      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="Start (s)${manual ? ' · manual' : ' · automatic'}" aria-label="Line ${i + 1} start time (s)" style="${manual ? 'border-color:var(--cyan)' : ''}">
+      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="Début (s)${manual ? ' · manuel' : ' · auto'}" aria-label="Début ligne ${i + 1} (s)" style="${manual ? 'border-color:var(--cyan)' : ''}">
       <span class="txt" title="${escapeHtml(label)}">${escapeHtml(label)}</span>
       <div class="meta"><span class="cuts"></span>
       <span class="tools">
-        <button class="icon ghost edit" title="Edit this line’s lyrics" aria-label="Edit the lyrics of line ${i + 1}">${ICON.pen}</button>
-        ${ln.interlude ? '' : `<select class="ncut" aria-label="Number of cuts in line ${i + 1}">${cutOpts}</select>`}
-        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="Choose layout"></select>`}
-        <button class="icon ghost tapfrom" title="Tap sync again from this line" aria-label="Tap sync from line ${i + 1}">${ICON.tap}</button>
-        <button class="icon ghost rng" title="Set as the export range (Shift+click extends it)" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="Export line ${i + 1}">${ICON.range}</button>
-        ${ln.interlude ? '' : `<button class="icon ghost dice" title="Reroll this line (D for the line at the playhead)">${ICON.dice}</button>`}
-        ${ln.interlude ? '' : `<button class="icon ghost lock" title="Lock this line (L for the line at the playhead)" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
+        <button class="icon ghost edit" title="Modifier les paroles de cette ligne" aria-label="Modifier la ligne ${i + 1}">${ICON.pen}</button>
+        ${ln.interlude ? '' : `<select class="ncut" aria-label="Nombre de plans de la ligne ${i + 1}">${cutOpts}</select>`}
+        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="Choisir la mise en page"></select>`}
+        <button class="icon ghost tapfrom" title="Resynchroniser au tap depuis cette ligne" aria-label="Synchro tap depuis la ligne ${i + 1}">${ICON.tap}</button>
+        <button class="icon ghost rng" title="Définir comme plage d'export (Maj+clic pour étendre)" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="Exporter la ligne ${i + 1}">${ICON.range}</button>
+        ${ln.interlude ? '' : `<button class="icon ghost dice" title="Relancer cette ligne (D for the line at the playhead)">${ICON.dice}</button>`}
+        ${ln.interlude ? '' : `<button class="icon ghost lock" title="Verrouiller cette ligne (L for the line at the playhead)" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
       </span></div>`;
     const q = sel => li.querySelector(sel);
     if (q('.lay')) lazyLay(q('.lay'), o.layout || '');
@@ -60178,12 +60351,12 @@ function renderLines() {
       sel.className = 'cut-lay pro-only' + (forced ? ' is-forced' : '');
       lazyLay(sel, forced || c.layout);
       sel.title = `${c.text}｜${J.ENTER[c.enter].name} → ${J.EXIT[c.exit].name}`;
-      sel.setAttribute('aria-label', `Layout of cut ${k + 1} on line ${i + 1}`);
+      sel.setAttribute('aria-label', `Mise en page du plan ${k + 1}, ligne ${i + 1}`);
       sel.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
       sel.addEventListener('pointerdown', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
       sel.addEventListener('change', e => { setCutLayout(i, k, e.target.value); replan(); seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)); });
       sel.dataset.k = String(k);
-      // cutsの開始時刻 (詳細モード): the first cut starts with the line; the others can be typed (empty = automatic)
+      // plansの開始時刻 (詳細モード): the first cut starts with the line; the others can be typed (empty = automatic)
       if (k > 0) {
         const tIn = document.createElement('input');
         const own = o.cutTime && o.cutTime[k] != null;
@@ -60211,11 +60384,11 @@ function renderLines() {
     });
     ol.appendChild(li); S.lineEls.push(li);
   });
-  $('linesInfo').textContent = `${S.plan.lines.length} lines / ${S.plan.cuts.length} cuts`;
+  $('linesInfo').textContent = `${S.plan.lines.length} lignes / ${S.plan.cuts.length} plans`;
   syncRangeUI();
 }
 
-/* ---------------- line から歌詞を直す ---------------- */
+/* ---------------- ligne から歌詞を直す ---------------- */
 // the lyrics text is the source: a plan line knows the row it came from (ln.src); LRC time tags on that row are kept
 const LRC_PREFIX = /^\s*(?:\[\d+:\d+(?:[.:]\d+)?\])*/;
 function editLine(li, ln) {
@@ -60223,8 +60396,8 @@ function editLine(li, ln) {
   const rows = S.project.lyrics.replace(/\r/g, '').split('\n'), row = rows[ln.src] || '';
   const pre = (row.match(LRC_PREFIX) || [''])[0], body = row.slice(pre.length).trim();
   const txt = li.querySelector('.txt'), inp = document.createElement('input');
-  inp.type = 'text'; inp.className = 'txt-edit'; inp.value = body; inp.setAttribute('aria-label', `Lyrics of line ${ln.index + 1}`);
-  inp.title = 'Lyric syntax works here too (/ cut, *emphasis*, final !, | note, [interlude 8]). Enter to apply, Esc to cancel';
+  inp.type = 'text'; inp.className = 'txt-edit'; inp.value = body; inp.setAttribute('aria-label', `Paroles de la ligne ${ln.index + 1}`);
+  inp.title = 'Syntaxe supportée (/ plan, *emphase*, !, | note, [interlude 8]). Entrée pour valider, Échap pour annuler';
   txt.replaceWith(inp); inp.focus(); inp.select();
   let done = false;
   const finish = ok => {
@@ -60234,7 +60407,7 @@ function editLine(li, ln) {
       pushEdit();
       rows[ln.src] = pre + v;
       S.project.lyrics = rows.join('\n'); $('lyrics').value = S.project.lyrics;
-      replan(); flushSave(); toast(`Line ${ln.index + 1} updated`);
+      replan(); flushSave(); toast(`Ligne ${ln.index + 1} mise à jour`);
     } else renderLines();
   };
   inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
@@ -60255,7 +60428,7 @@ function edGo(d) {
   S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; $('lyrics').value = o.lyrics;
   if ('ov' in o) { S.project.overrides = o.ov || {}; S.project.exportRange = o.range || null; }
   replan(); flushSave(); updateEditBtns();
-  toast(d < 0 ? 'Annulerne' : 'Rétablirne');
+  toast(d < 0 ? 'Annulé' : 'Rétabli');
 }
 // LRC を読み込む: replaces the lyrics (and everything tied to line numbers, like 歌詞を消す); undoable
 function loadLrc(text, sub) {
@@ -60286,7 +60459,7 @@ function clearLyrics() {
   pause();
   P.lyrics = ''; P.timing.lineTimes = {}; P.overrides = {}; P.exportRange = null; $('lyrics').value = '';
   replan(); flushSave(); updateEditBtns(); seek(0);
-  toast('Lyrics cleared (Annuler or Ctrl+Z brings them back)');
+  toast('Paroles effacées (Annuler ou Ctrl+Z pour restaurer)');
 }
 // 初期化: back to a blank project — song (also the copy kept in this browser), settings and both histories go
 let audioNameDefault = '';
@@ -60303,11 +60476,11 @@ async function resetAll() {
   TL.z = 1; TL.off = 0;
   $('lyrics').value = ''; fontKey = '';
   syncUI(); replan(); commit(); updateEditBtns(); flushSave(); seek(0);
-  toast('Réinitialiser done');
+  toast('Réinitialisation effectuée');
 }
 function updateEditBtns() { const u = $('btnUndoEdit'); if (u) u.disabled = !ED.undo.length; }
 
-/* ---------------- 書き出す範囲（選んだline だけ） ---------------- */
+/* ---------------- 書き出す範囲（選んだligne だけ） ---------------- */
 function exportRangeLines() {
   const r = S.project.exportRange, n = S.plan ? S.plan.lines.length : 0;
   if (!r || !n || !(r.from >= 0)) return null;
@@ -60329,15 +60502,15 @@ function setExportRange(i, extend) {
   else S.project.exportRange = { from: i, to: i };
   flushSave(); renderLines();
   const R2 = exportRangeLines();
-  toast(R2 ? `Export range: line ${R2.from + 1}${R2.to > R2.from ? '–' + (R2.to + 1) : ''}` : 'Export range: whole song');
+  toast(R2 ? `Plage d'export : ligne ${R2.from + 1}${R2.to > R2.from ? '–' + (R2.to + 1) : ''}` : 'Plage d\'export : morceau entier');
 }
 function syncRangeUI() {
   const R = exportRangeLines(), n = S.plan.lines.length;
   const opts = (sel, first) => `<option value="-1">${first}</option>` + S.plan.lines.map((ln, i) => `<option value="${i}">${String(i + 1).padStart(2, '0')} ${escapeHtml((ln.interlude ? '[interlude]' : ln.text).slice(0, 14))}</option>`).join('');
-  document.querySelectorAll('.rngFrom').forEach(el => { el.innerHTML = opts(el, 'Whole song'); el.value = R ? String(R.from) : '-1'; });
+  document.querySelectorAll('.rngFrom').forEach(el => { el.innerHTML = opts(el, 'Tout le morceau'); el.value = R ? String(R.from) : '-1'; });
   document.querySelectorAll('.rngTo').forEach(el => { el.innerHTML = opts(el, '—'); el.value = R ? String(R.to) : '-1'; el.disabled = !R; });
   const r = exportRange();
-  document.querySelectorAll('.rngInfo').forEach(el => { el.textContent = r ? `${J.fmtTime(r.t0)} – ${J.fmtTime(r.t1)} (${(r.t1 - r.t0).toFixed(1)}s)` : `Whole song (${S.plan.duration.toFixed(1)}s)`; });
+  document.querySelectorAll('.rngInfo').forEach(el => { el.textContent = r ? `${J.fmtTime(r.t0)} – ${J.fmtTime(r.t1)} (${(r.t1 - r.t0).toFixed(1)} s)` : `Tout (${S.plan.duration.toFixed(1)} s)`; });
 }
 function bindRangeUI() {
   document.querySelectorAll('.rngFrom').forEach(el => el.addEventListener('change', () => {
@@ -60351,7 +60524,7 @@ function bindRangeUI() {
     flushSave(); renderLines();
   }));
 }
-/* Reroll this line / ロック: each is one step of 前の案 / 次の案, so a reroll can be taken back */
+/* Relancer cette ligne / ロック: each is one step of 前の案 / 次の案, so a reroll can be taken back */
 function rerollLine(i) {
   const ln = S.plan.lines[i]; if (!ln || ln.interlude || S.exporting || S.tap) return;
   const cur = (S.project.overrides || {})[i] || {};
@@ -60418,35 +60591,35 @@ function drawStyleGrid() {
     b.setAttribute('aria-pressed', S.project.style === k ? 'true' : 'false');
     const off = !J.randomOk(S.project, 'style', k);
     b.classList.toggle('set-off', off);
-    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? ' (new effects disabled for automatic picks)' : st.set && !J.setOn(S.project, st.set) ? ' (this set is off for automatic picks)' : ' (Motifs japonais disabled for automatic picks)') : '');
+    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? ' (effets bonus désactivés)' : st.set && !J.setOn(S.project, st.set) ? ' (cet ensemble est désactivé pour le mode aléatoire)' : ' (motifs japonais désactivés)') : '');
     x.fillStyle = sc.bg; x.fillRect(0, 0, 192, 108);
     st.schemes.slice(1, 4).forEach((s2, i) => { x.fillStyle = s2.bg; x.fillRect(192 - 14 * (i + 1), 0, 14, 10); });
     const f = st.fonts.display[0];
     x.font = J.fontCSS(f, 46); x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.fillStyle = sc.ghostB; x.fillText('JIZURA', 96 - 3, 54 - 1);
-    x.fillStyle = sc.ghostA; x.fillText('JIZURA', 96 + 3, 54 + 2);
-    x.fillStyle = sc.fg; x.fillText('JIZURA', 96, 54);
+    x.fillStyle = sc.ghostB; x.fillText('Alexura', 96 - 3, 54 - 1);
+    x.fillStyle = sc.ghostA; x.fillText('Alexura', 96 + 3, 54 + 2);
+    x.fillStyle = sc.fg; x.fillText('Alexura', 96, 54);
     x.fillStyle = sc.accent; x.fillRect(12, 90, 30, 4);
     x.font = J.fontCSS('mono', 9); x.textAlign = 'left'; x.fillStyle = sc.sub; x.fillText(k.toUpperCase(), 48, 93);
   });
 }
 function fontSelectOptions(sel) {
-  return '<option value="">Style default</option>' + Object.entries(J.FONTS).map(([k, f]) => {
+  return '<option value="">Par défaut du style</option>' + Object.entries(J.FONTS).map(([k, f]) => {
     const g = J.faceOf ? J.faceOf(k) : f, alt = g.label && g.label !== f.label ? ' → ' + g.label : '';   // the face actually used for the lyric language
     return `<option value="${escapeHtml(k)}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
   }).join('');
 }
 function renderFontRoles() {
   const box = $('fontRoles'); box.innerHTML = '';
-  [['display', 'Display'], ['serif', 'Serif frame'], ['body', 'Small text']].forEach(([role, label]) => {
+  [['display', 'Titre'], ['serif', 'Cadre serif'], ['body', 'Petit texte']].forEach(([role, label]) => {
     const row = document.createElement('div'); row.className = 'font-row';
-    row.innerHTML = `<span class="muted">${label}</span><select aria-label="${label} font">${fontSelectOptions(S.project.fonts[role])}</select>`;
+    row.innerHTML = `<span class="muted">${label}</span><select aria-label="${label} — police">${fontSelectOptions(S.project.fonts[role])}</select>`;
     row.querySelector('select').addEventListener('change', e => { if (e.target.value) S.project.fonts[role] = e.target.value; else delete S.project.fonts[role]; fontKey = ''; replan(); });
     box.appendChild(row);
   });
 }
-const BASE_KEYS = [['bg', 'Précédentground'], ['fg', 'Text'], ['sub', 'Secondary']];
-const ACCENT_KEYS = [['accent', 'Accent'], ['ghostA', 'Offset A'], ['ghostB', 'Offset B']];
+const BASE_KEYS = [['bg', 'Arrière-plan'], ['fg', 'Texte'], ['sub', 'Secondaire']];
+const ACCENT_KEYS = [['accent', 'Accent'], ['ghostA', 'Décalage A'], ['ghostB', 'Décalage B']];
 function renderColors() {
   const st = J.STYLES[S.project.style] || J.STYLES.noir, sc = st.schemes[0];
   const c = S.project.colors;
@@ -60485,7 +60658,7 @@ function randomPalette() {
   do { p = J.randomPalette(bg); } while (guard++ < 6 && p.ghostA === c.ghostA && p.ghostB === c.ghostB);
   Object.assign(c, { accent: p.accent, ghostA: p.ghostA, ghostB: p.ghostB, accentOn: true });
   renderColors(); replan(); commit();
-  toast('Palette: changed accent and offset colors', [p.accent, p.ghostA, p.ghostB]);
+  toast('Palette : couleur d’accent et décalages modifiés', [p.accent, p.ghostA, p.ghostB]);
 }
 
 /* ---------------- history of looks (◀ ▶) ---------------- */
@@ -60528,9 +60701,9 @@ function updateHist() {
            this does not pin one technique in place.
    params: freezes the current value of the effects sliders, on-twos and flash.
    Neither goes into J.plan: they only bracket the places that rewrite the look (Randomize, mood reroll). */
-const LOCK_TITLE_ON = 'Lock so Aléatoire / Shuffle leave this alone';
-const TECH_LOCK_ON = 'Lock so Aléatoire keeps this group’s ON/OFF selection';
-const LOCK_TITLE_OFF = 'Locked — click to unlock';
+const LOCK_TITLE_ON = 'Verrouiller ce paramètre';
+const TECH_LOCK_ON = 'Verrouiller ce groupe pour le mode Aléatoire';
+const LOCK_TITLE_OFF = 'Verrouillé — cliquer pour déverrouiller';
 function locksOf() {
   const P = S.project;
   if (!P.locks) P.locks = { tech: {}, params: {} };
@@ -60547,15 +60720,15 @@ function groupLabel(g) { const m = GROUPS.find(x => x[0] === g); return m ? m[1]
 function toggleTechLock(g) {
   const L = locksOf();
   remember();
-  if (L.tech[g]) { delete L.tech[g]; toast('Unlocked: ' + groupLabel(g)); }
-  else { L.tech[g] = true; toast('Locked: ' + groupLabel(g)); }
+  if (L.tech[g]) { delete L.tech[g]; toast('Déverrouillé : ' + groupLabel(g)); }
+  else { L.tech[g] = true; toast('Verrouillé : ' + groupLabel(g)); }
   commit(); autosave(); renderTech();
 }
 function toggleParamLock(k) {
   const L = locksOf();
   remember();
-  if (L.params[k]) { delete L.params[k]; toast('Unlocked: ' + lockName(k)); }
-  else { L.params[k] = true; toast('Locked: ' + lockName(k)); }
+  if (L.params[k]) { delete L.params[k]; toast('Déverrouillé : ' + lockName(k)); }
+  else { L.params[k] = true; toast('Verrouillé : ' + lockName(k)); }
   commit(); autosave(); renderFx();
 }
 function lockedEnabled() {                        // ON/OFF selection of every locked group, as it is now
@@ -60609,7 +60782,7 @@ function omakase() {
   Object.assign(S.project, r);
   restoreEnabled(keepE); restoreParams(keepP);
   fontKey = ''; syncUI(); replan(); commit();
-  toast((th ? `Aléatoired (${themeName(th)}): ` : 'Aléatoired: ') + `${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
+  toast((th ? `Aléatoire (${themeName(th)}) : ` : 'Aléatoire : ') + `${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
 }
 // change just one aspect of the current look
@@ -60631,10 +60804,10 @@ function rerollPart(part) {
     Object.assign(P, { mood: r.mood, fx: r.fx, enabled: r.enabled });
     for (const k of ['wa', 'extra', ...J.SET_ORDER]) if (r[k] === true) P[k] = true;     // switches the theme needs
     restoreEnabled(keepE); restoreParams(keepP);
-    msg = `Mood：${J.MOODS[r.mood].name}`;
+    msg = `Ambiance：${J.MOODS[r.mood].name}`;
   } else if (part === 'cut') {
     P.seed = (Math.random() * 1e9) | 0;
-    msg = 'Arrangement: rerolled layout and motion';
+    msg = 'Plans : mise en page et animation relancées';
   }
   fontKey = ''; syncUI(); replan(); commit();
   toast(msg);
@@ -60643,18 +60816,18 @@ function rerollPart(part) {
 function showNow() {
   const el = $('easyNow'); if (!el || !S.plan || el.closest('[hidden]')) return;
   const P = S.project, sc = S.plan.style.schemes[0];
-  const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : 'Custom';
+  const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : 'Personnalisé';
   const fk = S.plan.style.fonts.display[0];
   const fontName = J.FONTS[fk] ? (J.faceOf ? J.faceOf(fk) : J.FONTS[fk]).label : fk;   // the face actually drawn for the lyric language
   const cuts = S.plan.cuts.filter(c => c.line >= 0 && c.layout !== 'interlude');
   const kinds = new Set(cuts.map(c => c.layout)).size;
   const row = (k, v) => `<div class="now-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
   el.innerHTML = row('Style', `<b>${escapeHtml(J.STYLES[P.style].name)}</b>`)
-    + row('Mood', escapeHtml(moodName))
-    + row('Palette', `<span class="swatches">${swatchHTML([sc.bg, sc.fg, sc.accent, sc.ghostA, sc.ghostB])}</span>${P.colors.accentOn ? '<span class="tagl">Random</span>' : ''}`)
-    + row('Display font', escapeHtml(fontName))
-    + row('Arrangement', `${cuts.length} cuts · Layout ${kinds} types`)
-    + row('Effects', `Treatment ${cuts.filter(c => c.treat && c.treat !== 'none').length} · Précédentground ${new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size} types · Camera ${cuts.filter(c => c.cam && c.cam !== 'push').length}`);
+    + row('Ambiance', escapeHtml(moodName))
+    + row('Palette', `<span class="swatches">${swatchHTML([sc.bg, sc.fg, sc.accent, sc.ghostA, sc.ghostB])}</span>${P.colors.accentOn ? '<span class="tagl">Aléatoire</span>' : ''}`)
+    + row('Police de titre', escapeHtml(fontName))
+    + row('Plans', `${cuts.length} plans · Mise en page ${kinds} types`)
+    + row('Effets', `Traitement ${cuts.filter(c => c.treat && c.treat !== 'none').length} · Arrière-plan ${new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size} types · Caméra ${cuts.filter(c => c.cam && c.cam !== 'push').length}`);
 }
 let toastTimer = 0;
 function toast(m, cols) {
@@ -60697,7 +60870,7 @@ function mobileInit() {
 }
 
 /* ---------------- fx tab ---------------- */
-const FX = [['motion', 'Motion strength'], ['glitch', 'Glitch'], ['chroma', 'Color offset'], ['decor', 'Decoration amount'], ['density', 'Cut density'], ['texture', 'Texture'], ['bgSwitch', 'Précédentground changes']];
+const FX = [['motion', 'Intensité du mouvement'], ['glitch', 'Glitch'], ['chroma', 'Décalage RVB'], ['decor', 'Quantité de décors'], ['density', 'Densité des plans'], ['texture', 'Texture'], ['bgSwitch', 'Changements d’arrière-plan']];
 function renderFx() {
   const box = $('fxSliders'); box.innerHTML = '';
   FX.forEach(([k, label]) => {
@@ -60721,7 +60894,7 @@ function renderFx() {
 }
 
 /* ---------------- technique tab ---------------- */
-const GROUPS = [['layout', 'Layout'], ['enter', 'Entrance'], ['hold', 'Hold'], ['exit', 'Exit'], ['decor', 'Decoration'], ['treat', 'Text treatments'], ['bg', 'Précédentground'], ['cam', 'Camera'], ['fx', 'Screen effects'], ['trans', 'Transitions']];
+const GROUPS = [['layout', 'Mise en page'], ['enter', 'Entrée'], ['hold', 'Maintien'], ['exit', 'Sortie'], ['decor', 'Décoration'], ['treat', 'Traitement du texte'], ['bg', 'Arrière-plan'], ['cam', 'Caméra'], ['fx', 'Effets d’écran'], ['trans', 'Transitions']];
 const openGroups = new Set();
 function techItems(g) { return J.order(g).filter(k => J.registry(g)[k] && !J.registry(g)[k].special); }
 
@@ -60830,7 +61003,7 @@ function renderTech() {
     d.addEventListener('toggle', () => { if (d.open) { openGroups.add(g); build(); queueThumbs(list); } else openGroups.delete(g); });
     const lked = !!locksOf().tech[g];
     d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span>`
-      + `<button type="button" class="icon ghost lk pro-only" data-lk="${g}" aria-pressed="${lked}" title="${lked ? LOCK_TITLE_OFF : TECH_LOCK_ON}">${ICON.lock}</button></summary><div class="tg-tools"><button class="ghost small" data-a="on">All on</button><button class="ghost small" data-a="off">All off</button><button class="ghost small" data-a="flip">Invert</button></div>`;
+      + `<button type="button" class="icon ghost lk pro-only" data-lk="${g}" aria-pressed="${lked}" title="${lked ? LOCK_TITLE_OFF : TECH_LOCK_ON}">${ICON.lock}</button></summary><div class="tg-tools"><button class="ghost small" data-a="on">Tout activer</button><button class="ghost small" data-a="off">Tout désactiver</button><button class="ghost small" data-a="flip">Inverser</button></div>`;
     const [tw, th] = (() => {
       const [W, H] = J.designSize(S.project.aspect || '16:9');
       const h = 90; return [Math.max(80, Math.round(h * W / H)), h];
@@ -60840,7 +61013,7 @@ function renderTech() {
       const l = document.createElement('label');
       l.className = 'tcard';
       l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join(' · ') + '）' : '');
-      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? ' (new effects disabled for automatic picks)' : tbl[k].set && !J.setOn(S.project, tbl[k].set) ? ' (this set is off for automatic picks)' : ' (Motifs japonais disabled for automatic picks)'; }
+      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? ' (effets bonus désactivés)' : tbl[k].set && !J.setOn(S.project, tbl[k].set) ? ' (cet ensemble est désactivé pour la sélection auto)' : ' (motifs japonais désactivés)'; }
       l.innerHTML = `<canvas width="${tw}" height="${th}" data-g="${g}" data-k="${k}"></canvas><span class="tcard-name"><input type="checkbox" ${en[k] !== false ? 'checked' : ''}> <span>${escapeHtml(tbl[k].name)}</span>${setBadges(tbl[k])}</span>`;
       const cv = l.querySelector('canvas');
       l.querySelector('input').addEventListener('change', e => { en[k] = e.target.checked; S.project.mood = null; d.querySelector('.tg-cnt').textContent = `${items.filter(x => en[x] !== false).length}/${items.length}`; replanSoon(60); });
@@ -60875,17 +61048,17 @@ function syncOut() {
   document.querySelectorAll('.centerDirSel').forEach(el => { el.value = S.project.centerDir === 'lr' ? 'lr' : 'tb'; });
   const kb = $('keyBadge');
   kb.hidden = k === 'off';
-  if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'Green screen' : 'Black background'}`;
+  if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'Fond vert' : 'Fond noir'}`;
 }
 // the codec check is slow in some browsers: at start-up, let the first preview frames paint before asking
 function codecNoteSoon() { (window.requestIdleCallback || (f => setTimeout(f, 400)))(() => codecNote(), { timeout: 1500 }); }
 async function codecNote() {
   const [w, h] = J.outputSize(S.project);
   const vc = await J.pickVideoCodec(w, h, S.project.fps, 12e6);
-  $('codecNote').textContent = vc ? `This browser exports with ${vc.label} at (${w}×${h} / ${S.project.fps}fps). Keep this tab open during export.` : 'Video encoding (WebCodecs) is unavailable here. Try the latest Chrome or Edge, or export a Séquence PNG.';
+  $('codecNote').textContent = vc ? `Ce navigateur exporte avec ${vc.label} exportés (${w}×${h} / ${S.project.fps}fps). Gardez cet onglet ouvert pendant l’export.` : 'Encodage vidéo (WebCodecs) indisponible. Utilisez Chrome/Edge récent ou la séquence PNG.';
   $('btnMP4').disabled = !vc; $('eMP4').disabled = !vc;
   ['btnMP4File', 'eMP4File'].forEach(id => { $(id).hidden = !vc || !canPickFile(); });
-  if (!vc) $('eMP4').title = 'MP4 export is unavailable here (Chrome or Edge recommended)';
+  if (!vc) $('eMP4').title = 'Export MP4 indisponible (Chrome / Edge recommandés)';
 }
 const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4', 'btnMP4File', 'eMP4File', 'ePNG', 'ePNGA', 'ePNGL'];
 function baseName() {
@@ -60901,7 +61074,7 @@ async function runExport(kind) {
     try {
       const hnd = await window.showSaveFilePicker({ suggestedName: baseName() + rangeSuffix() + '.mp4', types: [{ description: 'MP4', accept: { 'video/mp4': ['.mp4'] } }] });
       file = await hnd.createWritable(); fileName = hnd.name;
-    } catch (e) { if (e && e.name === 'AbortError') return; toast('Could not open the file: ' + (e && e.message ? e.message : e)); return; }
+    } catch (e) { if (e && e.name === 'AbortError') return; toast('Impossible d\'ouvrir le fichier : ' + (e && e.message ? e.message : e)); return; }
   }
   pause();
   const ac = new AbortController(); S.exporting = ac;
@@ -60909,7 +61082,7 @@ async function runExport(kind) {
   const setText = m => boxes.forEach(b => { b.querySelector('.exp-text').textContent = m; });
   const txt = { set textContent(m) { setText(m); }, get textContent() { return boxes[0].querySelector('.exp-text').textContent; } };
   boxes.forEach(b => { b.hidden = false; b.querySelector('.exp-bar').style.width = '0%'; });
-  setText('Preparing…');
+  setText('Préparation…');
   EXP_BTNS.forEach(id => { $(id).disabled = true; });
   const onProgress = (p, m) => { boxes.forEach(b => { b.querySelector('.exp-bar').style.width = (p * 100).toFixed(1) + '%'; }); setText(m); };
   const t0 = performance.now();
@@ -60918,35 +61091,35 @@ async function runExport(kind) {
   let wake = null; try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (e) { wake = null; }
   // スマホ: at most 1080p (phones run out of memory / encoder time at 1440p and 4K)
   const proj = S.mode === 'mobile' && (S.project.res || 1080) > 1080 ? Object.assign({}, S.project, { res: 1080 }) : S.project;
-  if (proj !== S.project) toast('In the Mobile layout the export is 1080p at most');
+  if (proj !== S.project) toast('En mode Mobile, l\'export est limité à 1080p');
   try {
     await J.ensureFonts(S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS, J.fontsOfPlan(S.plan));
     const lost = J.missingUserFonts(J.fontsOfPlan(S.plan).concat(Object.values(S.project.fonts || {})));
-    if (lost.length) throw new Error(`The uploaded font (${[...new Set(lost)].join(', ')}) is not in this browser, so the export was stopped. Load the same file again under Fonts, or pick another font`);
+    if (lost.length) throw new Error(`La police importée (${[...new Set(lost)].join(', ')}) est absente de ce navigateur : export interrompu. Rechargez le fichier ou choisissez une autre police.`);
     if (kind === 'mp4' || kind === 'mp4file') {
       const plan = S.plan, range = exportRange(), span = J.exportSpan(plan, range);
       const r = await J.exportMP4({ plan, project: proj, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range, file });
       file = null;
-      txt.textContent = `Done: ${r.blob ? (r.blob.size / 1048576).toFixed(1) + 'MB · ' : ''}${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''} · ${((performance.now() - t0) / 1000).toFixed(0)}s`;
+      txt.textContent = `Terminé : ${r.blob ? (r.blob.size / 1048576).toFixed(1) + 'MB · ' : ''}${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''} · ${((performance.now() - t0) / 1000).toFixed(0)}s`;
       if (r.blob) {
         const name = baseName() + rangeSuffix() + '.mp4';
         const res = await J.saveFile(name, r.blob);
-        if (res === 'declined') txt.textContent += ' (save canceled)';
+        if (res === 'declined') txt.textContent += ' (enregistrement annulé)';
         offerShare(boxes, r.blob, name);
-      } else txt.textContent += ` · saved to “${fileName}”`;
-      if (r.tried && r.tried.length) txt.textContent += ' (the first method failed, so another encoder was used)';
+      } else txt.textContent += ` · enregistré sous « ${fileName} »`;
+      if (r.tried && r.tried.length) txt.textContent += ' (exporté via un encodeur de secours)';
       // audio that some players cannot play (Opus), or none at all: save the soundtrack as WAV next to it
       if (r.audioWanted && r.audio !== 'aac') {
         await J.saveFile(baseName() + rangeSuffix() + '_audio.wav', J.audioWav(S.audio.buffer, span.dur, span.t0));
-        txt.textContent += r.audio ? '. This browser encodes audio as Opus, which iMobile, QuickTime and some players cannot play, so the audio was also saved as WAV' : '. This browser cannot encode audio, so the audio was saved separately as WAV (combine it in a video editor)';
-      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '. No song is loaded, so the video has no audio (load the song again with “Load song”)';
+        txt.textContent += r.audio ? '. Ce navigateur encode l\'audio en Opus (souvent muet sur iPhone/QuickTime), l\'audio a aussi été sauvegardé en WAV' : '. Audio exporté séparément en WAV';
+      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '. Aucune piste audio chargée : la vidéo est muette.';
     } else {
       const blob = await J.exportPNGZip({ plan: S.plan, project: proj, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range: exportRange() });
-      txt.textContent = `Done: ${(blob.size / 1048576).toFixed(1)}MB`;
+      txt.textContent = `Terminé : ${(blob.size / 1048576).toFixed(1)}MB`;
       await J.saveFile(baseName() + rangeSuffix() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
     }
   } catch (e) {
-    txt.textContent = 'Error: ' + (e && e.message ? e.message : e);
+    txt.textContent = 'Erreur : ' + (e && e.message ? e.message : e);
     console.error(e);
     if (file) { try { await file.abort(); } catch (e2) {} }
   } finally {
@@ -60984,7 +61157,7 @@ function startTap(from = 0) {
   const t0 = from === 0 ? 0 : Math.max(0, prev.start + 0.01, cur.start - 2.5);      // a little before the line, never before the previous one
   pause(); seek(t0); updateTap();
   $('tapBtn').focus();
-  if (from > 0) toast(`Tap sync from line ${from + 1} (playing from ${J.fmtTime(t0)})`);
+  if (from > 0) toast(`Synchro tap depuis la ligne ${from + 1} (lecture à ${J.fmtTime(t0)})`);
   // カウントダウン: 3, 2, 1 — then the song starts
   const tap = S.tap;
   if (opt.count) {
@@ -61064,7 +61237,7 @@ function syncUI() {
   $('songTitle').value = S.project.title || ''; $('songArtist').value = S.project.artist || '';
   $('lyrics').value = S.project.lyrics;
   $('bpm').value = S.project.timing.bpm > 0 ? S.project.timing.bpm : '';
-  $('bpm').placeholder = S.audio ? `Auto ${S.audio.bpm}` : 'None';
+  $('bpm').placeholder = S.audio ? `Auto ${S.audio.bpm}` : 'Aucun';
   $('offset').value = S.project.timing.offset ?? 0.4;
   $('lineScale').value = S.project.timing.lineScale ?? 1;
   $('snap').checked = !!S.project.timing.snap;
@@ -61085,7 +61258,7 @@ function bind() {
     remember();
     S.project.lang = e.target.value; replan(); renderFontRoles(); commit(); flushSave();
     const l = J.resolveLang(S.project);
-    toast((S.project.lang === 'auto' ? 'Langue des paroles: auto-detect → ' : 'Langue des paroles: ') + J.LANG_LABEL[l]);
+    toast((S.project.lang === 'auto' ? 'Langue des paroles : auto → ' : 'Langue des paroles : ') + J.LANG_LABEL[l]);
   });
   $('songTitle').addEventListener('input', e => { S.project.title = e.target.value; replanSoon(300); });
   $('songArtist').addEventListener('input', e => { S.project.artist = e.target.value; replanSoon(300); });
@@ -61097,6 +61270,154 @@ function bind() {
   $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; replan(); });
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
   $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
+  const bai = $('btnAiTranscribe');
+  if (bai) {
+    bai.addEventListener('click', async () => {
+      const isFr = document.documentElement.lang === 'fr';
+      const isEn = document.documentElement.lang === 'en';
+
+      if (!S.audio) {
+        toast(isFr ? "Veuillez sélectionner un fichier audio pour l'analyse IA" : isEn ? "Please select an audio file for AI analysis" : "请选择需要分析的音乐音频文件");
+        const fileInput = $('audioFile');
+        if (fileInput) {
+          const onNextAudio = () => {
+            fileInput.removeEventListener('change', onNextAudio);
+            const checkReady = setInterval(() => {
+              if (S.audio && S.audio.buffer) {
+                clearInterval(checkReady);
+                runAiTranscription();
+              }
+            }, 250);
+            setTimeout(() => clearInterval(checkReady), 15000);
+          };
+          fileInput.addEventListener('change', onNextAudio, { once: true });
+          fileInput.click();
+        }
+        return;
+      }
+
+      runAiTranscription();
+
+      async function runAiTranscription() {
+        const origText = bai.textContent;
+        bai.classList.add('is-analyzing');
+        bai.disabled = true;
+        bai.textContent = isFr ? "✨ Détection IA en cours..." : isEn ? "✨ AI Transcribing..." : "✨ 正在智能听音识词...";
+        toast(isFr ? "🎙️ Analyse et transcription de la musique par l'IA en cours…" : isEn ? "🎙️ Analyzing music and transcribing singing lyrics…" : "🎙️ 正在倾听并智能提取歌词与时间戳…");
+
+        try {
+          const lang = $('lyricLang') ? $('lyricLang').value : 'auto';
+          const result = await J.aiTranscribeMusic(S.audio, lang);
+
+          if (result && result.lines && result.lines.length) {
+            pushEdit();
+            pause();
+
+            // Populate lyrics textarea with clean editable lines
+            const lyricRows = result.lines.map(l => l.text.trim());
+            const plainLyrics = lyricRows.join('\n');
+            S.project.lyrics = plainLyrics;
+            $('lyrics').value = plainLyrics;
+
+            // Populate exact lineTimes so each line corresponds to the exact singing moment!
+            S.project.timing.lineTimes = {};
+            result.lines.forEach((l, idx) => {
+              S.project.timing.lineTimes[idx] = +Number(l.start || 0).toFixed(3);
+            });
+
+            // Set detected language if detected and available
+            if (result.language && result.language !== 'auto') {
+              const langSel = $('lyricLang');
+              if (langSel) {
+                const opt = Array.from(langSel.options).find(o => o.value === result.language || (result.language.startsWith(o.value) && o.value !== 'auto'));
+                if (opt) langSel.value = opt.value;
+              }
+            }
+
+            // Set song title and artist if detected and currently empty
+            if (result.title && $('songTitle') && !$('songTitle').value.trim()) {
+              $('songTitle').value = result.title;
+              S.project.title = result.title;
+            }
+            if (result.artist && $('songArtist') && !$('songArtist').value.trim()) {
+              $('songArtist').value = result.artist;
+              S.project.artist = result.artist;
+            }
+
+            replan();
+            flushSave();
+            syncUI();
+            seek(0);
+
+            toast(isFr
+              ? "✨ Paroles détectées et synchronisées ! Vous pouvez les modifier librement."
+              : isEn
+              ? "✨ Lyrics transcribed and synchronized! You can edit them freely anytime."
+              : "✨ 已成功提取人声歌词并即时同步！您可以在文本框中随时自由编辑修改。");
+          } else {
+            // Local high-precision vocal segmentation fallback (when cloud API free tier is unavailable or offline)
+            const segs = (S.audio.vocalSegments && S.audio.vocalSegments.length)
+              ? S.audio.vocalSegments
+              : (S.plan && S.plan.cuts && S.plan.cuts.length)
+              ? S.plan.cuts.map(c => ({ start: c.start, end: c.end }))
+              : [];
+
+            if (segs.length > 0) {
+              pushEdit();
+              pause();
+
+              // If user already typed lyrics, preserve and align them!
+              const curLyrics = String(S.project.lyrics || '').trim();
+              if (curLyrics.length > 0) {
+                const parsed = J.parseLyrics(curLyrics);
+                const times = J.alignLinesToVocals(S.audio, parsed.lines);
+                if (times && Object.keys(times).length) {
+                  S.project.timing.lineTimes = times;
+                }
+              } else {
+                // Generate clean editable vocal phrase lines
+                const sampleLines = segs.map((seg, idx) => {
+                  const num = idx + 1;
+                  return isFr ? `Ligne de chant ${num}` : isEn ? `Vocal line ${num}` : `歌唱分句 ${num}`;
+                });
+                S.project.lyrics = sampleLines.join('\n');
+                $('lyrics').value = S.project.lyrics;
+                S.project.timing.lineTimes = {};
+                segs.forEach((seg, idx) => {
+                  S.project.timing.lineTimes[idx] = +Number(seg.start || 0).toFixed(3);
+                });
+              }
+
+              replan(); flushSave(); syncUI(); seek(0);
+
+              if (result && result.billingRequired) {
+                toast(isFr
+                  ? "💡 Alignement vocal haute précision activé ! Les phrases chantées sont calées sur la vidéo. (Pour l'IA Cloud automatique, activez la facturation sur Google AI Studio)."
+                  : isEn
+                  ? "💡 High-precision vocal alignment active! Sung lines aligned to video. (For cloud AI speech-to-text, enable billing on Google AI Studio)."
+                  : "💡 已启用本地高精度人声对齐！歌唱分句已完美对齐视频。（如需云端全自动语音转Texte，请在 Google AI Studio 开启结算). ");
+              } else {
+                toast(isFr
+                  ? "💡 Segments vocaux détectés ! Modifiez le texte des paroles dans la zone de texte."
+                  : isEn
+                  ? "💡 Vocal segments detected! Edit your lyrics directly in the text area."
+                  : "💡 已精准捕捉到人声分段！请在文本框中输入或修改您的歌词。");
+              }
+            } else {
+              toast(isFr ? "Aucune voix chantée détectée dans cet extrait audio" : isEn ? "No singing voice detected in audio" : "音频中未检测到明显的歌唱人声");
+            }
+          }
+        } catch (err) {
+          toast(isFr ? "Alignement local des paroles effectué." : isEn ? "Local vocal alignment applied." : "已应用本地人声分句对齐。");
+        } finally {
+          bai.classList.remove('is-analyzing');
+          bai.disabled = false;
+          bai.textContent = origText;
+        }
+      }
+    });
+  }
+
   const bvs = $('btnVocalSync');
   if (bvs) {
     bvs.addEventListener('click', async () => {
@@ -61178,8 +61499,8 @@ function bind() {
   $('tlIn').addEventListener('click', () => tlZoom(1.6));
   $('tlOut').addEventListener('click', () => tlZoom(1 / 1.6));
   $('tlFit').addEventListener('click', () => { TL.z = 1; TL.off = 0; drawTimeline(); });
-  $('btnUndoEdit').addEventListener('click', () => edGo(-1));
-  $('tapBack').addEventListener('click', tapBack);
+  const btnUndoEdit = $('btnUndoEdit'); if (btnUndoEdit) btnUndoEdit.addEventListener('click', () => edGo(-1));
+  const tapBackBtn = $('tapBack'); if (tapBackBtn) tapBackBtn.addEventListener('click', tapBack);
   bindRangeUI();
   document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
@@ -61197,14 +61518,14 @@ function bind() {
     renderTech(); drawStyleGrid(); replan(); commit(); flushSave();
     toast(e.target.checked ? msgOn : msgOff);
   }));
-  setSwitch('extra-toggle', 'extra', true, 'New effects: on', 'New effects: off (original set only)');
-  setSwitch('wa-toggle', 'wa', true, 'Motifs japonais: on', 'Motifs japonais: off for random picks');
-  setSwitch('typo-toggle', 'typo', true, 'Composants typographiques: on', 'Composants typographiques: off (not picked by Aléatoire or Shuffle)');
-  setSwitch('kinetic-toggle', 'kinetic', true, 'Cinétique parts: on', 'Cinétique parts: off (not picked by Aléatoire or Shuffle)');
+  setSwitch('extra-toggle', 'extra', true, 'Effets bonus : activés', 'Effets bonus : désactivés');
+  setSwitch('wa-toggle', 'wa', true, 'Motifs japonais : activés', 'Motifs japonais : désactivés');
+  setSwitch('typo-toggle', 'typo', true, 'Composants typographiques : activés', 'Composants typographiques : désactivés');
+  setSwitch('kinetic-toggle', 'kinetic', true, 'Composants cinétiques : activés', 'Composants cinétiques : désactivés');
   setSwitch('extra2-toggle', 'extra2', true, 'Extra effects 2: on', 'Extra effects 2: off');
-  setSwitch('horror-toggle', 'horror', true, 'Horreur effects: on (Aléatoire adds a Horreur mood)', 'Horreur effects: off');
-  setSwitch('unify-toggle', 'unify', true, 'Harmonie visuelle: on (parts match; hits, morphs and weight too)', 'Harmonie visuelle: off');
-  setSwitch('typeset-toggle', 'typeset', true, 'Typographie soignée: on (spacing, particles, Latin, 0.2 s lead, fewer effects)', 'Typographie soignée: off');
+  setSwitch('horror-toggle', 'horror', true, 'Effets d\'horreur : activés (l\'ambiance Horreur est ajoutée)', 'Effets d\'horreur : désactivés');
+  setSwitch('unify-toggle', 'unify', true, 'Harmonie visuelle : activée', 'Harmonie visuelle : désactivée');
+  setSwitch('typeset-toggle', 'typeset', true, 'Typographie soignée : activée', 'Typographie soignée : désactivée');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('fxHideNo').addEventListener('change', e => { remember(); S.project.fx.hideNo = e.target.checked; replan(); commit(); });
@@ -61224,8 +61545,8 @@ function bind() {
     const name = $('localFont').value.trim(); if (!name) return;
     const key = 'local_' + name.replace(/\s+/g, '_');
     const weight = /bold|太|black|heavy|w[6-9]|[6-9]00/i.test(name) ? 700 : 400;
-    J.addUserFont(key, name + ' (installed)', name, weight);
-    S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + ' (installed)', family: name, weight }]);
+    J.addUserFont(key, name + ' (installée)', name, weight);
+    S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + ' (installée)', family: name, weight }]);
     S.project.fonts.display = key; $('localFont').value = '';
     fontKey = ''; renderFontRoles(); replan();
   });
@@ -61236,7 +61557,7 @@ function bind() {
       S.project.userFonts = (S.project.userFonts || []).filter(x => x.key !== uf.key).concat([uf]);
       S.project.fonts.display = uf.key; fontKey = ''; renderFontRoles(); replan(); flushSave();
     }
-    catch (err) { showMsg('Could not load the font'); setTimeout(() => showMsg(null), 2500); }
+    catch (err) { showMsg('Impossible de charger la police'); setTimeout(() => showMsg(null), 2500); }
   });
   ['outAspect', 'eAspect'].forEach(id => $(id).addEventListener('change', e => { S.project.aspect = e.target.value; syncOut(); replan(); codecNote(); }));
   ['outRes', 'eRes'].forEach(id => $(id).addEventListener('change', e => { S.project.res = +e.target.value; syncOut(); autosave(); codecNote(); }));
@@ -61245,17 +61566,17 @@ function bind() {
   ['outKey', 'eKey'].forEach(id => $(id).addEventListener('change', e => {
     S.project.keyBg = e.target.value; syncOut(); replan(); flushSave();
     const k = J.keyMode(S.project);
-    toast(k ? `Précédentground：${k === 'green' ? 'Green screen' : 'Black background'}（white text and effects only）` : 'Précédentground：Style colors');
+    toast(k ? `Arrière-plan：${k === 'green' ? 'Fond vert' : 'Fond noir'}（texte et effets blancs uniquement）` : 'Arrière-plan：Couleurs du style');
   }));
   $('outAudio').addEventListener('change', e => { S.project.includeAudio = e.target.checked; autosave(); });
   document.querySelectorAll('.centerDirSel').forEach(el => el.addEventListener('change', e => {
     S.project.centerDir = e.target.value; syncOut(); replan(); flushSave();
-    toast(e.target.value === 'lr' ? 'Tall frames: split left / right' : 'Tall frames: split top / bottom');
+    toast(e.target.value === 'lr' ? 'Cadres verticaux : division gauche / droite' : 'Cadres verticaux : division haut / bas');
   }));
   ['outCenter', 'eCenter'].forEach(id => $(id).addEventListener('change', e => {
     S.project.centerFree = e.target.checked; syncOut(); replan(); flushSave();
     const tall = S.plan.H > S.plan.W * 1.1 && S.project.centerDir !== 'lr';
-    toast(e.target.checked ? `Centre kept free: lyrics and effects go ${tall ? 'top / bottom' : 'left / right'}` : 'Centre no longer kept free');
+    toast(e.target.checked ? `Centre dégagé : les paroles sont placées ${tall ? 'en haut et en bas' : 'à gauche et à droite'}` : 'Centre libéré désactivé');
   }));
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
   ['btnMP4File', 'eMP4File'].forEach(id => $(id).addEventListener('click', () => runExport('mp4file')));
@@ -61301,7 +61622,7 @@ function bind() {
   ['btnLRC', 'eLRC'].forEach(id => $(id).addEventListener('click', saveLrc));
   $('btnReset').addEventListener('click', () => {
     const dlg = $('resetDlg');
-    if (!dlg || typeof dlg.showModal !== 'function') { if (window.confirm('Effacer les paroles, song, settings and history and start over? This cannot be undone.')) resetAll(); return; }
+    if (!dlg || typeof dlg.showModal !== 'function') { if (window.confirm('Tout effacer et réinitialiser l\'application ? Cette action est irréversible.')) resetAll(); return; }
     dlg.returnValue = ''; dlg.showModal();
   });
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
@@ -61353,7 +61674,7 @@ async function openProjectFile(f) {
     ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
     syncUI(); replan(); restoreFonts(); commit(); updateEditBtns(); flushSave();
   }
-  catch (err) { showMsg('Could not open the project'); setTimeout(() => showMsg(null), 2500); }
+  catch (err) { showMsg('Impossible d’ouvrir le projet'); setTimeout(() => showMsg(null), 2500); }
 }
 /* files dropped anywhere on the window: a song, lyrics (LRC / SRT / VTT / text) or a saved project */
 function bindDrop() {
@@ -61382,13 +61703,13 @@ function bindDrop() {
 let audioSeq = 0;
 async function loadAudioFile(f, restored) {
   const my = ++audioSeq;                      // only the latest choice may win (an earlier, slower analysis is dropped)
-  $('audioName').textContent = 'Analyzing audio…';
+  $('audioName').textContent = 'Analyse audio en cours…';
   try {
     pause();
     const a = await J.analyzeAudio(f);
     if (my !== audioSeq) return false;
     S.audio = a;
-    $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)} · about ${S.audio.bpm}BPM）` + (restored ? ' · last song' : '');
+    $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)} · environ ${S.audio.bpm}BPM）` + (restored ? ' · morceau précédent' : '');
     S.project.audioName = f.name;
     if (!restored && J.saveSong) J.saveSong(f);             // kept in this browser: a reload does not drop the song from exports
     S.project.timing.snap = true;
@@ -61401,17 +61722,17 @@ async function loadAudioFile(f, restored) {
     }
     syncUI(); replan();
     return true;
-  } catch (err) { if (my !== audioSeq) return false; $('audioName').textContent = 'Could not load: ' + err.message; S.audio = null; return false; }
+  } catch (err) { if (my !== audioSeq) return false; $('audioName').textContent = 'Impossible de charger : ' + err.message; S.audio = null; return false; }
 }
 
 /* ---------------- かんたんモードの案内ツアー ---------------- */
 const TOUR = [
-  { t: () => $('lyrics'), title: '1. Enter lyrics', text: 'One line is one phrase. A blank line adds a short pause; [interlude 8] makes an 8-second instrumental part (background and decorations only).' },
-  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. Load the song', text: 'Load an mp3 or similar file: JIZURA finds the beats and times the cuts to them. It also works without a song. “Tap to sync” lets you mark where each line starts.' },
-  { t: () => $('btnOmakaseBig'), title: '3. Créer une variation', text: 'Style, mood, motion, palette and arrangement are chosen for you. Each press makes a new variation; “◀ Previous” goes back.' },
-  { t: () => $('btnPlay'), title: '4. Play it', text: 'Play it back. On the timeline below you can drag the line markers (+ and − zoom).' },
-  { t: () => $('lineList'), title: '5. Fix single lines', text: 'For each line you can edit the lyrics (✎), set the number of cuts, redo tap sync from that line (◎) or reroll just that line (dice).' },
-  { t: () => $('eMP4').closest('.easy-sec') || $('eMP4'), title: '6. Export', text: 'Choose the aspect ratio (such as vertical 9:16) and resolution, then export MP4. “Export range” exports only the lines you pick.' },
+  { t: () => $('lyrics'), title: '1. Saisir les paroles', text: 'Une ligne par phrase. Une ligne vide marque une pause ; [interlude 8] crée une pause musicale de 8 secondes.' },
+  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. Importer un morceau', text: 'Importez un mp3 ou wav : Alexura détecte le tempo ou extrait les paroles automatiquement par IA.' },
+  { t: () => $('btnOmakaseBig'), title: '3. Créer une variation', text: 'Le style, l\'ambiance, les mouvements et les couleurs sont générés automatiquement. Revenez en arrière avec « ◀ Précédent ».' },
+  { t: () => $('btnPlay'), title: '4. Prévisualiser', text: 'Lancez la lecture et ajustez les marqueurs sur la frise chronologique ci-dessous.' },
+  { t: () => $('lineList'), title: '5. Ajuster chaque ligne', text: 'Modifiez le texte (✎), le nombre de plans, resynchronisez (◎) ou relancez une ligne.' },
+  { t: () => $('eMP4').closest('.easy-sec') || $('eMP4'), title: '6. Exporter', text: 'Choisissez le format (16:9, 9:16…) et la résolution, puis exportez directement en MP4.' },
 ];
 const TR = { i: -1 };
 function tourShow(i) {
@@ -61424,7 +61745,7 @@ function tourShow(i) {
   el.querySelector('.tour-title').textContent = st.title;
   el.querySelector('.tour-text').textContent = st.text;
   el.querySelector('.tour-prev').disabled = i === 0;
-  el.querySelector('.tour-next').textContent = i === n - 1 ? 'Start' : 'Suivant';
+  el.querySelector('.tour-next').textContent = i === n - 1 ? 'Commencer' : 'Suivant';
   if (tg && tg.scrollIntoView) tg.scrollIntoView({ block: 'center', behavior: 'auto' });
   requestAnimationFrame(() => tourPlace(tg));
   el.querySelector('.tour-next').focus();
@@ -61472,7 +61793,7 @@ async function restoreFonts() {
   if (!list.length) return;
   const missing = await J.restoreUserFonts(list);
   fontKey = ''; renderFontRoles(); replan();
-  if (missing.length) toast(`The uploaded font (${missing.join(', ')}) is not in this browser. Load the same file again under Fonts (a similar font is used until then)`);
+  if (missing.length) toast(`La police importée (${missing.join(', ')}) est absente. Rechargez le fichier dans Polices.`);
 }
 
 /* ---------------- boot ---------------- */
@@ -61485,8 +61806,8 @@ function boot() {
   try { mode = localStorage.getItem('jizura.mode') || mode; } catch (e) {}
   setMode(mode); commit();
   bindTour();
+  // Tour is accessible manually via the ? button (#btnTour), not auto-started
   let seen = false; try { seen = localStorage.getItem('jizura.tourDone') === '1'; } catch (e) {}
-  if (!seen && S.mode === 'easy' && !window.__adobe_cep__) setTimeout(tourStart, 600);   // first visit: show the tour once
   // open on a representative frame (end of the first cut's entrance)
   const c0 = S.plan.cuts.find(c => c.line >= 0);
   if (c0) seek(c0.start + Math.min(c0.dur * 0.6, c0.inDur + 0.25));

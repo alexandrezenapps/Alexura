@@ -53,6 +53,7 @@ BODY = {
     '<button class="tour-next primary small">次へ</button>': '<button class="tour-next primary small">Next</button>',
     'title="かんたんモードの使い方を案内します" aria-label="使い方の案内"': 'title="A short tour of the Simple mode" aria-label="Tour"',
     '押し間違えたら <span class="kbd">Backspace</span> か「1つ戻る」。途中の行からやり直すときは、行一覧の ◎ を押します。': ' A wrong tap? Press <span class="kbd">Backspace</span> or “Undo tap”. To redo from a line in the middle, press ◎ in the line list.',
+    '<button id="btnAiTranscribe" class="accent" title="AI听音识词：自动分析歌曲音频，多语言（中文、法文、英文等）识别人声歌词并即时同步到视频">✨ AI 识词与同步</button>': '<button id="btnAiTranscribe" class="accent" title="AI Music Transcription: listens to the song, auto-detects language (French, Chinese, English…), transcribes lyrics and syncs timestamps instantly">✨ AI Transcribe Lyrics</button>',
     '<button id="btnVocalSync" class="ghost" title="根据歌声人声起始瞬间，自动精准同步各行歌词">⚡ 人声同步</button>': '<button id="btnVocalSync" class="ghost" title="Instantly synchronize lyric lines to the singing voice onset">⚡ Voice Sync</button>',
     '<button id="tapBack" class="ghost">1つ戻る</button>': '<button id="tapBack" class="ghost">Undo tap</button>',
     '行の区切り（上の目盛り）はドラッグで動かせます。<span class="kbd">Shift</span> で拍に吸着しない': 'Drag the line markers (top) to move line starts. Hold <span class="kbd">Shift</span> to ignore beats',

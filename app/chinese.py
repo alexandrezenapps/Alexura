@@ -12,6 +12,7 @@ BODY = {
     '曲名': '歌名', '自動': '自動',
     '曲名（タイトルカード・HUDに表示）': '歌名（顯示在標題卡與 HUD）',
     'アーティスト': '演唱者', '表示モード': '顯示模式',
+    '<button id="btnAiTranscribe" class="accent" title="AI听音识词：自动分析歌曲音频，多语言（中文、法文、英文等）识别人声歌词并即时同步到视频">✨ AI 识词与同步</button>': '<button id="btnAiTranscribe" class="accent" title="AI聽音識詞：自動分析歌曲音訊，多語言（中文、法文、英文等）識別歌聲歌詞並即時同步到MV視頻">✨ AI 識詞與同步</button>',
     '<button id="btnVocalSync" class="ghost" title="根据歌声人声起始瞬间，自动精准同步各行歌词">⚡ 人声同步</button>': '<button id="btnVocalSync" class="ghost" title="根據歌聲人聲起始瞬間，自動精準同步各行歌詞">⚡ 人聲同步</button>',
     'おまかせボタン中心のシンプルな画面': '以「隨機生成」按鈕為主的簡易畫面',
     'すべての設定を表示': '顯示所有設定',

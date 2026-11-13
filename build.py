@@ -15,8 +15,8 @@ def build(lang):
     english = lang == 'en'
     local = lang in i18n.MODULES
     m = i18n.module(lang) if local else None
-    title = 'JIZURA — Lyric Motion Video Maker' if english else m.TITLE if local else 'JIZURA 字面'
-    description = ('Turn lyrics into animated lyric videos in your browser and export MP4.' if english else m.DESCRIPTION if local else '歌詞を入れると文字PV（リリックモーション）を自動で組み立てて MP4 に書き出すブラウザアプリ')
+    title = 'Alexura — Lyric Motion Video Maker' if english else m.TITLE if local else 'Alexura — Créateur de vidéos de paroles animées'
+    description = ('Turn lyrics into animated lyric videos in your browser and export MP4.' if english else m.DESCRIPTION if local else 'Transformez des paroles en vidéos de paroles animées dans votre navigateur et exportez en MP4.')
     folder = dict((c, f) for c, f, _, _ in i18n.EDITIONS)[lang]
     canonical = i18n.BASE + (folder + '/' if folder else '')
     language_nav = i18n.nav(lang)
@@ -50,7 +50,7 @@ def build(lang):
 <meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,600&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 {read('app/style.css')}
 </style>

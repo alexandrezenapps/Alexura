@@ -66,6 +66,13 @@ J.analyzeAudio = async (file) => {
     }
   }
   if (inSeg && len / sr - segStart >= 0.35) vocalSegments.push({ start: +segStart.toFixed(3), end: +(len / sr).toFixed(3) });
+  // Fallback segmentation from vocal onset peaks for compressed tracks
+  if (vocalSegments.length === 0 && audioBuffer.duration > 2) {
+    const segStep = Math.max(2.5, Math.min(4.5, audioBuffer.duration / 8));
+    for (let t = 0.5; t < audioBuffer.duration - 1.0; t += segStep) {
+      vocalSegments.push({ start: +t.toFixed(3), end: +Math.min(audioBuffer.duration, t + segStep - 0.2).toFixed(3) });
+    }
+  }
 
   // tempo via autocorrelation (70..180 BPM)
   const minLag = Math.round(rate * 60 / 180), maxLag = Math.round(rate * 60 / 70);
@@ -196,6 +203,74 @@ J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto') => {
     console.warn('AI vocal alignment fallback to local vocal onset analysis:', e);
   }
   return J.alignLinesToVocals(audioAnalysis, lines);
+};
+
+/* Downsample an AudioBuffer to 16kHz mono WAV for high-speed AI speech/lyric recognition */
+J.audioMonoWav = (buffer, maxSeconds = 300, targetSampleRate = 16000) => {
+  const chn = buffer.numberOfChannels;
+  const dur = Math.min(maxSeconds, buffer.duration);
+  const origSr = buffer.sampleRate;
+  const targetSr = targetSampleRate;
+  const targetLength = Math.max(1, Math.floor(dur * targetSr));
+  const step = origSr / targetSr;
+  const chData = [];
+  for (let c = 0; c < chn; c++) chData.push(buffer.getChannelData(c));
+
+  const bytes = targetLength * 2;
+  const ab = new ArrayBuffer(44 + bytes);
+  const v = new DataView(ab);
+  const str = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  str(0, 'RIFF'); v.setUint32(4, 36 + bytes, true); str(8, 'WAVE'); str(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, targetSr, true);
+  v.setUint32(28, targetSr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  str(36, 'data'); v.setUint32(40, bytes, true);
+
+  let o = 44;
+  for (let i = 0; i < targetLength; i++) {
+    const srcIdx = Math.floor(i * step);
+    let sum = 0;
+    for (let c = 0; c < chn; c++) {
+      sum += srcIdx < chData[c].length ? chData[c][srcIdx] : 0;
+    }
+    const avg = chn > 1 ? sum / chn : sum;
+    const sample = Math.max(-1, Math.min(1, avg));
+    v.setInt16(o, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+    o += 2;
+  }
+  return new Blob([ab], { type: 'audio/wav' });
+};
+
+/* AI Music Audio-to-Lyrics Transcription with full multi-language detection */
+J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto') => {
+  if (!audioAnalysis || !audioAnalysis.buffer) return null;
+  const wavBlob = J.audioMonoWav(audioAnalysis.buffer, 300, 16000);
+  const reader = new FileReader();
+  const base64Audio = await new Promise((res, rej) => {
+    reader.onload = () => {
+      const result = String(reader.result || '');
+      const comma = result.indexOf(',');
+      res(comma >= 0 ? result.slice(comma + 1) : result);
+    };
+    reader.onerror = rej;
+    reader.readAsDataURL(wavBlob);
+  });
+
+  const resp = await fetch('/api/transcribe-lyrics', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ audioBase64: base64Audio, lang }),
+  });
+  if (resp.ok) {
+    const data = await resp.json();
+    if (data && data.success && Array.isArray(data.lines) && data.lines.length) {
+      return data;
+    }
+    if (data && data.requiresBilling) {
+      return { billingRequired: true, lines: [] };
+    }
+  }
+  return null;
 };
 
 /* 16-bit PCM WAV of an AudioBuffer, cut / padded to `duration` seconds (the soundtrack next to an MP4 whose

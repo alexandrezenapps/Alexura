@@ -7,7 +7,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = Number(process.env.PORT) || 3000;
+
+// Parse CLI args (e.g. --port 3000) or APP_PORT, strictly defaulting to 3000 (port 8080 is reserved for Nginx)
+const portArgIndex = process.argv.indexOf('--port');
+const cliPort = portArgIndex !== -1 ? Number(process.argv[portArgIndex + 1]) : null;
+const PORT = cliPort || Number(process.env.APP_PORT) || 3000;
 const HOST = '0.0.0.0';
 
 // Initialize Gemini client on server-side if key is present
@@ -42,7 +46,7 @@ Identify the precise timestamp in seconds (start) where the singing vocal begins
 Return a structured JSON with alignments.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
+      model: 'gemini-2.5-flash',
       contents: [
         {
           inlineData: {
@@ -86,38 +90,140 @@ Return a structured JSON with alignments.`;
 
     return res.json({ success: true, lineTimes });
   } catch (err: any) {
-    console.warn('AI Vocal alignment error:', err?.message || err);
-    return res.status(200).json({ success: false, error: err?.message || 'alignment_error' });
+    const msg = err?.message || String(err || '');
+    const isBilling = msg.includes('billing') || msg.includes('free tier') || err?.status === 'PERMISSION_DENIED' || err?.code === 403;
+    return res.status(200).json({
+      success: false,
+      reason: isBilling ? 'billing_required' : 'alignment_error',
+      requiresBilling: isBilling,
+    });
   }
 });
 
-// Serve static assets from the project root
-app.use(express.static(__dirname, {
-  extensions: ['html'],
-  index: ['index.html']
-}));
+// AI Music Audio-to-Lyrics Transcription & Alignment Endpoint
+app.post('/api/transcribe-lyrics', async (req, res) => {
+  try {
+    const { audioBase64, lang } = req.body;
+    if (!ai || !audioBase64) {
+      return res.status(200).json({ success: false, reason: 'ai_not_configured' });
+    }
 
-// Route handler for root
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+    const prompt = `You are a world-class music audio lyric transcription and timecode alignment engine.
+Carefully listen to this music audio track and the singing vocals:
+1. Detect the language of the sung vocals (e.g. "fr" for French, "zh" for Chinese, "en" for English, "ja" for Japanese, "ko" for Korean, "vi" for Vietnamese, etc.). Preferred language if specified: ${lang || 'auto'}.
+2. Accurately transcribe all sung lyrics line-by-line, dividing into natural musical phrases or verse/chorus lines appropriate for dynamic lyric video / music video typography (MV).
+3. For each lyric line:
+   - "text": The exact sung lyrics in their native script/orthography.
+   - "start": Timestamp in seconds (float, e.g. 14.25) where the singing vocal for this line begins.
+   - "end": Timestamp in seconds (float, e.g. 17.80) where the singing vocal for this line ends.
+4. If there is an instrumental intro or break, make sure the "start" of lines reflect the actual singing moment.
+5. If you recognize the song title or artist from the lyrics/song, provide "title" and "artist", else empty strings.
+6. If the audio is purely instrumental without vocals, set "isInstrumental": true and "lines": [].
+Ensure precision timestamps so that lyrics match the singing vocal instantaneously.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [
+        {
+          inlineData: {
+            mimeType: 'audio/wav',
+            data: audioBase64,
+          },
+        },
+        { text: prompt },
+      ],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            language: { type: Type.STRING },
+            title: { type: Type.STRING },
+            artist: { type: Type.STRING },
+            isInstrumental: { type: Type.BOOLEAN },
+            lines: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  text: { type: Type.STRING },
+                  start: { type: Type.NUMBER },
+                  end: { type: Type.NUMBER },
+                },
+                required: ['text', 'start', 'end'],
+              },
+            },
+          },
+          required: ['language', 'lines'],
+        },
+      },
+    });
+
+    const parsed = JSON.parse(response.text || '{}');
+    const lines = Array.isArray(parsed.lines) ? parsed.lines : [];
+    return res.json({
+      success: true,
+      language: parsed.language || 'auto',
+      title: parsed.title || '',
+      artist: parsed.artist || '',
+      isInstrumental: !!parsed.isInstrumental,
+      lines: lines.map((l: any) => ({
+        text: String(l.text || '').trim(),
+        start: Math.max(0, +Number(l.start || 0).toFixed(3)),
+        end: Math.max(0, +Number(l.end || 0).toFixed(3)),
+      })).filter((l: any) => l.text.length > 0),
+    });
+  } catch (err: any) {
+    const msg = err?.message || String(err || '');
+    const isBilling = msg.includes('billing') || msg.includes('free tier') || err?.status === 'PERMISSION_DENIED' || err?.code === 403;
+    return res.status(200).json({
+      success: false,
+      reason: isBilling ? 'billing_required' : 'transcription_error',
+      requiresBilling: isBilling,
+    });
+  }
 });
 
-// Explicit route handlers for language edition directories if accessed without trailing slash
+// Explicit route handlers for language edition directories
 const editions = ['fr', 'en', 'zh-hant', 'zh-hans', 'ko', 'id', 'vi'];
+
+// Route handler for root: intelligently serve French edition (/fr/index.html) as the primary experience
+app.get('/', (req, res) => {
+  const lang = req.query.lang as string;
+  if (lang && editions.includes(lang)) {
+    return res.redirect(`/${lang}/`);
+  }
+  const accept = (req.headers['accept-language'] || '').toLowerCase();
+  if (accept.includes('ja')) {
+    return res.sendFile(path.join(__dirname, 'index.html'));
+  }
+  if (accept.includes('zh')) {
+    return res.sendFile(path.join(__dirname, 'zh-hans', 'index.html'));
+  }
+  // Default to French for Alexura
+  res.sendFile(path.join(__dirname, 'fr', 'index.html'));
+});
+
 for (const ed of editions) {
-  app.get(`/${ed}`, (req, res) => {
-    res.redirect(`/${ed}/`);
-  });
-  app.get(`/${ed}/`, (req, res) => {
+  app.get([`/${ed}`, `/${ed}/`], (req, res) => {
+    if (!req.path.endsWith('/')) {
+      return res.redirect(301, `/${ed}/`);
+    }
     res.sendFile(path.join(__dirname, ed, 'index.html'));
   });
 }
 
-// Fallback to index.html for unknown HTML navigations
+// Serve static assets from the project root without auto-serving index.html on root
+app.use(express.static(__dirname, {
+  extensions: ['html'],
+  index: false
+}));
+
+// Fallback to fr/index.html for unknown HTML navigations
 app.use((req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'fr', 'index.html'));
 });
 
 app.listen(PORT, HOST, () => {
-  console.log(`ALEZURA server running at http://${HOST}:${PORT}`);
+  console.log(`Alexura server running at http://${HOST}:${PORT}`);
 });
