@@ -519,31 +519,191 @@ h3 {
   box-shadow: 0 4px 14px rgba(0, 113, 227, 0.18);
 }
 
-/* Tap Panel */
+/* Studio Tap Sync Button & Guided Console */
+#btnTap {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  border: 1px solid rgba(17, 17, 19, 0.16);
+  background: #ffffff;
+  color: var(--text);
+  transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease, transform 0.12s ease;
+}
+#btnTap:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(0, 113, 227, 0.05);
+}
+#btnTap[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgba(0, 113, 227, 0.28);
+}
+
 .tapbox {
-  border: 1px solid rgba(0, 113, 227, 0.25);
+  border: 1px solid rgba(0, 113, 227, 0.28);
   border-radius: var(--r-card);
-  padding: 16px;
+  padding: 14px 15px;
   display: grid;
-  gap: 12px;
+  gap: 10px;
   background: #ffffff;
   box-shadow: var(--shadow-pop);
 }
-.tapbox .next { font-size: 15px; font-weight: 600; color: var(--text); }
+.tap-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tap-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+.tap-beat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(17, 17, 19, 0.18);
+  transition: transform 80ms ease, background-color 80ms ease;
+}
+.tap-beat-dot.is-pulse {
+  background: var(--accent);
+  transform: scale(1.45);
+}
+.tap-tc {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+.tap-prog {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.tap-guide {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+.tap-meter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tap-meter-lbl {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.tap-meter {
+  flex: 1 1 0;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(17, 17, 19, 0.08);
+  overflow: hidden;
+}
+.tap-meter i {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0071e3, #10b981);
+  transition: width 45ms linear;
+}
+.tap-snap-note {
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  max-width: 55%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tap-stage {
+  display: grid;
+  gap: 4px;
+  padding: 9px 11px;
+  border-radius: 9px;
+  background: #f8fafc;
+  border: 1px solid rgba(17, 17, 19, 0.08);
+}
+.tap-prev,
+.tap-next {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tapbox .next {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.tap-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-top: 4px;
+}
+.tap-w {
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(17, 17, 19, 0.1);
+  background: #ffffff;
+  color: var(--muted);
+}
+.tap-w.is-done {
+  color: #059669;
+  border-color: rgba(5, 150, 105, 0.35);
+  background: rgba(16, 185, 129, 0.08);
+}
+.tap-w.is-target {
+  color: #ffffff;
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
+}
+.tap-actions {
+  display: grid;
+  gap: 7px;
+}
+.tap-sub-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.tap-sub-btns button {
+  flex: 1 1 auto;
+}
 button.tap {
-  font: 700 18px/1 var(--ui);
-  letter-spacing: 0.12em;
-  padding: 16px;
+  font: 700 16px/1 var(--ui);
+  letter-spacing: 0.08em;
+  padding: 14px;
   background: linear-gradient(180deg, #0071e3 0%, #005bb5 100%);
   color: #ffffff;
-  border: 1px solid rgba(0, 113, 227, 0.8);
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 113, 227, 0.35);
+  border: 1px solid rgba(0, 113, 227, 0.85);
+  border-radius: 10px;
+  box-shadow: 0 5px 16px rgba(0, 113, 227, 0.32);
+  user-select: none;
+  touch-action: manipulation;
 }
 button.tap:hover {
   background: linear-gradient(180deg, #1d8cf8 0%, #0071e3 100%);
-  transform: translateY(-1.5px);
-  box-shadow: 0 8px 26px rgba(0, 113, 227, 0.45);
+  transform: translateY(-1px);
+  box-shadow: 0 7px 22px rgba(0, 113, 227, 0.42);
+}
+button.tap.is-hit {
+  transform: scale(0.985);
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.48);
 }
 .col-left > #tapPanel {
   position: sticky;
@@ -552,13 +712,35 @@ button.tap:hover {
   margin: 10px 12px;
   box-shadow: var(--shadow-pop);
 }
-.tapbox.compact .hint { display: none; }
-.tapbox .tap-opts { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
-.tapbox .tap-opts label { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; }
-.tapbox .tap-count { margin-left: 10px; font: 700 24px/1 var(--mono); color: var(--accent); }
+.tapbox.compact .tap-guide { display: none; }
+.tapbox .tap-opts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+  font-size: 11.5px;
+  color: var(--text-soft);
+}
+.tapbox .tap-opts label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-weight: 600;
+}
+.tapbox .tap-opts label.tap-chk {
+  justify-content: flex-start;
+  cursor: pointer;
+}
+.tapbox .tap-opts select {
+  width: auto;
+  max-width: 150px;
+  padding: 3px 6px;
+  font-size: 11.5px;
+}
+.tapbox .tap-count { margin-left: 10px; font: 700 22px/1 var(--mono); color: var(--accent); }
 
 @media (max-width: 1180px), (max-height: 619px) {
-  .col-left > #tapPanel { position: fixed; top: 12px; left: 12px; right: 12px; bottom: auto; margin: 0; max-height: 64vh; overflow: auto; box-shadow: var(--shadow-pop); }
+  .col-left > #tapPanel { position: fixed; top: 12px; left: 12px; right: 12px; bottom: auto; margin: 0; max-height: 70vh; overflow: auto; box-shadow: var(--shadow-pop); }
 }
 
 /* Line List */
@@ -1621,6 +1803,12 @@ button.chip { cursor: pointer; }
   color: #b45309;
   border-color: rgba(245, 158, 11, 0.3);
 }
+.ad-pill.is-val {
+  background: rgba(16, 185, 129, 0.1);
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.25);
+  font-variant-numeric: tabular-nums;
+}
 .ln-tags {
   display: inline-flex;
   flex-wrap: wrap;
@@ -1657,6 +1845,21 @@ button.chip { cursor: pointer; }
   background: rgba(245, 158, 11, 0.18);
   color: #b45309;
 }
+.ln-tag.is-gap {
+  background: rgba(239, 68, 68, 0.14);
+  color: #b91c1c;
+}
+.kw.is-uncertain {
+  text-decoration: underline dotted rgba(217, 119, 6, 0.78);
+  text-underline-offset: 4px;
+}
+.kw.is-boundary-warn {
+  border-bottom: 1.5px dashed rgba(180, 83, 9, 0.45);
+}
+.kw.is-overlap {
+  background: rgba(168, 85, 247, 0.08);
+  border-radius: 3px;
+}
 .kp-backing {
   font-size: 11.5px;
   font-style: italic;
@@ -1665,4 +1868,204 @@ button.chip { cursor: pointer; }
   min-height: 15px;
 }
 
+/* ============================================================
+   10. Precision Lyrics, Word, Character & Timestamp Editor
+   ============================================================ */
+.le-panel {
+  display: grid;
+  gap: 10px;
+}
+.le-stats {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.le-sub {
+  display: grid;
+  gap: 7px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(17, 17, 19, 0.08);
+}
+.le-sub-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.le-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.le-line-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.le-line-nav select {
+  flex: 1 1 130px;
+  min-width: 100px;
+  font-size: 12px;
+}
+.le-ts-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.le-ts-field {
+  display: grid;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.le-num-grp {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.le-num-grp input[type="number"] {
+  flex: 1 1 0;
+  min-width: 58px;
+  padding: 4px 5px;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.le-num-grp button {
+  padding: 4px 5px !important;
+  font-size: 10px !important;
+  flex: 0 0 auto;
+}
+.le-insert-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.le-insert-row input {
+  width: 108px;
+  padding: 3px 7px;
+  font-size: 11.5px;
+}
+.le-word-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 6px 0 2px;
+}
+.le-word {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid rgba(17, 17, 19, 0.14);
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.14s ease, background-color 0.14s ease;
+}
+.le-word:hover {
+  border-color: var(--accent);
+}
+.le-word .le-wt {
+  font: 500 10px var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.le-word.is-val {
+  border-color: rgba(5, 150, 105, 0.48);
+}
+.le-word.is-val::before {
+  content: '✓';
+  font-size: 10px;
+  font-weight: 700;
+  color: #059669;
+}
+.le-word.is-warn {
+  border-color: rgba(217, 119, 6, 0.65);
+  background: rgba(245, 158, 11, 0.06);
+}
+.le-word.is-overlap {
+  border-style: dashed;
+}
+.le-word.is-sel {
+  border-color: var(--accent);
+  background: rgba(0, 113, 227, 0.08);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.le-word-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.le-word-edit-row input {
+  flex: 1 1 110px;
+  min-width: 90px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.le-word-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 11px;
+}
+.le-chk {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  color: var(--text-soft);
+  font-weight: 600;
+}
+.le-chk input {
+  margin: 0;
+  accent-color: #059669;
+}
+.le-char-list {
+  display: grid;
+  gap: 4px;
+  max-height: 168px;
+  overflow-y: auto;
+}
+.le-char-row {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 10px minmax(0, 1fr) 26px;
+  align-items: center;
+  gap: 4px;
+}
+.le-ch-txt {
+  text-align: center;
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 3px 4px;
+}
+.le-ch-start,
+.le-ch-end {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  padding: 3px 5px;
+  text-align: right;
+}
+.le-ch-sep {
+  text-align: center;
+  font-size: 10px;
+  color: var(--muted);
+}
+.le-ch-del {
+  padding: 2px 0 !important;
+  min-width: 24px;
+}
 

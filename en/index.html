@@ -544,31 +544,191 @@ h3 {
   box-shadow: 0 4px 14px rgba(0, 113, 227, 0.18);
 }
 
-/* Tap Panel */
+/* Studio Tap Sync Button & Guided Console */
+#btnTap {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  border: 1px solid rgba(17, 17, 19, 0.16);
+  background: #ffffff;
+  color: var(--text);
+  transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease, transform 0.12s ease;
+}
+#btnTap:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(0, 113, 227, 0.05);
+}
+#btnTap[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgba(0, 113, 227, 0.28);
+}
+
 .tapbox {
-  border: 1px solid rgba(0, 113, 227, 0.25);
+  border: 1px solid rgba(0, 113, 227, 0.28);
   border-radius: var(--r-card);
-  padding: 16px;
+  padding: 14px 15px;
   display: grid;
-  gap: 12px;
+  gap: 10px;
   background: #ffffff;
   box-shadow: var(--shadow-pop);
 }
-.tapbox .next { font-size: 15px; font-weight: 600; color: var(--text); }
+.tap-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tap-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+.tap-beat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(17, 17, 19, 0.18);
+  transition: transform 80ms ease, background-color 80ms ease;
+}
+.tap-beat-dot.is-pulse {
+  background: var(--accent);
+  transform: scale(1.45);
+}
+.tap-tc {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+.tap-prog {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.tap-guide {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+.tap-meter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tap-meter-lbl {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.tap-meter {
+  flex: 1 1 0;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(17, 17, 19, 0.08);
+  overflow: hidden;
+}
+.tap-meter i {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0071e3, #10b981);
+  transition: width 45ms linear;
+}
+.tap-snap-note {
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  max-width: 55%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tap-stage {
+  display: grid;
+  gap: 4px;
+  padding: 9px 11px;
+  border-radius: 9px;
+  background: #f8fafc;
+  border: 1px solid rgba(17, 17, 19, 0.08);
+}
+.tap-prev,
+.tap-next {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tapbox .next {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.tap-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-top: 4px;
+}
+.tap-w {
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(17, 17, 19, 0.1);
+  background: #ffffff;
+  color: var(--muted);
+}
+.tap-w.is-done {
+  color: #059669;
+  border-color: rgba(5, 150, 105, 0.35);
+  background: rgba(16, 185, 129, 0.08);
+}
+.tap-w.is-target {
+  color: #ffffff;
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
+}
+.tap-actions {
+  display: grid;
+  gap: 7px;
+}
+.tap-sub-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.tap-sub-btns button {
+  flex: 1 1 auto;
+}
 button.tap {
-  font: 700 18px/1 var(--ui);
-  letter-spacing: 0.12em;
-  padding: 16px;
+  font: 700 16px/1 var(--ui);
+  letter-spacing: 0.08em;
+  padding: 14px;
   background: linear-gradient(180deg, #0071e3 0%, #005bb5 100%);
   color: #ffffff;
-  border: 1px solid rgba(0, 113, 227, 0.8);
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 113, 227, 0.35);
+  border: 1px solid rgba(0, 113, 227, 0.85);
+  border-radius: 10px;
+  box-shadow: 0 5px 16px rgba(0, 113, 227, 0.32);
+  user-select: none;
+  touch-action: manipulation;
 }
 button.tap:hover {
   background: linear-gradient(180deg, #1d8cf8 0%, #0071e3 100%);
-  transform: translateY(-1.5px);
-  box-shadow: 0 8px 26px rgba(0, 113, 227, 0.45);
+  transform: translateY(-1px);
+  box-shadow: 0 7px 22px rgba(0, 113, 227, 0.42);
+}
+button.tap.is-hit {
+  transform: scale(0.985);
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.48);
 }
 .col-left > #tapPanel {
   position: sticky;
@@ -577,13 +737,35 @@ button.tap:hover {
   margin: 10px 12px;
   box-shadow: var(--shadow-pop);
 }
-.tapbox.compact .hint { display: none; }
-.tapbox .tap-opts { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
-.tapbox .tap-opts label { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; }
-.tapbox .tap-count { margin-left: 10px; font: 700 24px/1 var(--mono); color: var(--accent); }
+.tapbox.compact .tap-guide { display: none; }
+.tapbox .tap-opts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+  font-size: 11.5px;
+  color: var(--text-soft);
+}
+.tapbox .tap-opts label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-weight: 600;
+}
+.tapbox .tap-opts label.tap-chk {
+  justify-content: flex-start;
+  cursor: pointer;
+}
+.tapbox .tap-opts select {
+  width: auto;
+  max-width: 150px;
+  padding: 3px 6px;
+  font-size: 11.5px;
+}
+.tapbox .tap-count { margin-left: 10px; font: 700 22px/1 var(--mono); color: var(--accent); }
 
 @media (max-width: 1180px), (max-height: 619px) {
-  .col-left > #tapPanel { position: fixed; top: 12px; left: 12px; right: 12px; bottom: auto; margin: 0; max-height: 64vh; overflow: auto; box-shadow: var(--shadow-pop); }
+  .col-left > #tapPanel { position: fixed; top: 12px; left: 12px; right: 12px; bottom: auto; margin: 0; max-height: 70vh; overflow: auto; box-shadow: var(--shadow-pop); }
 }
 
 /* Line List */
@@ -1646,6 +1828,12 @@ button.chip { cursor: pointer; }
   color: #b45309;
   border-color: rgba(245, 158, 11, 0.3);
 }
+.ad-pill.is-val {
+  background: rgba(16, 185, 129, 0.1);
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.25);
+  font-variant-numeric: tabular-nums;
+}
 .ln-tags {
   display: inline-flex;
   flex-wrap: wrap;
@@ -1682,6 +1870,21 @@ button.chip { cursor: pointer; }
   background: rgba(245, 158, 11, 0.18);
   color: #b45309;
 }
+.ln-tag.is-gap {
+  background: rgba(239, 68, 68, 0.14);
+  color: #b91c1c;
+}
+.kw.is-uncertain {
+  text-decoration: underline dotted rgba(217, 119, 6, 0.78);
+  text-underline-offset: 4px;
+}
+.kw.is-boundary-warn {
+  border-bottom: 1.5px dashed rgba(180, 83, 9, 0.45);
+}
+.kw.is-overlap {
+  background: rgba(168, 85, 247, 0.08);
+  border-radius: 3px;
+}
 .kp-backing {
   font-size: 11.5px;
   font-style: italic;
@@ -1690,6 +1893,206 @@ button.chip { cursor: pointer; }
   min-height: 15px;
 }
 
+/* ============================================================
+   10. Precision Lyrics, Word, Character & Timestamp Editor
+   ============================================================ */
+.le-panel {
+  display: grid;
+  gap: 10px;
+}
+.le-stats {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.le-sub {
+  display: grid;
+  gap: 7px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(17, 17, 19, 0.08);
+}
+.le-sub-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.le-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.le-line-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.le-line-nav select {
+  flex: 1 1 130px;
+  min-width: 100px;
+  font-size: 12px;
+}
+.le-ts-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.le-ts-field {
+  display: grid;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.le-num-grp {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.le-num-grp input[type="number"] {
+  flex: 1 1 0;
+  min-width: 58px;
+  padding: 4px 5px;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.le-num-grp button {
+  padding: 4px 5px !important;
+  font-size: 10px !important;
+  flex: 0 0 auto;
+}
+.le-insert-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.le-insert-row input {
+  width: 108px;
+  padding: 3px 7px;
+  font-size: 11.5px;
+}
+.le-word-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 6px 0 2px;
+}
+.le-word {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid rgba(17, 17, 19, 0.14);
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.14s ease, background-color 0.14s ease;
+}
+.le-word:hover {
+  border-color: var(--accent);
+}
+.le-word .le-wt {
+  font: 500 10px var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.le-word.is-val {
+  border-color: rgba(5, 150, 105, 0.48);
+}
+.le-word.is-val::before {
+  content: '✓';
+  font-size: 10px;
+  font-weight: 700;
+  color: #059669;
+}
+.le-word.is-warn {
+  border-color: rgba(217, 119, 6, 0.65);
+  background: rgba(245, 158, 11, 0.06);
+}
+.le-word.is-overlap {
+  border-style: dashed;
+}
+.le-word.is-sel {
+  border-color: var(--accent);
+  background: rgba(0, 113, 227, 0.08);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.le-word-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.le-word-edit-row input {
+  flex: 1 1 110px;
+  min-width: 90px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.le-word-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 11px;
+}
+.le-chk {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  color: var(--text-soft);
+  font-weight: 600;
+}
+.le-chk input {
+  margin: 0;
+  accent-color: #059669;
+}
+.le-char-list {
+  display: grid;
+  gap: 4px;
+  max-height: 168px;
+  overflow-y: auto;
+}
+.le-char-row {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 10px minmax(0, 1fr) 26px;
+  align-items: center;
+  gap: 4px;
+}
+.le-ch-txt {
+  text-align: center;
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 3px 4px;
+}
+.le-ch-start,
+.le-ch-end {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  padding: 3px 5px;
+  text-align: right;
+}
+.le-ch-sep {
+  text-align: center;
+  font-size: 10px;
+  color: var(--muted);
+}
+.le-ch-del {
+  padding: 2px 0 !important;
+  min-width: 24px;
+}
 
 
 </style>
@@ -1733,12 +2136,44 @@ button.chip { cursor: pointer; }
     <!-- ================= left: lyrics & timing ================= -->
     <section class="col col-left" aria-label="Lyrics and timing">
       <div id="tapPanel" class="tapbox" hidden>
-          <div class="hint">Press <span class="kbd">Space</span> or the button as each line starts. A wrong tap? Press <span class="kbd">Backspace</span> or “Undo tap”. To redo from a line in the middle, press ◎ in the line list.If a line has several cuts, press <span class="kbd">Tab</span> the moment the cut should change to time the cuts of that line too.</div>
-          <div class="tap-opts"><label>Speed <select id="tapRate" aria-label="Playback speed while tapping"><option value="1">1×</option><option value="0.75">0.75×</option><option value="0.5">0.5×</option></select></label><label><input type="checkbox" id="tapCount"> Count-in</label></div>
-          <div class="next">Next: <b id="tapLine">—</b><b id="tapCountNum" class="tap-count" hidden></b></div>
-          <button id="tapBtn" class="tap">TAP</button>
-          <button id="tapBack" class="ghost">Undo tap</button>
-          <button id="tapStop" class="ghost">Finish</button>
+          <div class="tap-head">
+            <span id="tapTitle" class="tap-title">⏱ Synchro au Tap Studio</span>
+            <span id="tapBeatDot" class="tap-beat-dot" aria-hidden="true"></span>
+            <span id="tapTimeNow" class="tap-tc mono">00:00.00</span>
+            <span id="tapProg" class="tap-prog mono muted">0 / 0</span>
+          </div>
+          <div id="tapGuideText" class="hint tap-guide">Appuyez sur <span class="kbd">Espace</span> ou <b>TAP</b> dès que le chanteur démarre la phrase ou le mot ciblé.</div>
+          <div class="tap-meter-row">
+            <span id="lblTapVocal" class="tap-meter-lbl">Voix</span>
+            <div class="tap-meter"><i id="tapVocalFill"></i></div>
+            <span id="tapSnapNote" class="tap-snap-note mono muted">—</span>
+          </div>
+          <div class="tap-stage">
+            <div id="tapPrevLine" class="tap-prev muted"></div>
+            <div class="next tap-cur-row"><b id="tapLine">—</b><b id="tapCountNum" class="tap-count" hidden></b></div>
+            <div id="tapWordQueue" class="tap-words" hidden></div>
+            <div id="tapNextLine" class="tap-next muted"></div>
+          </div>
+          <div class="tap-opts">
+            <label><span id="lblTapMode">Mode</span> <select id="tapMode" aria-label="Mode de synchro au tap"><option value="line">Phrase / Ligne</option><option value="word">Mot par mot (Précis)</option><option value="cut">Phrases + Coupes [Tab]</option></select></label>
+            <label><span id="lblTapRate">Vitesse</span> <select id="tapRate" aria-label="Vitesse de lecture"><option value="1">1×</option><option value="0.85">0.85×</option><option value="0.75">0.75×</option><option value="0.5">0.5×</option></select></label>
+            <label><span id="lblTapSnap">Calage</span> <select id="tapSnapMode" aria-label="Accroche de précision"><option value="vocal">Attaque vocale (±90ms)</option><option value="beat">Grille rythmique (BPM)</option><option value="free">Libre (ms exact)</option></select></label>
+            <label><span id="lblTapLatency">Latence</span> <select id="tapLatency" aria-label="Compensation de latence humaine"><option value="0">0 ms</option><option value="45">-45 ms</option><option value="75">-75 ms</option><option value="110">-110 ms</option></select></label>
+            <label class="tap-chk"><input type="checkbox" id="tapHoldEnd"> <span id="lblTapHoldEnd">Maintenir = Fin [E]</span></label>
+            <label class="tap-chk"><input type="checkbox" id="tapCount"> <span id="lblTapCount">Compte 3·2·1</span></label>
+            <label class="tap-chk"><input type="checkbox" id="tapClick"> <span id="lblTapClick">Clic métronome</span></label>
+          </div>
+          <div class="tap-actions">
+            <button type="button" id="tapBtn" class="tap">TAP [Espace]</button>
+            <div class="tap-sub-btns">
+              <button type="button" id="tapMarkEnd" class="ghost small" title="Fixer la fin de la phrase/du mot en cours [E]">⏹ Fin [E]</button>
+              <button type="button" id="tapPlayPause" class="ghost small" title="Mettre en pause ou reprendre la musique [P]">⏸ Pause [P]</button>
+              <button type="button" id="tapRewind" class="ghost small" title="Reculer de 2 secondes">⟲ -2s</button>
+              <button type="button" id="tapBack" class="ghost small" title="Annuler le dernier tap et reculer [Retour]">↶ 1 retour</button>
+              <button type="button" id="tapSkip" class="ghost small" title="Passer au suivant sans modifier l'horodatage [S]">⏭ Passer [S]</button>
+              <button type="button" id="tapStop" class="primary small" title="Terminer et enregistrer les synchronisations [Échap]">✓ Terminer</button>
+            </div>
+          </div>
       </div>
       <div class="sec">
         <div class="sec-h"><h2>Lyrics</h2><span class="sec-btns"><label class="file ghost small" title="Load an LRC file (lyrics with time stamps) or subtitles (SRT / VTT) in place of the current lyrics (Undo brings them back). You can also drop the file on the window">Load LRC / SRT<input id="fileLrc" type="file" accept=".lrc,.srt,.vtt,.txt,text/plain"></label><button id="btnClearLyrics" class="ghost small" title="Clear the lyrics with their line timings, per-line settings and export range (Undo or Ctrl+Z brings them back)">Clear lyrics</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Syntax</button></span></div>
@@ -1766,7 +2201,7 @@ button.chip { cursor: pointer; }
           <label class="file" title="MP3, WAV, M4A and more">Import audio<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.opus,.webm,.mp4,.aiff,.aif,.wma"></label>
           <button id="btnAiTranscribe" class="accent" title="AI Music Transcription: listens to the full song, detects language (French, Chinese, English…), transcribes lyrics and aligns every word">✨ AI Transcribe Lyrics</button>
           <button id="btnVocalSync" class="ghost" title="Instantly align lyric lines and words to the singing voice">⚡ Voice Sync</button>
-          <button id="btnTap" title="Tap at the start of each line while the song plays">Tap to sync</button>
+          <button id="btnTap" title="Synchronisation manuelle guidée au rythme de la voix (ligne par ligne ou mot par mot)">⏱ Tap to sync</button>
         </div>
         <div class="fields pro-only">
           <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="Auto"></label>
@@ -1780,8 +2215,71 @@ button.chip { cursor: pointer; }
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>Lines and cuts</h2><span id="linesInfo" class="muted mono"></span></div>
+        <div class="sec-h"><h2>Lines and cuts</h2><span class="sec-btns"><button type="button" id="btnAddLyricLine" class="ghost small" title="Ajouter une nouvelle ligne de paroles">+ Ligne</button><span id="linesInfo" class="muted mono"></span></span></div>
         <ol id="lineList"></ol>
+      </div>
+
+      <div class="sec le-panel" id="lyricsEditorPanel">
+        <div class="sec-h">
+          <h2 id="leTitle">Éditeur de paroles &amp; minutage</h2>
+          <span class="sec-btns">
+            <button type="button" id="btnLeRecalcLine" class="ghost small" title="Recalculer l'alignement acoustique de la phrase sans écraser les mots validés">↻ Réaligner</button>
+            <button type="button" id="btnLeSave" class="primary small" title="Valider et enregistrer les corrections">✓ Enregistrer</button>
+          </span>
+        </div>
+        <div id="leStats" class="le-stats muted mono"></div>
+
+        <div class="le-sub">
+          <div class="le-line-nav">
+            <button type="button" id="lePrevLine" class="ghost small icon-txt" aria-label="Phrase précédente">◀</button>
+            <select id="leLineSel" aria-label="Sélectionner la phrase à éditer"></select>
+            <button type="button" id="leNextLine" class="ghost small icon-txt" aria-label="Phrase suivante">▶</button>
+            <button type="button" id="lePlayLine" class="ghost small" title="Réécouter la phrase sélectionnée">▶ Phrase</button>
+            <button type="button" id="leAddLine" class="ghost small" title="Ajouter une ligne après la sélection">+ Ligne</button>
+            <button type="button" id="leDelLine" class="ghost small" title="Supprimer cette ligne">✕ Ligne</button>
+          </div>
+          <div class="le-ts-pair">
+            <label class="le-ts-field"><span id="lblLeLineStart">Début phrase (s)</span><div class="le-num-grp"><button type="button" class="ghost small" data-nudge="lineStart" data-delta="-0.05">-50ms</button><input id="leLineStart" class="mono" type="number" step="0.01" min="0"><button type="button" class="ghost small" data-nudge="lineStart" data-delta="0.05">+50ms</button></div></label>
+            <label class="le-ts-field"><span id="lblLeLineEnd">Fin phrase (s)</span><div class="le-num-grp"><button type="button" class="ghost small" data-nudge="lineEnd" data-delta="-0.05">-50ms</button><input id="leLineEnd" class="mono" type="number" step="0.01" min="0"><button type="button" class="ghost small" data-nudge="lineEnd" data-delta="0.05">+50ms</button></div></label>
+          </div>
+        </div>
+
+        <div class="le-sub">
+          <div class="le-sub-h">
+            <span id="lblLeWords" class="le-label">Mots de la phrase</span>
+            <span class="le-insert-row">
+              <input id="leInsertWordText" type="text" placeholder="Mot manquant…" aria-label="Mot manquant à insérer">
+              <button type="button" id="leAddWordBefore" class="ghost small">+ Avant</button>
+              <button type="button" id="leAddWordAfter" class="ghost small">+ Après</button>
+            </span>
+          </div>
+          <div id="leWordStrip" class="le-word-strip" role="listbox" aria-label="Mots alignés"></div>
+        </div>
+
+        <div id="leWordInspector" class="le-sub">
+          <div class="le-word-edit-row">
+            <input id="leWordText" type="text" placeholder="Mot sélectionné…" aria-label="Texte du mot sélectionné">
+            <button type="button" id="leApplyWord" class="accent small" title="Corriger le mot et réaligner automatiquement les mots voisins">Appliquer</button>
+            <button type="button" id="lePlayWord" class="ghost small" title="Réécouter uniquement le mot sélectionné">▶ Mot</button>
+            <button type="button" id="leDelWord" class="ghost small" title="Supprimer le mot sélectionné">✕ Mot</button>
+          </div>
+          <div class="le-word-meta-row">
+            <label class="le-chk"><input id="leWordValid" type="checkbox"><span id="lblLeWordValid">Verrouiller / validé (protège contre le réalignement)</span></label>
+            <span id="leWordConf" class="mono muted"></span>
+          </div>
+          <div class="le-ts-pair">
+            <label class="le-ts-field"><span id="lblLeWordStart">Début mot (s)</span><div class="le-num-grp"><button type="button" class="ghost small" data-nudge="wordStart" data-delta="-0.025">-25ms</button><input id="leWordStart" class="mono" type="number" step="0.005" min="0"><button type="button" class="ghost small" data-nudge="wordStart" data-delta="0.025">+25ms</button></div></label>
+            <label class="le-ts-field"><span id="lblLeWordEnd">Fin mot (s)</span><div class="le-num-grp"><button type="button" class="ghost small" data-nudge="wordEnd" data-delta="-0.025">-25ms</button><input id="leWordEnd" class="mono" type="number" step="0.005" min="0"><button type="button" class="ghost small" data-nudge="wordEnd" data-delta="0.025">+25ms</button></div></label>
+          </div>
+        </div>
+
+        <div class="le-sub">
+          <div class="le-sub-h">
+            <span id="lblLeChars" class="le-label">Caractères &amp; minutage fin</span>
+            <button type="button" id="leAddChar" class="ghost small">+ Caractère</button>
+          </div>
+          <div id="leCharList" class="le-char-list"></div>
+        </div>
       </div>
     </section>
 
@@ -4789,7 +5287,7 @@ J.defaultProject = () => ({
   aspect: '16:9', res: 1080, fps: 24,
   fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35, hideNo: false, hideTime: false },
   enabled: Object.fromEntries(J.GROUP_KEYS.map(g => [g, Object.fromEntries(J.order(g).map(k => [k, true]))])),
-  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, wordTimes: {}, lineMeta: {}, lineScale: 1 },
+  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineEnds: {}, wordTimes: {}, lineMeta: {}, lineScale: 1 },
   detection: null,                // song lyrics detection summary (audioType, detectedLanguages, structure, layers)
   karaoke: true,                  // real-time karaoke word/character highlight overlay
   karaokeCfg: {
@@ -5033,7 +5531,13 @@ J.computeTiming = (project, parsed, audio) => {
     i = j;
   }
   const ends = starts.map((s, i) => {
-    if (i < starts.length - 1) return Math.max(s + 0.35, starts[i + 1]);
+    const manEnd = T.lineEnds && T.lineEnds[i] != null ? +T.lineEnds[i] : null;
+    if (i < starts.length - 1) {
+      const nextS = starts[i + 1];
+      if (manEnd != null && isFinite(manEnd)) return Math.max(s + 0.12, Math.min(nextS, manEnd));
+      return Math.max(s + 0.35, nextS);
+    }
+    if (manEnd != null && isFinite(manEnd)) return Math.max(s + 0.12, manEnd);
     const n = [...lines[i].text].length, L = lines[i];
     let d = L.interlude ? (L.secs > 0 ? L.secs : 4) : J.clamp(0.8 + n * 0.17, 1.5, 5.2) * (T.lineScale || 1);
     if (beat && !(L.interlude && L.secs > 0)) d = Math.max(2, Math.round(d / beat)) * beat;
@@ -5137,7 +5641,8 @@ J.plan = (project, audio) => {
       return;
     }
     const n = [...ln.text.replace(/\s+/g, '')].length;
-    const visEnd = Math.min(e, s + Math.max(3.6, n * 0.5 + 1.2));
+    const hasExplicitEnd = project.timing && project.timing.lineEnds && project.timing.lineEnds[li] != null;
+    const visEnd = hasExplicitEnd ? Math.max(s + 0.12, e) : Math.min(e, s + Math.max(3.6, n * 0.5 + 1.2));
     const D = visEnd - s;
     const normLineText = String(ln.text || '').replace(/\s+/g, '');
     const savedWords = project.timing && project.timing.wordTimes && project.timing.wordTimes[li];
@@ -5160,14 +5665,25 @@ J.plan = (project, audio) => {
             : (J.buildCharTimings ? J.buildCharTimings(w.text, ws, we, audio) : []);
           const recC = Number.isFinite(Number(w.recognitionConfidence)) ? +J.clamp(Number(w.recognitionConfidence), 0, 1).toFixed(3) : (lineMeta && Number.isFinite(lineMeta.recognitionConfidence) ? lineMeta.recognitionConfidence : 0.92);
           const alignC = Number.isFinite(Number(w.alignmentConfidence)) ? +J.clamp(Number(w.alignmentConfidence), 0, 1).toFixed(3) : (lineMeta && Number.isFinite(lineMeta.alignmentConfidence) ? lineMeta.alignmentConfidence : 0.88);
+          const flags = Array.isArray(w.flags) ? w.flags.slice() : [];
+          const phonemes = Array.isArray(w.phonemes) && w.phonemes.length
+            ? w.phonemes.map(ph => ({
+                unit: String(ph.unit || ''),
+                start: +J.clamp((Number(ph.start) || ws) - leadShift, ws, Math.max(ws, we - 0.004)).toFixed(3),
+                end: +J.clamp((Number(ph.end) || ws + 0.02) - leadShift, ws + 0.004, we).toFixed(3),
+              }))
+            : undefined;
           return {
             text: w.text,
             start: ws,
             end: we,
             chars,
+            phonemes,
             recognitionConfidence: recC,
             alignmentConfidence: alignC,
             speaker: String(w.speaker || lineSpeaker).trim(),
+            flags,
+            validated: Boolean(w.validated),
           };
         });
       }
@@ -6841,17 +7357,49 @@ J.analyzeAudio = async (file) => {
   try { audioBuffer = await ac.decodeAudioData(buf.slice(0)); } finally { try { ac.close(); } catch (e) {} }
   const sr = audioBuffer.sampleRate, len = audioBuffer.length, ch = audioBuffer.numberOfChannels;
   const mono = new Float32Array(len);
-  for (let c = 0; c < ch; c++) { const d = audioBuffer.getChannelData(c); for (let i = 0; i < len; i++) mono[i] += d[i] / ch; }
+  const sideMono = ch >= 2 ? new Float32Array(len) : null;
+  if (ch >= 2) {
+    const chL = audioBuffer.getChannelData(0), chR = audioBuffer.getChannelData(1);
+    for (let i = 0; i < len; i++) {
+      mono[i] = 0.5 * (chL[i] + chR[i]);       // Mid (center lead vocal focus)
+      sideMono[i] = 0.5 * (chL[i] - chR[i]);   // Side (stereo instruments, harmonies, reverb)
+    }
+    if (ch > 2) {
+      for (let c = 2; c < ch; c++) { const d = audioBuffer.getChannelData(c); for (let i = 0; i < len; i++) mono[i] = (mono[i] * c + d[i]) / (c + 1); }
+    }
+  } else {
+    const d = audioBuffer.getChannelData(0);
+    for (let i = 0; i < len; i++) mono[i] = d[i];
+  }
+
+  // Stage 1: Non-destructive audio normalization for analysis ONLY (original audioBuffer stays 100% untouched for playback & export)
+  let rawPeak = 0, rawSqSum = 0;
+  for (let i = 0; i < len; i++) {
+    const x = mono[i];
+    const ax = x < 0 ? -x : x;
+    if (ax > rawPeak) rawPeak = ax;
+    rawSqSum += x * x;
+  }
+  const rawRms = Math.sqrt(rawSqSum / Math.max(1, len));
+  const targetRms = 0.14;
+  const normGain = rawRms > 1e-5 ? Math.min(8.0, Math.min(0.92 / Math.max(1e-4, rawPeak), targetRms / rawRms)) : 1.0;
+  const normMono = new Float32Array(len);
+  for (let i = 0; i < len; i++) {
+    const v = mono[i] * normGain;
+    normMono[i] = v > 1 ? 1 : v < -1 ? -1 : v;
+  }
+
   const rate = 50, hop = Math.round(sr / rate), n = Math.floor(len / hop);
   const energy = new Float32Array(n), flux = new Float32Array(n);
   const vocalEnergy = new Float32Array(n);
 
-  // High-resolution 100 Hz (10ms) acoustic features for word & character forced alignment
+  // High-resolution 100 Hz (10ms) acoustic features for word & character forced alignment & VAD
   const fineRate = 100, fineHop = Math.max(1, Math.round(sr / fineRate)), fn = Math.floor(len / fineHop);
   const vocalEnv100 = new Float32Array(fn);
   const consonantFlux100 = new Float32Array(fn);
   const voicing100 = new Float32Array(fn);
   const wordAttack100 = new Float32Array(fn);
+  const sideRatio100 = new Float32Array(fn);
 
   // Filter constants:
   // 1) Vocal formant bandpass (~300Hz - ~3400Hz)
@@ -6867,13 +7415,17 @@ J.analyzeAudio = async (file) => {
   let prevCHP = 0, prevCX = 0, prevCLP = 0;
 
   for (let f = 0; f < fn; f++) {
-    let e = 0, eh = 0, ve = 0, ce = 0;
+    let e = 0, eh = 0, ve = 0, ce = 0, se = 0;
     const i0 = f * fineHop;
     const end = Math.min(len, (f + 1) * fineHop);
     const cnt = Math.max(1, end - i0);
     for (let i = i0; i < end; i++) {
-      const x = mono[i];
+      const x = normMono[i];
       e += x * x;
+      if (sideMono) {
+        const sx = sideMono[i] * normGain;
+        se += sx * sx;
+      }
       const hp = 0.92 * (prevHP + x - prevX); prevHP = hp; prevX = x; eh += hp * hp;
 
       const vhp = aVHP * (prevVHP + x - prevVX); prevVHP = vhp; prevVX = x;
@@ -6888,10 +7440,12 @@ J.analyzeAudio = async (file) => {
     const rmsVoc = Math.sqrt(ve / cnt);
     const rmsCon = Math.sqrt(ce / cnt);
     const rmsHp = Math.sqrt(eh / cnt);
+    const rmsSide = sideMono ? Math.sqrt(se / cnt) : 0;
 
     vocalEnv100[f] = rmsVoc;
     consonantFlux100[f] = rmsCon;
     voicing100[f] = rmsAll > 1e-5 ? Math.min(1, rmsVoc / (rmsAll + 1e-5)) : 0;
+    sideRatio100[f] = sideMono && (rmsAll + rmsSide) > 1e-5 ? Math.min(1, rmsSide / (rmsAll + 1e-5)) : 0;
 
     // Downsample 2x into 50Hz song-level buffers cleanly without second pass
     const f50 = f >> 1;
@@ -6938,12 +7492,33 @@ J.analyzeAudio = async (file) => {
     let vm = 0, vk = 0; for (let j = Math.max(0, f - 6); j < f; j++) { vm += Math.log(1e-4 + vocalEnergy[j]); vk++; }
     vocalOnset[f] = Math.max(0, vcur - vm / Math.max(1, vk));
   }
-  // Detect vocal active phrase segments
+
+  // Stage 1: Detect silence sections (RMS below adaptive floor >= 0.35s) on original timeline
+  const sortedTotal = Array.from(energy).sort((a, b) => a - b);
+  const p95Total = sortedTotal[Math.floor(sortedTotal.length * 0.95)] || 1e-3;
+  const silenceThr = Math.max(1e-6, p95Total * 0.025);
+  const silenceSegments = [];
+  let inSil = false, silStart = 0;
+  for (let f = 0; f < n; f++) {
+    const isSil = energy[f] < silenceThr;
+    const t = f / rate;
+    if (isSil && !inSil) { inSil = true; silStart = t; }
+    else if (!isSil && inSil) {
+      if (t - silStart >= 0.35) silenceSegments.push({ start: +silStart.toFixed(3), end: +t.toFixed(3) });
+      inSil = false;
+    }
+  }
+  if (inSil && len / sr - silStart >= 0.35) silenceSegments.push({ start: +silStart.toFixed(3), end: +(len / sr).toFixed(3) });
+
+  // Detect vocal active phrase segments & potential overlapping backing/stereo vocal regions
   const sortedVocal = Array.from(vocalEnergy).sort((a, b) => a - b);
-  const vMed = sortedVocal[Math.floor(sortedVocal.length * 0.5)] || 1e-4;
-  const vThresh = vMed * 1.5;
+  const vFloor20 = sortedVocal[Math.floor(sortedVocal.length * 0.2)] || 1e-5;
+  const vPeak95 = sortedVocal[Math.floor(sortedVocal.length * 0.95)] || 1e-3;
+  const vThresh = Math.max(silenceThr * 1.35, vFloor20 * 1.6, vPeak95 * 0.14);
   const vocalSegments = [];
+  const overlapSegments = [];
   let inSeg = false, segStart = 0;
+  let inOv = false, ovStart = 0;
   for (let f = 0; f < n; f++) {
     const isVoice = vocalEnergy[f] > vThresh;
     const t = f / rate;
@@ -6952,9 +7527,17 @@ J.analyzeAudio = async (file) => {
       if (t - segStart >= 0.35) vocalSegments.push({ start: +segStart.toFixed(3), end: +t.toFixed(3) });
       inSeg = false;
     }
+    const f100 = Math.min(fn - 1, f * 2);
+    const isOvFrame = isVoice && sideMono && sideRatio100[f100] > 0.38 && voicing100[f100] > 0.34;
+    if (isOvFrame && !inOv) { inOv = true; ovStart = t; }
+    else if (!isOvFrame && inOv) {
+      if (t - ovStart >= 0.4) overlapSegments.push({ start: +ovStart.toFixed(3), end: +t.toFixed(3) });
+      inOv = false;
+    }
   }
   if (inSeg && len / sr - segStart >= 0.35) vocalSegments.push({ start: +segStart.toFixed(3), end: +(len / sr).toFixed(3) });
-  // Fallback segmentation from vocal onset peaks for compressed tracks
+  if (inOv && len / sr - ovStart >= 0.4) overlapSegments.push({ start: +ovStart.toFixed(3), end: +(len / sr).toFixed(3) });
+  // Fallback segmentation from vocal onset peaks for heavily compressed tracks without true silence
   if (vocalSegments.length === 0 && audioBuffer.duration > 2) {
     const segStep = Math.max(2.5, Math.min(4.5, audioBuffer.duration / 8));
     for (let t = 0.5; t < audioBuffer.duration - 1.0; t += segStep) {
@@ -6962,7 +7545,7 @@ J.analyzeAudio = async (file) => {
     }
   }
 
-  // tempo via autocorrelation (70..180 BPM)
+  // tempo via autocorrelation (70..180 BPM) — used strictly for video cut/visual pulse, NEVER to override vocal forced alignment
   const minLag = Math.round(rate * 60 / 180), maxLag = Math.round(rate * 60 / 70);
   let best = 0, bestLag = Math.round(rate * 0.5);
   const scores = [];
@@ -6988,10 +7571,8 @@ J.analyzeAudio = async (file) => {
   const beats = [];
   for (let t = bestPh / rate; t < audioBuffer.duration; t += period) beats.push(+t.toFixed(4));
   // normalised energy (0..1, 95th percentile)
-  const sorted = Array.from(energy).sort((a, b) => a - b);
-  const p95 = sorted[Math.floor(sorted.length * 0.95)] || 1;
   const energyN = new Float32Array(n);
-  for (let f = 0; f < n; f++) energyN[f] = Math.min(1, energy[f] / p95);
+  for (let f = 0; f < n; f++) energyN[f] = Math.min(1, energy[f] / p95Total);
   // waveform peaks for the timeline
   const bins = 1600, peaks = new Float32Array(bins), per = Math.max(1, Math.floor(len / bins));
   for (let b = 0; b < bins; b++) { let m = 0; for (let i = b * per, e = Math.min(len, (b + 1) * per); i < e; i += 4) { const v = Math.abs(mono[i]); if (v > m) m = v; } peaks[b] = m; }
@@ -7036,20 +7617,40 @@ J.analyzeAudio = async (file) => {
     acousticType = 'combination';
   }
 
+  const preprocessing = {
+    sampleRate: sr,
+    duration: +durSec.toFixed(3),
+    channels: ch,
+    normGain: +normGain.toFixed(3),
+    rmsDb: +(20 * Math.log10(Math.max(1e-5, rawRms))).toFixed(1),
+    peakDb: +(20 * Math.log10(Math.max(1e-5, rawPeak))).toFixed(1),
+    silenceCount: silenceSegments.length,
+    vocalPhraseCount: vocalSegments.length,
+    instrumentalGapCount: instrumentalSegments.length,
+    overlapSegmentCount: overlapSegments.length,
+    shouldSeparate: ch >= 2 || vocalFormantShare < 0.45,
+    timelinePreserved: true,
+  };
+
   const acousticSummary = {
     audioType: acousticType,
     vocalRatio: +vocalRatio.toFixed(3),
     vocalFormantShare: +vocalFormantShare.toFixed(3),
+    silenceCount: silenceSegments.length,
     instrumentalGapCount: instrumentalSegments.length,
     vocalPhraseCount: vocalSegments.length,
+    overlapSegmentCount: overlapSegments.length,
+    sampleRate: sr,
+    channels: ch,
     format,
   };
 
   return {
-    name: file.name, format, duration: audioBuffer.duration, sampleRate: sr, buffer: audioBuffer,
+    name: file.name, format, duration: audioBuffer.duration, sampleRate: sr, channels: ch, buffer: audioBuffer,
     bpm: Math.round(60 / period * 10) / 10, beats, energy: energyN, energyRate: rate, peaks,
-    vocalEnergy, vocalOnset, vocalSegments, instrumentalSegments, acousticSummary,
-    fineRate, vocalEnv100, consonantFlux100, voicing100, wordAttack100,
+    vocalEnergy, vocalOnset, silenceSegments, vocalSegments, instrumentalSegments, overlapSegments,
+    preprocessing, acousticSummary,
+    fineRate, vocalEnv100, consonantFlux100, voicing100, wordAttack100, sideRatio100,
   };
 };
 
@@ -7253,6 +7854,7 @@ J.alignWordsAcoustic = (analysis, text, tStart, tEnd, lang, speaker = 'Lead', re
       recognitionConfidence: +Math.max(0, Math.min(1, recConf)).toFixed(3),
       alignmentConfidence: acConf,
       speaker,
+      flags: acConf < 0.7 ? ['uncertain_boundary'] : [],
     }];
   }
 
@@ -7383,15 +7985,16 @@ J.alignWordsAcoustic = (analysis, text, tStart, tEnd, lang, speaker = 'Lead', re
       recognitionConfidence: +J.clamp(recConf, 0, 1).toFixed(3),
       alignmentConfidence: alignConf,
       speaker,
+      flags: alignConf < 0.7 ? ['uncertain_boundary'] : [],
     });
   }
   return out;
 };
 
-/* Hybrid AI + 10ms Acoustic Refiner:
-   - Splits grouped CJK/Chinese multi-char tokens into individual aligned characters
-   - Snaps AI word start boundaries within ±70ms onto crisp 10ms vocal/consonant attack peaks
-   - Recomputes acoustic char timings & blends real acoustic SNR confidence */
+/* Stage 5: Hybrid AI + Phoneme + 10ms Acoustic Refinement Pipeline:
+   - Splits grouped CJK multi-char strings into individual aligned characters
+   - Uses phoneme boundaries when present (w.phonemes), vocal onsets (wordAttack100), VAD (voicing100), and vocal energy
+   - Trims unvoiced inter-word breaths/pauses cleanly without beat snapping */
 J.refineWordTimingsAcoustic = (analysis, rawWords, lineStart, lineEnd, lang, defaultSpeaker = 'Lead') => {
   if (!Array.isArray(rawWords) || !rawWords.length) return [];
   const sLine = Math.max(0, Number(lineStart) || 0);
@@ -7399,16 +8002,26 @@ J.refineWordTimingsAcoustic = (analysis, rawWords, lineStart, lineEnd, lang, def
   const normLang = String(lang || '').toLowerCase();
   const isZh = normLang.startsWith('zh');
 
-  // Expand any accidentally grouped Chinese multi-character strings into individual characters first
   const expanded = [];
   for (const w of rawWords) {
     const txt = String(w && w.text || '').trim();
     if (!txt) continue;
-    const ws = Math.max(sLine, Number(w.start) || sLine);
-    const we = Math.min(eLine, Math.max(ws + 0.015, Number(w.end) || ws + 0.2));
+    let ws = Math.max(sLine, Number(w.start) || sLine);
+    let we = Math.min(eLine, Math.max(ws + 0.015, Number(w.end) || ws + 0.2));
+    // Anchor on explicit phoneme boundary span if available (Stage 4 phoneme derivation)
+    const ph = Array.isArray(w.phonemes) ? w.phonemes.filter(p => p && Number.isFinite(+p.start) && Number.isFinite(+p.end)) : [];
+    if (ph.length) {
+      const phS = Math.max(sLine, Number(ph[0].start));
+      const phE = Math.min(eLine, Number(ph[ph.length - 1].end));
+      if (phE > phS + 0.015) {
+        ws = phS;
+        we = phE;
+      }
+    }
     const spk = String(w.speaker || defaultSpeaker || 'Lead').trim();
     const recC = Number.isFinite(Number(w.recognitionConfidence)) ? J.clamp(Number(w.recognitionConfidence), 0, 1) : 0.92;
     const alignC = Number.isFinite(Number(w.alignmentConfidence)) ? J.clamp(Number(w.alignmentConfidence), 0, 1) : 0.9;
+    const baseFlags = Array.isArray(w.flags) ? w.flags.slice() : [];
 
     if ((isZh || /[\u4e00-\u9fff\u3400-\u4dbf]{2,}/.test(txt)) && Array.from(txt).filter(c => /[\u4e00-\u9fff\u3400-\u4dbf]/.test(c)).length >= 2) {
       const subTokens = J.tokenizeKaraokeWords(txt, lang);
@@ -7418,27 +8031,30 @@ J.refineWordTimingsAcoustic = (analysis, rawWords, lineStart, lineEnd, lang, def
           subAligned.forEach((sw, si) => {
             sw.text = subTokens[si];
             sw.alignmentConfidence = +Math.max(sw.alignmentConfidence, alignC * 0.92).toFixed(3);
+            sw.flags = baseFlags.slice();
             expanded.push(sw);
           });
           continue;
         }
       }
     }
-    expanded.push({ text: txt, start: ws, end: we, chars: w.chars, recognitionConfidence: recC, alignmentConfidence: alignC, speaker: spk });
+    expanded.push({ text: txt, start: ws, end: we, chars: w.chars, phonemes: ph, recognitionConfidence: recC, alignmentConfidence: alignC, speaker: spk, flags: baseFlags });
   }
 
   const att = analysis && analysis.wordAttack100;
   const env = analysis && analysis.vocalEnv100;
+  const vad = analysis && analysis.voicing100;
+  const ovMap = analysis && analysis.sideRatio100;
   const fr = (analysis && analysis.fineRate) || 100;
   const canSnap = !!(att && env && att.length && fr > 0);
 
   let prevEnd = sLine;
-  return expanded.map((w, idx) => {
+  return expanded.map(w => {
     let ws = Math.max(prevEnd, w.start);
     let we = Math.min(eLine, Math.max(ws + 0.018, w.end));
 
     if (canSnap) {
-      // Search ±70ms window around AI onset for the strongest vocal attack peak
+      // 1) Snap onset onto crisp vocal/consonant attack peak within ±70ms
       const centerF = Math.round(ws * fr);
       const loF = Math.max(Math.ceil(prevEnd * fr), centerF - 7);
       const hiF = Math.min(Math.floor((we - 0.02) * fr), att.length - 1, centerF + 7);
@@ -7454,6 +8070,16 @@ J.refineWordTimingsAcoustic = (analysis, rawWords, lineStart, lineEnd, lang, def
           ws = snapped;
         }
       }
+      // 2) Trim trailing low-VAD / unvoiced tail (keeping authentic pause gap before next word)
+      if (vad && vad.length) {
+        let fEnd = Math.min(vad.length - 1, Math.round(we * fr));
+        const fMin = Math.ceil((ws + 0.03) * fr);
+        while (fEnd > fMin && vad[fEnd] < 0.14 && env[fEnd] < 0.008 && (Math.round(we * fr) - fEnd) < 12) {
+          fEnd--;
+        }
+        const trimmedEnd = fEnd / fr;
+        if (trimmedEnd >= ws + 0.025 && trimmedEnd <= we) we = trimmedEnd;
+      }
     }
 
     ws = +ws.toFixed(3);
@@ -7461,14 +8087,27 @@ J.refineWordTimingsAcoustic = (analysis, rawWords, lineStart, lineEnd, lang, def
     prevEnd = we;
 
     let finalAlignC = w.alignmentConfidence;
+    const flagSet = new Set(Array.isArray(w.flags) ? w.flags : []);
     if (canSnap) {
       const f0 = Math.max(0, Math.min(env.length - 1, Math.round(ws * fr)));
       const f1 = Math.max(f0, Math.min(env.length - 1, Math.round(we * fr)));
-      let wPeak = 0;
-      for (let f = f0; f <= f1; f++) if (env[f] > wPeak) wPeak = env[f];
-      const acBonus = wPeak > 0.004 ? 0.94 : 0.78;
-      finalAlignC = +J.clamp(0.65 * w.alignmentConfidence + 0.35 * acBonus, 0.4, 0.99).toFixed(3);
+      let wPeak = 0, vadSum = 0, ovSum = 0, nF = 0;
+      for (let f = f0; f <= f1; f++) {
+        if (env[f] > wPeak) wPeak = env[f];
+        if (vad) vadSum += vad[f];
+        if (ovMap) ovSum += ovMap[f];
+        nF++;
+      }
+      const avgVad = nF ? vadSum / nF : 0.5;
+      const avgOv = nF ? ovSum / nF : 0;
+      const acBonus = (wPeak > 0.004 ? 0.65 : 0.4) + 0.35 * Math.min(1, avgVad * 1.4);
+      finalAlignC = +J.clamp(0.62 * w.alignmentConfidence + 0.38 * acBonus, 0.35, 0.99).toFixed(3);
+      if (wPeak < 0.0025 || avgVad < 0.16) flagSet.add('uncertain_boundary');
+      if (avgOv > 0.42) flagSet.add('overlapping_vocals');
     }
+    if (w.recognitionConfidence < 0.72) flagSet.add('uncertain_word');
+    if (w.recognitionConfidence < 0.52) flagSet.add('misrecognized_word');
+    if (finalAlignC < 0.70) flagSet.add('uncertain_boundary');
 
     const chars = (Array.isArray(w.chars) && w.chars.length === Array.from(w.text).length)
       ? w.chars.map((ch, ci) => {
@@ -7483,9 +8122,12 @@ J.refineWordTimingsAcoustic = (analysis, rawWords, lineStart, lineEnd, lang, def
       start: ws,
       end: we,
       chars,
+      phonemes: w.phonemes && w.phonemes.length ? w.phonemes : undefined,
       recognitionConfidence: +w.recognitionConfidence.toFixed(3),
       alignmentConfidence: finalAlignC,
       speaker: w.speaker,
+      flags: Array.from(flagSet),
+      validated: Boolean(w.validated),
     };
   });
 };
@@ -7552,7 +8194,310 @@ const blobToBase64 = (blob) => new Promise((res, rej) => {
   reader.readAsDataURL(blob);
 });
 
-/* AI Vocal forced alignment via server API with 10ms Viterbi acoustic fallback */
+/* Stage 2: Vocal Detection & Separation WAV Generator (Mid-Side center lead extraction + vocal formant BPF)
+   Preserves the exact original timeline [startSec .. startSec + durationSec] while leaving playback buffer untouched. */
+J.audioVocalSeparatedWavWindow = (buffer, startSec = 0, durationSec = 140, targetSampleRate = 16000) => {
+  const chn = buffer.numberOfChannels;
+  const origSr = buffer.sampleRate;
+  const s0 = Math.max(0, Number(startSec) || 0);
+  const availDur = Math.max(0.05, buffer.duration - s0);
+  const dur = Math.min(availDur, Math.max(0.1, Number(durationSec) || availDur));
+  const targetSr = targetSampleRate;
+  const targetLength = Math.max(1, Math.floor(dur * targetSr));
+  const step = origSr / targetSr;
+  const srcStart = Math.floor(s0 * origSr);
+  const ch0 = buffer.getChannelData(0);
+  const ch1 = chn >= 2 ? buffer.getChannelData(1) : null;
+
+  const bytes = targetLength * 2;
+  const ab = new ArrayBuffer(44 + bytes);
+  const v = new DataView(ab);
+  const str = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  str(0, 'RIFF'); v.setUint32(4, 36 + bytes, true); str(8, 'WAVE'); str(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, targetSr, true);
+  v.setUint32(28, targetSr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  str(36, 'data'); v.setUint32(40, bytes, true);
+
+  // 160Hz HPF + 4800Hz LPF on center-isolated lead signal to attenuate sub-bass, kick, and stereo hats/pads
+  const dt = 1 / targetSr;
+  const aHP = (1 / (2 * Math.PI * 160)) / (1 / (2 * Math.PI * 160) + dt);
+  const aLP = dt / (1 / (2 * Math.PI * 4800) + dt);
+  let pHP = 0, pX = 0, pLP = 0;
+
+  let o = 44;
+  for (let i = 0; i < targetLength; i++) {
+    const srcIdx = srcStart + Math.floor(i * step);
+    let raw = 0;
+    if (ch1) {
+      const l = srcIdx < ch0.length ? ch0[srcIdx] : 0;
+      const r = srcIdx < ch1.length ? ch1[srcIdx] : 0;
+      const mid = 0.5 * (l + r);
+      const side = 0.5 * (l - r);
+      // Center-dominant soft mask attenuating wide-panned stereo accompaniment
+      const mask = Math.min(1, Math.abs(mid) / (Math.abs(mid) + 0.65 * Math.abs(side) + 1e-4));
+      raw = mid * (0.45 + 0.55 * mask);
+    } else {
+      raw = srcIdx < ch0.length ? ch0[srcIdx] : 0;
+    }
+    const hp = aHP * (pHP + raw - pX); pHP = hp; pX = raw;
+    const lp = pLP + aLP * (hp - pLP); pLP = lp;
+    const boosted = Math.max(-1, Math.min(1, lp * 1.45));
+    v.setInt16(o, boosted < 0 ? boosted * 0x8000 : boosted * 0x7fff, true);
+    o += 2;
+  }
+  return new Blob([ab], { type: 'audio/wav' });
+};
+
+/* Stage 6: Cross-Validate Detected Lyrics & Timestamps Against Acoustic Vocal Evidence.
+   Flags uncertain/missing/misrecognized/overlapping/boundary issues — NEVER invents fake lyrics. */
+J.validateKaraokeAlignment = (analysis, lines, serverValidation = null) => {
+  const vocalSegs = (analysis && analysis.vocalSegments) || [];
+  const env = analysis && analysis.vocalEnv100;
+  const vad = analysis && analysis.voicing100;
+  const ovMap = analysis && analysis.sideRatio100;
+  const fr = (analysis && analysis.fineRate) || 100;
+  const serverGaps = (serverValidation && Array.isArray(serverValidation.missingVocalGaps)) ? serverValidation.missingVocalGaps : [];
+
+  const nonInstLines = (lines || []).filter(l => l && !l.isInstrumentalSection && l.vocalType !== 'instrumental');
+  const covIntervals = [];
+  for (const ln of nonInstLines) {
+    if (Array.isArray(ln.words) && ln.words.length) {
+      for (const w of ln.words) {
+        const ws = Number(w.start), we = Number(w.end);
+        if (Number.isFinite(ws) && Number.isFinite(we) && we > ws) covIntervals.push([ws - 0.15, we + 0.15]);
+      }
+    } else if (Number.isFinite(Number(ln.start)) && Number.isFinite(Number(ln.end)) && ln.end > ln.start) {
+      covIntervals.push([ln.start - 0.15, ln.end + 0.15]);
+    }
+  }
+  covIntervals.sort((a, b) => a[0] - b[0]);
+  const mergedCov = [];
+  for (const iv of covIntervals) {
+    if (!mergedCov.length || iv[0] > mergedCov[mergedCov.length - 1][1]) mergedCov.push([iv[0], iv[1]]);
+    else if (iv[1] > mergedCov[mergedCov.length - 1][1]) mergedCov[mergedCov.length - 1][1] = iv[1];
+  }
+
+  const uncoveredSegs = [];
+  for (const seg of vocalSegs) {
+    if ((seg.end - seg.start) < 0.85) continue;
+    let cursor = seg.start;
+    for (const [cs, ce] of mergedCov) {
+      if (ce <= cursor) continue;
+      if (cs >= seg.end) break;
+      if (cs - cursor >= 0.90) {
+        uncoveredSegs.push({
+          start: +cursor.toFixed(3),
+          end: +Math.min(seg.end, cs).toFixed(3),
+          reason: 'active_vocal_segment_without_transcribed_lyrics',
+        });
+      }
+      if (ce > cursor) cursor = ce;
+    }
+    if (seg.end - cursor >= 0.90) {
+      uncoveredSegs.push({
+        start: +cursor.toFixed(3),
+        end: +seg.end.toFixed(3),
+        reason: 'active_vocal_segment_without_transcribed_lyrics',
+      });
+    }
+  }
+  const missingVocalGaps = serverGaps.concat(uncoveredSegs);
+
+  let uncertainWords = 0, misrecognizedWords = 0, overlappingWords = 0, uncertainBoundaries = 0, totalWords = 0;
+  const validatedLines = (lines || []).map(ln => {
+    if (!ln || ln.isInstrumentalSection || ln.vocalType === 'instrumental') return ln;
+    const lineFlagSet = new Set(Array.isArray(ln.flags) ? ln.flags : []);
+    const words = (ln.words || []).map(w => {
+      totalWords++;
+      const fSet = new Set(Array.isArray(w.flags) ? w.flags : []);
+      if (w.validated) {
+        fSet.delete('uncertain_word');
+        fSet.delete('misrecognized_word');
+        fSet.delete('uncertain_boundary');
+      } else {
+        if (env && vad && env.length) {
+          const f0 = Math.max(0, Math.min(env.length - 1, Math.round(w.start * fr)));
+          const f1 = Math.max(f0, Math.min(env.length - 1, Math.round(w.end * fr)));
+          let peakE = 0, avgVad = 0, avgOv = 0, cnt = 0;
+          for (let f = f0; f <= f1; f++) {
+            if (env[f] > peakE) peakE = env[f];
+            avgVad += vad[f] || 0;
+            avgOv += ovMap ? (ovMap[f] || 0) : 0;
+            cnt++;
+          }
+          avgVad /= Math.max(1, cnt);
+          avgOv /= Math.max(1, cnt);
+          if (peakE < 0.002 && avgVad < 0.14) fSet.add('uncertain_boundary');
+          if (avgOv > 0.42) fSet.add('overlapping_vocals');
+        }
+        if (w.recognitionConfidence != null && w.recognitionConfidence < 0.72) fSet.add('uncertain_word');
+        if (w.recognitionConfidence != null && w.recognitionConfidence < 0.52) fSet.add('misrecognized_word');
+        if (w.alignmentConfidence != null && w.alignmentConfidence < 0.70) fSet.add('uncertain_boundary');
+      }
+
+      const wFlags = Array.from(fSet);
+      if (fSet.has('uncertain_word')) uncertainWords++;
+      if (fSet.has('misrecognized_word')) misrecognizedWords++;
+      if (fSet.has('overlapping_vocals')) overlappingWords++;
+      if (fSet.has('uncertain_boundary')) uncertainBoundaries++;
+      wFlags.forEach(fl => lineFlagSet.add(fl));
+      return Object.assign({}, w, { flags: wFlags, validated: Boolean(w.validated) });
+    });
+    if (ln.unclear || ln.vocalType === 'unclear') lineFlagSet.add('uncertain_word');
+    if (ln.backingText || ln.vocalType === 'overlapping' || ln.vocalType === 'harmony') lineFlagSet.add('overlapping_vocals');
+    return Object.assign({}, ln, { words, flags: Array.from(lineFlagSet) });
+  });
+
+  return {
+    lines: validatedLines,
+    validationSummary: {
+      totalWords,
+      uncertainWords,
+      missingWords: missingVocalGaps.length,
+      misrecognizedWords,
+      overlappingWords,
+      uncertainBoundaries,
+      missingVocalGaps,
+    },
+  };
+};
+
+/* CORE FUNCTION 06 — Realign an edited word & unvalidated surrounding words locally against acoustic vocal onsets
+   while preserving original audio AND all previously validated timestamps. */
+J.realignSurroundingWords = (analysis, existingWords, editedIdx, newWordText, lineStart, lineEnd, lang = 'auto', defaultSpeaker = 'Lead') => {
+  const sLine = Math.max(0, Number(lineStart) || 0);
+  const eLine = Math.max(sLine + 0.15, Number(lineEnd) || sLine + 2.5);
+  const list = Array.isArray(existingWords) ? existingWords.map(w => Object.assign({}, w)) : [];
+  const k = Math.max(0, Math.min(list.length - 1, editedIdx | 0));
+
+  if (!list.length) {
+    const clean = String(newWordText || '').trim();
+    if (!clean) return [];
+    const aligned = J.alignWordsAcoustic(analysis, clean, sLine, eLine, lang, defaultSpeaker, 0.99);
+    return aligned.map(w => Object.assign(w, { validated: true, flags: [] }));
+  }
+
+  // Determine nearest validated anchor before k and nearest validated anchor after k (never destroy validated words!)
+  // Realignment touches only [leftBound .. rightBound], preferring unvalidated immediate neighbors around k
+  let winLeftIdx = Math.max(0, k - 1);
+  if (winLeftIdx < k && list[winLeftIdx].validated) winLeftIdx = k;
+  let winRightIdx = Math.min(list.length - 1, k + 1);
+  if (winRightIdx > k && list[winRightIdx].validated) winRightIdx = k;
+
+  const winStart = winLeftIdx > 0 ? Math.max(sLine, Number(list[winLeftIdx - 1].end) || sLine) : sLine;
+  const winEnd = winRightIdx < list.length - 1 ? Math.min(eLine, Math.max(winStart + 0.08, Number(list[winRightIdx + 1].start) || eLine)) : eLine;
+
+  const editedRaw = String(newWordText || '').trim();
+  const replacementTokens = editedRaw ? J.tokenizeKaraokeWords(editedRaw, lang) : [];
+
+  const subEntries = [];
+  for (let i = winLeftIdx; i <= winRightIdx; i++) {
+    if (i === k) {
+      const origSpk = list[k].speaker || defaultSpeaker;
+      for (const tk of replacementTokens) {
+        subEntries.push({ text: tk, speaker: origSpk, isEdited: true });
+      }
+    } else {
+      subEntries.push({ text: list[i].text, speaker: list[i].speaker || defaultSpeaker, isEdited: false, recC: list[i].recognitionConfidence });
+    }
+  }
+
+  const outBefore = list.slice(0, winLeftIdx);
+  const outAfter = list.slice(winRightIdx + 1);
+  if (!subEntries.length) {
+    return outBefore.concat(outAfter);
+  }
+
+  const reAligned = J.alignWordsAcoustic(
+    analysis,
+    subEntries.map(x => x.text).join(' '),
+    winStart,
+    Math.max(winStart + 0.05 * subEntries.length, winEnd),
+    lang,
+    defaultSpeaker,
+    0.95,
+  );
+
+  const rebuiltMiddle = (reAligned.length === subEntries.length ? reAligned : []).map((rw, idx) => {
+    const meta = subEntries[idx];
+    return Object.assign({}, rw, {
+      text: meta.text,
+      speaker: meta.speaker || rw.speaker,
+      recognitionConfidence: meta.isEdited ? 0.99 : (meta.recC ?? rw.recognitionConfidence),
+      alignmentConfidence: meta.isEdited ? Math.max(0.9, rw.alignmentConfidence) : rw.alignmentConfidence,
+      validated: meta.isEdited ? true : false,
+      flags: meta.isEdited ? [] : (rw.flags || []),
+    });
+  });
+
+  if (rebuiltMiddle.length !== subEntries.length) {
+    // Fallback weighted distribution preserving existing order inside [winStart, winEnd]
+    const span = Math.max(0.05 * subEntries.length, winEnd - winStart);
+    const weights = subEntries.map(x => Math.max(1, [...x.text].length));
+    const tot = weights.reduce((a, b) => a + b, 0) || subEntries.length;
+    let cur = winStart;
+    subEntries.forEach((meta, idx) => {
+      const d = (weights[idx] / tot) * span;
+      const ws = +cur.toFixed(3);
+      cur += d;
+      const we = idx === subEntries.length - 1 ? +winEnd.toFixed(3) : +Math.max(ws + 0.02, cur).toFixed(3);
+      rebuiltMiddle.push({
+        text: meta.text,
+        start: ws,
+        end: we,
+        chars: J.buildCharTimings(meta.text, ws, we, analysis),
+        recognitionConfidence: meta.isEdited ? 0.99 : (meta.recC ?? 0.9),
+        alignmentConfidence: 0.88,
+        speaker: meta.speaker,
+        flags: [],
+        validated: Boolean(meta.isEdited),
+      });
+    });
+  }
+
+  return outBefore.concat(rebuiltMiddle, outAfter);
+};
+
+/* Recalculate alignment for a line while respecting already-validated anchor words */
+J.realignLineWords = (analysis, lineText, lineStart, lineEnd, lang = 'auto', defaultSpeaker = 'Lead', existingWords = []) => {
+  const sLine = Math.max(0, Number(lineStart) || 0);
+  const eLine = Math.max(sLine + 0.15, Number(lineEnd) || sLine + 2.5);
+  const cur = Array.isArray(existingWords) ? existingWords : [];
+  const hasLocked = cur.some(w => w && w.validated);
+  const tokens = J.tokenizeKaraokeWords(lineText, lang);
+  if (!tokens.length) return [];
+
+  if (!hasLocked || cur.map(w => w.text).join('') !== tokens.join('')) {
+    return J.alignWordsAcoustic(analysis, tokens.join(' '), sLine, eLine, lang, defaultSpeaker, 0.94);
+  }
+
+  // Partition around validated anchors so validated timestamps remain completely intact
+  const out = cur.map(w => Object.assign({}, w));
+  let i = 0;
+  while (i < out.length) {
+    if (out[i].validated) { i++; continue; }
+    let j = i;
+    while (j < out.length && !out[j].validated) j++;
+    const segStart = i > 0 ? Math.max(sLine, out[i - 1].end) : sLine;
+    const segEnd = j < out.length ? Math.min(eLine, Math.max(segStart + 0.04, out[j].start)) : eLine;
+    const sliceText = out.slice(i, j).map(w => w.text).join(' ');
+    const alignedSlice = J.alignWordsAcoustic(analysis, sliceText, segStart, segEnd, lang, defaultSpeaker, 0.92);
+    for (let u = 0; u < j - i; u++) {
+      if (alignedSlice[u]) {
+        out[i + u] = Object.assign({}, alignedSlice[u], {
+          text: out[i + u].text,
+          speaker: out[i + u].speaker || defaultSpeaker,
+          validated: false,
+        });
+      }
+    }
+    i = j;
+  }
+  return out;
+};
+
+/* AI Vocal forced alignment (Stages 2, 4, 5, 6, 7) via server API with 10ms Viterbi acoustic fallback */
 J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto') => {
   let requiresBilling = false;
   try {
@@ -7560,11 +8505,16 @@ J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto') => {
       const sr = audioAnalysis.duration > 150 ? 10000 : 16000;
       const wavBlob = J.audioMonoWav(audioAnalysis.buffer, Math.min(300, audioAnalysis.duration), sr);
       const base64Audio = await blobToBase64(wavBlob);
+      let separatedVocalBase64 = '';
+      if (audioAnalysis.preprocessing && audioAnalysis.preprocessing.shouldSeparate) {
+        const sepBlob = J.audioVocalSeparatedWavWindow(audioAnalysis.buffer, 0, Math.min(300, audioAnalysis.duration), sr);
+        separatedVocalBase64 = await blobToBase64(sepBlob);
+      }
       const lineTexts = lines.map((l, i) => ({ i, text: l.interlude ? '[interlude]' : l.text }));
       const resp = await fetch('/api/align-vocals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ audioBase64: base64Audio, lines: lineTexts, lang }),
+        body: JSON.stringify({ audioBase64: base64Audio, separatedVocalBase64, lines: lineTexts, lang }),
       });
       if (resp.ok) {
         const data = await resp.json();
@@ -7606,7 +8556,8 @@ J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto') => {
     const words = J.alignWordsAcoustic(audioAnalysis, ln.text, s, e, lang, 'Lead', 0.85);
     wordTimes[i] = words;
     const avgAlign = words.length ? +(words.reduce((a, w) => a + (w.alignmentConfidence || 0.7), 0) / words.length).toFixed(3) : 0.7;
-    lineMeta[i] = { speaker: 'Lead', recognitionConfidence: 0.85, alignmentConfidence: avgAlign };
+    const flags = words.some(w => w.alignmentConfidence < 0.7) ? ['uncertain_boundary'] : [];
+    lineMeta[i] = { speaker: 'Lead', recognitionConfidence: 0.85, alignmentConfidence: avgAlign, flags };
   }
   return { lineTimes, wordTimes, lineMeta, source: 'acoustic', requiresBilling };
 };
@@ -7655,39 +8606,56 @@ J.audioMonoWav = (buffer, maxSeconds = 300, targetSampleRate = 16000) => {
   return J.audioMonoWavWindow(buffer, 0, maxSeconds, targetSampleRate);
 };
 
-/* AI Music Audio-to-Lyrics Detection, Multi-Layer Vocal Analysis & Chunked Full-Song Alignment */
-J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto') => {
+/* CORE FUNCTION 05 — Complete 7-Stage Audio Analysis, Vocal Separation, Singing Transcription,
+   Forced Alignment, Refinement, Validation & Synchronized Subtitle Generation Pipeline */
+J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
   if (!audioAnalysis || !audioAnalysis.buffer) return null;
   const totalDur = audioAnalysis.duration || audioAnalysis.buffer.duration || 0;
+  const reportStage = (stage, label) => { if (typeof onStage === 'function') try { onStage(stage, label); } catch (e) {} };
+  const prep = audioAnalysis.preprocessing || {};
 
-  const postChunk = async (chunkStart, chunkDur, sampleRate) => {
+  reportStage(1, 'preprocessing');
+  const postChunk = async (chunkStart, chunkDur, sampleRate, withSeparated) => {
     const wavBlob = J.audioMonoWavWindow(audioAnalysis.buffer, chunkStart, chunkDur, sampleRate);
     const base64Audio = await blobToBase64(wavBlob);
+    let separatedVocalBase64 = '';
+    if (withSeparated) {
+      reportStage(2, 'separation');
+      const sepBlob = J.audioVocalSeparatedWavWindow(audioAnalysis.buffer, chunkStart, chunkDur, sampleRate);
+      separatedVocalBase64 = await blobToBase64(sepBlob);
+    }
+    reportStage(3, 'transcription');
     return fetch('/api/transcribe-lyrics', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         audioBase64: base64Audio,
+        separatedVocalBase64,
         lang,
         audioFormat: audioAnalysis.format || 'AUDIO',
         duration: totalDur,
+        sampleRate: audioAnalysis.sampleRate,
         chunkStartSec: chunkStart,
         chunkDurationSec: chunkDur,
+        preprocessingSummary: prep,
       }),
     });
   };
 
   const transcribeWindow = async (chunkStart, chunkDur) => {
-    let resp = await postChunk(chunkStart, chunkDur, chunkDur > 140 ? 12000 : 16000);
+    const useSep = Boolean(prep.shouldSeparate);
+    let resp = await postChunk(chunkStart, chunkDur, chunkDur > 140 ? 12000 : 16000, useSep);
     if (resp.status === 413) {
-      resp = await postChunk(chunkStart, chunkDur, 8000);
+      // Retry cleanly with single stream at 8kHz if payload is tight
+      resp = await postChunk(chunkStart, chunkDur, 8000, false);
     }
     if (!resp.ok) return null;
     return resp.json();
   };
 
-  const normalizeLinesOut = (rawLines, detectedLang) => {
-    return rawLines.map(l => {
+  const refineAndValidate = (rawLines, detectedLang, serverValidation, usedModels) => {
+    reportStage(5, 'refinement');
+    const refined = rawLines.map(l => {
       const lineLang = l.language || detectedLang || lang;
       const lineSpk = l.speaker || 'Lead';
       if (l.isInstrumentalSection || l.vocalType === 'instrumental') {
@@ -7698,15 +8666,33 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto') => {
         : J.alignWordsAcoustic(audioAnalysis, l.text, l.start, l.end, lineLang, lineSpk, l.recognitionConfidence ?? 0.9);
       return Object.assign({}, l, { words });
     });
+    reportStage(6, 'validation');
+    const validated = J.validateKaraokeAlignment(audioAnalysis, refined, serverValidation);
+    reportStage(7, 'subtitles');
+    const pipelineReport = {
+      stages: [
+        { id: 1, key: 'preprocessing', status: 'done', detail: `${prep.sampleRate || audioAnalysis.sampleRate}Hz · ${totalDur.toFixed(1)}s · ${prep.silenceCount ?? 0} silences` },
+        { id: 2, key: 'separation', status: 'done', detail: usedModels && usedModels.separation ? usedModels.separation : (prep.shouldSeparate ? 'mid_side_formant' : 'direct_vocal') },
+        { id: 3, key: 'transcription', status: 'done', detail: (usedModels && usedModels.transcription) || 'gemini-3.5-transcribe' },
+        { id: 4, key: 'forced_alignment', status: 'done', detail: (usedModels && usedModels.forcedAlignment) || 'gemini-4-hydrogen' },
+        { id: 5, key: 'refinement', status: 'done', detail: 'onset+VAD+phoneme_10ms' },
+        { id: 6, key: 'validation', status: 'done', detail: `${validated.validationSummary.uncertainWords} uncertain · ${validated.validationSummary.missingWords} gaps · ${validated.validationSummary.overlappingWords} overlap` },
+        { id: 7, key: 'subtitles', status: 'done', detail: `${validated.lines.length} lines · ${validated.validationSummary.totalWords} tokens` },
+      ],
+    };
+    return { lines: validated.lines, validationSummary: validated.validationSummary, pipelineReport };
   };
 
-  // For songs up to 155s, run a single cohesive full-song analysis; for longer songs, chunk cleanly with 4s overlap so 100% of audio is analyzed
+  // For songs up to 155s, run a single cohesive full-song analysis; for longer songs, chunk cleanly with 5s overlap so 100% of audio is analyzed
   if (totalDur <= 155) {
     const data = await transcribeWindow(0, totalDur);
     if (!data) return null;
     if (data.requiresBilling) return { billingRequired: true, lines: [] };
     if (data.success && (Array.isArray(data.lines) || data.isInstrumental)) {
-      data.lines = normalizeLinesOut(data.lines || [], data.language);
+      const rv = refineAndValidate(data.lines || [], data.language, data.validationSummary, data.pipelineModels);
+      data.lines = rv.lines;
+      data.validationSummary = rv.validationSummary;
+      data.pipelineReport = rv.pipelineReport;
       return data;
     }
     return null;
@@ -7716,6 +8702,7 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto') => {
   const step = 120;
   const mergedLines = [];
   const mergedSections = [];
+  const mergedGaps = [];
   const langs = new Set();
   const speakers = new Set();
   const audioTypes = new Set();
@@ -7727,6 +8714,7 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto') => {
   let hasInstrumentalSections = false;
   let hasRepeatedChorus = false;
   let allInstrumental = true;
+  let lastModels = null;
 
   for (let t0 = 0; t0 < totalDur - 0.5; t0 += step) {
     const dur = Math.min(winDur, totalDur - t0);
@@ -7734,6 +8722,7 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto') => {
     if (!chunkData) continue;
     if (chunkData.requiresBilling) return { billingRequired: true, lines: [] };
     if (!chunkData.success) continue;
+    if (chunkData.pipelineModels) lastModels = chunkData.pipelineModels;
 
     if (chunkData.language && chunkData.language !== 'auto' && chunkData.language !== 'instrumental' && primaryLang === 'auto') {
       primaryLang = chunkData.language;
@@ -7748,12 +8737,14 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto') => {
     if (chunkData.hasInstrumentalSections) hasInstrumentalSections = true;
     if (chunkData.hasRepeatedChorus) hasRepeatedChorus = true;
     if (!chunkData.isInstrumental) allInstrumental = false;
+    if (chunkData.validationSummary && Array.isArray(chunkData.validationSummary.missingVocalGaps)) {
+      mergedGaps.push(...chunkData.validationSummary.missingVocalGaps);
+    }
 
     if (Array.isArray(chunkData.sections)) mergedSections.push(...chunkData.sections);
     if (Array.isArray(chunkData.lines)) {
       for (const ln of chunkData.lines) {
         if (ln.speaker && ln.speaker !== 'Instrumental') speakers.add(ln.speaker);
-        // Deduplicate lines inside the 5s overlap window based on midpoint time / text similarity
         const prev = mergedLines[mergedLines.length - 1];
         if (prev && ln.start < prev.end + 0.35 && prev.text.toLowerCase() === ln.text.toLowerCase()) continue;
         if (prev && ln.start < prev.end) {
@@ -7771,6 +8762,8 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto') => {
   else if (audioTypes.has('combination') || (audioTypes.size > 1) || (audioTypes.has('speech') && audioTypes.has('singing'))) combinedType = 'combination';
   else if (audioTypes.has('speech') && !audioTypes.has('singing')) combinedType = 'speech';
 
+  const rv = refineAndValidate(mergedLines, primaryLang, { missingVocalGaps: mergedGaps }, lastModels);
+
   return {
     success: true,
     audioType: combinedType,
@@ -7778,14 +8771,16 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto') => {
     detectedLanguages: Array.from(langs),
     detectedSpeakers: Array.from(speakers),
     hasBackingVocals,
-    hasUnclearSections,
-    hasInstrumentalSections: hasInstrumentalSections || mergedLines.some(l => l.isInstrumentalSection),
+    hasUnclearSections: hasUnclearSections || rv.validationSummary.uncertainWords > 0,
+    hasInstrumentalSections: hasInstrumentalSections || rv.lines.some(l => l.isInstrumentalSection),
     hasRepeatedChorus,
     title,
     artist,
     isInstrumental: allInstrumental,
     sections: mergedSections,
-    lines: normalizeLinesOut(mergedLines, primaryLang),
+    validationSummary: rv.validationSummary,
+    pipelineReport: rv.pipelineReport,
+    lines: rv.lines,
   };
 };
 
@@ -61183,7 +62178,7 @@ const ICON = {
   range: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 3v10M13 3v10"/><path d="M5.5 8h5M8.5 5.5L11 8l-2.5 2.5"/></svg>',
 };
 
-const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, loop: 'all', loopHold: null, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
+const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, playStopAt: null, loop: 'all', loopHold: null, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
 const LOOP_CYCLE = ['all', 'line', 'cut', false];
 const LOOP_COPY = {
   all:  { ja: 'Loop', en: 'Loop', titleJa: 'Loop the whole piece', titleEn: 'Loop the whole piece' },
@@ -61273,6 +62268,7 @@ function mergeProject(p) {
   const o = Object.assign(d, p || {});
   o.fx = Object.assign(J.defaultProject().fx, (p && p.fx) || {});
   o.timing = Object.assign(J.defaultProject().timing, (p && p.timing) || {});
+  if (!o.timing.lineEnds || typeof o.timing.lineEnds !== 'object') o.timing.lineEnds = {};
   if (!o.timing.wordTimes || typeof o.timing.wordTimes !== 'object') o.timing.wordTimes = {};
   if (!o.timing.lineMeta || typeof o.timing.lineMeta !== 'object') o.timing.lineMeta = {};
   o.detection = (p && p.detection && typeof p.detection === 'object') ? p.detection : null;
@@ -61363,7 +62359,7 @@ function replan() {
   langNote();
   if (S.t > S.plan.duration) S.t = 0;
   refreshLoopHold();
-  renderLines(); sizeViewport(); drawTimeline(); updateTimeUI();
+  renderLines(); sizeViewport(); drawTimeline(); updateTimeUI(); syncLyricsEditor();
   lastCutIdx = -2;
   lastKpState = { key: '' };
   updateKaraokePrompter();
@@ -61458,6 +62454,13 @@ function tick(now) {
   if (S.playing) {
     // rAF timestamps can precede the moment play()/seek() stamped t0 → clamp so t never goes negative
     let t = Math.max(0, S.audio ? AP.time() : (now - S.t0) / 1000 * playRate());
+    if (S.playStopAt != null && t >= S.playStopAt - 1e-3) {
+      const stopAt = S.playStopAt;
+      S.playStopAt = null;
+      pause();
+      seek(stopAt);
+      return;
+    }
     const range = activeLoopRange();
     if (t >= range.end - 1e-3) {
       if (S.loop && !S.tap) { seek(range.start); t = range.start; }
@@ -61466,6 +62469,7 @@ function tick(now) {
     S.t = t; S.need = true;
     followTlPlayhead();
   }
+  if (S.tap) updateTapTelemetry(S.t);
   if (S.need) { S.need = false; draw(); }
 }
 function updateTimeUI() {
@@ -61480,10 +62484,13 @@ function play() {
   if (S.audio) AP.play(S.audio.buffer, S.t, playRate());
   else S.t0 = performance.now() - S.t * 1000 / playRate();
   S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', 'Pause');
+  if (S.tap) syncTapTransportBtn();
 }
 function pause() {
+  S.playStopAt = null;
   S.playing = false; AP.stop();
   $('btnPlay').textContent = '▶'; $('btnPlay').setAttribute('aria-label', 'Play'); S.need = true;
+  if (S.tap) syncTapTransportBtn();
 }
 function seek(t) {
   S.t = J.clamp(t, 0, Math.max(0, S.plan.duration - 1e-3));
@@ -61491,7 +62498,15 @@ function seek(t) {
   else S.t0 = performance.now() - S.t * 1000 / playRate();
   refreshLoopHold();
   updateKaraokePrompter();
+  if (S.tap) updateTapTelemetry(S.t);
   S.need = true;
+}
+function playRange(startSec, endSec) {
+  const s = J.clamp(Number(startSec) || 0, 0, Math.max(0, (S.plan && S.plan.duration) ? S.plan.duration - 0.02 : 600));
+  const e = Math.max(s + 0.06, Number(endSec) || (s + 0.4));
+  S.playStopAt = e;
+  seek(s);
+  play();
 }
 
 /* ---------------- Live Karaoke Prompter (Mode A/B/C, Auto-Scroll & Full-Screen) ---------------- */
@@ -61662,6 +62677,24 @@ function syncAudioDetectPanel() {
   if (det && det.hasUnclearSections) {
     pills.push(`<span class="ad-pill is-warn">${isFr ? '⚠ Passages flous signalés' : isEn ? '⚠ Unclear vocals flagged' : '⚠ 含模糊段落'}</span>`);
   }
+  const pp = (det && det.preprocessing) || (a && a.preprocessing);
+  if (pp && pp.sampleRate) {
+    const khz = (pp.sampleRate / 1000).toFixed(1).replace(/\.0$/, '');
+    pills.push(`<span class="ad-pill" title="Stage 1: ${escapeHtml(`${pp.sampleRate}Hz · ${pp.channels || 1}ch · norm ${pp.normGain || 1}x`)}">${khz}kHz · ${pp.silenceCount ?? 0} ${isFr ? 'silences' : isEn ? 'silences' : '静音段'}</span>`);
+  }
+  const vs = det && det.validationSummary;
+  if (vs && (vs.uncertainWords || vs.missingWords || vs.misrecognizedWords || vs.overlappingWords || vs.uncertainBoundaries)) {
+    const parts = [];
+    if (vs.uncertainWords) parts.push(`${vs.uncertainWords} ${isFr ? 'incertains' : isEn ? 'uncertain' : '不确定'}`);
+    if (vs.missingWords) parts.push(`${vs.missingWords} ${isFr ? 'manquants' : isEn ? 'missing' : '缺失区间'}`);
+    if (vs.misrecognizedWords) parts.push(`${vs.misrecognizedWords} ${isFr ? 'à vérifier' : isEn ? 'suspect' : '疑似误识'}`);
+    if (vs.overlappingWords) parts.push(`${vs.overlappingWords} ${isFr ? 'superposés' : isEn ? 'overlap' : '重叠'}`);
+    if (vs.uncertainBoundaries) parts.push(`${vs.uncertainBoundaries} ${isFr ? 'bornes' : isEn ? 'bounds' : '边界待核'}`);
+    const gapTip = Array.isArray(vs.missingVocalGaps) && vs.missingVocalGaps.length
+      ? vs.missingVocalGaps.slice(0, 4).map(g => `${J.fmtTime(g.start)}–${J.fmtTime(g.end)}`).join(', ')
+      : '';
+    pills.push(`<span class="ad-pill is-val" title="${escapeHtml(gapTip)}">✓ ${escapeHtml(parts.join(' · '))}</span>`);
+  }
   el.innerHTML = pills.join('');
   el.hidden = pills.length === 0;
 }
@@ -61688,8 +62721,16 @@ function renderLineTagsHtml(ln) {
     const lbl = m.vocalType === 'overlapping' ? (isFr ? 'Superposé' : isEn ? 'Overlap' : '重叠人声') : (isFr ? 'Chœur' : isEn ? 'Harmony' : 'JP声');
     tags.push(`<span class="ln-tag is-harmony" title="${escapeHtml(m.backingText || '')}">${lbl}</span>`);
   }
-  if (m.unclear || m.vocalType === 'unclear') {
-    tags.push(`<span class="ln-tag is-warn">${isFr ? 'Flou' : isEn ? 'Unclear' : '模糊'}</span>`);
+  const lf = Array.isArray(m.flags) ? m.flags : [];
+  if (m.unclear || m.vocalType === 'unclear' || lf.includes('uncertain_word') || lf.includes('misrecognized_word')) {
+    const flbl = lf.includes('misrecognized_word')
+      ? (isFr ? 'À vérifier' : isEn ? 'Verify' : '待核对')
+      : (isFr ? 'Flou' : isEn ? 'Unclear' : '模糊');
+    tags.push(`<span class="ln-tag is-warn" title="${escapeHtml(m.validationNote || '')}">${flbl}</span>`);
+  } else if (lf.includes('missing_word')) {
+    tags.push(`<span class="ln-tag is-gap" title="${escapeHtml(m.validationNote || '')}">${isFr ? 'Manquant ?' : isEn ? 'Gap ?' : '疑似漏词'}</span>`);
+  } else if (lf.includes('uncertain_boundary')) {
+    tags.push(`<span class="ln-tag is-warn" title="${escapeHtml(m.validationNote || '')}">${isFr ? 'Borne ±' : isEn ? 'Bound ±' : '边界±'}</span>`);
   }
   return tags.length ? `<span class="ln-tags">${tags.join('')}</span>` : '';
 }
@@ -61702,16 +62743,22 @@ function buildWordChars(w) {
 }
 function createWordSpan(w, wi, mode) {
   const sp = document.createElement('span');
-  sp.className = 'kw';
+  const flags = Array.isArray(w.flags) ? w.flags : [];
+  const isUnc = flags.includes('uncertain_word') || flags.includes('misrecognized_word');
+  const isOv = flags.includes('overlapping_vocals');
+  const isBnd = flags.includes('uncertain_boundary');
+  sp.className = 'kw' + (isUnc ? ' is-uncertain' : '') + (isOv ? ' is-overlap' : '') + (isBnd ? ' is-boundary-warn' : '');
   sp.dataset.w = w.text;
   sp.dataset.i = String(wi);
   sp.dataset.s = String(w.start);
   const recPct = w.recognitionConfidence != null ? Math.round(w.recognitionConfidence * 100) : null;
   const alignPct = w.alignmentConfidence != null ? Math.round(w.alignmentConfidence * 100) : null;
   const charInfo = Array.isArray(w.chars) && w.chars.length > 1 ? ` · ${w.chars.length} car.` : '';
+  const phInfo = Array.isArray(w.phonemes) && w.phonemes.length ? ` · /${w.phonemes.map(p => p.unit).filter(Boolean).join('')}/` : '';
   const spkInfo = w.speaker && w.speaker !== 'Lead' ? ` · ${w.speaker}` : '';
   const confInfo = (recPct != null || alignPct != null) ? ` | rec ${recPct ?? '-'}% · align ${alignPct ?? '-'}%` : '';
-  sp.title = `${J.fmtTime(w.start)} → ${J.fmtTime(w.end)}${charInfo}${spkInfo}${confInfo}`;
+  const flagInfo = flags.length ? ` [${flags.join(', ')}]` : '';
+  sp.title = `${J.fmtTime(w.start)} → ${J.fmtTime(w.end)}${charInfo}${phInfo}${spkInfo}${confInfo}${flagInfo}`;
   if (mode === 'char') {
     const chs = buildWordChars(w);
     chs.forEach((c, ci) => {
@@ -61728,6 +62775,12 @@ function createWordSpan(w, wi, mode) {
   }
   sp.addEventListener('click', ev => {
     ev.stopPropagation();
+    const row = sp.closest('.ks-line');
+    if (row && row.dataset.line != null) selectLyricWord(+row.dataset.line, wi, false);
+    else if (S.plan && S.plan.lines) {
+      const lnNow = J.lineAt ? J.lineAt(S.plan, w.start + 0.005) : null;
+      if (lnNow) selectLyricWord(lnNow.index, wi, false);
+    }
     seek(w.start + 0.002);
     if (!S.playing && S.audio) play();
   });
@@ -61897,7 +62950,7 @@ function updateKaraokePrompter() {
 /* ---------------- timeline ---------------- */
 // zoomable view: [TL.off, TL.off + D / TL.z] seconds; line starts are draggable handles in the top band
 const layoutHue = k => (J.LAYOUT_ORDER.indexOf(k) * 37 + 30) % 360;
-const TL = { z: 1, off: 0, hover: -1, drag: -1 };
+const TL = { z: 1, off: 0, hover: -1, drag: -1, wHover: null, wDrag: null };
 function tlView() {
   const D = Math.max(0.001, S.plan.duration), vd = D / TL.z;
   TL.off = J.clamp(TL.off, 0, Math.max(0, D - vd));
@@ -61911,7 +62964,7 @@ function tlZoom(f, tc) {
 }
 // while playing zoomed in: redraw (which scrolls the view) once the playhead leaves the visible part
 function followTlPlayhead() {
-  if (!(TL.z > 1) || TL.drag >= 0) return;
+  if (!(TL.z > 1) || TL.drag >= 0 || TL.wDrag) return;
   const { vd, off } = tlView();
   if (S.t < off || S.t > off + vd * 0.92) drawTimeline();
 }
@@ -61921,7 +62974,7 @@ function drawTimeline() {
   if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
   let { D, vd, off } = tlView();
   // follow the playhead while playing (zoomed in)
-  if (TL.z > 1 && S.playing && TL.drag < 0 && (S.t < off || S.t > off + vd * 0.92)) { TL.off = S.t - vd * 0.1; ({ D, vd, off } = tlView()); }
+  if (TL.z > 1 && S.playing && TL.drag < 0 && !TL.wDrag && (S.t < off || S.t > off + vd * 0.92)) { TL.off = S.t - vd * 0.1; ({ D, vd, off } = tlView()); }
   const x = c.getContext('2d'), X = t => (t - off) / vd * w, T = px => off + px / w * vd;
   x.fillStyle = '#f5f5f7'; x.fillRect(0, 0, w, h);
   if (S.audio && S.audio.peaks) {
@@ -61946,6 +62999,34 @@ function drawTimeline() {
       x.save(); x.beginPath(); x.rect(x0, top, x1 - x0 - 3, bot - top); x.clip();
       x.fillText(TL.z > 3 && cut.text ? cut.text : ((J.LAYOUTS[cut.layout] || {}).name || cut.layout), x0 + 5 * dpr, top + 13 * dpr); x.restore();
     }
+  }
+  // Word-level draggable markers for the selected line in the Lyrics Editor
+  const edLn = (S.plan && S.plan.lines) ? S.plan.lines[EDL.lineIdx] : null;
+  if (edLn && !edLn.interlude && Array.isArray(edLn.wordsTimed) && edLn.wordsTimed.length) {
+    const wy0 = h * 0.54, wh = bot - wy0 - 2 * dpr;
+    edLn.wordsTimed.forEach((wd, wi) => {
+      const wx0 = X(wd.start), wx1 = X(wd.end);
+      if (wx1 < -4 || wx0 > w + 4) return;
+      const isSelW = wi === EDL.wordIdx;
+      const isValW = Boolean(wd.validated);
+      x.fillStyle = isSelW ? 'rgba(0,113,227,0.22)' : isValW ? 'rgba(5,150,105,0.16)' : 'rgba(17,17,19,0.08)';
+      x.fillRect(wx0, wy0, Math.max(2 * dpr, wx1 - wx0), wh);
+      const hStart = TL.wDrag && TL.wDrag.wordIdx === wi && TL.wDrag.edge === 'start' || TL.wHover && TL.wHover.wordIdx === wi && TL.wHover.edge === 'start';
+      const hEnd = TL.wDrag && TL.wDrag.wordIdx === wi && TL.wDrag.edge === 'end' || TL.wHover && TL.wHover.wordIdx === wi && TL.wHover.edge === 'end';
+      x.fillStyle = hStart ? '#0071e3' : isValW ? '#059669' : '#334155';
+      x.fillRect(wx0 - dpr, wy0, 2 * dpr, wh);
+      x.beginPath(); x.arc(wx0, wy0 + 3 * dpr, (hStart ? 4 : 2.8) * dpr, 0, Math.PI * 2); x.fill();
+      x.fillStyle = hEnd ? '#0071e3' : '#64748b';
+      x.fillRect(wx1 - dpr, wy0, 2 * dpr, wh);
+      x.beginPath(); x.arc(wx1, wy0 + wh - 3 * dpr, (hEnd ? 4 : 2.5) * dpr, 0, Math.PI * 2); x.fill();
+      if (wx1 - wx0 > 18 * dpr) {
+        x.fillStyle = isSelW ? '#005bb5' : '#111113';
+        x.font = `600 ${9 * dpr}px ${getComputedStyle(document.body).getPropertyValue('--mono') || 'monospace'}`;
+        x.save(); x.beginPath(); x.rect(wx0 + 2, wy0, Math.max(1, wx1 - wx0 - 4), wh); x.clip();
+        x.fillText(wd.text, wx0 + 3 * dpr, wy0 + wh - 5 * dpr);
+        x.restore();
+      }
+    });
   }
   x.font = `500 ${10 * dpr}px monospace`;
   const LT = S.project.timing.lineTimes || {};
@@ -61983,6 +63064,22 @@ function tlHandleAt(ev) {
   for (const ln of S.plan.lines) { const d = Math.abs((ln.start - off) / vd * r.width - (ev.clientX - r.left)); if (d < bd) { bd = d; best = ln.index; } }
   return best;
 }
+/* word start/end handle under pointer (bottom word band) for selected line */
+function tlWHandleAt(ev) {
+  const c = $('timeline'), r = c.getBoundingClientRect(), { vd, off } = tlView();
+  if (ev.clientY - r.top < r.height * 0.46) return null;
+  const ln = (S.plan && S.plan.lines) ? S.plan.lines[EDL.lineIdx] : null;
+  if (!ln || ln.interlude || !Array.isArray(ln.wordsTimed) || !ln.wordsTimed.length) return null;
+  let best = null, bd = 7.5;
+  const px = ev.clientX - r.left;
+  ln.wordsTimed.forEach((wd, wi) => {
+    const ds = Math.abs((wd.start - off) / vd * r.width - px);
+    if (ds < bd) { bd = ds; best = { lineIdx: ln.index, wordIdx: wi, edge: 'start' }; }
+    const de = Math.abs((wd.end - off) / vd * r.width - px);
+    if (de < bd) { bd = de; best = { lineIdx: ln.index, wordIdx: wi, edge: 'end' }; }
+  });
+  return best;
+}
 function tlDragTo(i, ev) {
   let t = tlTime(ev);
   if (!ev.shiftKey && S.plan.beats && S.plan.beats.length) {       // snap to the nearest beat (Shift: free)
@@ -61996,6 +63093,11 @@ function tlDragTo(i, ev) {
   L.forEach(ln => { if (S.project.timing.lineTimes[ln.index] == null) S.project.timing.lineTimes[ln.index] = +ln.start.toFixed(3); });
   S.project.timing.lineTimes[i] = t;
   replan(); seek(t + 0.001);
+}
+function tlDragWordTo(wh, ev) {
+  if (!wh) return;
+  const t = tlTime(ev);
+  applyWordTimeBoundary(wh.lineIdx, wh.wordIdx, wh.edge, t, { quiet: true });
 }
 
 /* ---------------- keep the playing line in view (the list scrolls inside its column) ---------------- */
@@ -62348,7 +63450,12 @@ function editLine(li, ln) {
       rows[ln.src] = pre + v;
       S.project.lyrics = rows.join('\n'); $('lyrics').value = S.project.lyrics;
       if (!S.project.timing.wordTimes) S.project.timing.wordTimes = {};
-      if (J.alignWordsAcoustic) {
+      if (J.realignLineWords) {
+        const cleanBody = v.replace(/\*([^*]+)\*/g, '$1').replace(/\|.*$/, '').replace(/!$/, '').replace(/\//g, ' ').trim();
+        const prevW = S.project.timing.wordTimes[ln.index] || ln.wordsTimed || [];
+        const spk = (ln.meta && ln.meta.speaker) || 'Lead';
+        S.project.timing.wordTimes[ln.index] = J.realignLineWords(S.audio, cleanBody, ln.start, ln.visEnd || ln.end, J.resolveLang(S.project), spk, prevW);
+      } else if (J.alignWordsAcoustic) {
         const cleanBody = v.replace(/\*([^*]+)\*/g, '$1').replace(/\|.*$/, '').replace(/!$/, '').replace(/\//g, ' ').trim();
         S.project.timing.wordTimes[ln.index] = J.alignWordsAcoustic(S.audio, cleanBody, ln.start, ln.visEnd || ln.end, J.resolveLang(S.project));
       } else {
@@ -62361,10 +63468,734 @@ function editLine(li, ln) {
   inp.addEventListener('blur', () => finish(true));
 }
 
+/* ---------------- CORE FUNCTION 06: Precision Lyrics, Word, Char & Timestamp Editor ---------------- */
+const EDL = { lineIdx: 0, wordIdx: 0 };
+function leCopy() {
+  const l = (document.documentElement.lang || 'fr').toLowerCase();
+  if (l === 'fr') return {
+    title: 'Éditeur de paroles & minutage', recalc: '↻ Réaligner', save: '✓ Enregistrer',
+    playLine: '▶ Phrase', addLine: '+ Ligne', delLine: '✕ Ligne',
+    lStart: 'Début phrase (s)', lEnd: 'Fin phrase (s)', words: 'Mots de la phrase',
+    insPh: 'Mot manquant…', addBefore: '+ Avant', addAfter: '+ Après',
+    wordPh: 'Mot sélectionné…', apply: 'Appliquer', playWord: '▶ Mot', delWord: '✕ Mot',
+    valid: 'Verrouiller / validé (protège contre le réalignement)',
+    wStart: 'Début mot (s)', wEnd: 'Fin mot (s)', chars: 'Caractères & minutage fin', addChar: '+ Caractère',
+    defWord: 'mot', defLine: 'Nouvelle phrase',
+    savedMsg: '✓ Corrections enregistrées et validation mise à jour.',
+    recalcMsg: '↻ Alignement recalculé en préservant les mots validés.',
+    realignWordMsg: '✓ Mot corrigé et mots voisins réalignés acoustiquement.',
+  };
+  if (l === 'en') return {
+    title: 'Lyrics & Timestamp Editor', recalc: '↻ Recalculate', save: '✓ Save Corrected',
+    playLine: '▶ Sentence', addLine: '+ Line', delLine: '✕ Line',
+    lStart: 'Line Start (s)', lEnd: 'Line End (s)', words: 'Words in Line',
+    insPh: 'Missing word…', addBefore: '+ Before', addAfter: '+ After',
+    wordPh: 'Selected word…', apply: 'Apply & Align', playWord: '▶ Word', delWord: '✕ Word',
+    valid: 'Validated lock (protected from realignment)',
+    wStart: 'Word Start (s)', wEnd: 'Word End (s)', chars: 'Characters & Fine Timestamps', addChar: '+ Char',
+    defWord: 'word', defLine: 'New lyric line',
+    savedMsg: '✓ Corrected version saved and validated.',
+    recalcMsg: '↻ Alignment recalculated while preserving validated timestamps.',
+    realignWordMsg: '✓ Word updated and unvalidated neighbors realigned acoustically.',
+  };
+  if (l.startsWith('zh')) return {
+    title: '歌词与逐词时间戳精修编辑器', recalc: '↻ 重新对齐', save: '✓ 保存修正版',
+    playLine: '▶ 复听整句', addLine: '+ 加一line ', delLine: '✕ 删此line ',
+    lStart: '句起时间 (s)', lEnd: '句止时间 (s)', words: '本句分词列表',
+    insPh: '输入漏词…', addBefore: '+ 前插', addAfter: '+ 后插',
+    wordPh: '修改当前词…', apply: '应用并重对齐', playWord: '▶ 复听此词', delWord: '✕ 删词',
+    valid: '已校对锁定（后续重对齐时保留此词时间戳）',
+    wStart: '词起时间 (s)', wEnd: '词止时间 (s)', chars: '单字字符与毫s级时间戳', addChar: '+ 加字',
+    defWord: '新词', defLine: '新增歌词句',
+    savedMsg: '✓ 已保存修正版本并更新校验结果。',
+    recalcMsg: '↻ 已根据人声重新对齐（保留已锁定的准确时间戳). ',
+    realignWordMsg: '✓ 已修改词文本并自动重对齐相邻未锁定词。',
+  };
+  return {
+    title: '歌詞 · 単語 · Textタイムスタンプ詳細エディタ', recalc: '↻ 再計算', save: '✓ 修正を保存',
+    playLine: '▶ line をPlay', addLine: '+ line New', delLine: '✕ line 削除',
+    lStart: 'line 開始 (s)', lEnd: 'line 終了 (s)', words: '単語トークン',
+    insPh: '不足語句…', addBefore: '+ 前にNew', addAfter: '+ 後にNew',
+    wordPh: '選択中の単語…', apply: '適用 · 再整列', playWord: '▶ 単語Play', delWord: '✕ 削除',
+    valid: '確定ロック（Auto再整列から保護）',
+    wStart: '開始 (s)', wEnd: '終了 (s)', chars: '1Textごとの時刻調整', addChar: '+ TextNew',
+    defWord: '語', defLine: '新しい歌詞line ',
+    savedMsg: '✓ 修正内容を保存し検証を更新しました。',
+    recalcMsg: '↻ 確定済み単語をHoldしたまま再整列しました。',
+    realignWordMsg: '✓ 単語を変更し周辺単語を声学的に再整列しました。',
+  };
+}
+function applyLeLabels() {
+  const c = leCopy();
+  const setT = (id, t) => { const el = $(id); if (el) el.textContent = t; };
+  setT('leTitle', c.title);
+  setT('btnLeRecalcLine', c.recalc);
+  setT('btnLeSave', c.save);
+  setT('lePlayLine', c.playLine);
+  setT('leAddLine', c.addLine);
+  setT('btnAddLyricLine', c.addLine);
+  setT('leDelLine', c.delLine);
+  setT('lblLeLineStart', c.lStart);
+  setT('lblLeLineEnd', c.lEnd);
+  setT('lblLeWords', c.words);
+  setT('leAddWordBefore', c.addBefore);
+  setT('leAddWordAfter', c.addAfter);
+  setT('leApplyWord', c.apply);
+  setT('lePlayWord', c.playWord);
+  setT('leDelWord', c.delWord);
+  setT('lblLeWordValid', c.valid);
+  setT('lblLeWordStart', c.wStart);
+  setT('lblLeWordEnd', c.wEnd);
+  setT('lblLeChars', c.chars);
+  setT('leAddChar', c.addChar);
+  if ($('leInsertWordText')) $('leInsertWordText').placeholder = c.insPh;
+  if ($('leWordText')) $('leWordText').placeholder = c.wordPh;
+  applyTapLabels();
+}
+function ensureTimingMaps() {
+  if (!S.project.timing) S.project.timing = {};
+  if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
+  if (!S.project.timing.lineEnds) S.project.timing.lineEnds = {};
+  if (!S.project.timing.wordTimes) S.project.timing.wordTimes = {};
+  if (!S.project.timing.lineMeta) S.project.timing.lineMeta = {};
+}
+function getEditableWords(li) {
+  const ln = S.plan && S.plan.lines ? S.plan.lines[li] : null;
+  if (!ln || ln.interlude) return [];
+  ensureTimingMaps();
+  const saved = S.project.timing.wordTimes[li];
+  if (Array.isArray(saved) && saved.length) return saved.map(w => Object.assign({}, w));
+  if (Array.isArray(ln.wordsTimed) && ln.wordsTimed.length) {
+    S.project.timing.wordTimes[li] = ln.wordsTimed.map(w => Object.assign({}, w));
+    return S.project.timing.wordTimes[li].map(w => Object.assign({}, w));
+  }
+  const s = ln.start, e = ln.visEnd || ln.end;
+  const aligned = J.alignWordsAcoustic ? J.alignWordsAcoustic(S.audio, ln.text, s, e, J.resolveLang(S.project)) : [];
+  S.project.timing.wordTimes[li] = aligned;
+  return aligned.map(w => Object.assign({}, w));
+}
+function joinWordsText(words) {
+  const list = (words || []).map(w => String(w.text || '').trim()).filter(Boolean);
+  if (!list.length) return '';
+  let out = '';
+  for (let i = 0; i < list.length; i++) {
+    const tk = list[i];
+    if (!out) { out = tk; continue; }
+    const prev = list[i - 1];
+    const isPrevCjk = /[\u3040-\u30ff\u4e00-\u9fff\uac00-\ud7af]$/.test(prev);
+    const isCurCjk = /^[\u3040-\u30ff\u4e00-\u9fff\uac00-\ud7af]/.test(tk);
+    const isPunct = /^[,.!?;:)\]}»"'’、。！？]/.test(tk);
+    const isOpen = /[(\[{«"'‘]$/.test(prev);
+    if ((isPrevCjk && isCurCjk) || isPunct || isOpen) out += tk;
+    else out += ' ' + tk;
+  }
+  return out;
+}
+function syncLineTextFromWords(li, words) {
+  const ln = S.plan && S.plan.lines ? S.plan.lines[li] : null;
+  if (!ln || ln.src == null) return;
+  const rows = String(S.project.lyrics || '').replace(/\r/g, '').split('\n');
+  const row = rows[ln.src] || '';
+  const pre = (row.match(LRC_PREFIX) || [''])[0];
+  const tailBar = row.includes('|') ? ' | ' + row.slice(row.indexOf('|') + 1).trim() : '';
+  const body = joinWordsText(words) || '…';
+  rows[ln.src] = pre + body + tailBar;
+  S.project.lyrics = rows.join('\n');
+  if ($('lyrics')) $('lyrics').value = S.project.lyrics;
+}
+function refreshStage6Validation() {
+  if (!J.validateKaraokeAlignment || !S.plan || !S.plan.lines) return;
+  ensureTimingMaps();
+  const valLines = S.plan.lines.map((ln, idx) => ({
+    start: ln.start,
+    end: ln.visEnd || ln.end,
+    isInstrumentalSection: !!ln.interlude,
+    words: S.project.timing.wordTimes[idx] || ln.wordsTimed || [],
+    flags: (S.project.timing.lineMeta[idx] && S.project.timing.lineMeta[idx].flags) || [],
+  }));
+  const val = J.validateKaraokeAlignment(S.audio, valLines);
+  val.lines.forEach((vl, idx) => {
+    if (vl && Array.isArray(vl.words) && vl.words.length) S.project.timing.wordTimes[idx] = vl.words;
+    if (vl && Array.isArray(vl.flags)) {
+      S.project.timing.lineMeta[idx] = Object.assign({}, S.project.timing.lineMeta[idx] || {}, { flags: vl.flags });
+    }
+  });
+  if (S.project.detection) {
+    S.project.detection.validationSummary = val.validationSummary;
+    S.project.detection.hasUnclearSections = val.validationSummary.uncertainWords > 0 || val.validationSummary.misrecognizedWords > 0;
+  }
+  syncAudioDetectPanel();
+}
+function selectLyricWord(li, wi = 0, doSeek = false) {
+  const L = (S.plan && S.plan.lines) || [];
+  if (!L.length) return;
+  EDL.lineIdx = J.clamp(li | 0, 0, L.length - 1);
+  const words = getEditableWords(EDL.lineIdx);
+  EDL.wordIdx = words.length ? J.clamp(wi | 0, 0, words.length - 1) : 0;
+  syncLyricsEditor();
+  drawTimeline();
+  if (doSeek) {
+    const ln = L[EDL.lineIdx];
+    const w = words[EDL.wordIdx];
+    seek((w ? w.start : ln.start) + 0.002);
+  }
+}
+function rescaleWordChars(w, newStart, newEnd) {
+  const chs = buildWordChars(w);
+  const oldS = Number(w.start) || newStart;
+  const oldE = Math.max(oldS + 0.01, Number(w.end) || newEnd);
+  const oldSpan = oldE - oldS;
+  const newSpan = Math.max(0.02, newEnd - newStart);
+  w.chars = chs.map((c, idx) => {
+    const r0 = J.clamp((c.start - oldS) / oldSpan, 0, 1);
+    const r1 = J.clamp((c.end - oldS) / oldSpan, r0, 1);
+    const cs = idx === 0 ? newStart : +(newStart + r0 * newSpan).toFixed(3);
+    const ce = idx === chs.length - 1 ? newEnd : +Math.max(cs + 0.005, newStart + r1 * newSpan).toFixed(3);
+    return { ch: c.ch != null ? c.ch : (c.char || ''), start: +cs.toFixed(3), end: +ce.toFixed(3) };
+  });
+}
+function applyWordTimeBoundary(li, wi, edge, rawTime, opts = {}) {
+  const L = (S.plan && S.plan.lines) || [];
+  const ln = L[li]; if (!ln || ln.interlude) return;
+  const words = getEditableWords(li);
+  const w = words[wi]; if (!w) return;
+  if (!opts.noUndo && !opts.quiet) pushEdit();
+  ensureTimingMaps();
+  const prevEnd = wi > 0 ? Math.max(0, words[wi - 1].start + 0.02) : 0;
+  const nextStart = wi < words.length - 1 ? words[wi + 1].end - 0.02 : (ln.visEnd || ln.end) + 2;
+  let ws = Number(w.start), we = Number(w.end);
+  if (edge === 'start') {
+    ws = +J.clamp(Number(rawTime), prevEnd, we - 0.02).toFixed(3);
+    if (wi > 0 && words[wi - 1].end > ws && !words[wi - 1].validated) {
+      words[wi - 1].end = +Math.max(words[wi - 1].start + 0.02, ws).toFixed(3);
+      rescaleWordChars(words[wi - 1], words[wi - 1].start, words[wi - 1].end);
+    }
+    if (ws < ln.start && (li === 0 || ws > L[li - 1].start + 0.1)) {
+      S.project.timing.lineTimes[li] = ws;
+    }
+  } else {
+    we = +J.clamp(Number(rawTime), ws + 0.02, Math.max(ws + 0.04, nextStart)).toFixed(3);
+    if (wi < words.length - 1 && words[wi + 1].start < we && !words[wi + 1].validated) {
+      words[wi + 1].start = +Math.min(words[wi + 1].end - 0.02, we).toFixed(3);
+      rescaleWordChars(words[wi + 1], words[wi + 1].start, words[wi + 1].end);
+    }
+    const maxLineEnd = li < L.length - 1 ? L[li + 1].start - 0.02 : S.plan.duration;
+    if (we > (ln.visEnd || ln.end) && we <= maxLineEnd) {
+      S.project.timing.lineEnds[li] = we;
+    }
+  }
+  w.start = ws;
+  w.end = we;
+  w.validated = true;
+  w.alignmentConfidence = 1;
+  w.flags = (w.flags || []).filter(f => f !== 'uncertain_boundary');
+  rescaleWordChars(w, ws, we);
+  S.project.timing.wordTimes[li] = words;
+  refreshStage6Validation();
+  replan();
+  if (!opts.quiet) { flushSave(); seek(ws + 0.002); }
+}
+function applyLineBoundary(li, edge, rawTime) {
+  const L = (S.plan && S.plan.lines) || [];
+  const ln = L[li]; if (!ln) return;
+  ensureTimingMaps();
+  pushEdit();
+  // Lock neighbor line start times so manual boundary edits never ripple into subsequent lines
+  L.forEach((other, idx) => {
+    if (S.project.timing.lineTimes[idx] == null) S.project.timing.lineTimes[idx] = +other.start.toFixed(3);
+  });
+  const tVal = +Math.max(0, Number(rawTime) || 0).toFixed(3);
+  if (edge === 'start') {
+    const lo = li > 0 ? L[li - 1].start + 0.12 : 0;
+    const hi = li < L.length - 1 ? L[li + 1].start - 0.12 : Math.max(lo + 0.15, S.plan.duration - 0.12);
+    const ns = +J.clamp(tVal, lo, Math.max(lo, hi)).toFixed(3);
+    const oldS = ln.start, oldE = ln.visEnd || ln.end;
+    S.project.timing.lineTimes[li] = ns;
+    const words = getEditableWords(li);
+    if (words.length && !words.every(w => w.validated)) {
+      const span = Math.max(0.15, oldE - ns);
+      const oldSpan = Math.max(0.15, oldE - oldS);
+      words.forEach(w => {
+        if (w.validated) return;
+        const r0 = J.clamp((w.start - oldS) / oldSpan, 0, 1);
+        const r1 = J.clamp((w.end - oldS) / oldSpan, r0, 1);
+        w.start = +(ns + r0 * span).toFixed(3);
+        w.end = +Math.max(w.start + 0.02, ns + r1 * span).toFixed(3);
+        rescaleWordChars(w, w.start, w.end);
+      });
+      S.project.timing.wordTimes[li] = words;
+    }
+  } else {
+    const lo = ln.start + 0.15;
+    const hi = li < L.length - 1 ? L[li + 1].start : Math.max(lo + 0.2, (S.audio ? S.audio.duration : S.plan.duration + 10));
+    const ne = +J.clamp(tVal, lo, Math.max(lo, hi)).toFixed(3);
+    S.project.timing.lineEnds[li] = ne;
+    const words = getEditableWords(li);
+    if (words.length) {
+      const lastW = words[words.length - 1];
+      if (!lastW.validated && lastW.end > ne) {
+        lastW.end = +Math.max(lastW.start + 0.02, ne).toFixed(3);
+        rescaleWordChars(lastW, lastW.start, lastW.end);
+        S.project.timing.wordTimes[li] = words;
+      }
+    }
+  }
+  refreshStage6Validation();
+  replan();
+  flushSave();
+}
+function commitWordTextEdit(li, wi, rawNewText) {
+  const L = (S.plan && S.plan.lines) || [];
+  const ln = L[li]; if (!ln || ln.interlude) return;
+  const words = getEditableWords(li);
+  if (wi < 0 || wi >= words.length) return;
+  const txt = String(rawNewText || '').trim();
+  if (!txt) { deleteWordInLine(li, wi); return; }
+  pushEdit();
+  ensureTimingMaps();
+  const lang = J.resolveLang(S.project);
+  const spk = (ln.meta && ln.meta.speaker) || (words[wi] && words[wi].speaker) || 'Lead';
+  const sLine = ln.start, eLine = ln.visEnd || ln.end;
+  const realigned = J.realignSurroundingWords
+    ? J.realignSurroundingWords(S.audio, words, wi, txt, sLine, eLine, lang, spk)
+    : words;
+  S.project.timing.wordTimes[li] = realigned;
+  syncLineTextFromWords(li, realigned);
+  refreshStage6Validation();
+  replan();
+  flushSave();
+  EDL.wordIdx = J.clamp(wi, 0, Math.max(0, realigned.length - 1));
+  syncLyricsEditor();
+  toast(leCopy().realignWordMsg);
+}
+function insertWordInLine(li, wi, where, rawWordText) {
+  const L = (S.plan && S.plan.lines) || [];
+  const ln = L[li]; if (!ln || ln.interlude) return;
+  const words = getEditableWords(li);
+  const textToAdd = String(rawWordText || '').trim() || leCopy().defWord;
+  pushEdit();
+  ensureTimingMaps();
+  const pos = words.length === 0 ? 0 : (where === 'before' ? wi : wi + 1);
+  const sLine = ln.start, eLine = ln.visEnd || ln.end;
+  const leftBound = pos > 0 ? words[pos - 1].end : sLine;
+  const rightBound = pos < words.length ? words[pos].start : eLine;
+  let ws = leftBound, we = rightBound;
+  if (we - ws < 0.14) {
+    // Borrow slight room from unvalidated neighbor rather than overlapping or touching validated anchors
+    if (pos > 0 && !words[pos - 1].validated && words[pos - 1].end - words[pos - 1].start > 0.25) {
+      const cut = Math.min(0.18, (words[pos - 1].end - words[pos - 1].start) * 0.45);
+      words[pos - 1].end = +(words[pos - 1].end - cut).toFixed(3);
+      rescaleWordChars(words[pos - 1], words[pos - 1].start, words[pos - 1].end);
+      ws = words[pos - 1].end;
+    }
+    if (pos < words.length && !words[pos].validated && words[pos].end - words[pos].start > 0.25) {
+      const cut = Math.min(0.18, (words[pos].end - words[pos].start) * 0.45);
+      words[pos].start = +(words[pos].start + cut).toFixed(3);
+      rescaleWordChars(words[pos], words[pos].start, words[pos].end);
+      we = words[pos].start;
+    }
+    if (we - ws < 0.08) {
+      ws = +Math.max(sLine, (ws + we) * 0.5 - 0.1).toFixed(3);
+      we = +Math.max(ws + 0.12, ws + 0.2).toFixed(3);
+    }
+  }
+  const spk = (ln.meta && ln.meta.speaker) || 'Lead';
+  const lang = J.resolveLang(S.project);
+  const inserted = J.alignWordsAcoustic
+    ? J.alignWordsAcoustic(S.audio, textToAdd, ws, we, lang, spk, 0.99).map(w => Object.assign(w, { validated: true, flags: [] }))
+    : [{ text: textToAdd, start: +ws.toFixed(3), end: +we.toFixed(3), chars: [], recognitionConfidence: 0.99, alignmentConfidence: 0.92, speaker: spk, flags: [], validated: true }];
+  const nextWords = words.slice(0, pos).concat(inserted, words.slice(pos));
+  S.project.timing.wordTimes[li] = nextWords;
+  syncLineTextFromWords(li, nextWords);
+  if ($('leInsertWordText')) $('leInsertWordText').value = '';
+  refreshStage6Validation();
+  replan();
+  flushSave();
+  EDL.wordIdx = pos;
+  syncLyricsEditor();
+  if ($('leWordText')) { $('leWordText').focus(); $('leWordText').select(); }
+}
+function deleteWordInLine(li, wi) {
+  const L = (S.plan && S.plan.lines) || [];
+  const ln = L[li]; if (!ln || ln.interlude) return;
+  const words = getEditableWords(li);
+  if (wi < 0 || wi >= words.length) return;
+  if (words.length <= 1) { deleteLyricLine(li); return; }
+  pushEdit();
+  ensureTimingMaps();
+  const nextWords = words.slice(0, wi).concat(words.slice(wi + 1));
+  S.project.timing.wordTimes[li] = nextWords;
+  syncLineTextFromWords(li, nextWords);
+  refreshStage6Validation();
+  EDL.wordIdx = Math.max(0, Math.min(wi, nextWords.length - 1));
+  replan();
+  flushSave();
+}
+function shiftSparseLineMaps(fromIdx, delta) {
+  ensureTimingMaps();
+  const keys = ['lineTimes', 'lineEnds', 'wordTimes', 'lineMeta'];
+  for (const k of keys) {
+    const src = S.project.timing[k] || {};
+    const out = {};
+    for (const [sk, v] of Object.entries(src)) {
+      const idx = +sk;
+      if (!Number.isInteger(idx)) continue;
+      if (delta < 0 && idx === fromIdx) continue;
+      const ni = (delta > 0 && idx > fromIdx) ? idx + 1 : (delta < 0 && idx > fromIdx) ? idx - 1 : idx;
+      if (ni >= 0) out[ni] = v;
+    }
+    S.project.timing[k] = out;
+  }
+  const ovSrc = S.project.overrides || {}, ovOut = {};
+  for (const [sk, v] of Object.entries(ovSrc)) {
+    const idx = +sk;
+    if (!Number.isInteger(idx)) continue;
+    if (delta < 0 && idx === fromIdx) continue;
+    const ni = (delta > 0 && idx > fromIdx) ? idx + 1 : (delta < 0 && idx > fromIdx) ? idx - 1 : idx;
+    if (ni >= 0) ovOut[ni] = v;
+  }
+  S.project.overrides = ovOut;
+}
+function addLyricLineAfter(afterIdx, customText) {
+  const L = (S.plan && S.plan.lines) || [];
+  pushEdit();
+  ensureTimingMaps();
+  const c = leCopy();
+  const text = String(customText || '').trim() || c.defLine;
+  const hasPrev = afterIdx >= 0 && afterIdx < L.length;
+  const prevLn = hasPrev ? L[afterIdx] : null;
+  const nextLn = (afterIdx + 1 < L.length) ? L[afterIdx + 1] : null;
+  // Pin existing line times so inserting a line never moves previously validated lines
+  L.forEach((ln, idx) => {
+    if (S.project.timing.lineTimes[idx] == null) S.project.timing.lineTimes[idx] = +ln.start.toFixed(3);
+  });
+  const rows = String(S.project.lyrics || '').replace(/\r/g, '').split('\n').filter((r, idx, arr) => !(arr.length === 1 && r === ''));
+  const insertRowPos = prevLn && prevLn.src != null ? prevLn.src + 1 : rows.length;
+  rows.splice(insertRowPos, 0, text);
+  const newIdx = prevLn ? afterIdx + 1 : L.length;
+  shiftSparseLineMaps(prevLn ? afterIdx : L.length - 1, +1);
+
+  const sNew = prevLn
+    ? +((nextLn ? Math.min(prevLn.end + 0.15, (prevLn.start + nextLn.start) * 0.55) : prevLn.end + 0.25)).toFixed(3)
+    : 0.4;
+  const eNew = nextLn
+    ? +Math.max(sNew + 0.5, nextLn.start - 0.1).toFixed(3)
+    : +(sNew + 2.5).toFixed(3);
+  S.project.timing.lineTimes[newIdx] = sNew;
+  S.project.timing.lineEnds[newIdx] = eNew;
+  if (J.alignWordsAcoustic) {
+    S.project.timing.wordTimes[newIdx] = J.alignWordsAcoustic(S.audio, text, sNew, eNew, J.resolveLang(S.project), 'Lead', 0.95);
+  }
+  S.project.lyrics = rows.join('\n');
+  if ($('lyrics')) $('lyrics').value = S.project.lyrics;
+  EDL.lineIdx = newIdx;
+  EDL.wordIdx = 0;
+  replan();
+  flushSave();
+}
+function deleteLyricLine(li) {
+  const L = (S.plan && S.plan.lines) || [];
+  if (li < 0 || li >= L.length) return;
+  const ln = L[li];
+  pushEdit();
+  ensureTimingMaps();
+  L.forEach((other, idx) => {
+    if (idx !== li && S.project.timing.lineTimes[idx] == null) S.project.timing.lineTimes[idx] = +other.start.toFixed(3);
+  });
+  const rows = String(S.project.lyrics || '').replace(/\r/g, '').split('\n');
+  if (ln.src != null && ln.src >= 0 && ln.src < rows.length) rows.splice(ln.src, 1);
+  else rows.splice(li, 1);
+  shiftSparseLineMaps(li, -1);
+  S.project.lyrics = rows.join('\n');
+  if ($('lyrics')) $('lyrics').value = S.project.lyrics;
+  EDL.lineIdx = Math.max(0, Math.min(li, L.length - 2));
+  EDL.wordIdx = 0;
+  refreshStage6Validation();
+  replan();
+  flushSave();
+}
+function updateWordChar(li, wi, ci, patch) {
+  const words = getEditableWords(li);
+  const w = words[wi]; if (!w) return;
+  const chs = buildWordChars(w).map(c => Object.assign({}, c));
+  if (ci < 0 || ci >= chs.length) return;
+  pushEdit();
+  ensureTimingMaps();
+  const c = chs[ci];
+  if (patch.ch !== undefined) c.ch = String(patch.ch);
+  if (patch.start !== undefined && isFinite(+patch.start)) {
+    const lo = ci > 0 ? chs[ci - 1].start + 0.005 : Math.max(0, w.start - 0.5);
+    const hi = c.end - 0.005;
+    c.start = +J.clamp(+patch.start, lo, Math.max(lo, hi)).toFixed(3);
+    if (ci > 0 && chs[ci - 1].end > c.start) chs[ci - 1].end = c.start;
+    if (ci === 0) w.start = c.start;
+  }
+  if (patch.end !== undefined && isFinite(+patch.end)) {
+    const lo = c.start + 0.005;
+    const hi = ci < chs.length - 1 ? chs[ci + 1].end - 0.005 : w.end + 0.5;
+    c.end = +J.clamp(+patch.end, lo, Math.max(lo, hi)).toFixed(3);
+    if (ci < chs.length - 1 && chs[ci + 1].start < c.end) chs[ci + 1].start = c.end;
+    if (ci === chs.length - 1) w.end = c.end;
+  }
+  w.chars = chs;
+  w.text = chs.map(x => x.ch).join('').trim() || w.text;
+  w.start = chs[0].start;
+  w.end = chs[chs.length - 1].end;
+  w.validated = true;
+  w.flags = (w.flags || []).filter(f => f !== 'uncertain_word' && f !== 'misrecognized_word' && f !== 'uncertain_boundary');
+  S.project.timing.wordTimes[li] = words;
+  if (patch.ch !== undefined) syncLineTextFromWords(li, words);
+  refreshStage6Validation();
+  replan();
+  flushSave();
+}
+function addWordChar(li, wi) {
+  const words = getEditableWords(li);
+  const w = words[wi]; if (!w) return;
+  pushEdit();
+  ensureTimingMaps();
+  const chs = buildWordChars(w).map(c => Object.assign({}, c));
+  const last = chs[chs.length - 1];
+  const cs = last ? Math.max(w.start, +(last.end - 0.03).toFixed(3)) : w.start;
+  if (last && last.end - last.start > 0.04) last.end = cs;
+  const ce = +(Math.max(cs + 0.04, w.end)).toFixed(3);
+  chs.push({ ch: 'a', start: cs, end: ce });
+  w.chars = chs;
+  w.text = chs.map(x => x.ch).join('');
+  w.end = ce;
+  w.validated = true;
+  S.project.timing.wordTimes[li] = words;
+  syncLineTextFromWords(li, words);
+  replan();
+  flushSave();
+}
+function deleteWordChar(li, wi, ci) {
+  const words = getEditableWords(li);
+  const w = words[wi]; if (!w) return;
+  const chs = buildWordChars(w).map(c => Object.assign({}, c));
+  if (chs.length <= 1) { deleteWordInLine(li, wi); return; }
+  pushEdit();
+  ensureTimingMaps();
+  chs.splice(ci, 1);
+  w.chars = chs;
+  w.text = chs.map(x => x.ch).join('');
+  w.start = chs[0].start;
+  w.end = chs[chs.length - 1].end;
+  w.validated = true;
+  S.project.timing.wordTimes[li] = words;
+  syncLineTextFromWords(li, words);
+  refreshStage6Validation();
+  replan();
+  flushSave();
+}
+function recalculateLineAlignment(li) {
+  const L = (S.plan && S.plan.lines) || [];
+  const ln = L[li]; if (!ln || ln.interlude) return;
+  pushEdit();
+  ensureTimingMaps();
+  const prevW = S.project.timing.wordTimes[li] || ln.wordsTimed || [];
+  const spk = (ln.meta && ln.meta.speaker) || 'Lead';
+  const lang = J.resolveLang(S.project);
+  const nextWords = J.realignLineWords
+    ? J.realignLineWords(S.audio, ln.text, ln.start, ln.visEnd || ln.end, lang, spk, prevW)
+    : J.alignWordsAcoustic(S.audio, ln.text, ln.start, ln.visEnd || ln.end, lang, spk, 0.94);
+  S.project.timing.wordTimes[li] = nextWords;
+  refreshStage6Validation();
+  replan();
+  flushSave();
+  toast(leCopy().recalcMsg);
+}
+function saveCorrectedLyrics() {
+  const L = (S.plan && S.plan.lines) || [];
+  const ln = L[EDL.lineIdx];
+  pushEdit();
+  ensureTimingMaps();
+  if (ln && !ln.interlude) {
+    const words = getEditableWords(ln.index).map(w => Object.assign({}, w, {
+      validated: true,
+      recognitionConfidence: Math.max(0.98, w.recognitionConfidence || 0.98),
+      alignmentConfidence: Math.max(0.95, w.alignmentConfidence || 0.95),
+      flags: (w.flags || []).filter(f => f !== 'uncertain_word' && f !== 'misrecognized_word' && f !== 'uncertain_boundary'),
+    }));
+    S.project.timing.wordTimes[ln.index] = words;
+    S.project.timing.lineTimes[ln.index] = +ln.start.toFixed(3);
+    S.project.timing.lineEnds[ln.index] = +(ln.visEnd || ln.end).toFixed(3);
+    const curM = Object.assign({}, S.project.timing.lineMeta[ln.index] || {});
+    curM.flags = (curM.flags || []).filter(f => f !== 'uncertain_word' && f !== 'misrecognized_word' && f !== 'uncertain_boundary');
+    curM.unclear = false;
+    S.project.timing.lineMeta[ln.index] = curM;
+  }
+  refreshStage6Validation();
+  replan();
+  flushSave();
+  toast(leCopy().savedMsg);
+}
+function syncLyricsEditor() {
+  const panel = $('lyricsEditorPanel');
+  if (!panel || !S.plan) return;
+  const L = S.plan.lines || [];
+  const lineSel = $('leLineSel'), strip = $('leWordStrip'), charList = $('leCharList');
+  if (!L.length) {
+    if ($('leStats')) $('leStats').textContent = '0 lignes';
+    if (lineSel) lineSel.innerHTML = '';
+    if (strip) strip.innerHTML = '';
+    if (charList) charList.innerHTML = '';
+    return;
+  }
+  EDL.lineIdx = J.clamp(EDL.lineIdx | 0, 0, L.length - 1);
+  const ln = L[EDL.lineIdx];
+  if (lineSel) {
+    lineSel.innerHTML = L.map((item, idx) => {
+      const txt = item.interlude ? `[Interlude ${item.secs || 4}s]` : item.text;
+      return `<option value="${idx}">${String(idx + 1).padStart(2, '0')} · ${J.fmtTime(item.start)} · ${escapeHtml(txt.slice(0, 26))}</option>`;
+    }).join('');
+    lineSel.value = String(EDL.lineIdx);
+  }
+  if ($('leLineStart')) $('leLineStart').value = ln.start.toFixed(3);
+  if ($('leLineEnd')) $('leLineEnd').value = (ln.visEnd || ln.end).toFixed(3);
+
+  const words = ln.interlude ? [] : getEditableWords(EDL.lineIdx);
+  EDL.wordIdx = words.length ? J.clamp(EDL.wordIdx | 0, 0, words.length - 1) : 0;
+
+  let valTotal = 0, wordTotal = 0;
+  L.forEach((item, idx) => {
+    if (item.interlude) return;
+    const ws = (S.project.timing && S.project.timing.wordTimes && S.project.timing.wordTimes[idx]) || item.wordsTimed || [];
+    ws.forEach(w => { wordTotal++; if (w.validated) valTotal++; });
+  });
+  if ($('leStats')) {
+    $('leStats').textContent = `L${EDL.lineIdx + 1}/${L.length} · ${words.length} mots · ${valTotal}/${wordTotal} validés`;
+  }
+
+  if (strip) {
+    strip.innerHTML = '';
+    if (ln.interlude) {
+      strip.innerHTML = '<span class="muted" style="font-size:11.5px">Section instrumentale / interlude</span>';
+    } else {
+      words.forEach((w, wi) => {
+        const flags = Array.isArray(w.flags) ? w.flags : [];
+        const isWarn = flags.includes('uncertain_word') || flags.includes('misrecognized_word') || flags.includes('uncertain_boundary');
+        const isOv = flags.includes('overlapping_vocals');
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'le-word' + (wi === EDL.wordIdx ? ' is-sel' : '') + (w.validated ? ' is-val' : '') + (isWarn ? ' is-warn' : '') + (isOv ? ' is-overlap' : '');
+        btn.innerHTML = `<span>${escapeHtml(w.text)}</span><span class="le-wt">${w.start.toFixed(2)}</span>`;
+        btn.title = `${J.fmtTime(w.start)} → ${J.fmtTime(w.end)}`;
+        btn.addEventListener('click', () => selectLyricWord(EDL.lineIdx, wi, false));
+        strip.appendChild(btn);
+      });
+    }
+  }
+
+  const selWord = words[EDL.wordIdx] || null;
+  const insp = $('leWordInspector');
+  if (insp) insp.style.opacity = selWord ? '1' : '0.45';
+  if ($('leWordText')) $('leWordText').value = selWord ? selWord.text : '';
+  if ($('leWordStart')) $('leWordStart').value = selWord ? selWord.start.toFixed(3) : '';
+  if ($('leWordEnd')) $('leWordEnd').value = selWord ? selWord.end.toFixed(3) : '';
+  if ($('leWordValid')) $('leWordValid').checked = Boolean(selWord && selWord.validated);
+  if ($('leWordConf')) {
+    if (selWord) {
+      const rp = selWord.recognitionConfidence != null ? Math.round(selWord.recognitionConfidence * 100) + '%' : '-';
+      const ap = selWord.alignmentConfidence != null ? Math.round(selWord.alignmentConfidence * 100) + '%' : '-';
+      $('leWordConf').textContent = `rec ${rp} · align ${ap}`;
+    } else {
+      $('leWordConf').textContent = '';
+    }
+  }
+
+  if (charList) {
+    charList.innerHTML = '';
+    if (selWord) {
+      const chs = buildWordChars(selWord);
+      chs.forEach((c, ci) => {
+        const row = document.createElement('div');
+        row.className = 'le-char-row';
+        const gInp = document.createElement('input');
+        gInp.type = 'text'; gInp.className = 'le-ch-txt'; gInp.maxLength = 6; gInp.value = c.ch != null ? c.ch : (c.char || '');
+        const sInp = document.createElement('input');
+        sInp.type = 'number'; sInp.step = '0.005'; sInp.min = '0'; sInp.className = 'le-ch-start mono'; sInp.value = Number(c.start).toFixed(3);
+        const sep = document.createElement('span'); sep.className = 'le-ch-sep'; sep.textContent = '→';
+        const eInp = document.createElement('input');
+        eInp.type = 'number'; eInp.step = '0.005'; eInp.min = '0'; eInp.className = 'le-ch-end mono'; eInp.value = Number(c.end).toFixed(3);
+        const dBtn = document.createElement('button');
+        dBtn.type = 'button'; dBtn.className = 'ghost small le-ch-del'; dBtn.textContent = '✕';
+        gInp.addEventListener('change', () => updateWordChar(EDL.lineIdx, EDL.wordIdx, ci, { ch: gInp.value }));
+        sInp.addEventListener('change', () => updateWordChar(EDL.lineIdx, EDL.wordIdx, ci, { start: parseFloat(sInp.value) }));
+        eInp.addEventListener('change', () => updateWordChar(EDL.lineIdx, EDL.wordIdx, ci, { end: parseFloat(eInp.value) }));
+        dBtn.addEventListener('click', () => deleteWordChar(EDL.lineIdx, EDL.wordIdx, ci));
+        row.append(gInp, sInp, sep, eInp, dBtn);
+        charList.appendChild(row);
+      });
+    }
+  }
+}
+function bindLyricsEditor() {
+  applyLeLabels();
+  const sel = $('leLineSel');
+  if (sel) sel.addEventListener('change', () => selectLyricWord(+sel.value, 0, true));
+  if ($('lePrevLine')) $('lePrevLine').addEventListener('click', () => selectLyricWord(EDL.lineIdx - 1, 0, true));
+  if ($('leNextLine')) $('leNextLine').addEventListener('click', () => selectLyricWord(EDL.lineIdx + 1, 0, true));
+  if ($('lePlayLine')) $('lePlayLine').addEventListener('click', () => {
+    const ln = S.plan && S.plan.lines ? S.plan.lines[EDL.lineIdx] : null;
+    if (ln) playRange(ln.start, ln.visEnd || ln.end);
+  });
+  if ($('leAddLine')) $('leAddLine').addEventListener('click', () => addLyricLineAfter(EDL.lineIdx));
+  if ($('btnAddLyricLine')) $('btnAddLyricLine').addEventListener('click', () => addLyricLineAfter(EDL.lineIdx));
+  if ($('leDelLine')) $('leDelLine').addEventListener('click', () => deleteLyricLine(EDL.lineIdx));
+  if ($('leLineStart')) $('leLineStart').addEventListener('change', e => applyLineBoundary(EDL.lineIdx, 'start', e.target.value));
+  if ($('leLineEnd')) $('leLineEnd').addEventListener('change', e => applyLineBoundary(EDL.lineIdx, 'end', e.target.value));
+
+  document.querySelectorAll('#lyricsEditorPanel [data-nudge]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const kind = btn.dataset.nudge;
+      const delta = parseFloat(btn.dataset.delta) || 0;
+      const ln = S.plan && S.plan.lines ? S.plan.lines[EDL.lineIdx] : null;
+      if (!ln) return;
+      if (kind === 'lineStart') applyLineBoundary(EDL.lineIdx, 'start', ln.start + delta);
+      else if (kind === 'lineEnd') applyLineBoundary(EDL.lineIdx, 'end', (ln.visEnd || ln.end) + delta);
+      else {
+        const words = getEditableWords(EDL.lineIdx);
+        const w = words[EDL.wordIdx]; if (!w) return;
+        if (kind === 'wordStart') applyWordTimeBoundary(EDL.lineIdx, EDL.wordIdx, 'start', w.start + delta);
+        else if (kind === 'wordEnd') applyWordTimeBoundary(EDL.lineIdx, EDL.wordIdx, 'end', w.end + delta);
+      }
+    });
+  });
+
+  if ($('leAddWordBefore')) $('leAddWordBefore').addEventListener('click', () => insertWordInLine(EDL.lineIdx, EDL.wordIdx, 'before', $('leInsertWordText') ? $('leInsertWordText').value : ''));
+  if ($('leAddWordAfter')) $('leAddWordAfter').addEventListener('click', () => insertWordInLine(EDL.lineIdx, EDL.wordIdx, 'after', $('leInsertWordText') ? $('leInsertWordText').value : ''));
+  const doApplyWord = () => commitWordTextEdit(EDL.lineIdx, EDL.wordIdx, $('leWordText') ? $('leWordText').value : '');
+  if ($('leApplyWord')) $('leApplyWord').addEventListener('click', doApplyWord);
+  if ($('leWordText')) $('leWordText').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); doApplyWord(); } });
+  if ($('lePlayWord')) $('lePlayWord').addEventListener('click', () => {
+    const words = getEditableWords(EDL.lineIdx);
+    const w = words[EDL.wordIdx];
+    if (w) playRange(w.start, w.end);
+  });
+  if ($('leDelWord')) $('leDelWord').addEventListener('click', () => deleteWordInLine(EDL.lineIdx, EDL.wordIdx));
+  if ($('leWordStart')) $('leWordStart').addEventListener('change', e => applyWordTimeBoundary(EDL.lineIdx, EDL.wordIdx, 'start', e.target.value));
+  if ($('leWordEnd')) $('leWordEnd').addEventListener('change', e => applyWordTimeBoundary(EDL.lineIdx, EDL.wordIdx, 'end', e.target.value));
+  if ($('leWordValid')) $('leWordValid').addEventListener('change', e => {
+    const words = getEditableWords(EDL.lineIdx);
+    const w = words[EDL.wordIdx]; if (!w) return;
+    pushEdit();
+    w.validated = !!e.target.checked;
+    if (w.validated) w.flags = (w.flags || []).filter(f => f !== 'uncertain_word' && f !== 'misrecognized_word' && f !== 'uncertain_boundary');
+    S.project.timing.wordTimes[EDL.lineIdx] = words;
+    refreshStage6Validation();
+    replan();
+    flushSave();
+  });
+  if ($('leAddChar')) $('leAddChar').addEventListener('click', () => addWordChar(EDL.lineIdx, EDL.wordIdx));
+  if ($('btnLeRecalcLine')) $('btnLeRecalcLine').addEventListener('click', () => recalculateLineAlignment(EDL.lineIdx));
+  if ($('btnLeSave')) $('btnLeSave').addEventListener('click', saveCorrectedLyrics);
+}
+
 /* ---------------- 歌詞 · タイミングの取り消し（Ctrl+Z） ---------------- */
 // separate from the ◀ ▶ history of looks: lyric edits, dragged / typed / tapped line times
 const ED = { undo: [], redo: [] };
-const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {}, wordTimes: S.project.timing.wordTimes || {}, lineMeta: S.project.timing.lineMeta || {}, detection: S.project.detection || null });
+const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {}, lineEnds: S.project.timing.lineEnds || {}, wordTimes: S.project.timing.wordTimes || {}, lineMeta: S.project.timing.lineMeta || {}, detection: S.project.detection || null });
 function pushEdit() { const s = edSnap(); if (ED.undo[ED.undo.length - 1] !== s) ED.undo.push(s); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = []; updateEditBtns(); }
 function edGo(d) {
   const from = d < 0 ? ED.undo : ED.redo, to = d < 0 ? ED.redo : ED.undo;
@@ -62372,7 +64203,7 @@ function edGo(d) {
   const o = JSON.parse(from.pop()), cur = JSON.parse(edSnap());
   if ('ov' in o) { cur.ov = S.project.overrides; cur.range = S.project.exportRange || null; }   // clearLyrics() also cleared these
   to.push(JSON.stringify(cur));
-  S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; S.project.timing.wordTimes = o.wordTimes || {}; S.project.timing.lineMeta = o.lineMeta || {}; S.project.detection = o.detection || null; $('lyrics').value = o.lyrics;
+  S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; S.project.timing.lineEnds = o.lineEnds || {}; S.project.timing.wordTimes = o.wordTimes || {}; S.project.timing.lineMeta = o.lineMeta || {}; S.project.detection = o.detection || null; $('lyrics').value = o.lyrics;
   if ('ov' in o) { S.project.overrides = o.ov || {}; S.project.exportRange = o.range || null; }
   replan(); syncAudioDetectPanel(); flushSave(); updateEditBtns();
   toast(d < 0 ? 'Undone' : 'Redone');
@@ -62384,7 +64215,7 @@ function loadLrc(text, sub) {
   const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
   ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
   pause();
-  P.lyrics = String(text).replace(/^\ufeff/, '').replace(/\r\n?/g, '\n').trim(); P.timing.lineTimes = {}; P.timing.wordTimes = {}; P.timing.lineMeta = {}; P.overrides = {}; P.exportRange = null;
+  P.lyrics = String(text).replace(/^\ufeff/, '').replace(/\r\n?/g, '\n').trim(); P.timing.lineTimes = {}; P.timing.lineEnds = {}; P.timing.wordTimes = {}; P.timing.lineMeta = {}; P.overrides = {}; P.exportRange = null;
   $('lyrics').value = P.lyrics;
   replan(); flushSave(); updateEditBtns(); seek(0);
   const n = J.parseLyrics(P.lyrics).lines.filter(l => l.lrc != null).length;
@@ -62404,7 +64235,7 @@ function clearLyrics() {
   const snap = JSON.parse(edSnap()); snap.ov = P.overrides || {}; snap.range = P.exportRange || null;
   ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
   pause();
-  P.lyrics = ''; P.timing.lineTimes = {}; P.timing.wordTimes = {}; P.timing.lineMeta = {}; P.overrides = {}; P.exportRange = null; $('lyrics').value = '';
+  P.lyrics = ''; P.timing.lineTimes = {}; P.timing.lineEnds = {}; P.timing.wordTimes = {}; P.timing.lineMeta = {}; P.overrides = {}; P.exportRange = null; $('lyrics').value = '';
   replan(); flushSave(); updateEditBtns(); seek(0);
   toast('Lyrics cleared (Undo or Ctrl+Z brings them back)');
 }
@@ -63088,95 +64919,712 @@ function offerShare(boxes, blob, name) {
   });
 }
 
-/* ---------------- tap sync ---------------- */
+/* ---------------- studio tap sync ---------------- */
+function tapCopy() {
+  const lang = document.documentElement.lang || 'ja';
+  if (lang === 'fr') {
+    return {
+      btn: '⏱ Synchro au Tap',
+      title: '⏱ Synchro au Tap Studio',
+      mode: 'Mode',
+      mLine: 'Phrase / Ligne',
+      mWord: 'Mot par mot (Précis)',
+      mCut: 'Phrases + Coupes [Tab]',
+      rate: 'Vitesse',
+      snap: 'Calage',
+      sVocal: 'Attaque vocale (±90ms)',
+      sBeat: 'Grille rythmique (BPM)',
+      sFree: 'Libre (ms exact)',
+      latency: 'Latence',
+      holdEnd: 'Maintenir = Fin [E]',
+      count: 'Compte 3·2·1',
+      click: 'Clic métronome',
+      vocal: 'Voix',
+      tapBtn: 'TAP [Espace]',
+      tapWordBtn: 'TAP MOT [Espace]',
+      markEnd: '⏹ Fin [E]',
+      pause: '⏸ Pause [P]',
+      play: '▶ Lecture [P]',
+      rew: '⟲ -2s',
+      back: '↶ 1 retour',
+      skip: '⏭ Passer [S]',
+      stop: '✓ Terminer',
+      guideLine: 'Appuyez sur <span class="kbd">Espace</span> ou <b>TAP</b> dès que le chanteur démarre la phrase affichée.',
+      guideWord: 'Mode <b>Mot par mot</b> : tapez chaque mot en bleu au moment exact où il est prononcé.',
+      guideCut: 'Tapez chaque phrase (<span class="kbd">Espace</span>) et tapez <span class="kbd">Tab</span> pour chaque sous-coupe interne.',
+      guideHold: ' Maintenez appuyé et relâchez pour fixer la fin précise.',
+      doneAll: 'Synchro au Tap enregistrée',
+      exactNote: 'Exact',
+      vocalSnapNote: 'Voix',
+      beatSnapNote: 'BPM',
+      endSetNote: 'Fin fixée',
+    };
+  }
+  if (lang === 'en') {
+    return {
+      btn: '⏱ Tap Sync',
+      title: '⏱ Studio Tap Sync',
+      mode: 'Mode',
+      mLine: 'Line by Line',
+      mWord: 'Word by Word (Precise)',
+      mCut: 'Lines + Sub-Cuts [Tab]',
+      rate: 'Speed',
+      snap: 'Snap',
+      sVocal: 'Vocal Onset (±90ms)',
+      sBeat: 'Beat Grid (BPM)',
+      sFree: 'Free (exact ms)',
+      latency: 'Latency',
+      holdEnd: 'Hold = Mark End [E]',
+      count: '3·2·1 Count',
+      click: 'Metronome Click',
+      vocal: 'Vocal',
+      tapBtn: 'TAP [Space]',
+      tapWordBtn: 'TAP WORD [Space]',
+      markEnd: '⏹ End [E]',
+      pause: '⏸ Pause [P]',
+      play: '▶ Play [P]',
+      rew: '⟲ -2s',
+      back: '↶ Undo Tap',
+      skip: '⏭ Skip [S]',
+      stop: '✓ Finish',
+      guideLine: 'Press <span class="kbd">Space</span> or <b>TAP</b> right when the singer starts the active line.',
+      guideWord: '<b>Word-by-word</b> mode: tap each highlighted word at its exact vocal onset.',
+      guideCut: 'Tap each line start (<span class="kbd">Space</span>) and press <span class="kbd">Tab</span> for internal cuts.',
+      guideHold: ' Hold and release to capture exact end timestamp.',
+      doneAll: 'Tap Sync saved',
+      exactNote: 'Exact',
+      vocalSnapNote: 'Vocal',
+      beatSnapNote: 'BPM',
+      endSetNote: 'End set',
+    };
+  }
+  if (lang === 'zh-Hant' || lang === 'zh-Hans' || lang.startsWith('zh')) {
+    return {
+      btn: '⏱ 節拍點擊同步',
+      title: '⏱ 專業點擊對軌同步',
+      mode: '模式',
+      mLine: '逐line 同步',
+      mWord: '逐詞精準同步',
+      mCut: 'line  + 切分鏡頭 [Tab]',
+      rate: '速度',
+      snap: '對齊',
+      sVocal: '人聲起音 (±90ms)',
+      sBeat: '節拍網格 (BPM)',
+      sFree: '自由毫s',
+      latency: '延遲補償',
+      holdEnd: '按住設定結束 [E]',
+      count: '倒數 3·2·1',
+      click: '節拍器音效',
+      vocal: '人聲',
+      tapBtn: '點擊 TAP [Space]',
+      tapWordBtn: '點擊詞彙 [Space]',
+      markEnd: '⏹ 結束 [E]',
+      pause: '⏸ 暫停 [P]',
+      play: '▶ 播放 [P]',
+      rew: '⟲ -2s',
+      back: '↶ 退回一步',
+      skip: '⏭ 跳過 [S]',
+      stop: '✓ 完成',
+      guideLine: '聽到歌手開口唱出目前歌詞時，立即按下 <span class="kbd">Space</span> 或 <b>TAP</b>。',
+      guideWord: '<b>逐詞模式</b>：請依序在每個藍色標記詞彙發音起點點擊。',
+      guideCut: '用 <span class="kbd">Space</span> 標記line 首，用 <span class="kbd">Tab</span> 標記line 內切分點。',
+      guideHold: ' 按住並放開可精準記錄結束時間。',
+      doneAll: '已完成點擊同步',
+      exactNote: '精準',
+      vocalSnapNote: '人聲對齊',
+      beatSnapNote: '節拍對齊',
+      endSetNote: '已設結束',
+    };
+  }
+  return {
+    btn: 'タップで同期',
+    title: '⏱ スタジオ · タップ同期',
+    mode: 'モード',
+    mLine: 'line ごと（フレーズ）',
+    mWord: '単語ごと（高精度）',
+    mCut: 'line ＋cuts区切り [Tab]',
+    rate: 'Play速度',
+    snap: 'スナップ',
+    sVocal: 'ボーカル発音 (±90ms)',
+    sBeat: '拍グリッド (BPM)',
+    sFree: 'フリー (ms単位)',
+    latency: '遅延補正',
+    holdEnd: '長押し＝終了 [E]',
+    count: '3·2·1 カウント',
+    click: 'クリック音',
+    vocal: '声量',
+    tapBtn: 'TAP [Space]',
+    tapWordBtn: '単語TAP [Space]',
+    markEnd: '⏹ 終了 [E]',
+    pause: '⏸ Pause [P]',
+    play: '▶ Play [P]',
+    rew: '⟲ -2s',
+    back: '↶ 1つ戻る',
+    skip: '⏭ スキップ [S]',
+    stop: '✓ 完了',
+    guideLine: '歌い出しに合わせて <span class="kbd">Space</span> または <b>TAP</b> を押してください。',
+    guideWord: '<b>単語ごとモード</b>：青い単語の発音頭に合わせて順番にタップします。',
+    guideCut: 'line の頭を <span class="kbd">Space</span>、途中のcutsを <span class="kbd">Tab</span> で合わせます。',
+    guideHold: ' 押したまま離すと正確な終了時刻を記録します。',
+    doneAll: 'タップ同期を反映しました',
+    exactNote: '直接記録',
+    vocalSnapNote: '声頭補正',
+    beatSnapNote: '拍補正',
+    endSetNote: '終了記録',
+  };
+}
+function applyTapLabels() {
+  const c = tapCopy();
+  const setT = (id, t) => { const el = $(id); if (el) el.textContent = t; };
+  if (!($('btnTap') && $('btnTap').dataset.keepCustom)) setT('btnTap', c.btn);
+  setT('tapTitle', c.title);
+  setT('lblTapMode', c.mode);
+  setT('lblTapRate', c.rate);
+  setT('lblTapSnap', c.snap);
+  setT('lblTapLatency', c.latency);
+  setT('lblTapHoldEnd', c.holdEnd);
+  setT('lblTapCount', c.count);
+  setT('lblTapClick', c.click);
+  setT('lblTapVocal', c.vocal);
+  setT('tapMarkEnd', c.markEnd);
+  setT('tapRewind', c.rew);
+  setT('tapBack', c.back);
+  setT('tapSkip', c.skip);
+  setT('tapStop', c.stop);
+  const mSel = $('tapMode');
+  if (mSel && mSel.options.length >= 3) {
+    mSel.options[0].textContent = c.mLine;
+    mSel.options[1].textContent = c.mWord;
+    mSel.options[2].textContent = c.mCut;
+  }
+  const sSel = $('tapSnapMode');
+  if (sSel && sSel.options.length >= 3) {
+    sSel.options[0].textContent = c.sVocal;
+    sSel.options[1].textContent = c.sBeat;
+    sSel.options[2].textContent = c.sFree;
+  }
+  syncTapTransportBtn();
+}
+function syncTapTransportBtn() {
+  const btn = $('tapPlayPause');
+  if (!btn) return;
+  const c = tapCopy();
+  btn.textContent = S.playing ? c.pause : c.play;
+}
+function playTapClick(accent = false) {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!AP.ctx) AP.ctx = new AudioCtx();
+    if (AP.ctx.state === 'suspended' && AP.ctx.resume) AP.ctx.resume();
+    if (typeof AP.ctx.createOscillator !== 'function' || typeof AP.ctx.createGain !== 'function') return;
+    const now = AP.ctx.currentTime || 0;
+    const osc = AP.ctx.createOscillator();
+    const g = AP.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = accent ? 980 : 720;
+    const peak = AP.muted ? 0 : Math.min(0.25, 0.14 * (AP.vol || 0.8));
+    if (g.gain && typeof g.gain.setValueAtTime === 'function') {
+      g.gain.setValueAtTime(Math.max(0.0001, peak), now);
+      if (typeof g.gain.exponentialRampToValueAtTime === 'function') {
+        g.gain.exponentialRampToValueAtTime(0.0001, now + 0.032);
+      }
+    }
+    osc.connect(g);
+    g.connect(AP.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.036);
+  } catch (e) {}
+}
+function tapOpts() {
+  let o = null;
+  try { o = JSON.parse(localStorage.getItem('jizura.tapOpts') || 'null'); } catch (e) {}
+  const mode = o && ['line', 'word', 'cut'].includes(o.mode) ? o.mode : 'line';
+  const rate = o && [1, 0.85, 0.75, 0.5].includes(+o.rate) ? +o.rate : 1;
+  const snapMode = o && ['vocal', 'beat', 'free'].includes(o.snapMode) ? o.snapMode : 'vocal';
+  const latencyMs = o && [0, 45, 75, 110].includes(+o.latencyMs) ? +o.latencyMs : 45;
+  return {
+    mode,
+    rate,
+    snapMode,
+    latencyMs,
+    holdEnd: !!(o && o.holdEnd),
+    count: !!(o && o.count),
+    click: !!(o && o.click),
+  };
+}
+function saveTapOpts() {
+  const payload = {
+    mode: $('tapMode') ? $('tapMode').value : 'line',
+    rate: $('tapRate') ? (+$('tapRate').value || 1) : 1,
+    snapMode: $('tapSnapMode') ? $('tapSnapMode').value : 'vocal',
+    latencyMs: $('tapLatency') ? (+$('tapLatency').value || 0) : 45,
+    holdEnd: !!($('tapHoldEnd') && $('tapHoldEnd').checked),
+    count: !!($('tapCount') && $('tapCount').checked),
+    click: !!($('tapClick') && $('tapClick').checked),
+  };
+  try { localStorage.setItem('jizura.tapOpts', JSON.stringify(payload)); } catch (e) {}
+}
+function refineTapTime(rawT, minBound = 0) {
+  const tap = S.tap;
+  const latSec = tap ? (tap.latencyMs || 0) / 1000 : 0;
+  const snapMode = tap ? tap.snapMode : 'free';
+  const c = tapCopy();
+  const base = Math.max(minBound, rawT - latSec);
+  if (snapMode === 'vocal' && S.audio && S.audio.wordAttack100 && S.audio.wordAttack100.length) {
+    const fr = S.audio.fineRate || 100;
+    const att = S.audio.wordAttack100;
+    const env = S.audio.vocalEnv100;
+    const idx0 = Math.max(0, Math.floor((Math.max(minBound, base - 0.095)) * fr));
+    const idx1 = Math.min(att.length - 1, Math.ceil((base + 0.095) * fr));
+    let bestT = base, bestScore = -1;
+    for (let f = idx0; f <= idx1; f++) {
+      const ft = f / fr;
+      if (ft < minBound) continue;
+      const distPen = 1 - 0.25 * (Math.abs(ft - base) / 0.095);
+      const eBoost = env && env[f] ? (1 + Math.min(1, env[f] * 3) * 0.35) : 1;
+      const score = att[f] * eBoost * distPen;
+      if (score > bestScore) { bestScore = score; bestT = ft; }
+    }
+    if (bestScore > 0.025) {
+      const snapped = +Math.max(minBound, bestT).toFixed(3);
+      const dm = Math.round((snapped - rawT) * 1000);
+      return { t: snapped, deltaMs: dm, note: `✓ ${c.vocalSnapNote} (${dm >= 0 ? '+' : ''}${dm}ms)` };
+    }
+  } else if (snapMode === 'beat' && S.plan && S.plan.beats && S.plan.beats.length) {
+    let bestB = null, bestD = 0.16;
+    for (const b of S.plan.beats) {
+      if (b < minBound) continue;
+      const d = Math.abs(b - base);
+      if (d < bestD) { bestD = d; bestB = b; }
+      if (b > base + 0.2) break;
+    }
+    if (bestB != null) {
+      const snapped = +bestB.toFixed(3);
+      const dm = Math.round((snapped - rawT) * 1000);
+      return { t: snapped, deltaMs: dm, note: `♪ ${c.beatSnapNote} (${dm >= 0 ? '+' : ''}${dm}ms)` };
+    }
+  }
+  const exact = +base.toFixed(3);
+  const dm = Math.round((exact - rawT) * 1000);
+  return { t: exact, deltaMs: dm, note: `${c.exactNote} (${dm >= 0 ? '+' : ''}${dm}ms)` };
+}
+function tapTotalSteps(mode) {
+  const L = (S.plan && S.plan.lines) || [];
+  if (mode !== 'word') return L.length;
+  let total = 0;
+  for (let i = 0; i < L.length; i++) {
+    total += L[i].interlude ? 1 : Math.max(1, getEditableWords(i).length);
+  }
+  return total;
+}
+function tapDoneSteps(mode, curLi, curWi) {
+  const L = (S.plan && S.plan.lines) || [];
+  if (mode !== 'word') return Math.min(L.length, Math.max(0, curLi));
+  let n = 0;
+  for (let i = 0; i < Math.min(L.length, curLi); i++) {
+    n += L[i].interlude ? 1 : Math.max(1, getEditableWords(i).length);
+  }
+  return n + (curLi < L.length ? Math.max(0, curWi) : 0);
+}
+function updateTapTelemetry(t) {
+  if (!S.tap) return;
+  if ($('tapTimeNow')) $('tapTimeNow').textContent = J.fmtTime(t);
+  const fill = $('tapVocalFill');
+  if (fill) {
+    let pct = 0;
+    if (S.audio && S.audio.vocalEnv100 && S.audio.vocalEnv100.length) {
+      const fr = S.audio.fineRate || 100;
+      const center = J.clamp(Math.round(t * fr), 0, S.audio.vocalEnv100.length - 1);
+      let peak = 0;
+      for (let f = Math.max(0, center - 2); f <= Math.min(S.audio.vocalEnv100.length - 1, center + 2); f++) {
+        if (S.audio.vocalEnv100[f] > peak) peak = S.audio.vocalEnv100[f];
+      }
+      pct = Math.round(J.clamp(peak * 260, 0, 100));
+    }
+    fill.style.width = pct + '%';
+  }
+  const dot = $('tapBeatDot');
+  if (dot) {
+    let bIdx = -1, sinceBeat = 9;
+    const beats = S.plan && S.plan.beats;
+    if (beats && beats.length) {
+      for (let i = 0; i < beats.length; i++) {
+        if (beats[i] <= t + 0.01) { bIdx = i; sinceBeat = t - beats[i]; }
+        else break;
+      }
+    } else {
+      const bpm = (S.project.timing && S.project.timing.bpm > 0 ? S.project.timing.bpm : (S.audio && S.audio.bpm)) || 120;
+      const period = 60 / bpm;
+      bIdx = Math.floor(t / period);
+      sinceBeat = t - bIdx * period;
+    }
+    dot.classList.toggle('is-pulse', sinceBeat >= -0.01 && sinceBeat < 0.11);
+    if (S.playing && !S.tap.counting && bIdx >= 0 && bIdx !== S.tap.lastBeatIdx) {
+      S.tap.lastBeatIdx = bIdx;
+      if (S.tap.click) playTapClick(bIdx % 4 === 0);
+    }
+  }
+}
 // start from any line: playback begins a little before that line, earlier lines keep their times
-function startTap(from = 0) {
-  if (!S.plan.lines.length) return;
+function startTap(from = 0, wordFrom = 0) {
+  if (!S.plan || !S.plan.lines.length) return;
   from = J.clamp(from | 0, 0, S.plan.lines.length - 1);
   pushEdit();
+  ensureTimingMaps();
   const opt = tapOpts();
-  S.tap = { i: from, from, done: [], rate: opt.rate };
-  if (!S.project.timing.lineTimes) S.project.timing.lineTimes = {};
-  $('tapPanel').hidden = false; $('btnTap').setAttribute('aria-pressed', 'true');
+  const firstWords = opt.mode === 'word' && !S.plan.lines[from].interlude ? getEditableWords(from) : [];
+  const wi0 = firstWords.length ? J.clamp(wordFrom | 0, 0, firstWords.length - 1) : 0;
+  S.tap = {
+    i: from,
+    wi: wi0,
+    from,
+    mode: opt.mode,
+    rate: opt.rate,
+    snapMode: opt.snapMode,
+    latencyMs: opt.latencyMs,
+    holdEnd: opt.holdEnd,
+    count: opt.count,
+    click: opt.click,
+    done: [],
+    holding: null,
+    finishOnRelease: false,
+    lastBeatIdx: -1,
+  };
+  applyTapLabels();
+  $('tapPanel').hidden = false;
+  $('btnTap').setAttribute('aria-pressed', 'true');
   $('tapPanel').classList.remove('compact');
-  $('tapRate').value = String(opt.rate); $('tapCount').checked = opt.count;
+  if ($('tapMode')) $('tapMode').value = opt.mode;
+  if ($('tapRate')) $('tapRate').value = String(opt.rate);
+  if ($('tapSnapMode')) $('tapSnapMode').value = opt.snapMode;
+  if ($('tapLatency')) $('tapLatency').value = String(opt.latencyMs);
+  if ($('tapHoldEnd')) $('tapHoldEnd').checked = opt.holdEnd;
+  if ($('tapCount')) $('tapCount').checked = opt.count;
+  if ($('tapClick')) $('tapClick').checked = opt.click;
+  if ($('tapSnapNote')) $('tapSnapNote').textContent = '—';
   const prev = from > 0 ? S.plan.lines[from - 1] : null, cur = S.plan.lines[from];
-  const t0 = from === 0 ? 0 : Math.max(0, prev.start + 0.01, cur.start - 2.5);      // a little before the line, never before the previous one
-  pause(); seek(t0); updateTap();
-  $('tapBtn').focus();
-  if (from > 0) toast(`Tap sync from line ${from + 1} (playing from ${J.fmtTime(t0)})`);
-  // カウントダウン: 3, 2, 1 — then the song starts
+  const targetStart = (opt.mode === 'word' && firstWords[wi0]) ? firstWords[wi0].start : cur.start;
+  const t0 = (from === 0 && wi0 === 0) ? 0 : Math.max(0, prev ? prev.start + 0.01 : 0, targetStart - 2.2);
+  pause(); seek(t0); updateTap(); updateTapTelemetry(t0);
+  if ($('tapBtn')) $('tapBtn').focus();
+  if (from > 0) {
+    const isFr = document.documentElement.lang === 'fr';
+    const isEn = document.documentElement.lang === 'en';
+    toast(isFr
+      ? `Synchro au Tap depuis la ligne ${from + 1} (${J.fmtTime(t0)})`
+      : isEn
+      ? `Tap Sync from line ${from + 1} (${J.fmtTime(t0)})`
+      : `Tap sync from line ${from + 1} (playing from ${J.fmtTime(t0)})`);
+  }
   const tap = S.tap;
   if (opt.count) {
     const el = $('tapCountNum'); let n = 3; tap.counting = true;
     const step = () => {
       if (S.tap !== tap) { el.hidden = true; return; }
       if (n === 0) { el.hidden = true; tap.counting = false; play(); return; }
-      el.hidden = false; el.textContent = String(n--); tap.cd = setTimeout(step, 700);
+      el.hidden = false; el.textContent = String(n--);
+      if (tap.click) playTapClick(true);
+      tap.cd = setTimeout(step, 650);
     };
     step();
   } else play();
 }
-/* タップ同期の速さ · カウントダウン: remembered in this browser */
-function tapOpts() {
-  let o = null; try { o = JSON.parse(localStorage.getItem('jizura.tapOpts') || 'null'); } catch (e) {}
-  const rate = o && [1, 0.75, 0.5].includes(+o.rate) ? +o.rate : 1;
-  return { rate, count: !!(o && o.count) };
-}
-function saveTapOpts() {
-  try { localStorage.setItem('jizura.tapOpts', JSON.stringify({ rate: +$('tapRate').value || 1, count: $('tapCount').checked })); } catch (e) {}
-}
 function tapNow() {
-  if (!S.tap || S.tap.counting) return;         // not during the countdown
-  const LT = S.project.timing.lineTimes, i = S.tap.i, t = +S.t.toFixed(3);
-  S.tap.done.push({ i, had: LT[i] });
-  LT[i] = t;
-  // later lines tapped earlier (a previous pass) must not come before this one
-  for (const k of Object.keys(LT)) if (+k > i && LT[k] <= t + 0.2) delete LT[k];
-  S.tap.i++; S.tap.cl = i; S.tap.ck = 1;
+  if (!S.tap || S.tap.counting) return;
+  const tap = S.tap;
+  const L = (S.plan && S.plan.lines) || [];
+  if (tap.i >= L.length) { stopTap(); return; }
+  ensureTimingMaps();
+  const LT = S.project.timing.lineTimes;
+  const LE = S.project.timing.lineEnds;
+  const btn = $('tapBtn');
+  if (btn) {
+    btn.classList.add('is-hit');
+    setTimeout(() => { if (btn) btn.classList.remove('is-hit'); }, 110);
+  }
+  const li = tap.i;
+  const ln = L[li];
+  if (tap.mode === 'word' && !ln.interlude) {
+    const words = getEditableWords(li);
+    const wi = J.clamp(tap.wi | 0, 0, Math.max(0, words.length - 1));
+    if (words.length) {
+      const prevEndBound = wi > 0
+        ? words[wi - 1].start + 0.04
+        : (li > 0 && LT[li - 1] != null ? LT[li - 1] + 0.08 : 0);
+      const res = refineTapTime(S.t, prevEndBound);
+      if ($('tapSnapNote')) $('tapSnapNote').textContent = res.note;
+      tap.done.push({
+        kind: 'word',
+        li,
+        wi,
+        hadWords: JSON.parse(JSON.stringify(words)),
+        hadLineStart: LT[li],
+        hadLineEnd: LE[li],
+        hadPrevLineEnd: li > 0 ? LE[li - 1] : undefined,
+      });
+      const prevDur = Math.max(0.14, (words[wi].end || 0) - (words[wi].start || 0));
+      if (wi === 0) {
+        LT[li] = res.t;
+        if (li > 0 && L[li - 1] && L[li - 1].end > res.t - 0.02) {
+          LE[li - 1] = +Math.max(L[li - 1].start + 0.15, res.t - 0.02).toFixed(3);
+        }
+      } else if (words[wi - 1].end > res.t - 0.005) {
+        words[wi - 1].end = +Math.max(words[wi - 1].start + 0.03, res.t - 0.005).toFixed(3);
+        rescaleWordChars(words[wi - 1], words[wi - 1].start, words[wi - 1].end);
+      }
+      words[wi].start = res.t;
+      words[wi].end = +Math.max(res.t + 0.08, res.t + prevDur).toFixed(3);
+      words[wi].validated = true;
+      words[wi].alignmentConfidence = 1;
+      words[wi].flags = (words[wi].flags || []).filter(f => f !== 'uncertain_boundary');
+      rescaleWordChars(words[wi], words[wi].start, words[wi].end);
+      // Push later unvalidated words forward cleanly so words stay chronological
+      for (let k = wi + 1; k < words.length; k++) {
+        if (words[k].start < words[k - 1].end + 0.01) {
+          const wDur = Math.max(0.12, (words[k].end || 0) - (words[k].start || 0));
+          words[k].start = +(words[k - 1].end + 0.01).toFixed(3);
+          words[k].end = +(words[k].start + wDur).toFixed(3);
+          rescaleWordChars(words[k], words[k].start, words[k].end);
+        }
+      }
+      S.project.timing.wordTimes[li] = words;
+      for (const k of Object.keys(LT)) if (+k > li && LT[k] <= res.t + 0.15) delete LT[k];
+      tap.holding = tap.holdEnd ? { kind: 'word', li, wi, start: res.t, wallAt: performance.now() } : null;
+      tap.cl = li; tap.ck = 1;
+      if (wi + 1 < words.length) {
+        tap.wi = wi + 1;
+      } else {
+        tap.i = li + 1;
+        tap.wi = 0;
+      }
+      replan();
+      if (tap.i >= L.length) {
+        if (tap.holding) { tap.finishOnRelease = true; updateTap(); }
+        else stopTap();
+      } else {
+        updateTap();
+      }
+      return;
+    }
+  }
+  // Line-by-line or Lines + Cuts mode (or interlude)
+  const minLineStart = li > 0 && LT[li - 1] != null ? LT[li - 1] + 0.08 : 0;
+  const res = refineTapTime(S.t, minLineStart);
+  if ($('tapSnapNote')) $('tapSnapNote').textContent = res.note;
+  tap.done.push({ kind: 'line', i: li, had: LT[li], hadEnd: LE[li] });
+  LT[li] = res.t;
+  for (const k of Object.keys(LT)) if (+k > li && LT[k] <= res.t + 0.15) delete LT[k];
+  tap.holding = tap.holdEnd ? { kind: 'line', li, start: res.t, wallAt: performance.now() } : null;
+  tap.i = li + 1;
+  tap.wi = 0;
+  tap.cl = li;
+  tap.ck = 1;
   replan();
-  if (S.tap.i >= S.plan.lines.length) stopTap(); else updateTap();
+  if (tap.i >= L.length) {
+    if (tap.holding) { tap.finishOnRelease = true; updateTap(); }
+    else stopTap();
+  } else {
+    updateTap();
+  }
+}
+function tapEndHold(explicit = false) {
+  if (!S.tap || S.tap.counting) return;
+  const tap = S.tap;
+  let target = tap.holding;
+  if (!target && explicit) {
+    const last = [...tap.done].reverse().find(x => x.kind === 'word' || x.kind === 'line');
+    if (last && last.kind === 'word') target = { kind: 'word', li: last.li, wi: last.wi, wallAt: 0 };
+    else if (last && last.kind === 'line') target = { kind: 'line', li: last.i, wallAt: 0 };
+    else if (tap.i < S.plan.lines.length) {
+      target = tap.mode === 'word' ? { kind: 'word', li: tap.i, wi: tap.wi, wallAt: 0 } : { kind: 'line', li: tap.i, wallAt: 0 };
+    }
+  }
+  tap.holding = null;
+  if (!target) {
+    if (tap.finishOnRelease) stopTap();
+    return;
+  }
+  if (!explicit && target.wallAt && performance.now() - target.wallAt < 75) {
+    if (tap.finishOnRelease) stopTap();
+    return;
+  }
+  ensureTimingMaps();
+  const L = (S.plan && S.plan.lines) || [];
+  const LE = S.project.timing.lineEnds;
+  const LT = S.project.timing.lineTimes;
+  const c = tapCopy();
+  if (target.kind === 'word') {
+    const words = getEditableWords(target.li);
+    const w = words[target.wi];
+    if (w) {
+      const endT = +Math.max(w.start + 0.05, S.t).toFixed(3);
+      w.end = endT;
+      w.validated = true;
+      w.alignmentConfidence = 1;
+      rescaleWordChars(w, w.start, endT);
+      if (target.wi + 1 < words.length && words[target.wi + 1].start < endT + 0.01 && !words[target.wi + 1].validated) {
+        words[target.wi + 1].start = +(endT + 0.01).toFixed(3);
+        words[target.wi + 1].end = Math.max(words[target.wi + 1].start + 0.08, words[target.wi + 1].end);
+        rescaleWordChars(words[target.wi + 1], words[target.wi + 1].start, words[target.wi + 1].end);
+      }
+      S.project.timing.wordTimes[target.li] = words;
+      if (target.wi === words.length - 1) LE[target.li] = endT;
+      if ($('tapSnapNote')) $('tapSnapNote').textContent = `⏹ ${c.endSetNote} ${J.fmtTime(endT)}`;
+    }
+  } else if (target.kind === 'line') {
+    const ln = L[target.li];
+    if (ln) {
+      const endT = +Math.max(ln.start + 0.15, S.t).toFixed(3);
+      if (target.li + 1 < L.length && LT[target.li + 1] == null) {
+        LT[target.li + 1] = +Math.max(endT + 0.05, L[target.li + 1].start).toFixed(3);
+      }
+      LE[target.li] = endT;
+      if ($('tapSnapNote')) $('tapSnapNote').textContent = `⏹ ${c.endSetNote} ${J.fmtTime(endT)}`;
+    }
+  }
+  replan();
+  if (tap.finishOnRelease) { stopTap(); return; }
+  updateTap();
 }
 /* Tab during tap sync: the next cut of the line just tapped starts now (a line with several cuts) */
 function tapCut() {
   if (!S.tap || S.tap.counting || S.tap.cl == null) return;
   const li = S.tap.cl, k = S.tap.ck | 0, ln = S.plan.lines[li];
   const n = S.plan.cuts.filter(c => c.line === li && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).length;
-  if (!ln || k < 1 || k >= n) { toast('This line has no more cuts'); return; }
+  if (!ln || k < 1 || k >= n) {
+    const isFr = document.documentElement.lang === 'fr';
+    toast(isFr ? 'Plus aucune coupe disponible sur cette ligne' : 'This line has no more cuts');
+    return;
+  }
   const cur = S.project.overrides[li] || {}, ct = Object.assign({}, cur.cutTime || {});
-  S.tap.done.push({ cut: true, li, k, had: ct[k] });
+  S.tap.done.push({ kind: 'cut', cut: true, li, k, had: ct[k] });
   ct[k] = +Math.max(0, S.t - ln.start).toFixed(3);
   setOv(li, { cutTime: ct });
   S.tap.ck = k + 1;
   replan(); updateTap();
 }
+function tapSkip() {
+  if (!S.tap || S.tap.counting) return;
+  const tap = S.tap, L = (S.plan && S.plan.lines) || [];
+  if (tap.i >= L.length) { stopTap(); return; }
+  tap.done.push({ kind: 'skip', li: tap.i, wi: tap.wi });
+  if (tap.mode === 'word' && !L[tap.i].interlude) {
+    const words = getEditableWords(tap.i);
+    if (tap.wi + 1 < words.length) tap.wi++;
+    else { tap.i++; tap.wi = 0; }
+  } else {
+    tap.i++; tap.wi = 0;
+  }
+  if (tap.i >= L.length) stopTap(); else updateTap();
+}
+function tapRewind() {
+  if (!S.tap) return;
+  seek(Math.max(0, S.t - 2.0));
+  if ($('tapBtn')) $('tapBtn').focus();
+}
+function toggleTapPause() {
+  if (!S.tap) return;
+  if (S.playing) pause(); else play();
+  syncTapTransportBtn();
+  if ($('tapBtn')) $('tapBtn').focus();
+}
 function tapBack() {                    // 1つ戻る: undo the last tap and jump back a little
   if (!S.tap || !S.tap.done.length) return;
-  const d = S.tap.done.pop(), LT = S.project.timing.lineTimes;
-  if (d.cut) {
+  const d = S.tap.done.pop(), LT = S.project.timing.lineTimes, LE = S.project.timing.lineEnds;
+  if (d.cut || d.kind === 'cut') {
     const ct = Object.assign({}, (S.project.overrides[d.li] || {}).cutTime || {});
     if (d.had != null) ct[d.k] = d.had; else delete ct[d.k];
     setOv(d.li, { cutTime: Object.keys(ct).length ? ct : undefined });
     S.tap.cl = d.li; S.tap.ck = d.k;
+  } else if (d.kind === 'skip') {
+    S.tap.i = d.li; S.tap.wi = d.wi || 0;
+  } else if (d.kind === 'word') {
+    S.project.timing.wordTimes[d.li] = d.hadWords;
+    if (d.hadLineStart != null) LT[d.li] = d.hadLineStart; else delete LT[d.li];
+    if (d.hadLineEnd != null) LE[d.li] = d.hadLineEnd; else delete LE[d.li];
+    if (d.li > 0) {
+      if (d.hadPrevLineEnd != null) LE[d.li - 1] = d.hadPrevLineEnd; else delete LE[d.li - 1];
+    }
+    S.tap.i = d.li; S.tap.wi = d.wi;
   } else {
     if (d.had != null) LT[d.i] = d.had; else delete LT[d.i];
-    S.tap.i = d.i;
-    const prev = [...S.tap.done].reverse().find(x => !x.cut);   // cut taps go on after the line tapped before
-    S.tap.cl = prev ? prev.i : null; S.tap.ck = 1 + S.tap.done.filter(x => x.cut && prev && x.li === prev.i).length;
+    if (d.hadEnd != null) LE[d.i] = d.hadEnd; else delete LE[d.i];
+    S.tap.i = d.i; S.tap.wi = 0;
+    const prev = [...S.tap.done].reverse().find(x => x.kind === 'line');
+    S.tap.cl = prev ? prev.i : null;
+    S.tap.ck = 1 + S.tap.done.filter(x => (x.cut || x.kind === 'cut') && prev && x.li === prev.i).length;
   }
+  S.tap.holding = null; S.tap.finishOnRelease = false;
   replan(); updateTap();
-  seek(Math.max(0, S.t - 3)); if (!S.playing) play();
+  seek(Math.max(0, S.t - 2.5)); if (!S.playing) play();
 }
 function stopTap() {
-  const slow = S.tap && S.tap.rate !== 1;
-  if (S.tap && S.tap.cd) clearTimeout(S.tap.cd); $('tapCountNum').hidden = true; S.tap = null;
+  const tap = S.tap;
+  const slow = tap && tap.rate !== 1;
+  const countDone = tap ? tap.done.filter(x => x.kind !== 'skip').length : 0;
+  if (tap && tap.cd) clearTimeout(tap.cd);
+  if ($('tapCountNum')) $('tapCountNum').hidden = true;
+  S.tap = null;
   if (slow && S.playing) seek(S.t);             // back to normal speed
-  $('tapPanel').hidden = true; $('btnTap').setAttribute('aria-pressed', 'false'); replan(); flushSave(); }
+  $('tapPanel').hidden = true;
+  $('btnTap').setAttribute('aria-pressed', 'false');
+  refreshStage6Validation();
+  replan();
+  flushSave();
+  syncLyricsEditor();
+  if (countDone > 0) toast(`${tapCopy().doneAll} (${countDone})`);
+}
 function updateTap() {
-  const ln = S.plan.lines[S.tap.i];
-  $('tapLine').textContent = ln ? `${S.tap.i + 1}. ${ln.interlude ? '[interlude]' : ln.text}` : '—';
-  const bb = $('tapBack'); if (bb) bb.disabled = !S.tap.done.length;
-  $('tapPanel').classList.toggle('compact', S.tap.done.length >= 3);  // 最初の数回が終わったら説明を畳んで、固定しても邪魔にならないように
+  if (!S.tap || !S.plan) return;
+  const tap = S.tap;
+  const L = S.plan.lines || [];
+  const ln = L[tap.i];
+  const prev = tap.i > 0 ? L[tap.i - 1] : null;
+  const next = tap.i + 1 < L.length ? L[tap.i + 1] : null;
+  const c = tapCopy();
+  if ($('tapPrevLine')) $('tapPrevLine').textContent = prev ? `‹ ${prev.interlude ? '[Interlude]' : prev.text}` : '';
+  $('tapLine').textContent = ln ? `${tap.i + 1}. ${ln.interlude ? '〔Interlude〕' : ln.text}` : '—';
+  if ($('tapNextLine')) $('tapNextLine').textContent = next ? `› ${next.interlude ? '[Interlude]' : next.text}` : '';
+
+  const totalSteps = tapTotalSteps(tap.mode);
+  const doneSteps = tapDoneSteps(tap.mode, tap.i, tap.wi);
+  if ($('tapProg')) $('tapProg').textContent = `${doneSteps} / ${totalSteps}`;
+
+  const qEl = $('tapWordQueue');
+  if (qEl) {
+    if (tap.mode === 'word' && ln && !ln.interlude) {
+      const words = getEditableWords(tap.i);
+      qEl.hidden = words.length === 0;
+      qEl.innerHTML = '';
+      words.forEach((w, wi) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'tap-w' + (wi < tap.wi ? ' is-done' : wi === tap.wi ? ' is-target' : '');
+        chip.textContent = w.text;
+        chip.title = `${J.fmtTime(w.start)} → ${J.fmtTime(w.end)}`;
+        chip.addEventListener('click', () => {
+          tap.wi = wi;
+          updateTap();
+          if ($('tapBtn')) $('tapBtn').focus();
+        });
+        qEl.appendChild(chip);
+      });
+    } else {
+      qEl.hidden = true;
+      qEl.innerHTML = '';
+    }
+  }
+  const guideEl = $('tapGuideText');
+  if (guideEl) {
+    let msg = tap.mode === 'word' ? c.guideWord : tap.mode === 'cut' ? c.guideCut : c.guideLine;
+    if (tap.holdEnd) msg += c.guideHold;
+    guideEl.innerHTML = msg;
+  }
+  if ($('tapBtn')) $('tapBtn').textContent = tap.mode === 'word' ? c.tapWordBtn : c.tapBtn;
+  const bb = $('tapBack'); if (bb) bb.disabled = !tap.done.length;
+  syncTapTransportBtn();
+  $('tapPanel').classList.toggle('compact', tap.done.length >= 6 && tap.mode !== 'word');
 }
 
 /* ---------------- sync all inputs from project ---------------- */
@@ -63195,28 +65643,56 @@ function syncUI() {
   document.querySelectorAll('.typeset-toggle').forEach(el => { el.checked = S.project.typeset === true; });
   $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   document.querySelectorAll('.themeSel').forEach(el => { el.value = J.THEMES[S.project.themeId] ? S.project.themeId : ''; });
-  renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid(); syncKaraokeBtn(); syncKaraokeControls(); syncAudioDetectPanel();
+  renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid(); syncKaraokeBtn(); syncKaraokeControls(); syncAudioDetectPanel(); applyLeLabels(); syncLyricsEditor();
 }
 
-/* Reusable full-audio Song Lyrics Detection + Word/Char Forced Alignment */
+/* Reusable 7-stage Song Lyrics Detection + Forced Alignment + Validation */
 async function runAiTranscription(opts = {}) {
   const bai = $('btnAiTranscribe');
   const isFr = document.documentElement.lang === 'fr';
   const isEn = document.documentElement.lang === 'en';
   if (!S.audio) return false;
   const origText = bai ? bai.textContent : '';
+  const stageLabels = isFr ? {
+    1: '1/7 Prétraitement…',
+    2: '2/7 Séparation vocale…',
+    3: '3/7 Transcription chant…',
+    4: '4/7 Alignement forcé…',
+    5: '5/7 Affinage acoustique…',
+    6: '6/7 Validation paroles…',
+    7: '7/7 Sous-titres prêts…',
+  } : isEn ? {
+    1: '1/7 Preprocessing…',
+    2: '2/7 Vocal separation…',
+    3: '3/7 Singing recognition…',
+    4: '4/7 Forced alignment…',
+    5: '5/7 Acoustic refine…',
+    6: '6/7 Validation check…',
+    7: '7/7 Synced subtitles…',
+  } : {
+    1: '1/7 音频预处理…',
+    2: '2/7 人声分离…',
+    3: '3/7 歌声转录…',
+    4: '4/7 强制对齐…',
+    5: '5/7 声学微调…',
+    6: '6/7 歌词校验…',
+    7: '7/7 生成同步字幕…',
+  };
+  const onStage = (stageNum) => {
+    if (bai && stageLabels[stageNum]) bai.textContent = `✨ ${stageLabels[stageNum]}`;
+  };
   if (bai) {
     bai.classList.add('is-analyzing');
     bai.disabled = true;
-    bai.textContent = isFr ? '✨ Écoute & analyse IA...' : isEn ? '✨ AI Listening & Syncing...' : '✨ 正在智能听音识词...';
+    onStage(1);
   }
   if (!opts.quiet) {
-    toast(isFr ? '🎙️ Écoute complète de la chanson & détection automatique des paroles…' : isEn ? '🎙️ Listening to full song & detecting lyrics automatically…' : '🎙️ 正在倾听全曲并自动识别歌词与段落…');
+    toast(isFr ? '🎙️ Pipeline 7 étapes : prétraitement, séparation vocale, transcription & validation…' : isEn ? '🎙️ Running 7-stage audio, vocal separation, transcription & validation pipeline…' : '🎙️ 启动 7 阶段全曲人声分离、转录、强制对齐与校验流程…');
   }
 
   try {
     const lang = $('lyricLang') ? $('lyricLang').value : 'auto';
-    const result = await J.aiTranscribeMusic(S.audio, lang);
+    const result = await J.aiTranscribeMusic(S.audio, lang, onStage);
 
     if (result && result.success && (result.isInstrumental || (result.lines && result.lines.length))) {
       pushEdit();
@@ -63256,6 +65732,8 @@ async function runAiTranscription(opts = {}) {
               isRepeatedChorus: Boolean(l.isRepeatedChorus),
               backingText: l.backingText || '',
               unclear: Boolean(l.unclear),
+              flags: Array.isArray(l.flags) ? l.flags : [],
+              validationNote: l.validationNote || '',
             },
           });
         }
@@ -63307,6 +65785,9 @@ async function runAiTranscription(opts = {}) {
         format: S.audio.format || '',
         duration: S.audio.duration || 0,
         bpm: S.audio.bpm || 0,
+        preprocessing: S.audio.preprocessing || null,
+        validationSummary: result.validationSummary || null,
+        pipelineReport: result.pipelineReport || null,
         sections: result.sections || [],
         source: 'ai',
       };
@@ -63320,21 +65801,22 @@ async function runAiTranscription(opts = {}) {
         toast(isFr ? '🎹 Audio purement instrumental détecté (aucune fausse parole ajoutée).' : isEn ? '🎹 Purely instrumental track detected.' : '🎹 检测到纯音乐伴奏段落。');
       } else {
         toast(isFr
-          ? '🎤 Paroles, langue et minutage karaoké mot par mot prêts ! Modifiez librement si besoin.'
+          ? '🎤 Paroles, langue, minutage & validation (7 étapes) prêts ! Modifiez librement si besoin.'
           : isEn
-          ? '🎤 Lyrics, language & word-level karaoke sync ready! Edit anytime.'
-          : '🎤 已完成全曲歌词提取与逐词卡拉OK精准同步！随时可手动编辑。');
+          ? '🎤 7-stage lyrics, language, alignment & validation ready! Edit anytime.'
+          : '🎤 已Done: 7 阶段歌词识别、逐词对齐与声学校验！随时可手动编辑。');
       }
       return true;
     }
 
-    // Local high-precision acoustic classification & vocal segmentation fallback
+    // Local Stage 1–7 acoustic classification & vocal segmentation fallback
     const segs = (S.audio.vocalSegments && S.audio.vocalSegments.length)
       ? S.audio.vocalSegments
       : (S.plan && S.plan.cuts && S.plan.cuts.length)
       ? S.plan.cuts.map(c => ({ start: c.start, end: c.end }))
       : [];
     const acSummary = S.audio.acousticSummary || {};
+    const prep = S.audio.preprocessing || null;
     S.project.detection = {
       audioType: acSummary.audioType || 'singing',
       language: S.project.lang || 'auto',
@@ -63346,6 +65828,9 @@ async function runAiTranscription(opts = {}) {
       format: S.audio.format || '',
       duration: S.audio.duration || 0,
       bpm: S.audio.bpm || 0,
+      preprocessing: prep,
+      validationSummary: null,
+      pipelineReport: null,
       sections: [],
       source: 'acoustic',
     };
@@ -63369,18 +65854,22 @@ async function runAiTranscription(opts = {}) {
       pause();
       const curLyrics = String(S.project.lyrics || '').trim();
       const isDefault = curLyrics === String(J.SAMPLE_LYRICS || '').trim();
+      const valInputLines = [];
       if (curLyrics.length > 0 && !isDefault) {
         const parsed = J.parseLyrics(curLyrics);
         const times = J.alignLinesToVocals(S.audio, parsed.lines);
         if (times && Object.keys(times).length) {
           S.project.timing.lineTimes = times;
           S.project.timing.wordTimes = {};
+          S.project.timing.lineMeta = S.project.timing.lineMeta || {};
           const langCode = J.resolveLang(S.project);
           parsed.lines.forEach((ln, i) => {
-            if (ln.interlude) return;
+            if (ln.interlude) { valInputLines.push({ start: times[i] ?? 0, end: (times[i] ?? 0) + (ln.secs || 2), isInstrumentalSection: true, words: [] }); return; }
             const s = times[i] ?? 0.4;
             const e = i < parsed.lines.length - 1 ? (times[i + 1] ?? s + 3.2) : Math.min(S.audio.duration, s + 3.5);
-            if (J.alignWordsAcoustic) S.project.timing.wordTimes[i] = J.alignWordsAcoustic(S.audio, ln.text, s, e, langCode);
+            const wt = J.alignWordsAcoustic ? J.alignWordsAcoustic(S.audio, ln.text, s, e, langCode) : [];
+            S.project.timing.wordTimes[i] = wt;
+            valInputLines.push({ start: s, end: e, text: ln.text, words: wt });
           });
         }
       } else {
@@ -63412,9 +65901,22 @@ async function runAiTranscription(opts = {}) {
           const e = +Number(r.end || s + 2.5).toFixed(3);
           S.project.timing.lineTimes[idx] = s;
           if (!r.isInter && J.alignWordsAcoustic) {
-            S.project.timing.wordTimes[idx] = J.alignWordsAcoustic(S.audio, r.text, s, e, J.resolveLang(S.project));
+            const wt = J.alignWordsAcoustic(S.audio, r.text, s, e, J.resolveLang(S.project));
+            S.project.timing.wordTimes[idx] = wt;
+            valInputLines.push({ start: s, end: e, text: r.text, words: wt });
           } else if (r.isInter) {
             S.project.timing.lineMeta[idx] = { section: 'instrumental', vocalType: 'instrumental' };
+            valInputLines.push({ start: s, end: e, isInstrumentalSection: true, words: [] });
+          }
+        });
+      }
+      if (J.validateKaraokeAlignment && valInputLines.length) {
+        const val = J.validateKaraokeAlignment(S.audio, valInputLines);
+        S.project.detection.validationSummary = val.validationSummary;
+        val.lines.forEach((vl, idx) => {
+          if (vl && vl.words && vl.words.length) S.project.timing.wordTimes[idx] = vl.words;
+          if (vl && vl.flags && vl.flags.length) {
+            S.project.timing.lineMeta[idx] = Object.assign({}, S.project.timing.lineMeta[idx] || {}, { flags: vl.flags });
           }
         });
       }
@@ -63534,7 +66036,7 @@ function bind() {
   $('offset').addEventListener('change', e => { S.project.timing.offset = Math.max(0, parseFloat(e.target.value) || 0); replan(); });
   $('lineScale').addEventListener('change', e => { S.project.timing.lineScale = J.clamp(parseFloat(e.target.value) || 1, 0.3, 4); replan(); });
   $('snap').addEventListener('change', e => { S.project.timing.snap = e.target.checked; replan(); });
-  $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; S.project.timing.wordTimes = {}; replan(); });
+  $('btnResetTimes').addEventListener('click', () => { pushEdit(); S.project.timing.lineTimes = {}; S.project.timing.lineEnds = {}; S.project.timing.wordTimes = {}; replan(); });
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
   $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
   const bai = $('btnAiTranscribe');
@@ -63594,6 +66096,16 @@ function bind() {
               S.project.timing.lineMeta[k] = Object.assign({}, S.project.timing.lineMeta[k] || {}, m);
             }
           }
+          if (J.validateKaraokeAlignment && S.plan && S.plan.lines) {
+            const valLines = S.plan.lines.map((ln, idx) => ({
+              start: times[idx] ?? ln.start,
+              end: idx < S.plan.lines.length - 1 ? (times[idx + 1] ?? ln.end) : ln.end,
+              isInstrumentalSection: !!ln.interlude,
+              words: (S.project.timing.wordTimes && S.project.timing.wordTimes[idx]) || [],
+            }));
+            const val = J.validateKaraokeAlignment(S.audio, valLines);
+            if (S.project.detection) S.project.detection.validationSummary = val.validationSummary;
+          }
           replan(); flushSave(); syncUI();
           toast(isFr ? "🎤 Synchronisation vocale et karaoké réussie !" : isEn ? '🎤 Word-level vocal synchronization complete!' : '🎤 已完成人声歌词与逐词卡拉OK精准对齐！');
         } else {
@@ -63604,15 +66116,69 @@ function bind() {
       }
     });
   }
-  $('tapBtn').addEventListener('click', tapNow);
-  $('tapRate').addEventListener('change', () => {
+  const tapBtn = $('tapBtn');
+  if (tapBtn) {
+    tapBtn.addEventListener('pointerdown', e => {
+      if (e.button && e.button !== 0) return;
+      e.preventDefault();
+      tapNow();
+    });
+    tapBtn.addEventListener('pointerup', () => {
+      if (S.tap && S.tap.holding && S.tap.holdEnd) tapEndHold(false);
+    });
+    tapBtn.addEventListener('pointercancel', () => {
+      if (S.tap && S.tap.holding && S.tap.holdEnd) tapEndHold(false);
+    });
+    // Keyboard accessibility fallback if a click event is synthesized programmatically without pointerdown
+    tapBtn.addEventListener('click', e => {
+      if (e.detail === 0) tapNow();
+    });
+  }
+  if ($('tapMode')) $('tapMode').addEventListener('change', () => {
+    saveTapOpts();
+    if (!S.tap) return;
+    S.tap.mode = $('tapMode').value;
+    S.tap.wi = 0;
+    updateTap();
+    if ($('tapBtn')) $('tapBtn').focus();
+  });
+  if ($('tapRate')) $('tapRate').addEventListener('change', () => {
     saveTapOpts();
     if (!S.tap) return;
     S.tap.rate = +$('tapRate').value || 1;
     if (S.playing) seek(S.t);                 // restart at the new speed from where it is
-    $('tapBtn').focus();
+    if ($('tapBtn')) $('tapBtn').focus();
   });
-  $('tapCount').addEventListener('change', () => { saveTapOpts(); $('tapBtn').focus(); });
+  if ($('tapSnapMode')) $('tapSnapMode').addEventListener('change', () => {
+    saveTapOpts();
+    if (!S.tap) return;
+    S.tap.snapMode = $('tapSnapMode').value;
+    updateTap();
+    if ($('tapBtn')) $('tapBtn').focus();
+  });
+  if ($('tapLatency')) $('tapLatency').addEventListener('change', () => {
+    saveTapOpts();
+    if (!S.tap) return;
+    S.tap.latencyMs = +$('tapLatency').value || 0;
+    if ($('tapBtn')) $('tapBtn').focus();
+  });
+  if ($('tapHoldEnd')) $('tapHoldEnd').addEventListener('change', () => {
+    saveTapOpts();
+    if (!S.tap) return;
+    S.tap.holdEnd = $('tapHoldEnd').checked;
+    updateTap();
+    if ($('tapBtn')) $('tapBtn').focus();
+  });
+  if ($('tapCount')) $('tapCount').addEventListener('change', () => { saveTapOpts(); if ($('tapBtn')) $('tapBtn').focus(); });
+  if ($('tapClick')) $('tapClick').addEventListener('change', () => {
+    saveTapOpts();
+    if (S.tap) S.tap.click = $('tapClick').checked;
+    if ($('tapBtn')) $('tapBtn').focus();
+  });
+  if ($('tapMarkEnd')) $('tapMarkEnd').addEventListener('click', () => { tapEndHold(true); if ($('tapBtn')) $('tapBtn').focus(); });
+  if ($('tapPlayPause')) $('tapPlayPause').addEventListener('click', toggleTapPause);
+  if ($('tapRewind')) $('tapRewind').addEventListener('click', tapRewind);
+  if ($('tapSkip')) $('tapSkip').addEventListener('click', () => { tapSkip(); if ($('tapBtn')) $('tapBtn').focus(); });
   $('tapStop').addEventListener('click', () => { pause(); stopTap(); });
   $('btnPlay').addEventListener('click', () => (S.playing ? pause() : play()));
   const cutPickAuto = $('cutPickAuto'), cutPickClose = $('cutPickClose');
@@ -63634,19 +66200,37 @@ function bind() {
   const tl = $('timeline');
   let drag = false, raf = 0;
   tl.addEventListener('pointerdown', e => {
-    tl.setPointerCapture(e.pointerId);
-    const h = S.tap || S.exporting ? -1 : tlHandleAt(e);
-    if (h >= 0) { pushEdit(); TL.drag = h; pause(); tl.style.cursor = 'ew-resize'; return; }
+    if (tl.setPointerCapture) { try { tl.setPointerCapture(e.pointerId); } catch (err) {} }
+    if (!S.tap && !S.exporting) {
+      const h = tlHandleAt(e);
+      if (h >= 0) { pushEdit(); TL.drag = h; pause(); tl.style.cursor = 'ew-resize'; return; }
+      const wh = tlWHandleAt(e);
+      if (wh) { pushEdit(); TL.wDrag = wh; selectLyricWord(wh.lineIdx, wh.wordIdx, false); pause(); tl.style.cursor = 'ew-resize'; return; }
+    }
     drag = true; timelineSeek(e);
   });
   tl.addEventListener('pointermove', e => {
     if (TL.drag >= 0) { const ev = { clientX: e.clientX, clientY: e.clientY, shiftKey: e.shiftKey }; cancelAnimationFrame(raf); raf = requestAnimationFrame(() => tlDragTo(TL.drag, ev)); return; }
+    if (TL.wDrag) { const ev = { clientX: e.clientX, clientY: e.clientY, shiftKey: e.shiftKey }; cancelAnimationFrame(raf); raf = requestAnimationFrame(() => tlDragWordTo(TL.wDrag, ev)); return; }
     if (drag) { timelineSeek(e); return; }
-    const hv = tlHandleAt(e); if (hv !== TL.hover) { TL.hover = hv; tl.style.cursor = hv >= 0 ? 'ew-resize' : 'pointer'; drawTimeline(); }
+    const hv = tlHandleAt(e);
+    const whv = hv < 0 ? tlWHandleAt(e) : null;
+    const wChanged = JSON.stringify(whv) !== JSON.stringify(TL.wHover);
+    if (hv !== TL.hover || wChanged) {
+      TL.hover = hv; TL.wHover = whv;
+      tl.style.cursor = (hv >= 0 || whv) ? 'ew-resize' : 'pointer';
+      drawTimeline();
+    }
   });
-  const endDrag = () => { if (TL.drag >= 0) { TL.drag = -1; flushSave(); renderLines(); drawTimeline(); } drag = false; };
+  const endDrag = () => {
+    if (TL.drag >= 0 || TL.wDrag) {
+      TL.drag = -1; TL.wDrag = null;
+      flushSave(); renderLines(); syncLyricsEditor(); drawTimeline();
+    }
+    drag = false;
+  };
   tl.addEventListener('pointerup', endDrag); tl.addEventListener('pointercancel', endDrag);
-  tl.addEventListener('pointerleave', () => { if (TL.hover >= 0 && TL.drag < 0) { TL.hover = -1; drawTimeline(); } });
+  tl.addEventListener('pointerleave', () => { if ((TL.hover >= 0 || TL.wHover) && TL.drag < 0 && !TL.wDrag) { TL.hover = -1; TL.wHover = null; drawTimeline(); } });
   tl.addEventListener('wheel', e => {
     e.preventDefault();
     const { vd } = tlView();
@@ -63658,6 +66242,7 @@ function bind() {
   $('tlFit').addEventListener('click', () => { TL.z = 1; TL.off = 0; drawTimeline(); });
   const btnUndoEdit = $('btnUndoEdit'); if (btnUndoEdit) btnUndoEdit.addEventListener('click', () => edGo(-1));
   const tapBackBtn = $('tapBack'); if (tapBackBtn) tapBackBtn.addEventListener('click', tapBack);
+  bindLyricsEditor();
   bindRangeUI();
   document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
@@ -63787,7 +66372,11 @@ function bind() {
   document.addEventListener('keydown', e => {
     const tag = (e.target && e.target.tagName) || '';
     const typing = /INPUT|TEXTAREA|SELECT/.test(tag) && e.target.type !== 'range' && e.target.type !== 'checkbox';
-    if (S.tap && (e.code === 'Space' || e.code === 'Enter') && !typing) { e.preventDefault(); tapNow(); return; }
+    if (S.tap && (e.code === 'Space' || e.code === 'Enter') && !typing) { e.preventDefault(); if (!e.repeat) tapNow(); return; }
+    if (S.tap && e.code === 'KeyE' && !typing) { e.preventDefault(); if (!e.repeat) tapEndHold(true); return; }
+    if (S.tap && e.code === 'KeyP' && !typing) { e.preventDefault(); toggleTapPause(); return; }
+    if (S.tap && e.code === 'KeyS' && !typing) { e.preventDefault(); tapSkip(); return; }
+    if (S.tap && e.code === 'ArrowLeft' && !typing) { e.preventDefault(); tapRewind(); return; }
     if (S.tap && e.code === 'Escape') { pause(); stopTap(); return; }
     if (e.code === 'Escape' && document.querySelector('.col-stage.is-karaoke-fs')) { e.preventDefault(); toggleKaraokeFullscreen(false); return; }
     if (S.tap && e.code === 'Backspace' && !typing) { e.preventDefault(); tapBack(); return; }
@@ -63801,6 +66390,11 @@ function bind() {
     else if (e.code === 'KeyR' && !e.metaKey && !e.ctrlKey && !e.altKey && !S.exporting) { e.preventDefault(); omakase(); }
     else if (e.code === 'KeyD' && !e.metaKey && !e.ctrlKey && !e.altKey) { const i = lineAtPlayhead(); if (i >= 0) { e.preventDefault(); rerollLine(i); } }
     else if (e.code === 'KeyL' && !e.metaKey && !e.ctrlKey && !e.altKey) { const i = lineAtPlayhead(); if (i >= 0) { e.preventDefault(); toggleLineLock(i); } }
+  });
+  document.addEventListener('keyup', e => {
+    if (S.tap && S.tap.holding && S.tap.holdEnd && (e.code === 'Space' || e.code === 'Enter')) {
+      tapEndHold(false);
+    }
   });
   window.addEventListener('resize', () => { sizeViewport(); drawTimeline(); });
   if (window.ResizeObserver) new ResizeObserver(() => { sizeViewport(); drawTimeline(); }).observe($('viewport'));
@@ -63884,6 +66478,9 @@ async function loadAudioFile(f, restored) {
         format: a.format || '',
         duration: a.duration || 0,
         bpm: a.bpm || 0,
+        preprocessing: a.preprocessing || null,
+        validationSummary: null,
+        pipelineReport: null,
         sections: [],
         source: 'acoustic',
       };
@@ -64009,7 +66606,7 @@ function boot() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 J.ui = S;
 // hooks for hosts that embed the app (the After Effects CEP panel)
-J.uiApi = { toast, replan, syncUI, pause, seek, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines };
+J.uiApi = { toast, replan, syncUI, pause, seek, playRange, selectLyricWord, saveCorrectedLyrics, tlWHandleAt, tlDragWordTo, startTap, tapNow, tapEndHold, tapSkip, tapBack, stopTap, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines };
 })();
 
 </script>

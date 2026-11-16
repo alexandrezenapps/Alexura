@@ -35,12 +35,44 @@
     <!-- ================= left: lyrics & timing ================= -->
     <section class="col col-left" aria-label="歌詞とタイミング">
       <div id="tapPanel" class="tapbox" hidden>
-          <div class="hint">曲に合わせて、各行が始まる瞬間に <span class="kbd">Space</span> かボタンを押してください。押し間違えたら <span class="kbd">Backspace</span> か「1つ戻る」。途中の行からやり直すときは、行一覧の ◎ を押します。1行に複数のカットがあるときは、カットが切り替わる瞬間に <span class="kbd">Tab</span> を押すと、その行のカットの開始時刻も合わせられます。</div>
-          <div class="tap-opts"><label>速さ <select id="tapRate" aria-label="タップ中の再生速度"><option value="1">1×</option><option value="0.75">0.75×</option><option value="0.5">0.5×</option></select></label><label><input type="checkbox" id="tapCount"> カウントダウン</label></div>
-          <div class="next">次: <b id="tapLine">—</b><b id="tapCountNum" class="tap-count" hidden></b></div>
-          <button id="tapBtn" class="tap">TAP</button>
-          <button id="tapBack" class="ghost">1つ戻る</button>
-          <button id="tapStop" class="ghost">終了する</button>
+          <div class="tap-head">
+            <span id="tapTitle" class="tap-title">⏱ Synchro au Tap Studio</span>
+            <span id="tapBeatDot" class="tap-beat-dot" aria-hidden="true"></span>
+            <span id="tapTimeNow" class="tap-tc mono">00:00.00</span>
+            <span id="tapProg" class="tap-prog mono muted">0 / 0</span>
+          </div>
+          <div id="tapGuideText" class="hint tap-guide">Appuyez sur <span class="kbd">Espace</span> ou <b>TAP</b> dès que le chanteur démarre la phrase ou le mot ciblé.</div>
+          <div class="tap-meter-row">
+            <span id="lblTapVocal" class="tap-meter-lbl">Voix</span>
+            <div class="tap-meter"><i id="tapVocalFill"></i></div>
+            <span id="tapSnapNote" class="tap-snap-note mono muted">—</span>
+          </div>
+          <div class="tap-stage">
+            <div id="tapPrevLine" class="tap-prev muted"></div>
+            <div class="next tap-cur-row"><b id="tapLine">—</b><b id="tapCountNum" class="tap-count" hidden></b></div>
+            <div id="tapWordQueue" class="tap-words" hidden></div>
+            <div id="tapNextLine" class="tap-next muted"></div>
+          </div>
+          <div class="tap-opts">
+            <label><span id="lblTapMode">Mode</span> <select id="tapMode" aria-label="Mode de synchro au tap"><option value="line">Phrase / Ligne</option><option value="word">Mot par mot (Précis)</option><option value="cut">Phrases + Coupes [Tab]</option></select></label>
+            <label><span id="lblTapRate">Vitesse</span> <select id="tapRate" aria-label="Vitesse de lecture"><option value="1">1×</option><option value="0.85">0.85×</option><option value="0.75">0.75×</option><option value="0.5">0.5×</option></select></label>
+            <label><span id="lblTapSnap">Calage</span> <select id="tapSnapMode" aria-label="Accroche de précision"><option value="vocal">Attaque vocale (±90ms)</option><option value="beat">Grille rythmique (BPM)</option><option value="free">Libre (ms exact)</option></select></label>
+            <label><span id="lblTapLatency">Latence</span> <select id="tapLatency" aria-label="Compensation de latence humaine"><option value="0">0 ms</option><option value="45">-45 ms</option><option value="75">-75 ms</option><option value="110">-110 ms</option></select></label>
+            <label class="tap-chk"><input type="checkbox" id="tapHoldEnd"> <span id="lblTapHoldEnd">Maintenir = Fin [E]</span></label>
+            <label class="tap-chk"><input type="checkbox" id="tapCount"> <span id="lblTapCount">Compte 3·2·1</span></label>
+            <label class="tap-chk"><input type="checkbox" id="tapClick"> <span id="lblTapClick">Clic métronome</span></label>
+          </div>
+          <div class="tap-actions">
+            <button type="button" id="tapBtn" class="tap">TAP [Espace]</button>
+            <div class="tap-sub-btns">
+              <button type="button" id="tapMarkEnd" class="ghost small" title="Fixer la fin de la phrase/du mot en cours [E]">⏹ Fin [E]</button>
+              <button type="button" id="tapPlayPause" class="ghost small" title="Mettre en pause ou reprendre la musique [P]">⏸ Pause [P]</button>
+              <button type="button" id="tapRewind" class="ghost small" title="Reculer de 2 secondes">⟲ -2s</button>
+              <button type="button" id="tapBack" class="ghost small" title="Annuler le dernier tap et reculer [Retour]">↶ 1 retour</button>
+              <button type="button" id="tapSkip" class="ghost small" title="Passer au suivant sans modifier l'horodatage [S]">⏭ Passer [S]</button>
+              <button type="button" id="tapStop" class="primary small" title="Terminer et enregistrer les synchronisations [Échap]">✓ Terminer</button>
+            </div>
+          </div>
       </div>
       <div class="sec">
         <div class="sec-h"><h2>歌詞</h2><span class="sec-btns"><label class="file ghost small" title="LRC ファイル（タイムスタンプ付きの歌詞）や字幕ファイル（SRT / VTT）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）。ファイルを画面にドロップしても読み込めます">LRC / SRT を読み込む<input id="fileLrc" type="file" accept=".lrc,.srt,.vtt,.txt,text/plain"></label><button id="btnClearLyrics" class="ghost small" title="歌詞と、行ごとのタイミング・指定・書き出す範囲を消します（「元に戻す」か Ctrl+Z で戻せます）">歌詞を消す</button><button id="btnSyntax" class="ghost small" aria-expanded="false">記法</button></span></div>
@@ -68,7 +100,7 @@
           <label class="file" title="mp3 / wav / m4a など">曲を読み込む<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.opus,.webm,.mp4,.aiff,.aif,.wma"></label>
           <button id="btnAiTranscribe" class="accent" title="AI听音识词：自动分析歌曲音频，多语言（中文、法文、英文等）识别人声歌词并即时同步到视频">✨ AI 识词与同步</button>
           <button id="btnVocalSync" class="ghost" title="根据歌声人声起始瞬间，自动精准同步各行歌词">⚡ 人声同步</button>
-          <button id="btnTap" title="曲を再生しながら各行の頭でタップ">タップで同期</button>
+          <button id="btnTap" title="Synchronisation manuelle guidée au rythme de la voix (ligne par ligne ou mot par mot)">⏱ タップで同期</button>
         </div>
         <div class="fields pro-only">
           <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="自動"></label>
@@ -82,8 +114,71 @@
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>行とカット</h2><span id="linesInfo" class="muted mono"></span></div>
+        <div class="sec-h"><h2>行とカット</h2><span class="sec-btns"><button type="button" id="btnAddLyricLine" class="ghost small" title="Ajouter une nouvelle ligne de paroles">+ Ligne</button><span id="linesInfo" class="muted mono"></span></span></div>
         <ol id="lineList"></ol>
+      </div>
+
+      <div class="sec le-panel" id="lyricsEditorPanel">
+        <div class="sec-h">
+          <h2 id="leTitle">Éditeur de paroles &amp; minutage</h2>
+          <span class="sec-btns">
+            <button type="button" id="btnLeRecalcLine" class="ghost small" title="Recalculer l'alignement acoustique de la phrase sans écraser les mots validés">↻ Réaligner</button>
+            <button type="button" id="btnLeSave" class="primary small" title="Valider et enregistrer les corrections">✓ Enregistrer</button>
+          </span>
+        </div>
+        <div id="leStats" class="le-stats muted mono"></div>
+
+        <div class="le-sub">
+          <div class="le-line-nav">
+            <button type="button" id="lePrevLine" class="ghost small icon-txt" aria-label="Phrase précédente">◀</button>
+            <select id="leLineSel" aria-label="Sélectionner la phrase à éditer"></select>
+            <button type="button" id="leNextLine" class="ghost small icon-txt" aria-label="Phrase suivante">▶</button>
+            <button type="button" id="lePlayLine" class="ghost small" title="Réécouter la phrase sélectionnée">▶ Phrase</button>
+            <button type="button" id="leAddLine" class="ghost small" title="Ajouter une ligne après la sélection">+ Ligne</button>
+            <button type="button" id="leDelLine" class="ghost small" title="Supprimer cette ligne">✕ Ligne</button>
+          </div>
+          <div class="le-ts-pair">
+            <label class="le-ts-field"><span id="lblLeLineStart">Début phrase (s)</span><div class="le-num-grp"><button type="button" class="ghost small" data-nudge="lineStart" data-delta="-0.05">-50ms</button><input id="leLineStart" class="mono" type="number" step="0.01" min="0"><button type="button" class="ghost small" data-nudge="lineStart" data-delta="0.05">+50ms</button></div></label>
+            <label class="le-ts-field"><span id="lblLeLineEnd">Fin phrase (s)</span><div class="le-num-grp"><button type="button" class="ghost small" data-nudge="lineEnd" data-delta="-0.05">-50ms</button><input id="leLineEnd" class="mono" type="number" step="0.01" min="0"><button type="button" class="ghost small" data-nudge="lineEnd" data-delta="0.05">+50ms</button></div></label>
+          </div>
+        </div>
+
+        <div class="le-sub">
+          <div class="le-sub-h">
+            <span id="lblLeWords" class="le-label">Mots de la phrase</span>
+            <span class="le-insert-row">
+              <input id="leInsertWordText" type="text" placeholder="Mot manquant…" aria-label="Mot manquant à insérer">
+              <button type="button" id="leAddWordBefore" class="ghost small">+ Avant</button>
+              <button type="button" id="leAddWordAfter" class="ghost small">+ Après</button>
+            </span>
+          </div>
+          <div id="leWordStrip" class="le-word-strip" role="listbox" aria-label="Mots alignés"></div>
+        </div>
+
+        <div id="leWordInspector" class="le-sub">
+          <div class="le-word-edit-row">
+            <input id="leWordText" type="text" placeholder="Mot sélectionné…" aria-label="Texte du mot sélectionné">
+            <button type="button" id="leApplyWord" class="accent small" title="Corriger le mot et réaligner automatiquement les mots voisins">Appliquer</button>
+            <button type="button" id="lePlayWord" class="ghost small" title="Réécouter uniquement le mot sélectionné">▶ Mot</button>
+            <button type="button" id="leDelWord" class="ghost small" title="Supprimer le mot sélectionné">✕ Mot</button>
+          </div>
+          <div class="le-word-meta-row">
+            <label class="le-chk"><input id="leWordValid" type="checkbox"><span id="lblLeWordValid">Verrouiller / validé (protège contre le réalignement)</span></label>
+            <span id="leWordConf" class="mono muted"></span>
+          </div>
+          <div class="le-ts-pair">
+            <label class="le-ts-field"><span id="lblLeWordStart">Début mot (s)</span><div class="le-num-grp"><button type="button" class="ghost small" data-nudge="wordStart" data-delta="-0.025">-25ms</button><input id="leWordStart" class="mono" type="number" step="0.005" min="0"><button type="button" class="ghost small" data-nudge="wordStart" data-delta="0.025">+25ms</button></div></label>
+            <label class="le-ts-field"><span id="lblLeWordEnd">Fin mot (s)</span><div class="le-num-grp"><button type="button" class="ghost small" data-nudge="wordEnd" data-delta="-0.025">-25ms</button><input id="leWordEnd" class="mono" type="number" step="0.005" min="0"><button type="button" class="ghost small" data-nudge="wordEnd" data-delta="0.025">+25ms</button></div></label>
+          </div>
+        </div>
+
+        <div class="le-sub">
+          <div class="le-sub-h">
+            <span id="lblLeChars" class="le-label">Caractères &amp; minutage fin</span>
+            <button type="button" id="leAddChar" class="ghost small">+ Caractère</button>
+          </div>
+          <div id="leCharList" class="le-char-list"></div>
+        </div>
       </div>
     </section>
 

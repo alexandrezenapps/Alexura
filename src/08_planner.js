@@ -32,7 +32,7 @@ J.defaultProject = () => ({
   aspect: '16:9', res: 1080, fps: 24,
   fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35, hideNo: false, hideTime: false },
   enabled: Object.fromEntries(J.GROUP_KEYS.map(g => [g, Object.fromEntries(J.order(g).map(k => [k, true]))])),
-  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, wordTimes: {}, lineMeta: {}, lineScale: 1 },
+  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineEnds: {}, wordTimes: {}, lineMeta: {}, lineScale: 1 },
   detection: null,                // song lyrics detection summary (audioType, detectedLanguages, structure, layers)
   karaoke: true,                  // real-time karaoke word/character highlight overlay
   karaokeCfg: {
@@ -276,7 +276,13 @@ J.computeTiming = (project, parsed, audio) => {
     i = j;
   }
   const ends = starts.map((s, i) => {
-    if (i < starts.length - 1) return Math.max(s + 0.35, starts[i + 1]);
+    const manEnd = T.lineEnds && T.lineEnds[i] != null ? +T.lineEnds[i] : null;
+    if (i < starts.length - 1) {
+      const nextS = starts[i + 1];
+      if (manEnd != null && isFinite(manEnd)) return Math.max(s + 0.12, Math.min(nextS, manEnd));
+      return Math.max(s + 0.35, nextS);
+    }
+    if (manEnd != null && isFinite(manEnd)) return Math.max(s + 0.12, manEnd);
     const n = [...lines[i].text].length, L = lines[i];
     let d = L.interlude ? (L.secs > 0 ? L.secs : 4) : J.clamp(0.8 + n * 0.17, 1.5, 5.2) * (T.lineScale || 1);
     if (beat && !(L.interlude && L.secs > 0)) d = Math.max(2, Math.round(d / beat)) * beat;
@@ -380,7 +386,8 @@ J.plan = (project, audio) => {
       return;
     }
     const n = [...ln.text.replace(/\s+/g, '')].length;
-    const visEnd = Math.min(e, s + Math.max(3.6, n * 0.5 + 1.2));
+    const hasExplicitEnd = project.timing && project.timing.lineEnds && project.timing.lineEnds[li] != null;
+    const visEnd = hasExplicitEnd ? Math.max(s + 0.12, e) : Math.min(e, s + Math.max(3.6, n * 0.5 + 1.2));
     const D = visEnd - s;
     const normLineText = String(ln.text || '').replace(/\s+/g, '');
     const savedWords = project.timing && project.timing.wordTimes && project.timing.wordTimes[li];
@@ -403,14 +410,25 @@ J.plan = (project, audio) => {
             : (J.buildCharTimings ? J.buildCharTimings(w.text, ws, we, audio) : []);
           const recC = Number.isFinite(Number(w.recognitionConfidence)) ? +J.clamp(Number(w.recognitionConfidence), 0, 1).toFixed(3) : (lineMeta && Number.isFinite(lineMeta.recognitionConfidence) ? lineMeta.recognitionConfidence : 0.92);
           const alignC = Number.isFinite(Number(w.alignmentConfidence)) ? +J.clamp(Number(w.alignmentConfidence), 0, 1).toFixed(3) : (lineMeta && Number.isFinite(lineMeta.alignmentConfidence) ? lineMeta.alignmentConfidence : 0.88);
+          const flags = Array.isArray(w.flags) ? w.flags.slice() : [];
+          const phonemes = Array.isArray(w.phonemes) && w.phonemes.length
+            ? w.phonemes.map(ph => ({
+                unit: String(ph.unit || ''),
+                start: +J.clamp((Number(ph.start) || ws) - leadShift, ws, Math.max(ws, we - 0.004)).toFixed(3),
+                end: +J.clamp((Number(ph.end) || ws + 0.02) - leadShift, ws + 0.004, we).toFixed(3),
+              }))
+            : undefined;
           return {
             text: w.text,
             start: ws,
             end: we,
             chars,
+            phonemes,
             recognitionConfidence: recC,
             alignmentConfidence: alignC,
             speaker: String(w.speaker || lineSpeaker).trim(),
+            flags,
+            validated: Boolean(w.validated),
           };
         });
       }

@@ -128,6 +128,29 @@ function buildCharTimingsServer(wordText: string, start: number, end: number, ra
   });
 }
 
+const VALID_WORD_FLAGS = new Set([
+  'uncertain_word',
+  'missing_word',
+  'misrecognized_word',
+  'overlapping_vocals',
+  'uncertain_boundary',
+]);
+
+function normalizeFlagsList(rawFlags: any, recConf: number, alignConf: number, vocalType: string, isUnclear: boolean) {
+  const set = new Set<string>();
+  if (Array.isArray(rawFlags)) {
+    for (const f of rawFlags) {
+      const s = String(f || '').trim().toLowerCase();
+      if (VALID_WORD_FLAGS.has(s)) set.add(s);
+    }
+  }
+  if (isUnclear || recConf < 0.72) set.add('uncertain_word');
+  if (recConf < 0.52 && !isUnclear) set.add('misrecognized_word');
+  if (alignConf < 0.70) set.add('uncertain_boundary');
+  if (vocalType === 'overlapping' || vocalType === 'harmony' || vocalType === 'backing') set.add('overlapping_vocals');
+  return Array.from(set);
+}
+
 function normalizeKaraokeLines(rawLines: any[], chunkOffsetSec = 0) {
   const out: any[] = [];
   const off = Math.max(0, Number(chunkOffsetSec) || 0);
@@ -154,6 +177,8 @@ function normalizeKaraokeLines(rawLines: any[], chunkOffsetSec = 0) {
     const lineSpeaker = String(l?.speaker || (vocalTypeRaw === 'backing' || vocalTypeRaw === 'harmony' ? 'Backing' : vocalTypeRaw === 'speech' ? 'Speaker' : 'Lead')).trim();
     const lineRecConf = clampConf(l?.recognitionConfidence, isUnclear ? 0.35 : 0.92);
     const lineAlignConf = clampConf(l?.alignmentConfidence, isUnclear ? 0.45 : 0.9);
+    const lineFlags = normalizeFlagsList(l?.flags, lineRecConf, lineAlignConf, vocalTypeRaw, isUnclear);
+    const validationNote = l?.validationNote ? String(l.validationNote).trim() : '';
 
     if (isInst) {
       out.push({
@@ -170,6 +195,8 @@ function normalizeKaraokeLines(rawLines: any[], chunkOffsetSec = 0) {
         backingText: '',
         unclear: false,
         isInstrumentalSection: true,
+        flags: [],
+        validationNote: '',
         words: [],
       });
       continue;
@@ -201,14 +228,28 @@ function normalizeKaraokeLines(rawLines: any[], chunkOffsetSec = 0) {
               end: Number.isFinite(Number(ch?.end)) ? Number(ch.end) + off : undefined,
             }))
           : undefined;
+        const shiftedPhonemes = Array.isArray(w?.phonemes)
+          ? w.phonemes.map((ph: any) => ({
+              unit: String(ph?.unit || '').trim(),
+              start: +(Math.max(ws, Math.min(we, (Number(ph?.start) || 0) + off))).toFixed(3),
+              end: +(Math.max(ws + 0.005, Math.min(we, (Number(ph?.end) || 0) + off))).toFixed(3),
+            })).filter((ph: any) => ph.unit)
+          : undefined;
+        const wRec = clampConf(w?.recognitionConfidence, lineRecConf);
+        const wAlign = clampConf(w?.alignmentConfidence, lineAlignConf);
+        const wSpk = String(w?.speaker || lineSpeaker).trim();
+        const wUnclear = isUnclear || /\[unclear/i.test(wText);
+        const wFlags = normalizeFlagsList(w?.flags, wRec, wAlign, vocalTypeRaw, wUnclear);
         words.push({
           text: wText,
           start: ws,
           end: we,
           chars: buildCharTimingsServer(wText, ws, we, shiftedChars),
-          recognitionConfidence: clampConf(w?.recognitionConfidence, lineRecConf),
-          alignmentConfidence: clampConf(w?.alignmentConfidence, lineAlignConf),
-          speaker: String(w?.speaker || lineSpeaker).trim(),
+          phonemes: shiftedPhonemes && shiftedPhonemes.length ? shiftedPhonemes : undefined,
+          recognitionConfidence: wRec,
+          alignmentConfidence: wAlign,
+          speaker: wSpk,
+          flags: wFlags,
         });
       }
     }
@@ -223,14 +264,16 @@ function normalizeKaraokeLines(rawLines: any[], chunkOffsetSec = 0) {
         const ws = +cur.toFixed(3);
         cur += dur;
         const we = wi === tokens.length - 1 ? end : +Math.max(ws + 0.015, cur).toFixed(3);
+        const wAlign = +(Math.max(0.45, lineAlignConf * 0.78)).toFixed(3);
         words.push({
           text: tk,
           start: ws,
           end: we,
           chars: buildCharTimingsServer(tk, ws, we),
           recognitionConfidence: lineRecConf,
-          alignmentConfidence: +(Math.max(0.45, lineAlignConf * 0.78)).toFixed(3),
+          alignmentConfidence: wAlign,
           speaker: lineSpeaker,
+          flags: normalizeFlagsList(lineFlags, lineRecConf, wAlign, vocalTypeRaw, isUnclear),
         });
       });
     }
@@ -248,48 +291,88 @@ function normalizeKaraokeLines(rawLines: any[], chunkOffsetSec = 0) {
       backingText,
       unclear: isUnclear,
       isInstrumentalSection: false,
+      flags: lineFlags,
+      validationNote,
       words,
     });
   }
   return out;
 }
 
-// AI Vocal-to-Lyric Ultra-Precise Forced Alignment Endpoint (line + word + character + confidence + speaker)
+function summarizeValidation(lines: any[], missingGaps: any[] = []) {
+  let uncertainWords = 0;
+  let misrecognizedWords = 0;
+  let overlappingWords = 0;
+  let uncertainBoundaries = 0;
+  let totalWords = 0;
+  for (const ln of lines) {
+    for (const w of (ln.words || [])) {
+      totalWords++;
+      const f = new Set(w.flags || []);
+      if (f.has('uncertain_word')) uncertainWords++;
+      if (f.has('misrecognized_word')) misrecognizedWords++;
+      if (f.has('overlapping_vocals')) overlappingWords++;
+      if (f.has('uncertain_boundary')) uncertainBoundaries++;
+    }
+  }
+  return {
+    totalWords,
+    uncertainWords,
+    missingWords: Array.isArray(missingGaps) ? missingGaps.length : 0,
+    misrecognizedWords,
+    overlappingWords,
+    uncertainBoundaries,
+    missingVocalGaps: Array.isArray(missingGaps) ? missingGaps : [],
+  };
+}
+
+// Stage 4/5/6/7: Singing-Aware Forced Alignment + Phoneme Segmentation + Validation Endpoint
 app.post('/api/align-vocals', async (req, res) => {
   try {
-    const { audioBase64, lines, lang } = req.body;
+    const { audioBase64, separatedVocalBase64, lines, lang } = req.body;
     if (!ai || !audioBase64 || !lines || !lines.length) {
       return res.status(200).json({ success: false, reason: 'ai_not_configured' });
     }
 
-    const prompt = `You are a world-class singing forced-alignment & acoustic phonetics engineer.
-Listen closely to the actual vocal performance in this audio recording. Language hint: ${lang || 'auto'}.
+    const prompt = `You are a singing-aware forced-alignment & acoustic phonetics engine (Stages 4-6).
+Analyze BOTH the original mix reference${separatedVocalBase64 ? ' AND the center-isolated vocal stem provided' : ''}. Language hint: ${lang || 'auto'}.
 Ordered list of lyric lines to align:
 ${JSON.stringify(lines, null, 2)}
 
-CRITICAL PRECISION RULES:
-- Do NOT divide sentence duration equally among words, do NOT estimate from character count, and do NOT align blindly to instrumental beats.
-- Detect the exact millisecond when the singer actually begins pronouncing each word (consonant/vowel onset) and finishes sustaining it.
-- Preserve silent pauses or breaths between words cleanly (ws > previous word's end when a pause exists).
-- For Chinese lyrics, emit EVERY single Chinese character as its own token in "words" with exact start/end timestamps. For Japanese/Korean/no-space scripts, emit each natural character/syllable cluster.
-- For each line AND each word provide:
-  * "text", "start", "end" (3-decimal floats)
-  * "chars": [{ "ch": string, "start": number, "end": number }] when acoustically distinguishable
-  * "recognitionConfidence": 0..1 float
-  * "alignmentConfidence": 0..1 float
-  * "speaker": singer/speaker identifier (e.g. "Lead", "Singer 1", "Singer 2", "Backing", "Harmony", "Speaker")`;
+CRITICAL SINGING-AWARE ALIGNMENT & VALIDATION RULES:
+- Distinguish actual SINGING performance (sustained vowels, vibrato, melisma, vocal onsets) from ordinary speech or musical beats.
+- NEVER divide line duration equally among words, NEVER estimate from text length, and NEVER replace vocal alignment with music beat timing.
+- Use phonetic/phoneme-level analysis ("phonemes": [{ "unit": string, "start": number, "end": number }]) to derive exact word and character start/end boundaries when sung words are sustained or legato.
+- For Chinese, Japanese, and Korean, output individual Chinese character / kana mora / Hangul syllable boundaries accurately.
+- Preserve silent pauses and breath gaps cleanly between words.
+- Stage 6 Validation: Compare provided lyrics honestly against the actual singing audio. In "flags", include any of:
+  * "uncertain_word" (unclear pronunciation / masking)
+  * "missing_word" (singer clearly sings additional audible words not present in provided text, or expected words absent)
+  * "misrecognized_word" (provided lyric clearly contradicts sung audio)
+  * "overlapping_vocals" (duet / harmony / backing vocals overlap during this token)
+  * "uncertain_boundary" (ambiguous legato/reverb boundary)`;
+
+    const contentParts: any[] = [
+      {
+        inlineData: {
+          mimeType: 'audio/wav',
+          data: audioBase64,
+        },
+      },
+    ];
+    if (separatedVocalBase64) {
+      contentParts.push({
+        inlineData: {
+          mimeType: 'audio/wav',
+          data: separatedVocalBase64,
+        },
+      });
+    }
+    contentParts.push({ text: prompt });
 
     const response = await ai.models.generateContent({
       model: 'gemini-4-hydrogen',
-      contents: [
-        {
-          inlineData: {
-            mimeType: 'audio/wav',
-            data: audioBase64,
-          },
-        },
-        { text: prompt },
-      ],
+      contents: contentParts,
       config: {
         responseMimeType: 'application/json',
         responseSchema: {
@@ -306,6 +389,8 @@ CRITICAL PRECISION RULES:
                   speaker: { type: Type.STRING },
                   recognitionConfidence: { type: Type.NUMBER },
                   alignmentConfidence: { type: Type.NUMBER },
+                  flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  validationNote: { type: Type.STRING },
                   words: {
                     type: Type.ARRAY,
                     items: {
@@ -317,6 +402,19 @@ CRITICAL PRECISION RULES:
                         recognitionConfidence: { type: Type.NUMBER },
                         alignmentConfidence: { type: Type.NUMBER },
                         speaker: { type: Type.STRING },
+                        flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        phonemes: {
+                          type: Type.ARRAY,
+                          items: {
+                            type: Type.OBJECT,
+                            properties: {
+                              unit: { type: Type.STRING },
+                              start: { type: Type.NUMBER },
+                              end: { type: Type.NUMBER },
+                            },
+                            required: ['unit', 'start', 'end'],
+                          },
+                        },
                         chars: {
                           type: Type.ARRAY,
                           items: {
@@ -357,6 +455,8 @@ CRITICAL PRECISION RULES:
           speaker: item.speaker,
           recognitionConfidence: item.recognitionConfidence,
           alignmentConfidence: item.alignmentConfidence,
+          flags: item.flags,
+          validationNote: item.validationNote,
           words: item.words,
         })),
       );
@@ -368,6 +468,8 @@ CRITICAL PRECISION RULES:
             speaker: normalized[idx].speaker,
             recognitionConfidence: normalized[idx].recognitionConfidence,
             alignmentConfidence: normalized[idx].alignmentConfidence,
+            flags: normalized[idx].flags,
+            validationNote: normalized[idx].validationNote,
           };
         }
       });
@@ -385,37 +487,49 @@ CRITICAL PRECISION RULES:
   }
 });
 
-// AI Music Audio-to-Lyrics Detection, Multi-Layer Vocal Analysis & Ultra-Precise Word/Char Forced Alignment Endpoint
+// CORE FUNCTION 05 Multi-Stage Server Pipeline (Stages 2-7): Singing Transcription + Phoneme Forced Alignment + Validation
 app.post('/api/transcribe-lyrics', async (req, res) => {
   try {
-    const { audioBase64, lang, audioFormat, duration, chunkStartSec, chunkDurationSec } = req.body || {};
+    const {
+      audioBase64,
+      separatedVocalBase64,
+      lang,
+      audioFormat,
+      duration,
+      sampleRate,
+      chunkStartSec,
+      chunkDurationSec,
+      preprocessingSummary,
+    } = req.body || {};
     if (!ai || !audioBase64) {
       return res.status(200).json({ success: false, reason: 'ai_not_configured' });
     }
     const offsetSec = Math.max(0, Number(chunkStartSec) || 0);
 
-    // Pass 1: Deep full-audio listening & verbatim multilingual transcription with gemini-3.5-transcribe
+    // Stage 3: Dedicated multilingual singing & speech recognition pass (gemini-3.5-transcribe)
+    // Uses separated vocal stem when provided so instrumental accompaniment does not drown sung phonetics
     let vocalTranscript = '';
     try {
+      const transcribeParts: any[] = [
+        {
+          inlineData: {
+            mimeType: 'audio/wav',
+            data: separatedVocalBase64 || audioBase64,
+          },
+        },
+        {
+          text: `Listen carefully to this audio recording as a specialized multilingual SINGING & SPEECH recognition model (format: ${audioFormat || 'audio'}, original sample rate: ${sampleRate || 'unknown'}Hz, window duration: ${chunkDurationSec || duration || 'unknown'}s${separatedVocalBase64 ? ', vocal-enhanced stem provided' : ''}).
+1. Process actual SINGING voices (sustained notes, vibrato, melisma, high belting, rap, spoken intros/outros), NOT just ordinary speech cadence.
+2. Identify every language and distinct singer/speaker heard (hint: ${lang && lang !== 'auto' ? lang : 'auto-detect multilingual: French, English, Chinese, Japanese, Korean, Vietnamese, Indonesian, Spanish, etc.'}).
+3. Transcribe EVERY sung and spoken word VERBATIM in its native script, preserving spelling, punctuation, contractions, slurs, and ALL repeated choruses (never abbreviate or skip repetitions).
+4. Separate Lead vocals from Background vocals / harmonies / overlapping vocal performances: mark overlapping or harmony lines explicitly with timestamps and speaker labels (Lead, Singer 1, Singer 2, Backing, Harmony).
+5. Explicitly mark non-vocal instrumental breaks with timestamps as [INSTRUMENTAL].
+6. ANTI-HALLUCINATION RULE: Whenever a sung section or word is masked, obscured, or unintelligible, mark it as [UNCLEAR] or add a [?uncertain] flag—NEVER fabricate or hallucinate lyrics to fill silent or ambiguous gaps!`,
+        },
+      ];
       const transcribeResp = await ai.models.generateContent({
         model: 'gemini-3.5-transcribe',
-        contents: [
-          {
-            inlineData: {
-              mimeType: 'audio/wav',
-              data: audioBase64,
-            },
-          },
-          {
-            text: `Listen carefully to this complete audio recording (source format: ${audioFormat || 'audio'}, duration: ${chunkDurationSec || duration || 'unknown'}s).
-1. Identify whether it contains singing, speech, instrumental music, or a combination, and identify every language and distinct singer/speaker heard (language hint: ${lang && lang !== 'auto' ? lang : 'auto-detect multilingual: French, English, Chinese, Japanese, Korean, Vietnamese, Indonesian, Spanish, etc.'}).
-2. Transcribe EVERY sung and spoken phrase VERBATIM in its native language script, preserving exact spelling, punctuation, contractions, slang, and ALL repetitions (never skip repeated choruses or write "x2").
-3. Distinguish song structure (Verse, Pre-Chorus, Chorus, Bridge, Intro, Outro) and repeated choruses.
-4. Capture audible background vocals, harmonies, or overlapping singers in parentheses like (harmony/backing: ...) and tag distinct singers (Lead, Singer 1, Singer 2, Backing).
-5. Explicitly mark non-vocal musical breaks with timestamps as [INSTRUMENTAL].
-6. CRITICAL ANTI-HALLUCINATION RULE: If any vocal section is masked, distorted, or unintelligible, mark it as [UNCLEAR] with timestamps—DO NOT invent or guess lyrics!`,
-          },
-        ],
+        contents: transcribeParts,
       });
       vocalTranscript = String(transcribeResp.text || '').trim();
     } catch (tErr: any) {
@@ -423,47 +537,64 @@ app.post('/api/transcribe-lyrics', async (req, res) => {
       if (tMsg.includes('billing') || tMsg.includes('free tier') || tErr?.status === 'PERMISSION_DENIED' || tErr?.code === 403) {
         throw tErr;
       }
-      // Continue cleanly to gemini-4-hydrogen audio+alignment pass if transcribe pass is unavailable
+      // Continue cleanly to Stage 4 forced alignment + transcription pass if transcribe pass is unavailable
     }
 
-    // Pass 2: Full song classification, structural segmentation & ultra-precise word/char forced alignment with gemini-4-hydrogen
-    const alignPrompt = `You are a world-class AI audio engineer, acoustic phonetician, and singing forced-alignment engine.
-Listen directly to the vocal performance in the audio track below.${vocalTranscript ? `\n\nReference verbatim vocal transcript from pass 1:\n${vocalTranscript}\n` : ''}
-Analyze the ENTIRE audio track and output strict structured JSON:
-1. "audioType": classify accurately as "singing", "speech", "instrumental", or "combination".
-2. "language": primary BCP-47 language code ("fr", "en", "zh-Hans", "zh-Hant", "ja", "ko", "vi", "id", "es", etc., or "instrumental" if none). Hint: ${lang || 'auto'}.
-3. "detectedLanguages": array of ALL language codes sung/spoken anywhere in the audio.
-4. "detectedSpeakers": array of distinct singers/speakers detected (e.g. ["Lead"], or ["Singer 1", "Singer 2", "Backing"]).
-5. "hasBackingVocals": true if background vocals, harmonies, ad-libs, or overlapping singers occur.
-6. "hasUnclearSections": true if any sung part is unintelligible/inaudible (NEVER fabricate fake words).
-7. "hasInstrumentalSections": true if there are distinct instrumental intros, solos, interludes, or outros (>= 2s without lead vocals).
-8. "hasRepeatedChorus": true if a chorus/hook repeats in this audio.
-9. "sections": ordered array of song sections { "type": "intro"|"verse"|"pre_chorus"|"chorus"|"bridge"|"outro"|"instrumental"|"speech"|"other", "label": string, "start": float, "end": float, "isRepeat": boolean }.
-10. "lines": chronological array covering EVERY sung line, spoken phrase, unclear vocal, and distinct instrumental break (>= 2.5s):
-   - "text": Exact verbatim lyrics in native orthography keeping original punctuation & repetitions. Use "[INSTRUMENTAL]" for instrumental breaks and "[Unclear vocal]" when vocals are truly unintelligible — NEVER invent lyrics.
-   - "start" & "end": Exact vocal onset & release timestamps (3-decimal float seconds).
+    // Stage 4 & Stage 6: Singing-aware Forced Alignment, Phoneme Boundary Extraction & Anti-Hallucination Validation (gemini-4-hydrogen)
+    const stage1Hint = preprocessingSummary
+      ? `\nStage 1-2 acoustic map: sampleRate=${preprocessingSummary.sampleRate || sampleRate}Hz, silenceCount=${preprocessingSummary.silenceCount ?? 0}, vocalSegments=${preprocessingSummary.vocalPhraseCount ?? 0}, instrumentalGaps=${preprocessingSummary.instrumentalGapCount ?? 0}.`
+      : '';
+    const alignPrompt = `You are a world-class singing-aware forced-alignment phonetician and lyric validator executing Stages 4, 5, and 6.
+You have the original reference mix${separatedVocalBase64 ? ' AND a center-vocal-isolated analysis track (Stage 2)' : ''}.${vocalTranscript ? `\n\nStage 3 verbatim singing transcript:\n${vocalTranscript}\n` : ''}${stage1Hint}
+Preserve the exact original timeline starting at 0.000s of this audio window. Output strict structured JSON:
+1. "audioType": "singing" | "speech" | "instrumental" | "combination".
+2. "language": primary BCP-47 language code ("fr", "en", "zh-Hans", "zh-Hant", "ja", "ko", "vi", "id", "es", etc., or "instrumental"). Hint: ${lang || 'auto'}.
+3. "detectedLanguages": array of ALL language codes sung/spoken in this audio.
+4. "detectedSpeakers": array of distinct performers/speakers (e.g. ["Lead"], ["Lead", "Backing"], ["Singer 1", "Singer 2"]).
+5. "hasBackingVocals", "hasUnclearSections", "hasInstrumentalSections", "hasRepeatedChorus": accurate booleans.
+6. "sections": ordered array of song sections { "type": "intro"|"verse"|"pre_chorus"|"chorus"|"bridge"|"outro"|"instrumental"|"speech"|"other", "label": string, "start": float, "end": float, "isRepeat": boolean }.
+7. "missingVocalGaps": array of { "start": float, "end": float, "reason": string } for any vocal passage where singing was clearly heard in audio but lyrics could NOT be confidently recognized (NEVER invent lyrics to fill gaps).
+8. "lines": chronological array covering EVERY sung line, spoken phrase, unclear vocal, and distinct instrumental section:
+   - "text": Exact verbatim sung text, "[INSTRUMENTAL]", or "[Unclear vocal]".
+   - "start" & "end": Exact vocal onset & release timestamps in seconds (3 decimals). Never snap blindly to music beats!
    - "section": "verse"|"chorus"|"pre_chorus"|"bridge"|"intro"|"outro"|"instrumental"|"speech".
    - "vocalType": "singing"|"speech"|"harmony"|"backing"|"overlapping"|"instrumental"|"unclear".
-   - "language": BCP-47 code for this line.
-   - "speaker": active singer/speaker ID (e.g. "Lead", "Singer 1", "Singer 2", "Backing").
-   - "recognitionConfidence" & "alignmentConfidence": 0..1 confidence floats.
-   - "isRepeatedChorus": true when this line belongs to a chorus/refrain that repeats.
-   - "backingText": exact background/harmony/overlapping lyric text if audible alongside lead vocal, else "".
-   - "unclear": true if lyrics are obscured/unintelligible, else false.
-   - "words": CRITICAL — do NOT divide sentence duration equally or estimate from text length or beat! Place "start" and "end" on ACTUAL vocal onset & pronunciation release of EVERY word (or EVERY individual Chinese character / Japanese kana / Korean syllable cluster for unspaced CJK/Asian scripts!), preserving real silent gaps between words. Include "recognitionConfidence", "alignmentConfidence", "speaker", and optional "chars": [{ "ch", "start", "end" }] when character boundaries are acoustically separable.
-11. "title" & "artist": only if explicitly spoken/sung or unmistakable, otherwise "".`;
+   - "language": BCP-47 code.
+   - "speaker": active singer/speaker ID.
+   - "recognitionConfidence" & "alignmentConfidence": 0..1 floats calibrated honestly to audio clarity.
+   - "flags": subset of ["uncertain_word", "missing_word", "misrecognized_word", "overlapping_vocals", "uncertain_boundary"] when any Stage 6 issue applies.
+   - "validationNote": concise explanation if any flag is raised, else "".
+   - "isRepeatedChorus": boolean.
+   - "backingText": simultaneous backing/harmony lyric if audible, else "".
+   - "unclear": true if unintelligible/masked, else false.
+   - "words": singing-aware forced-aligned tokens (for Chinese output EVERY individual character as a token; for Japanese/Korean output natural mora/syllable clusters):
+     * "text", "start", "end" (aligned strictly to actual vocal onset & phoneme release, NOT uniform/beat division)
+     * "phonemes": optional phonetic units { "unit", "start", "end" } used to derive boundaries
+     * "chars": optional { "ch", "start", "end" }
+     * "recognitionConfidence", "alignmentConfidence", "speaker", "flags".
+9. "title" & "artist": only if unmistakable in the audio, else "".`;
+
+    const alignContents: any[] = [
+      {
+        inlineData: {
+          mimeType: 'audio/wav',
+          data: audioBase64,
+        },
+      },
+    ];
+    if (separatedVocalBase64) {
+      alignContents.push({
+        inlineData: {
+          mimeType: 'audio/wav',
+          data: separatedVocalBase64,
+        },
+      });
+    }
+    alignContents.push({ text: alignPrompt });
 
     const response = await ai.models.generateContent({
       model: 'gemini-4-hydrogen',
-      contents: [
-        {
-          inlineData: {
-            mimeType: 'audio/wav',
-            data: audioBase64,
-          },
-        },
-        { text: alignPrompt },
-      ],
+      contents: alignContents,
       config: {
         responseMimeType: 'application/json',
         responseSchema: {
@@ -480,6 +611,18 @@ Analyze the ENTIRE audio track and output strict structured JSON:
             title: { type: Type.STRING },
             artist: { type: Type.STRING },
             isInstrumental: { type: Type.BOOLEAN },
+            missingVocalGaps: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  start: { type: Type.NUMBER },
+                  end: { type: Type.NUMBER },
+                  reason: { type: Type.STRING },
+                },
+                required: ['start', 'end'],
+              },
+            },
             sections: {
               type: Type.ARRAY,
               items: {
@@ -508,6 +651,8 @@ Analyze the ENTIRE audio track and output strict structured JSON:
                   speaker: { type: Type.STRING },
                   recognitionConfidence: { type: Type.NUMBER },
                   alignmentConfidence: { type: Type.NUMBER },
+                  flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  validationNote: { type: Type.STRING },
                   isRepeatedChorus: { type: Type.BOOLEAN },
                   backingText: { type: Type.STRING },
                   unclear: { type: Type.BOOLEAN },
@@ -522,6 +667,19 @@ Analyze the ENTIRE audio track and output strict structured JSON:
                         recognitionConfidence: { type: Type.NUMBER },
                         alignmentConfidence: { type: Type.NUMBER },
                         speaker: { type: Type.STRING },
+                        flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        phonemes: {
+                          type: Type.ARRAY,
+                          items: {
+                            type: Type.OBJECT,
+                            properties: {
+                              unit: { type: Type.STRING },
+                              start: { type: Type.NUMBER },
+                              end: { type: Type.NUMBER },
+                            },
+                            required: ['unit', 'start', 'end'],
+                          },
+                        },
                         chars: {
                           type: Type.ARRAY,
                           items: {
@@ -551,6 +709,13 @@ Analyze the ENTIRE audio track and output strict structured JSON:
     const parsed = JSON.parse(response.text || '{}');
     const rawLines = Array.isArray(parsed.lines) ? parsed.lines : [];
     const lines = normalizeKaraokeLines(rawLines, offsetSec);
+    const missingVocalGaps = Array.isArray(parsed.missingVocalGaps)
+      ? parsed.missingVocalGaps.map((g: any) => ({
+          start: +(Math.max(0, (Number(g?.start) || 0) + offsetSec)).toFixed(3),
+          end: +(Math.max(0.1, (Number(g?.end) || 0) + offsetSec)).toFixed(3),
+          reason: String(g?.reason || 'unintelligible_or_missing_vocal').slice(0, 120),
+        }))
+      : [];
     const sections = Array.isArray(parsed.sections)
       ? parsed.sections.map((sec: any) => ({
           type: String(sec?.type || 'other').toLowerCase(),
@@ -569,6 +734,8 @@ Analyze the ENTIRE audio track and output strict structured JSON:
       (ln.words || []).forEach((w: any) => { if (w.speaker) speakerSet.add(w.speaker); });
     });
 
+    const validationSummary = summarizeValidation(lines, missingVocalGaps);
+
     return res.json({
       success: true,
       audioType: String(parsed.audioType || (parsed.isInstrumental ? 'instrumental' : 'singing')).toLowerCase(),
@@ -576,13 +743,19 @@ Analyze the ENTIRE audio track and output strict structured JSON:
       detectedLanguages,
       detectedSpeakers: Array.from(speakerSet),
       hasBackingVocals: Boolean(parsed.hasBackingVocals || lines.some((l: any) => l.backingText || l.vocalType === 'backing' || l.vocalType === 'harmony' || l.vocalType === 'overlapping')),
-      hasUnclearSections: Boolean(parsed.hasUnclearSections || lines.some((l: any) => l.unclear)),
+      hasUnclearSections: Boolean(parsed.hasUnclearSections || validationSummary.uncertainWords > 0 || lines.some((l: any) => l.unclear)),
       hasInstrumentalSections: Boolean(parsed.hasInstrumentalSections || parsed.isInstrumental || lines.some((l: any) => l.isInstrumentalSection)),
       hasRepeatedChorus: Boolean(parsed.hasRepeatedChorus || lines.some((l: any) => l.isRepeatedChorus) || sections.some((s: any) => s.isRepeat)),
       title: parsed.title || '',
       artist: parsed.artist || '',
       isInstrumental: Boolean(parsed.isInstrumental || parsed.audioType === 'instrumental'),
       sections,
+      validationSummary,
+      pipelineModels: {
+        separation: separatedVocalBase64 ? 'client_mid_side_formant_stem' : 'single_channel_formant_filter',
+        transcription: vocalTranscript ? 'gemini-3.5-transcribe' : 'gemini-4-hydrogen',
+        forcedAlignment: 'gemini-4-hydrogen+phoneme_10ms_viterbi',
+      },
       lines,
     });
   } catch (err: any) {
