@@ -15,7 +15,7 @@ const ICON = {
   range: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 3v10M13 3v10"/><path d="M5.5 8h5M8.5 5.5L11 8l-2.5 2.5"/></svg>',
 };
 
-const S = { project: null, plan: null, audio: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, playStopAt: null, loop: 'all', loopHold: null, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
+const S = { project: null, plan: null, audio: null, audioFile: null, cloudSongId: null, cloudSongs: [], cloudHistory: [], cloudUser: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, playStopAt: null, loop: 'all', loopHold: null, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
 const LOOP_CYCLE = ['all', 'line', 'cut', false];
 const LOOP_COPY = {
   all:  { ja: 'ループ', en: 'Loop', titleJa: '全体を繰り返し', titleEn: 'Loop the whole piece' },
@@ -167,8 +167,18 @@ function setBadges(d) {
 }
 function loadLocal() { try { const s = localStorage.getItem(LS_KEY); if (s) return mergeProject(JSON.parse(s)); } catch (e) {} return mergeProject(null); }
 let saveTimer = 0;
+let cloudSaveTimer = 0;
 function autosave() { clearTimeout(saveTimer); saveTimer = setTimeout(flushSave, 700); }
-function flushSave() { clearTimeout(saveTimer); try { localStorage.setItem(LS_KEY, JSON.stringify(S.project)); } catch (e) {} }
+function flushSave() {
+  clearTimeout(saveTimer);
+  try { localStorage.setItem(LS_KEY, JSON.stringify(S.project)); } catch (e) {}
+  if (S.cloudUser && S.cloudSongId && $('chkFbAutoSave') && $('chkFbAutoSave').checked && window.AlexuraCloud) {
+    clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(() => {
+      if (S.cloudUser && S.cloudSongId) saveCurrentSongToFirebase(false, true);
+    }, 2400);
+  }
+}
 window.addEventListener('pagehide', () => { if (S.project) flushSave(); });
 
 /* ---------------- planning ---------------- */
@@ -312,6 +322,8 @@ function tick(now) {
 function updateTimeUI() {
   $('timeNow').textContent = J.fmtTime(S.t);
   $('timeDur').textContent = J.fmtTime(S.plan.duration);
+  if ($('tlPlayMs') && J.fmtTimeMs) $('tlPlayMs').textContent = J.fmtTimeMs(S.t);
+  if ($('tlDurMs') && J.fmtTimeMs) $('tlDurMs').textContent = J.fmtTimeMs(S.plan.duration);
   if (!S.scrubbing) $('scrub').value = String(Math.round(S.t / Math.max(0.001, S.plan.duration) * 10000));
 }
 // タップ同期の速さ (0.5× / 0.75×): only while tapping — the song's own time is what gets stored
@@ -784,10 +796,10 @@ function updateKaraokePrompter() {
   }
 }
 
-/* ---------------- timeline ---------------- */
-// zoomable view: [TL.off, TL.off + D / TL.z] seconds; line starts are draggable handles in the top band
+/* ---------------- timeline (CORE FUNCTION 07: Professional Multi-Track Audio Timeline) ---------------- */
+// zoomable view: [TL.off, TL.off + D / TL.z] seconds across ruler, waveform+vocal, lyric segments, word boxes & char timings
 const layoutHue = k => (J.LAYOUT_ORDER.indexOf(k) * 37 + 30) % 360;
-const TL = { z: 1, off: 0, hover: -1, drag: -1, wHover: null, wDrag: null };
+const TL = { z: 1, off: 0, hover: -1, drag: -1, wHover: null, wDrag: null, showWave: true, showVocal: true, follow: true, selCharIdx: -1, hoverTime: null };
 function tlView() {
   const D = Math.max(0.001, S.plan.duration), vd = D / TL.z;
   TL.off = J.clamp(TL.off, 0, Math.max(0, D - vd));
@@ -795,15 +807,153 @@ function tlView() {
 }
 function tlZoom(f, tc) {
   const { D, vd } = tlView();
-  const z = J.clamp(TL.z * f, 1, Math.max(1, D / 2));
+  const maxZ = Math.max(24, D * 4);
+  const z = J.clamp(TL.z * f, 1, maxZ);
   const c = tc == null ? S.t : tc, frac = (c - TL.off) / vd;
   TL.z = z; TL.off = c - frac * (D / z); tlView(); drawTimeline();
 }
+function tlFocusWord(li, wi) {
+  const L = (S.plan && S.plan.lines) || [];
+  const ln = L[li != null ? li : EDL.lineIdx];
+  if (!ln || ln.interlude) return;
+  const words = getEditableWords(ln.index);
+  const wIdx = wi != null ? wi : EDL.wordIdx;
+  const wd = words[wIdx] || words[0];
+  const { D } = tlView();
+  const s = wd ? wd.start : ln.start;
+  const e = wd ? wd.end : (ln.visEnd || ln.end);
+  const dur = Math.max(0.06, e - s);
+  const targetSpan = J.clamp(Math.max(dur * 4.5, 1.2), 0.35, D);
+  TL.z = J.clamp(D / targetSpan, 1, Math.max(24, D * 4));
+  TL.off = Math.max(0, (s + e) * 0.5 - targetSpan * 0.5);
+  tlView();
+  if (wd) selectLyricWord(ln.index, wIdx, false);
+  seek(s + 0.001);
+  drawTimeline();
+}
+function tlBands(h, dpr) {
+  const rulerTop = 0, rulerBot = Math.round(20 * dpr);
+  const waveTop = rulerBot, waveBot = Math.round(h * 0.50);
+  const segTop = waveBot, segBot = Math.round(h * 0.65);
+  const wordTop = segBot, wordBot = Math.round(h * 0.84);
+  const charTop = wordBot, charBot = Math.max(wordBot + 6 * dpr, h - 5 * dpr);
+  return { rulerTop, rulerBot, waveTop, waveBot, segTop, segBot, wordTop, wordBot, charTop, charBot };
+}
 // while playing zoomed in: redraw (which scrolls the view) once the playhead leaves the visible part
 function followTlPlayhead() {
-  if (!(TL.z > 1) || TL.drag >= 0 || TL.wDrag) return;
+  if (!TL.follow || !(TL.z > 1) || TL.drag >= 0 || TL.wDrag) return;
   const { vd, off } = tlView();
-  if (S.t < off || S.t > off + vd * 0.92) drawTimeline();
+  if (S.t < off || S.t > off + vd * 0.90) drawTimeline();
+}
+function tlInspCopy() {
+  const l = (document.documentElement.lang || 'fr').toLowerCase();
+  if (l === 'fr') return {
+    waveLbl: 'Audio', vocalLbl: 'Voix', followLbl: 'Suivi', zoomWord: '🔍 Mot', playWord: '▶ Mot',
+    startLbl: 'Début (HH:MM:SS.mmm)', endLbl: 'Fin (HH:MM:SS.mmm)',
+    noSel: 'Aucun mot sélectionné',
+    confPrefix: 'Confiance alignement',
+    recPrefix: 'reconnaissance',
+    manualVal: 'Validé manuellement',
+    secVocal: 'Section vocale', secInst: 'Section instrumentale', secOverlap: 'Voix superposées', secMix: 'Audio analysé',
+    disclaimer: 'Affichage HH:MM:SS.mmm pour l’édition fine image par image — ne garantit pas une reconnaissance vocale à la milliseconde ; la confiance réelle d’alignement acoustique est affichée ci-dessus.',
+    chars: 'car.', noAudio: 'Aucun audio chargé',
+  };
+  if (l === 'ja') return {
+    waveLbl: '波形', vocalLbl: 'ボーカル', followLbl: '追従', zoomWord: '🔍 単語拡大', playWord: '▶ 単語',
+    startLbl: '開始 (HH:MM:SS.mmm)', endLbl: '終了 (HH:MM:SS.mmm)',
+    noSel: '単語未選択',
+    confPrefix: 'アライメント信頼度',
+    recPrefix: '認識',
+    manualVal: '手動確定済み',
+    secVocal: 'ボーカル区間', secInst: 'インスト区間', secOverlap: '重複ボーカル', secMix: '解析済み',
+    disclaimer: 'HH:MM:SS.mmm表示はフレーム単位の精密編集用であり、AI音声認識が1ms精度を保証するものではありません。実際のアライメント信頼度を上に明示しています。',
+    chars: '文字', noAudio: '音声未読み込み',
+  };
+  return {
+    waveLbl: 'Audio', vocalLbl: 'Vocals', followLbl: 'Follow', zoomWord: '🔍 Word', playWord: '▶ Word',
+    startLbl: 'Start (HH:MM:SS.mmm)', endLbl: 'End (HH:MM:SS.mmm)',
+    noSel: 'No word selected',
+    confPrefix: 'Alignment confidence',
+    recPrefix: 'recognition',
+    manualVal: 'Manually validated',
+    secVocal: 'Vocal section', secInst: 'Instrumental section', secOverlap: 'Overlapping vocals', secMix: 'Analyzed audio',
+    disclaimer: 'HH:MM:SS.mmm provides frame-like millisecond editing resolution — it does not guarantee millisecond AI recognition accuracy. Actual alignment confidence is tracked above.',
+    chars: 'chars', noAudio: 'No audio loaded',
+  };
+}
+function tlAudioSectionAt(t) {
+  const A = S.audio;
+  if (!A) return 'none';
+  if (Array.isArray(A.overlapSegments) && A.overlapSegments.some(s => t >= s.start && t <= s.end)) return 'overlap';
+  if (Array.isArray(A.vocalSegments) && A.vocalSegments.some(s => t >= s.start && t <= s.end)) return 'vocal';
+  if (Array.isArray(A.instrumentalSegments) && A.instrumentalSegments.some(s => t >= s.start && t <= s.end)) return 'inst';
+  return 'mix';
+}
+function syncTimelineInspector() {
+  const c = tlInspCopy();
+  const setT = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+  setT('lblTlWave', c.waveLbl);
+  setT('lblTlVocal', c.vocalLbl);
+  setT('lblTlFollow', c.followLbl);
+  setT('tlZoomWord', c.zoomWord);
+  setT('tlPlayWordBtn', c.playWord);
+  setT('lblTlStartMs', c.startLbl);
+  setT('lblTlEndMs', c.endLbl);
+  setT('tlPrecisionDisclaimer', c.disclaimer);
+  if ($('tlPlayMs') && J.fmtTimeMs) $('tlPlayMs').textContent = J.fmtTimeMs(S.t);
+  if ($('tlDurMs') && J.fmtTimeMs) $('tlDurMs').textContent = J.fmtTimeMs(S.plan ? S.plan.duration : 0);
+  if ($('tlZoomVal')) $('tlZoomVal').textContent = TL.z.toFixed(1) + '×';
+
+  const L = (S.plan && S.plan.lines) || [];
+  const ln = L[EDL.lineIdx];
+  const words = ln && !ln.interlude ? getEditableWords(EDL.lineIdx) : [];
+  const w = words[EDL.wordIdx] || null;
+  const insp = $('tlInspector');
+  if (insp) insp.classList.toggle('is-empty', !w);
+  const startInp = $('tlWordStartMs'), endInp = $('tlWordEndMs');
+  const confEl = $('tlConfBadge');
+  if (!w) {
+    setT('tlSelWordBadge', c.noSel);
+    setT('tlSelCharBadge', '');
+    if (confEl) {
+      confEl.className = 'tl-conf-badge mono';
+      confEl.textContent = `${c.confPrefix} : —`;
+    }
+    setT('tlSectionBadge', S.audio ? c.secMix : c.noAudio);
+    if (startInp && document.activeElement !== startInp) startInp.value = J.fmtTimeMs ? J.fmtTimeMs(0) : '00:00:00.000';
+    if (endInp && document.activeElement !== endInp) endInp.value = J.fmtTimeMs ? J.fmtTimeMs(0) : '00:00:00.000';
+    return;
+  }
+  const durMs = Math.max(1, Math.round((w.end - w.start) * 1000));
+  setT('tlSelWordBadge', `« ${w.text} » · ${durMs}ms`);
+  const chs = buildWordChars(w);
+  if (TL.selCharIdx >= 0 && TL.selCharIdx < chs.length) {
+    const ch = chs[TL.selCharIdx];
+    const chTxt = ch.ch != null ? ch.ch : (ch.char || '');
+    setT('tlSelCharBadge', `[${TL.selCharIdx + 1}/${chs.length} '${chTxt}' ${J.fmtTimeMs(ch.start)}→${J.fmtTimeMs(ch.end)}]`);
+  } else {
+    setT('tlSelCharBadge', chs.length ? `${chs.length} ${c.chars}` : '');
+  }
+  const alignConf = w.alignmentConfidence != null ? Number(w.alignmentConfidence) : null;
+  const recConf = w.recognitionConfidence != null ? Number(w.recognitionConfidence) : null;
+  const alignPct = alignConf != null ? Math.round(alignConf * 100) : null;
+  const recPct = recConf != null ? Math.round(recConf * 100) : null;
+  const rawConf = alignConf != null ? alignConf : (recConf != null ? recConf : 0.75);
+  const flags = Array.isArray(w.flags) ? w.flags : [];
+  const hasUnc = flags.includes('uncertain_word') || flags.includes('misrecognized_word') || flags.includes('uncertain_boundary');
+  if (confEl) {
+    confEl.className = 'tl-conf-badge mono ' + (rawConf >= 0.85 && !hasUnc ? 'is-high' : (rawConf >= 0.65 && !hasUnc ? 'is-mid' : 'is-low'));
+    const parts = [];
+    parts.push(`${c.confPrefix} : ${alignPct != null ? alignPct + '%' : '—'}`);
+    if (recPct != null) parts.push(`${c.recPrefix} ${recPct}%`);
+    if (w.validated) parts.push(c.manualVal);
+    confEl.textContent = parts.join(' · ');
+  }
+  const secType = tlAudioSectionAt((w.start + w.end) * 0.5);
+  const secLabel = secType === 'overlap' ? c.secOverlap : secType === 'vocal' ? c.secVocal : secType === 'inst' ? c.secInst : c.secMix;
+  setT('tlSectionBadge', w.speaker && w.speaker !== 'Lead' ? `${secLabel} · ${w.speaker}` : secLabel);
+  if (startInp && document.activeElement !== startInp && J.fmtTimeMs) startInp.value = J.fmtTimeMs(w.start);
+  if (endInp && document.activeElement !== endInp && J.fmtTimeMs) endInp.value = J.fmtTimeMs(w.end);
 }
 function drawTimeline() {
   const c = $('timeline'), dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -811,100 +961,271 @@ function drawTimeline() {
   if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
   let { D, vd, off } = tlView();
   // follow the playhead while playing (zoomed in)
-  if (TL.z > 1 && S.playing && TL.drag < 0 && !TL.wDrag && (S.t < off || S.t > off + vd * 0.92)) { TL.off = S.t - vd * 0.1; ({ D, vd, off } = tlView()); }
+  if (TL.follow && TL.z > 1 && S.playing && TL.drag < 0 && !TL.wDrag && (S.t < off || S.t > off + vd * 0.90)) { TL.off = S.t - vd * 0.1; ({ D, vd, off } = tlView()); }
+  if ($('tlPlayMs') && J.fmtTimeMs) $('tlPlayMs').textContent = J.fmtTimeMs(S.t);
+  if ($('tlDurMs') && J.fmtTimeMs) $('tlDurMs').textContent = J.fmtTimeMs(D);
+  if ($('tlZoomVal')) $('tlZoomVal').textContent = TL.z.toFixed(1) + '×';
+
   const x = c.getContext('2d'), X = t => (t - off) / vd * w, T = px => off + px / w * vd;
-  x.fillStyle = '#f5f5f7'; x.fillRect(0, 0, w, h);
-  if (S.audio && S.audio.peaks) {
-    const pk = S.audio.peaks, n = pk.length, sd = S.audio.duration;
-    x.fillStyle = '#c7c7cc';
-    for (let i = 0; i < w; i += 2) { const t = T(i); if (t > sd) break; if (t < 0) continue; const v = pk[Math.min(n - 1, Math.floor(t / sd * n))]; const hh = v * h * 0.8; x.fillRect(i, h * 0.6 - hh / 2, 1.5, hh); }
+  const B = tlBands(h, dpr);
+  const monoFont = getComputedStyle(document.body).getPropertyValue('--mono') || 'monospace';
+
+  // Background
+  x.fillStyle = '#f8f9fb'; x.fillRect(0, 0, w, h);
+  // Track separators
+  x.fillStyle = '#ffffff'; x.fillRect(0, B.rulerTop, w, B.rulerBot - B.rulerTop);
+  x.fillStyle = 'rgba(15,23,42,0.06)';
+  [B.rulerBot, B.waveBot, B.segBot, B.wordBot, B.charBot].forEach(y => x.fillRect(0, y, w, 1));
+
+  // Time ruler ticks (adaptive step down to 100ms / 50ms on deep zoom)
+  const pxPerSec = w / Math.max(0.05, vd);
+  const steps = [0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 15, 30, 60];
+  let step = 60;
+  for (const s of steps) { if (s * pxPerSec >= 44 * dpr) { step = s; break; } }
+  const tStart = Math.floor(off / step) * step;
+  x.font = `500 ${8.5 * dpr}px ${monoFont}`;
+  for (let tt = tStart; tt <= off + vd + step * 0.5; tt += step) {
+    if (tt < 0 || tt > D) continue;
+    const rx = Math.round(X(tt));
+    x.fillStyle = 'rgba(15,23,42,0.16)';
+    x.fillRect(rx, B.rulerBot - 5 * dpr, 1, 5 * dpr);
+    x.fillStyle = '#64748b';
+    const lbl = step < 1 ? J.fmtTimeMs(tt).slice(3) : J.fmtTime(tt);
+    x.fillText(lbl, rx + 3 * dpr, B.rulerTop + 10 * dpr);
   }
-  const beats = S.plan.beats || [];
-  x.fillStyle = '#d1d1d6';
-  for (const b of beats) { if (b < off) continue; if (b > off + vd) break; x.fillRect(Math.round(X(b)), h - 6 * dpr, 1, 6 * dpr); }
-  const top = h * 0.3, bot = h - 8 * dpr;
+
+  // Export range shading
   const R = exportRange();
-  if (R) { x.fillStyle = 'rgba(0,113,227,0.08)'; x.fillRect(X(R.t0), 0, X(R.t1) - X(R.t0), h); }
-  for (const cut of S.plan.cuts) {
-    const x0 = X(cut.start), x1 = X(cut.end);
-    if (x1 < 0 || x0 > w) continue;
-    const hue = layoutHue(cut.layout);
-    x.fillStyle = `hsla(${hue},75%,50%,0.16)`; x.fillRect(x0, top, Math.max(1, x1 - x0 - 1), bot - top);
-    x.fillStyle = `hsla(${hue},80%,44%,0.9)`; x.fillRect(x0, top, Math.max(1, 2 * dpr), bot - top);
-    if (x1 - x0 > 34 * dpr) {
-      x.fillStyle = '#1d1d1f'; x.font = `600 ${10 * dpr}px ${getComputedStyle(document.body).getPropertyValue('--mono') || 'monospace'}`;
-      x.save(); x.beginPath(); x.rect(x0, top, x1 - x0 - 3, bot - top); x.clip();
-      x.fillText(TL.z > 3 && cut.text ? cut.text : ((J.LAYOUTS[cut.layout] || {}).name || cut.layout), x0 + 5 * dpr, top + 13 * dpr); x.restore();
+  if (R) { x.fillStyle = 'rgba(0,113,227,0.07)'; x.fillRect(X(R.t0), 0, X(R.t1) - X(R.t0), h); }
+
+  // Instrumental, vocal & overlap sections inside waveform track
+  if (S.audio) {
+    const drawSegs = (segs, fill, border, tag) => {
+      if (!Array.isArray(segs)) return;
+      for (const s of segs) {
+        const x0 = X(s.start), x1 = X(s.end);
+        if (x1 < 0 || x0 > w) continue;
+        const cx0 = Math.max(0, x0), cw = Math.max(1, Math.min(w, x1) - cx0);
+        x.fillStyle = fill;
+        x.fillRect(cx0, B.waveTop + 1, cw, B.waveBot - B.waveTop - 2);
+        x.fillStyle = border;
+        x.fillRect(cx0, B.waveTop + 1, cw, 2 * dpr);
+        if (cw > 34 * dpr && tag) {
+          x.fillStyle = border;
+          x.font = `700 ${7.5 * dpr}px ${monoFont}`;
+          x.fillText(tag, cx0 + 4 * dpr, B.waveTop + 11 * dpr);
+        }
+      }
+    };
+    drawSegs(S.audio.instrumentalSegments, 'rgba(100,116,139,0.08)', 'rgba(100,116,139,0.45)', 'INST');
+    drawSegs(S.audio.vocalSegments, 'rgba(16,185,129,0.09)', 'rgba(5,150,105,0.55)', 'VOIX');
+    drawSegs(S.audio.overlapSegments, 'rgba(139,92,246,0.12)', 'rgba(124,58,237,0.70)', 'DUO');
+  }
+
+  // Track 1: Full audio waveform + separate Vocal waveform overlay
+  const waveMid = (B.waveTop + B.waveBot) * 0.5;
+  const waveAmp = Math.max(6 * dpr, (B.waveBot - B.waveTop) * 0.44);
+  if (TL.showWave && S.audio && S.audio.peaks) {
+    const pk = S.audio.peaks, n = pk.length, sd = S.audio.duration;
+    x.fillStyle = 'rgba(100,116,139,0.48)';
+    for (let i = 0; i < w; i += 2) {
+      const t = T(i); if (t > sd) break; if (t < 0) continue;
+      const v = pk[Math.min(n - 1, Math.floor(t / sd * n))];
+      const hh = Math.max(1, v * waveAmp * 2);
+      x.fillRect(i, waveMid - hh / 2, 1.5, hh);
     }
   }
-  // Word-level draggable markers for the selected line in the Lyrics Editor
-  const edLn = (S.plan && S.plan.lines) ? S.plan.lines[EDL.lineIdx] : null;
-  if (edLn && !edLn.interlude && Array.isArray(edLn.wordsTimed) && edLn.wordsTimed.length) {
-    const wy0 = h * 0.54, wh = bot - wy0 - 2 * dpr;
-    edLn.wordsTimed.forEach((wd, wi) => {
+  if (TL.showVocal && S.audio && (S.audio.vocalEnv100 || S.audio.vocalEnergy)) {
+    const env = S.audio.vocalEnv100 || S.audio.vocalEnergy;
+    const rate = S.audio.vocalEnv100 ? 100 : 50;
+    let maxV = 0.05;
+    for (let k = 0; k < env.length; k += 4) if (env[k] > maxV) maxV = env[k];
+    x.fillStyle = 'rgba(14,165,233,0.76)';
+    for (let i = 0; i < w; i += 2) {
+      const t = T(i);
+      const idx = Math.floor(t * rate);
+      if (idx < 0 || idx >= env.length) continue;
+      const norm = J.clamp(env[idx] / maxV, 0, 1);
+      const vh = norm * waveAmp * 1.75;
+      if (vh > 1) x.fillRect(i, waveMid - vh / 2, 1.5, vh);
+    }
+  }
+
+  // Track 2: Individual Lyric Segments (lines & interludes)
+  const segH = B.segBot - B.segTop - 2;
+  const L = (S.plan && S.plan.lines) || [];
+  for (const ln of L) {
+    const x0 = X(ln.start), x1 = X(ln.visEnd || ln.end);
+    if (x1 < 0 || x0 > w) continue;
+    const isSelL = ln.index === EDL.lineIdx;
+    const cx0 = Math.max(0, x0), cw = Math.max(2 * dpr, Math.min(w, x1) - cx0 - 1);
+    const hue = ln.interlude ? 215 : ((ln.index * 47 + 205) % 360);
+    x.fillStyle = ln.interlude ? 'rgba(100,116,139,0.14)' : (isSelL ? 'rgba(0,113,227,0.18)' : `hsla(${hue},68%,50%,0.13)`);
+    x.fillRect(cx0, B.segTop + 1, cw, segH);
+    x.fillStyle = isSelL ? '#0071e3' : (ln.interlude ? '#64748b' : `hsla(${hue},75%,42%,0.75)`);
+    x.fillRect(cx0, B.segTop + 1, Math.max(1.5 * dpr, isSelL ? 2.5 * dpr : 1.5 * dpr), segH);
+    if (isSelL) {
+      x.strokeStyle = 'rgba(0,113,227,0.55)'; x.lineWidth = dpr;
+      x.strokeRect(cx0 + 0.5, B.segTop + 1.5, Math.max(1, cw - 1), segH - 1);
+    }
+    if (cw > 26 * dpr) {
+      x.fillStyle = isSelL ? '#0051a8' : '#1e293b';
+      x.font = `600 ${9 * dpr}px ${monoFont}`;
+      x.save(); x.beginPath(); x.rect(cx0 + 3 * dpr, B.segTop + 1, Math.max(1, cw - 5 * dpr), segH); x.clip();
+      const segTxt = ln.interlude ? `♪ ${ln.secs || Math.round(ln.end - ln.start)}s` : `${ln.index + 1}. ${ln.text}`;
+      x.fillText(segTxt, cx0 + 4 * dpr, B.segTop + segH - 4 * dpr);
+      x.restore();
+    }
+  }
+
+  // Track 3: Word-level timestamps across all visible lines (plus acoustic audio highlight for selected word)
+  const wordH = B.wordBot - B.wordTop - 2;
+  const charH = B.charBot - B.charTop - 2;
+  let selWordObj = null;
+  for (const ln of L) {
+    if (ln.interlude) continue;
+    const words = Array.isArray(ln.wordsTimed) ? ln.wordsTimed : getEditableWords(ln.index);
+    const isSelLine = ln.index === EDL.lineIdx;
+    words.forEach((wd, wi) => {
       const wx0 = X(wd.start), wx1 = X(wd.end);
       if (wx1 < -4 || wx0 > w + 4) return;
-      const isSelW = wi === EDL.wordIdx;
+      const isSelW = isSelLine && wi === EDL.wordIdx;
       const isValW = Boolean(wd.validated);
-      x.fillStyle = isSelW ? 'rgba(0,113,227,0.22)' : isValW ? 'rgba(5,150,105,0.16)' : 'rgba(17,17,19,0.08)';
-      x.fillRect(wx0, wy0, Math.max(2 * dpr, wx1 - wx0), wh);
-      const hStart = TL.wDrag && TL.wDrag.wordIdx === wi && TL.wDrag.edge === 'start' || TL.wHover && TL.wHover.wordIdx === wi && TL.wHover.edge === 'start';
-      const hEnd = TL.wDrag && TL.wDrag.wordIdx === wi && TL.wDrag.edge === 'end' || TL.wHover && TL.wHover.wordIdx === wi && TL.wHover.edge === 'end';
-      x.fillStyle = hStart ? '#0071e3' : isValW ? '#059669' : '#334155';
-      x.fillRect(wx0 - dpr, wy0, 2 * dpr, wh);
-      x.beginPath(); x.arc(wx0, wy0 + 3 * dpr, (hStart ? 4 : 2.8) * dpr, 0, Math.PI * 2); x.fill();
-      x.fillStyle = hEnd ? '#0071e3' : '#64748b';
-      x.fillRect(wx1 - dpr, wy0, 2 * dpr, wh);
-      x.beginPath(); x.arc(wx1, wy0 + wh - 3 * dpr, (hEnd ? 4 : 2.5) * dpr, 0, Math.PI * 2); x.fill();
-      if (wx1 - wx0 > 18 * dpr) {
-        x.fillStyle = isSelW ? '#005bb5' : '#111113';
-        x.font = `600 ${9 * dpr}px ${getComputedStyle(document.body).getPropertyValue('--mono') || 'monospace'}`;
-        x.save(); x.beginPath(); x.rect(wx0 + 2, wy0, Math.max(1, wx1 - wx0 - 4), wh); x.clip();
-        x.fillText(wd.text, wx0 + 3 * dpr, wy0 + wh - 5 * dpr);
+      const flags = Array.isArray(wd.flags) ? wd.flags : [];
+      const lowConf = (wd.alignmentConfidence != null && wd.alignmentConfidence < 0.65) || flags.includes('uncertain_word') || flags.includes('uncertain_boundary');
+
+      if (isSelW) {
+        selWordObj = wd;
+        // Acoustic spotlight projecting from waveform band down onto the selected word
+        x.fillStyle = 'rgba(0,113,227,0.11)';
+        x.fillRect(wx0, B.waveTop, Math.max(2 * dpr, wx1 - wx0), B.charBot - B.waveTop);
+      }
+
+      x.fillStyle = isSelW
+        ? 'rgba(0,113,227,0.28)'
+        : lowConf
+          ? 'rgba(217,119,6,0.20)'
+          : isValW
+            ? 'rgba(5,150,105,0.18)'
+            : 'rgba(15,23,42,0.08)';
+      x.fillRect(wx0, B.wordTop + 1, Math.max(2 * dpr, wx1 - wx0 - 1), wordH);
+
+      if (isSelLine) {
+        const hStart = (TL.wDrag && TL.wDrag.lineIdx === ln.index && TL.wDrag.wordIdx === wi && TL.wDrag.edge === 'start') || (TL.wHover && TL.wHover.lineIdx === ln.index && TL.wHover.wordIdx === wi && TL.wHover.edge === 'start');
+        const hEnd = (TL.wDrag && TL.wDrag.lineIdx === ln.index && TL.wDrag.wordIdx === wi && TL.wDrag.edge === 'end') || (TL.wHover && TL.wHover.lineIdx === ln.index && TL.wHover.wordIdx === wi && TL.wHover.edge === 'end');
+        x.fillStyle = hStart ? '#0071e3' : lowConf ? '#d97706' : isValW ? '#059669' : '#334155';
+        x.fillRect(wx0 - dpr * 0.5, B.wordTop + 1, 2 * dpr, wordH);
+        x.beginPath(); x.arc(wx0, B.wordTop + 4 * dpr, (hStart ? 3.8 : 2.5) * dpr, 0, Math.PI * 2); x.fill();
+        x.fillStyle = hEnd ? '#0071e3' : '#64748b';
+        x.fillRect(wx1 - dpr * 0.5, B.wordTop + 1, 2 * dpr, wordH);
+        x.beginPath(); x.arc(wx1, B.wordBot - 4 * dpr, (hEnd ? 3.8 : 2.2) * dpr, 0, Math.PI * 2); x.fill();
+      } else {
+        x.fillStyle = lowConf ? 'rgba(217,119,6,0.65)' : 'rgba(51,65,85,0.45)';
+        x.fillRect(wx0, B.wordTop + 1, 1.2 * dpr, wordH);
+      }
+
+      if (wx1 - wx0 > 14 * dpr) {
+        x.fillStyle = isSelW ? '#004999' : (lowConf ? '#92400e' : '#0f172a');
+        x.font = `${isSelW ? 700 : 600} ${8.5 * dpr}px ${monoFont}`;
+        x.save(); x.beginPath(); x.rect(wx0 + 2 * dpr, B.wordTop + 1, Math.max(1, wx1 - wx0 - 4 * dpr), wordH); x.clip();
+        x.fillText(wd.text, wx0 + 3 * dpr, B.wordTop + wordH - 5 * dpr);
+        x.restore();
+      }
+
+      // Draw character timings inside visible span for non-selected words when tightly zoomed in
+      if (!isSelW && vd <= 8) {
+        const chs = buildWordChars(wd);
+        chs.forEach(ch => {
+          const cx0 = X(ch.start), cx1 = X(ch.end);
+          if (cx1 < 0 || cx0 > w) return;
+          x.fillStyle = 'rgba(100,116,139,0.12)';
+          x.fillRect(cx0, B.charTop + 1, Math.max(1, cx1 - cx0 - 1), charH);
+          if (cx1 - cx0 > 10 * dpr) {
+            x.fillStyle = '#475569';
+            x.font = `500 ${8 * dpr}px ${monoFont}`;
+            x.fillText(ch.ch != null ? ch.ch : (ch.char || ''), cx0 + 2 * dpr, B.charTop + charH - 4 * dpr);
+          }
+        });
+      }
+    });
+  }
+
+  // Track 4: Selected Word Character-Level Timestamps
+  if (selWordObj) {
+    const chs = buildWordChars(selWordObj);
+    chs.forEach((ch, ci) => {
+      const cx0 = X(ch.start), cx1 = X(ch.end);
+      if (cx1 < -2 || cx0 > w + 2) return;
+      const isSelCh = ci === TL.selCharIdx;
+      x.fillStyle = isSelCh ? 'rgba(0,113,227,0.34)' : 'rgba(14,165,233,0.18)';
+      x.fillRect(cx0, B.charTop + 1, Math.max(2 * dpr, cx1 - cx0 - 1), charH);
+      x.fillStyle = isSelCh ? '#0071e3' : 'rgba(14,165,233,0.72)';
+      x.fillRect(cx0, B.charTop + 1, dpr, charH);
+      if (cx1 - cx0 > 8 * dpr) {
+        x.fillStyle = isSelCh ? '#004999' : '#0369a1';
+        x.font = `700 ${8.5 * dpr}px ${monoFont}`;
+        const label = (ch.ch != null ? ch.ch : (ch.char || '')) + (cx1 - cx0 > 46 * dpr ? ` ${(ch.end - ch.start) * 1000 | 0}ms` : '');
+        x.save(); x.beginPath(); x.rect(cx0 + dpr, B.charTop + 1, Math.max(1, cx1 - cx0 - 2 * dpr), charH); x.clip();
+        x.fillText(label, cx0 + 2.5 * dpr, B.charTop + charH - 4 * dpr);
         x.restore();
       }
     });
   }
-  x.font = `500 ${10 * dpr}px monospace`;
+
+  // Beats + Zoom overview bar at bottom
+  const beats = S.plan.beats || [];
+  x.fillStyle = '#cbd5e1';
+  for (const b of beats) { if (b < off) continue; if (b > off + vd) break; x.fillRect(Math.round(X(b)), h - 5 * dpr, 1, 5 * dpr); }
+  if (TL.z > 1) {
+    x.fillStyle = 'rgba(0,0,0,0.08)'; x.fillRect(0, h - 3 * dpr, w, 3 * dpr);
+    x.fillStyle = '#0071e3'; x.fillRect(off / D * w, h - 3 * dpr, Math.max(6 * dpr, vd / D * w), 3 * dpr);
+  }
+
+  // Top Ruler Line-Start Handles
+  x.font = `600 ${8.5 * dpr}px ${monoFont}`;
   const LT = S.project.timing.lineTimes || {};
-  for (const ln of S.plan.lines) {
+  for (const ln of L) {
     const lx = X(ln.start);
     if (lx < -20 * dpr || lx > w + 2) continue;
     const on = ln.index === TL.drag || ln.index === TL.hover, man = LT[ln.index] != null;
-    x.fillStyle = on ? '#0071e3' : man ? '#0071e3' : '#86868b'; x.fillRect(lx - (on ? dpr : 0), 0, on ? 2 * dpr : 1, top);
-    // handle
-    x.beginPath(); x.moveTo(lx - 5 * dpr, 0); x.lineTo(lx + 5 * dpr, 0); x.lineTo(lx, 7 * dpr); x.closePath(); x.fill();
-    x.fillStyle = on ? '#0071e3' : '#636366'; x.fillText(String(ln.index + 1).padStart(2, '0') + (ln.interlude ? ' 間奏' : ''), lx + 4 * dpr, 17 * dpr);
+    x.fillStyle = on ? '#0071e3' : man ? '#0284c7' : '#64748b';
+    x.fillRect(lx - (on ? dpr : 0), B.rulerTop, on ? 2 * dpr : 1, B.rulerBot - B.rulerTop);
+    x.beginPath(); x.moveTo(lx - 4.5 * dpr, B.rulerTop); x.lineTo(lx + 4.5 * dpr, B.rulerTop); x.lineTo(lx, B.rulerTop + 6.5 * dpr); x.closePath(); x.fill();
+    x.fillStyle = on ? '#0071e3' : '#475569';
+    x.fillText(String(ln.index + 1).padStart(2, '0'), lx + 3 * dpr, B.rulerTop + 17.5 * dpr);
   }
-  if (TL.z > 1) {                                          // where the view sits in the whole song
-    x.fillStyle = 'rgba(0,0,0,0.06)'; x.fillRect(0, h - 2 * dpr, w, 2 * dpr);
-    x.fillStyle = '#0071e3'; x.fillRect(off / D * w, h - 2 * dpr, Math.max(4, vd / D * w), 2 * dpr);
-  }
+
+  // Active Loop Highlight
   if (S.loop === 'line' || S.loop === 'cut') {
     const r = activeLoopRange();
-    x.fillStyle = 'rgba(0,113,227,0.12)';
+    x.fillStyle = 'rgba(0,113,227,0.10)';
     x.fillRect(X(r.start), 0, Math.max(2 * dpr, X(r.end) - X(r.start)), h);
   }
+
+  // Playhead cursor
   const px = X(S.t);
-  x.fillStyle = '#0071e3'; x.fillRect(Math.round(px) - dpr, 0, 2 * dpr, h);
+  x.fillStyle = '#0071e3';
+  x.fillRect(Math.round(px) - dpr, 0, 2 * dpr, h);
+  x.beginPath(); x.moveTo(px - 5 * dpr, 0); x.lineTo(px + 5 * dpr, 0); x.lineTo(px, 6 * dpr); x.closePath(); x.fill();
 }
 function tlTime(ev) {
   const r = $('timeline').getBoundingClientRect(), { vd, off } = tlView();
   return off + J.clamp((ev.clientX - r.left) / r.width, 0, 1) * vd;
 }
 function timelineSeek(ev) { seek(tlTime(ev)); }
-/* the line whose start handle is under the pointer (top band, ±7px) */
+/* the line whose start handle is under the pointer (top ruler band, ±8px) */
 function tlHandleAt(ev) {
   const c = $('timeline'), r = c.getBoundingClientRect(), { vd, off } = tlView();
-  if (ev.clientY - r.top > r.height * 0.45) return -1;
+  if (ev.clientY - r.top > Math.max(24, r.height * 0.22)) return -1;
   let best = -1, bd = 8;
   for (const ln of S.plan.lines) { const d = Math.abs((ln.start - off) / vd * r.width - (ev.clientX - r.left)); if (d < bd) { bd = d; best = ln.index; } }
   return best;
 }
-/* word start/end handle under pointer (bottom word band) for selected line */
+/* word start/end handle under pointer (word track band 0.63..0.86) for selected line */
 function tlWHandleAt(ev) {
   const c = $('timeline'), r = c.getBoundingClientRect(), { vd, off } = tlView();
-  if (ev.clientY - r.top < r.height * 0.46) return null;
+  const yFrac = (ev.clientY - r.top) / Math.max(1, r.height);
+  if (yFrac < 0.62 || yFrac > 0.87) return null;
   const ln = (S.plan && S.plan.lines) ? S.plan.lines[EDL.lineIdx] : null;
   if (!ln || ln.interlude || !Array.isArray(ln.wordsTimed) || !ln.wordsTimed.length) return null;
   let best = null, bd = 7.5;
@@ -916,6 +1237,36 @@ function tlWHandleAt(ev) {
     if (de < bd) { bd = de; best = { lineIdx: ln.index, wordIdx: wi, edge: 'end' }; }
   });
   return best;
+}
+/* click a word box on track 3 or a character box on track 4 to select and inspect exact acoustic span */
+function tlWordBoxAt(ev) {
+  const c = $('timeline'), r = c.getBoundingClientRect();
+  const yFrac = (ev.clientY - r.top) / Math.max(1, r.height);
+  const t = tlTime(ev);
+  const L = (S.plan && S.plan.lines) || [];
+  if (yFrac >= 0.84 && yFrac <= 0.98) {
+    const ln = L[EDL.lineIdx];
+    const words = ln && !ln.interlude ? getEditableWords(ln.index) : [];
+    const w = words[EDL.wordIdx];
+    if (w) {
+      const chs = buildWordChars(w);
+      const ci = chs.findIndex(ch => t >= ch.start && t <= ch.end);
+      if (ci >= 0) return { lineIdx: ln.index, wordIdx: EDL.wordIdx, charIdx: ci };
+    }
+  }
+  if (yFrac >= 0.64 && yFrac <= 0.85) {
+    for (const ln of L) {
+      if (ln.interlude) continue;
+      const words = Array.isArray(ln.wordsTimed) ? ln.wordsTimed : getEditableWords(ln.index);
+      const wi = words.findIndex(wd => t >= wd.start && t <= wd.end);
+      if (wi >= 0) return { lineIdx: ln.index, wordIdx: wi, charIdx: -1 };
+    }
+  }
+  if (yFrac >= 0.50 && yFrac < 0.64) {
+    const ln = L.find(item => !item.interlude && t >= item.start && t <= (item.visEnd || item.end));
+    if (ln) return { lineIdx: ln.index, wordIdx: 0, charIdx: -1 };
+  }
+  return null;
 }
 function tlDragTo(i, ev) {
   let t = tlTime(ev);
@@ -1388,6 +1739,7 @@ function applyLeLabels() {
   if ($('leInsertWordText')) $('leInsertWordText').placeholder = c.insPh;
   if ($('leWordText')) $('leWordText').placeholder = c.wordPh;
   applyTapLabels();
+  applyCloudLabels();
 }
 function ensureTimingMaps() {
   if (!S.project.timing) S.project.timing = {};
@@ -1469,7 +1821,9 @@ function selectLyricWord(li, wi = 0, doSeek = false) {
   EDL.lineIdx = J.clamp(li | 0, 0, L.length - 1);
   const words = getEditableWords(EDL.lineIdx);
   EDL.wordIdx = words.length ? J.clamp(wi | 0, 0, words.length - 1) : 0;
+  TL.selCharIdx = -1;
   syncLyricsEditor();
+  syncTimelineInspector();
   drawTimeline();
   if (doSeek) {
     const ln = L[EDL.lineIdx];
@@ -1530,6 +1884,7 @@ function applyWordTimeBoundary(li, wi, edge, rawTime, opts = {}) {
   S.project.timing.wordTimes[li] = words;
   refreshStage6Validation();
   replan();
+  syncTimelineInspector();
   if (!opts.quiet) { flushSave(); seek(ws + 0.002); }
 }
 function applyLineBoundary(li, edge, rawTime) {
@@ -1865,11 +2220,12 @@ function saveCorrectedLyrics() {
   refreshStage6Validation();
   replan();
   flushSave();
+  recordWork('lyrics_edit', 'sync', ln && !ln.interlude ? `Ligne #${(ln.index || 0) + 1} validée` : 'Corrections sauvegardées');
   toast(leCopy().savedMsg);
 }
 function syncLyricsEditor() {
   const panel = $('lyricsEditorPanel');
-  if (!panel || !S.plan) return;
+  if (!panel || !S.plan) { syncTimelineInspector(); return; }
   const L = S.plan.lines || [];
   const lineSel = $('leLineSel'), strip = $('leWordStrip'), charList = $('leCharList');
   if (!L.length) {
@@ -1877,6 +2233,7 @@ function syncLyricsEditor() {
     if (lineSel) lineSel.innerHTML = '';
     if (strip) strip.innerHTML = '';
     if (charList) charList.innerHTML = '';
+    syncTimelineInspector();
     return;
   }
   EDL.lineIdx = J.clamp(EDL.lineIdx | 0, 0, L.length - 1);
@@ -1966,6 +2323,7 @@ function syncLyricsEditor() {
       });
     }
   }
+  syncTimelineInspector();
 }
 function bindLyricsEditor() {
   applyLeLabels();
@@ -2062,7 +2420,9 @@ function loadLrc(text, sub) {
 function saveLrc() {
   const R = exportRangeLines(), r = exportRange();
   const txt = J.lrcText(S.project, S.plan.lines, R ? { from: R.from, to: R.to, t0: r.t0 } : null);
-  J.saveFile(baseName() + rangeSuffix() + '.lrc', new Blob([txt], { type: 'text/plain;charset=utf-8' }));
+  const fname = baseName() + rangeSuffix() + '.lrc';
+  J.saveFile(fname, new Blob([txt], { type: 'text/plain;charset=utf-8' }));
+  recordWork('export_lrc', 'export', fname);
 }
 // 歌詞を消す: lyrics + everything tied to line numbers (times, per-line settings, export range); undoable
 function clearLyrics() {
@@ -2720,8 +3080,12 @@ async function runExport(kind) {
         const name = baseName() + rangeSuffix() + '.mp4';
         const res = await J.saveFile(name, r.blob);
         if (res === 'declined') txt.textContent += '（保存はキャンセルされました）';
+        else recordWork('export_mp4', 'export', `${name} (${(r.blob.size / 1048576).toFixed(1)} MB)`);
         offerShare(boxes, r.blob, name);
-      } else txt.textContent += `・「${fileName}」に保存しました`;
+      } else {
+        txt.textContent += `・「${fileName}」に保存しました`;
+        recordWork('export_mp4', 'export', fileName || 'MP4');
+      }
       if (r.tried && r.tried.length) txt.textContent += '（最初の方法では失敗したため、別のエンコーダーで書き出しました）';
       // audio that some players cannot play (Opus), or none at all: save the soundtrack as WAV next to it
       if (r.audioWanted && r.audio !== 'aac') {
@@ -2731,7 +3095,9 @@ async function runExport(kind) {
     } else {
       const blob = await J.exportPNGZip({ plan: S.plan, project: proj, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range: exportRange() });
       txt.textContent = `完成 ${(blob.size / 1048576).toFixed(1)}MB`;
-      await J.saveFile(baseName() + rangeSuffix() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip', blob);
+      const zname = baseName() + rangeSuffix() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip';
+      await J.saveFile(zname, blob);
+      recordWork('export_png', 'export', `${zname} (${(blob.size / 1048576).toFixed(1)} MB)`);
     }
   } catch (e) {
     txt.textContent = 'エラー: ' + (e && e.message ? e.message : e);
@@ -3410,7 +3776,10 @@ function stopTap() {
   replan();
   flushSave();
   syncLyricsEditor();
-  if (countDone > 0) toast(`${tapCopy().doneAll} (${countDone})`);
+  if (countDone > 0) {
+    recordWork('tap_sync', 'sync', `${countDone} calage(s) (${tap ? tap.mode : 'line'})`);
+    toast(`${tapCopy().doneAll} (${countDone})`);
+  }
 }
 function updateTap() {
   if (!S.tap || !S.plan) return;
@@ -3633,6 +4002,7 @@ async function runAiTranscription(opts = {}) {
       flushSave();
       syncUI();
       seek(0);
+      recordWork('ai_transcribe', 'sync', `${rows.length} ligne(s) · ${result.language || 'auto'}`);
 
       if (result.isInstrumental && !resLines.some(l => !l.isInstrumentalSection)) {
         toast(isFr ? '🎹 Audio purement instrumental détecté (aucune fausse parole ajoutée).' : isEn ? '🎹 Purely instrumental track detected.' : '🎹 检测到纯音乐伴奏段落。');
@@ -3759,6 +4129,7 @@ async function runAiTranscription(opts = {}) {
       }
 
       replan(); flushSave(); syncUI(); seek(0);
+      recordWork('ai_transcribe', 'sync', `Segments vocaux (${segs.length})`);
 
       if (result && result.billingRequired) {
         toast(isFr
@@ -3944,6 +4315,7 @@ function bind() {
             if (S.project.detection) S.project.detection.validationSummary = val.validationSummary;
           }
           replan(); flushSave(); syncUI();
+          recordWork('vocal_sync', 'sync', `${Object.keys(times).length} lignes alignées`);
           toast(isFr ? "🎤 Synchronisation vocale et karaoké réussie !" : isEn ? '🎤 Word-level vocal synchronization complete!' : '🎤 已完成人声歌词与逐词卡拉OK精准对齐！');
         } else {
           toast(isFr ? "Échec de la synchronisation vocale" : isEn ? 'Could not synchronize vocals' : '未能成功识别人声同步');
@@ -4043,6 +4415,11 @@ function bind() {
       if (h >= 0) { pushEdit(); TL.drag = h; pause(); tl.style.cursor = 'ew-resize'; return; }
       const wh = tlWHandleAt(e);
       if (wh) { pushEdit(); TL.wDrag = wh; selectLyricWord(wh.lineIdx, wh.wordIdx, false); pause(); tl.style.cursor = 'ew-resize'; return; }
+      const wb = tlWordBoxAt(e);
+      if (wb) {
+        if (wb.lineIdx !== EDL.lineIdx || wb.wordIdx !== EDL.wordIdx) selectLyricWord(wb.lineIdx, wb.wordIdx, false);
+        if (wb.charIdx >= 0) { TL.selCharIdx = wb.charIdx; syncTimelineInspector(); drawTimeline(); }
+      }
     }
     drag = true; timelineSeek(e);
   });
@@ -4077,6 +4454,38 @@ function bind() {
   $('tlIn').addEventListener('click', () => tlZoom(1.6));
   $('tlOut').addEventListener('click', () => tlZoom(1 / 1.6));
   $('tlFit').addEventListener('click', () => { TL.z = 1; TL.off = 0; drawTimeline(); });
+  if ($('tlZoomWord')) $('tlZoomWord').addEventListener('click', () => tlFocusWord());
+  if ($('tlShowWave')) $('tlShowWave').addEventListener('change', e => { TL.showWave = !!e.target.checked; drawTimeline(); });
+  if ($('tlShowVocal')) $('tlShowVocal').addEventListener('change', e => { TL.showVocal = !!e.target.checked; drawTimeline(); });
+  if ($('tlFollow')) $('tlFollow').addEventListener('change', e => { TL.follow = !!e.target.checked; });
+  if ($('tlPlayWordBtn')) $('tlPlayWordBtn').addEventListener('click', () => {
+    const words = getEditableWords(EDL.lineIdx);
+    const w = words[EDL.wordIdx];
+    if (w) playRange(Math.max(0, w.start - 0.12), w.end + 0.12);
+  });
+  const bindTlMsInput = (id, edge) => {
+    const inp = $(id);
+    if (!inp) return;
+    const commitMs = () => {
+      const parsed = J.parseTimeMs ? J.parseTimeMs(inp.value) : parseFloat(inp.value);
+      if (parsed == null) { syncTimelineInspector(); return; }
+      applyWordTimeBoundary(EDL.lineIdx, EDL.wordIdx, edge, parsed);
+    };
+    inp.addEventListener('change', commitMs);
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commitMs(); inp.blur(); } });
+  };
+  bindTlMsInput('tlWordStartMs', 'start');
+  bindTlMsInput('tlWordEndMs', 'end');
+  document.querySelectorAll('#tlInspector [data-tl-nudge]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const edge = btn.dataset.tlNudge === 'start' ? 'start' : 'end';
+      const delta = parseFloat(btn.dataset.delta) || 0;
+      const words = getEditableWords(EDL.lineIdx);
+      const w = words[EDL.wordIdx]; if (!w) return;
+      const base = edge === 'start' ? Number(w.start) : Number(w.end);
+      applyWordTimeBoundary(EDL.lineIdx, EDL.wordIdx, edge, +(base + delta).toFixed(3));
+    });
+  });
   const btnUndoEdit = $('btnUndoEdit'); if (btnUndoEdit) btnUndoEdit.addEventListener('click', () => edGo(-1));
   const tapBackBtn = $('tapBack'); if (tapBackBtn) tapBackBtn.addEventListener('click', tapBack);
   bindLyricsEditor();
@@ -4188,8 +4597,16 @@ function bind() {
   const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
-  $('btnSave').addEventListener('click', () => J.saveFile(baseName() + '.jizura.json', JSON.stringify(Object.assign({}, S.project, { appVersion: '@VERSION@' }), null, 1)));
-  $('btnAE').addEventListener('click', () => J.saveFile(baseName() + rangeSuffix() + '_ae.json', JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1)));
+  $('btnSave').addEventListener('click', () => {
+    const fn = baseName() + '.jizura.json';
+    J.saveFile(fn, JSON.stringify(Object.assign({}, S.project, { appVersion: '@VERSION@' }), null, 1));
+    recordWork('export_json', 'export', fn);
+  });
+  $('btnAE').addEventListener('click', () => {
+    const fn = baseName() + rangeSuffix() + '_ae.json';
+    J.saveFile(fn, JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1));
+    recordWork('export_ae', 'export', fn);
+  });
   audioNameDefault = $('audioName').textContent;
   $('btnClearLyrics').addEventListener('click', clearLyrics);
   document.querySelectorAll('.themeSel').forEach(el => el.addEventListener('change', () => {
@@ -4220,7 +4637,7 @@ function bind() {
     if (S.tap && e.code === 'Tab' && !typing) { e.preventDefault(); tapCut(); return; }
     if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ' && !typing && !S.tap) { e.preventDefault(); edGo(e.shiftKey ? 1 : -1); return; }
     if ((e.ctrlKey || e.metaKey) && e.code === 'KeyY' && !typing && !S.tap) { e.preventDefault(); edGo(1); return; }
-    if (typing || $('termsDlg').open || $('resetDlg').open) return;
+    if (typing || $('termsDlg').open || $('resetDlg').open || ($('cloudDlg') && $('cloudDlg').open)) return;
     if (e.code === 'Space') { e.preventDefault(); S.playing ? pause() : play(); }
     else if (e.code === 'ArrowRight') seek(S.t + (e.shiftKey ? 1 : 1 / S.plan.fps));
     else if (e.code === 'ArrowLeft') seek(S.t - (e.shiftKey ? 1 : 1 / S.plan.fps));
@@ -4298,6 +4715,7 @@ async function loadAudioFile(f, restored) {
     const a = await J.analyzeAudio(f);
     if (my !== audioSeq) return false;
     S.audio = a;
+    S.audioFile = f || null;
     $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)}・約${S.audio.bpm}BPM）` + (restored ? '・前回の曲' : '');
     S.project.audioName = f.name;
     if (!restored && J.saveSong) J.saveSong(f);             // kept in this browser: a reload does not drop the song from exports
@@ -4421,10 +4839,980 @@ async function restoreFonts() {
   if (missing.length) toast(`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`);
 }
 
+/* ---------------- Google Auth, Personal Library, Work History & Vercel Hub ---------------- */
+const LS_VERCEL = 'jizura.vercelCfg.v1';
+const LS_FBAUTO = 'jizura.fbAutoSave.v1';
+const LS_HISTORY = 'jizura.localHistory.v1';
+let cloudSongsUnsub = null;
+let cloudHistoryUnsub = null;
+let cloudActiveTab = 'songs';
+
+function cloudCopy() {
+  const lang = document.documentElement.lang || 'ja';
+  if (lang === 'fr') {
+    return {
+      gLogin: 'Connexion Google',
+      btnTop: '☁ Sauvegarder',
+      btnHub: '📚 Projets & Historique',
+      title: '☁ Espace Personnel Google — Enregistrements & Historique',
+      fbSec: '🔐 Compte Google & Sauvegarde Firebase',
+      signedOut: 'Non connecté',
+      signedIn: 'Connecté',
+      signIn: 'Se connecter avec Google',
+      switchAcc: 'Changer de compte',
+      signInHint: 'Connectez votre compte Google pour sauvegarder, retrouver et télécharger toutes vos chansons et votre historique.',
+      signOut: 'Déconnexion',
+      saveSong: '☁ Sauvegarder cette chanson',
+      saveNew: '+ Nouvelle copie',
+      autoSave: 'Sauvegarde auto',
+      tabSongs: 'Mes Enregistrements',
+      tabHistory: 'Historique des Travaux',
+      tabVercel: 'Vercel & Sync',
+      searchSongsPh: 'Rechercher par titre, artiste, paroles…',
+      searchHistPh: 'Rechercher dans votre historique…',
+      clearHist: '🗑 Vider',
+      histCleared: '🗑 Historique effacé.',
+      noSongs: 'Aucune chanson enregistrée pour ce compte Google pour l’instant.',
+      noHist: 'Aucun travail enregistré dans l’historique pour l’instant.',
+      loadBtn: 'Ouvrir',
+      dlAudio: '⬇ Audio',
+      dlLrc: '⬇ LRC',
+      dlSrt: '⬇ SRT',
+      dlJson: '⬇ JSON',
+      syncBtn: 'Vercel',
+      delBtn: 'Supprimer',
+      findSongBtn: 'Retrouver',
+      vSec: '▲ Vercel — Liaison & Déploiement',
+      vProj: 'Nom du projet Vercel',
+      vUrl: 'URL de votre app Vercel',
+      vHook: 'Vercel Deploy Hook URL (optionnel)',
+      vAuto: 'Synchroniser automatiquement vers Vercel après chaque sauvegarde Firebase',
+      vSave: '💾 Enregistrer config Vercel',
+      vTest: '🔌 Tester Vercel',
+      vSync: '📤 Synchroniser la chanson',
+      vDeploy: '🚀 Déployer sur Vercel',
+      vOpen: '↗ Ouvrir Vercel',
+      saving: 'Enregistrement sur Firebase…',
+      savedOk: '☁ Chanson et données enregistrées sur Firebase !',
+      savedNoAudio: '☁ Projet enregistré sur Firebase (audio trop lourd > 20 Mo conservé en local).',
+      loadedOk: '☁ Chanson chargée depuis votre compte Google !',
+      deletedOk: '🗑 Chanson supprimée de Firebase.',
+      dlOk: '⬇ Téléchargement lancé :',
+      dlNoAudio: 'Aucun fichier audio stocké sur le cloud pour cette entrée (téléchargez LRC, SRT ou JSON).',
+      vSavedOk: '✓ Configuration Vercel enregistrée.',
+      vTestOk: '✓ App Vercel joignable',
+      vTestLocal: '✓ Endpoints /api/* prêts sur ce serveur (renseignez votre URL Vercel pour tester l’app distante).',
+      vSyncOk: '📤 Chanson synchronisée vers Vercel !',
+      vDeployOk: '🚀 Déploiement Vercel déclenché !',
+      vNeedUrl: 'Renseignez une URL HTTPS Vercel valide (ex: https://mon-app.vercel.app).',
+      vNeedHook: 'Renseignez votre Vercel Deploy Hook URL pour déclencher un déploiement.',
+      actLabels: {
+        cloud_save: '☁ Sauvegarde Cloud',
+        cloud_load: '📂 Chanson ouverte',
+        ai_transcribe: '✨ Détection IA & Sync',
+        vocal_sync: '⚡ Synchro vocale',
+        tap_sync: '⏱ Synchro au Tap',
+        lyrics_edit: '✏ Édition paroles',
+        export_mp4: '🎬 Export MP4',
+        export_png: '🖼 Export PNG ZIP',
+        export_lrc: '📝 Téléch. LRC',
+        export_srt: '💬 Téléch. SRT',
+        export_json: '📦 Export JSON',
+        export_ae: '🎞 Export AE',
+        export_audio: '🎵 Téléch. Audio',
+        vercel_sync: '▲ Sync Vercel',
+        vercel_deploy: '🚀 Déploiement Vercel',
+      },
+      catLabels: { save: 'Sauvegarde', sync: 'IA & Synchro', export: 'Export / Téléch.', vercel: 'Vercel' },
+    };
+  }
+  if (lang === 'en') {
+    return {
+      gLogin: 'Google Sign-In',
+      btnTop: '☁ Save',
+      btnHub: '📚 Library & History',
+      title: '☁ Google Workspace — Saved Songs & Work History',
+      fbSec: '🔐 Google Account & Firebase Storage',
+      signedOut: 'Signed out',
+      signedIn: 'Connected',
+      signIn: 'Sign in with Google',
+      switchAcc: 'Switch account',
+      signInHint: 'Sign in with your Google account to save, find, and download all your songs and work history.',
+      signOut: 'Sign out',
+      saveSong: '☁ Save current song',
+      saveNew: '+ Save new copy',
+      autoSave: 'Auto-save',
+      tabSongs: 'Saved Songs',
+      tabHistory: 'Work History',
+      tabVercel: 'Vercel & Sync',
+      searchSongsPh: 'Search by title, artist, lyrics…',
+      searchHistPh: 'Search your work history…',
+      clearHist: '🗑 Clear',
+      histCleared: '🗑 Work history cleared.',
+      noSongs: 'No songs saved to this Google account yet.',
+      noHist: 'No activity history recorded yet.',
+      loadBtn: 'Open',
+      dlAudio: '⬇ Audio',
+      dlLrc: '⬇ LRC',
+      dlSrt: '⬇ SRT',
+      dlJson: '⬇ JSON',
+      syncBtn: 'Vercel',
+      delBtn: 'Delete',
+      findSongBtn: 'Open Song',
+      vSec: '▲ Vercel — Connection & Deploy',
+      vProj: 'Vercel Project Name',
+      vUrl: 'Vercel App URL',
+      vHook: 'Vercel Deploy Hook URL (optional)',
+      vAuto: 'Automatically sync to Vercel after each Firebase save',
+      vSave: '💾 Save Vercel config',
+      vTest: '🔌 Test Vercel',
+      vSync: '📤 Sync song to Vercel',
+      vDeploy: '🚀 Deploy to Vercel',
+      vOpen: '↗ Open Vercel',
+      saving: 'Saving to Firebase…',
+      savedOk: '☁ Song & data saved to Firebase!',
+      savedNoAudio: '☁ Project saved to Firebase (audio > 20 MB kept locally).',
+      loadedOk: '☁ Song loaded from your Google account!',
+      deletedOk: '🗑 Song deleted from Firebase.',
+      dlOk: '⬇ Download started:',
+      dlNoAudio: 'No cloud audio stored for this song (download LRC, SRT, or JSON instead).',
+      vSavedOk: '✓ Vercel settings saved.',
+      vTestOk: '✓ Vercel app reachable',
+      vTestLocal: '✓ Local /api/* endpoints ready (enter your Vercel URL to ping your deployed app).',
+      vSyncOk: '📤 Song synced to Vercel!',
+      vDeployOk: '🚀 Vercel deployment triggered!',
+      vNeedUrl: 'Enter a valid HTTPS Vercel app URL (e.g. https://my-app.vercel.app).',
+      vNeedHook: 'Enter your Vercel Deploy Hook URL first.',
+      actLabels: {
+        cloud_save: '☁ Cloud Save',
+        cloud_load: '📂 Song Opened',
+        ai_transcribe: '✨ AI Lyrics & Sync',
+        vocal_sync: '⚡ Vocal Sync',
+        tap_sync: '⏱ Tap Sync',
+        lyrics_edit: '✏ Lyrics Edit',
+        export_mp4: '🎬 MP4 Export',
+        export_png: '🖼 PNG ZIP Export',
+        export_lrc: '📝 LRC Download',
+        export_srt: '💬 SRT Download',
+        export_json: '📦 JSON Export',
+        export_ae: '🎞 AE Export',
+        export_audio: '🎵 Audio Download',
+        vercel_sync: '▲ Vercel Sync',
+        vercel_deploy: '🚀 Vercel Deploy',
+      },
+      catLabels: { save: 'Save', sync: 'AI & Sync', export: 'Download', vercel: 'Vercel' },
+    };
+  }
+  return {
+    gLogin: 'Googleログイン',
+    btnTop: '☁ 保存',
+    btnHub: '📚 曲・履歴',
+    title: '☁ Google アカウント — 保存済みの曲・作業履歴',
+    fbSec: '🔐 Google ログイン & Firebase 保存',
+    signedOut: '未ログイン',
+    signedIn: '接続済み',
+    signIn: 'Googleでログイン',
+    switchAcc: 'アカウント切替',
+    signInHint: 'Googleアカウントでログインすると、すべての曲・音声・履歴を保存・検索・ダウンロードできます。',
+    signOut: 'ログアウト',
+    saveSong: '☁ この曲を保存',
+    saveNew: '+ 別名で新規保存',
+    autoSave: '自動保存',
+    tabSongs: '保存済みの曲',
+    tabHistory: '作業履歴',
+    tabVercel: 'Vercel連携',
+    searchSongsPh: '曲名・アーティスト・歌詞で検索…',
+    searchHistPh: '履歴を検索…',
+    clearHist: '🗑 履歴を消去',
+    histCleared: '🗑 履歴を消去しました。',
+    noSongs: 'このGoogleアカウントに保存された曲はまだありません。',
+    noHist: 'まだ作業履歴はありません。',
+    loadBtn: '開く',
+    dlAudio: '⬇ Audio',
+    dlLrc: '⬇ LRC',
+    dlSrt: '⬇ SRT',
+    dlJson: '⬇ JSON',
+    syncBtn: 'Vercel',
+    delBtn: '削除',
+    findSongBtn: '曲を開く',
+    vSec: '▲ Vercel — 連携・デプロイ',
+    vProj: 'Vercel プロジェクト名',
+    vUrl: 'Vercel アプリURL',
+    vHook: 'Vercel Deploy Hook URL（任意）',
+    vAuto: 'Firebase保存時にVercelへ自動同期する',
+    vSave: '💾 Vercel設定を保存',
+    vTest: '🔌 接続テスト',
+    vSync: '📤 Vercelへ同期',
+    vDeploy: '🚀 Vercelデプロイ',
+    vOpen: '↗ Vercelを開く',
+    saving: 'Firebaseに保存中…',
+    savedOk: '☁ 曲とデータをFirebaseに保存しました！',
+    savedNoAudio: '☁ プロジェクトをFirebaseに保存しました（大容量音声はローカル保持）。',
+    loadedOk: '☁ Googleアカウントから曲を読み込みました！',
+    deletedOk: '🗑 Firebaseから削除しました。',
+    dlOk: '⬇ ダウンロード開始:',
+    dlNoAudio: 'この曲にはクラウド音声が保存されていません（LRC / SRT / JSON はダウンロード可能）。',
+    vSavedOk: '✓ Vercel設定を保存しました。',
+    vTestOk: '✓ Vercelアプリへ接続できました',
+    vTestLocal: '✓ ローカル /api/* 準備完了（デプロイ先URLを入力すると疎通確認できます）。',
+    vSyncOk: '📤 Vercelへ同期しました！',
+    vDeployOk: '🚀 Vercelデプロイを開始しました！',
+    vNeedUrl: '有効な HTTPS Vercel URL を入力してください。',
+    vNeedHook: 'Vercel Deploy Hook URL を入力してください。',
+    actLabels: {
+      cloud_save: '☁ クラウド保存',
+      cloud_load: '📂 曲を読み込み',
+      ai_transcribe: '✨ AI識詞・同期',
+      vocal_sync: '⚡ ボーカル同期',
+      tap_sync: '⏱ タップ同期',
+      lyrics_edit: '✏ 歌詞編集',
+      export_mp4: '🎬 MP4書き出し',
+      export_png: '🖼 PNG書き出し',
+      export_lrc: '📝 LRC保存',
+      export_srt: '💬 SRT保存',
+      export_json: '📦 JSON保存',
+      export_ae: '🎞 AE書き出し',
+      export_audio: '🎵 音声保存',
+      vercel_sync: '▲ Vercel同期',
+      vercel_deploy: '🚀 Vercelデプロイ',
+    },
+    catLabels: { save: '保存', sync: 'AI・同期', export: '書き出し', vercel: 'Vercel' },
+  };
+}
+function syncHeaderGoogleAuth(user) {
+  const c = cloudCopy();
+  const btnG = $('btnGoogleAuth'), lblG = $('hdrGoogleLabel'), avG = $('hdrGoogleAvatar');
+  if (btnG) btnG.classList.toggle('is-online', !!user);
+  if ($('btnCloudHub')) $('btnCloudHub').classList.toggle('is-online', !!user);
+  if (lblG) {
+    lblG.textContent = user ? (user.displayName || user.email || c.signedIn).split(/\s+/)[0].slice(0, 18) : c.gLogin;
+  }
+  if (avG) {
+    if (user && user.photoURL) { avG.src = user.photoURL; avG.hidden = false; }
+    else { avG.hidden = true; avG.removeAttribute('src'); }
+  }
+}
+function applyCloudLabels() {
+  const c = cloudCopy();
+  const setT = (id, t) => { const el = $(id); if (el) el.textContent = t; };
+  setT('btnCloudSave', c.btnTop);
+  setT('btnCloudHub', c.btnHub);
+  setT('cloudTitle', c.title);
+  setT('lblFbSection', c.fbSec);
+  setT('fbAuthStatus', S.cloudUser ? c.signedIn : c.signedOut);
+  setT('btnFbSignIn', c.signIn);
+  setT('btnFbSwitchAccount', c.switchAcc);
+  setT('fbSignInHint', c.signInHint);
+  setT('btnFbSignOut', c.signOut);
+  setT('btnFbSaveSong', c.saveSong);
+  setT('btnFbSaveNew', c.saveNew);
+  setT('lblFbAutoSave', c.autoSave);
+  setT('lblTabSongs', c.tabSongs);
+  setT('lblTabHistory', c.tabHistory);
+  setT('lblTabVercel', c.tabVercel);
+  setT('btnClearCloudHistory', c.clearHist);
+  if ($('cloudSongSearch')) $('cloudSongSearch').placeholder = c.searchSongsPh;
+  if ($('cloudHistorySearch')) $('cloudHistorySearch').placeholder = c.searchHistPh;
+  setT('lblVercelSection', c.vSec);
+  setT('lblVercelProj', c.vProj);
+  setT('lblVercelUrl', c.vUrl);
+  setT('lblVercelHook', c.vHook);
+  setT('lblVercelAutoSync', c.vAuto);
+  setT('btnVercelSave', c.vSave);
+  setT('btnVercelTest', c.vTest);
+  setT('btnVercelSync', c.vSync);
+  setT('btnVercelDeploy', c.vDeploy);
+  setT('vercelOpenLink', c.vOpen);
+  syncHeaderGoogleAuth(S.cloudUser);
+}
+function setCloudTab(tab) {
+  cloudActiveTab = tab === 'history' || tab === 'vercel' ? tab : 'songs';
+  const tabs = [
+    ['songs', 'tabCloudSongs', 'panelCloudSongs'],
+    ['history', 'tabCloudHistory', 'panelCloudHistory'],
+    ['vercel', 'tabCloudVercel', 'panelCloudVercel'],
+  ];
+  tabs.forEach(([key, tid, pid]) => {
+    const active = key === cloudActiveTab;
+    const tb = $(tid), pn = $(pid);
+    if (tb) { tb.classList.toggle('is-active', active); tb.setAttribute('aria-selected', String(active)); }
+    if (pn) pn.hidden = !active;
+  });
+}
+function showCloudError(err) {
+  const box = $('cloudErrorBox');
+  if (!box) return;
+  if (!err) { box.hidden = true; box.textContent = ''; return; }
+  let msg = err instanceof Error ? err.message : String(err);
+  try {
+    const parsed = JSON.parse(msg);
+    if (parsed && parsed.error) msg = `${parsed.error}${parsed.path ? ' (' + parsed.path + ')' : ''}`;
+  } catch (e) {}
+  box.textContent = msg;
+  box.hidden = false;
+}
+function readLocalHistory() {
+  try {
+    const arr = JSON.parse(localStorage.getItem(LS_HISTORY) || '[]');
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) { return []; }
+}
+function writeLocalHistory(arr) {
+  try { localStorage.setItem(LS_HISTORY, JSON.stringify((arr || []).slice(0, 80))); } catch (e) {}
+}
+function formatWhen(ts) {
+  let ms = 0;
+  if (typeof ts === 'number') ms = ts;
+  else if (ts && typeof ts.toMillis === 'function') ms = ts.toMillis();
+  else if (typeof ts === 'string') ms = Date.parse(ts) || 0;
+  if (!ms) return '';
+  try {
+    const d = new Date(ms);
+    return d.toLocaleDateString([], { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch (e) { return ''; }
+}
+async function recordWork(action, category = 'save', details = '', songIdOverride = null) {
+  const title = (S.project && S.project.title) || (S.audioFile && S.audioFile.name) || 'Sans titre';
+  const artist = (S.project && S.project.artist) || '';
+  const songId = songIdOverride !== null ? String(songIdOverride || '') : String(S.cloudSongId || '');
+  const entry = {
+    historyId: 'local_' + Date.now().toString(36),
+    action: String(action || 'work'),
+    category: String(category || 'save'),
+    songId,
+    songTitle: String(title).slice(0, 200),
+    artist: String(artist).slice(0, 200),
+    details: String(details || '').slice(0, 500),
+    localTs: Date.now(),
+  };
+  const local = [entry, ...readLocalHistory()].slice(0, 80);
+  writeLocalHistory(local);
+  if (!S.cloudUser) {
+    renderWorkHistory([]);
+  } else if (window.AlexuraCloud && typeof window.AlexuraCloud.logWorkHistory === 'function') {
+    window.AlexuraCloud.logWorkHistory({
+      action: entry.action,
+      category: entry.category,
+      songId: entry.songId,
+      songTitle: entry.songTitle,
+      artist: entry.artist,
+      details: entry.details,
+    }).catch(() => {});
+  }
+}
+function srtTextFromProject(proj) {
+  const parsed = J.parseLyrics((proj && proj.lyrics) || '');
+  const tm = J.computeTiming(proj, parsed, null);
+  const stamp = t => {
+    const x = Math.max(0, Number(t) || 0);
+    const h = Math.floor(x / 3600);
+    const m = Math.floor((x % 3600) / 60);
+    const s = Math.floor(x % 60);
+    const ms = Math.round((x - Math.floor(x)) * 1000) % 1000;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')},${String(ms).padStart(3, '0')}`;
+  };
+  const out = [];
+  let n = 1;
+  parsed.lines.forEach((ln, idx) => {
+    if (ln.interlude || !String(ln.text || '').trim()) return;
+    const st = tm.starts[idx] ?? 0;
+    const en = (proj.timing && proj.timing.lineEnds && proj.timing.lineEnds[idx] != null)
+      ? Number(proj.timing.lineEnds[idx])
+      : (idx < parsed.lines.length - 1 ? (tm.starts[idx + 1] ?? st + 3) : st + 3.5);
+    out.push(`${n++}\n${stamp(st)} --> ${stamp(Math.max(st + 0.25, en))}\n${ln.text}\n`);
+  });
+  return out.join('\n');
+}
+async function downloadCloudSongArtifact(song, kind) {
+  const c = cloudCopy();
+  const proj = mergeProject((song && song.project) || {});
+  const slug = String((song && song.title) || proj.title || 'alexura').replace(/[\\/:*?"<>|]/g, '_').slice(0, 60) || 'alexura';
+  if (kind === 'lrc') {
+    const txt = J.lrcText(proj);
+    const fname = `${slug}.lrc`;
+    await J.saveFile(fname, new Blob([txt], { type: 'text/plain;charset=utf-8' }));
+    recordWork('export_lrc', 'export', fname, song.songId || '');
+    toast(`${c.dlOk} ${fname}`);
+    return;
+  }
+  if (kind === 'srt') {
+    const txt = srtTextFromProject(proj);
+    const fname = `${slug}.srt`;
+    await J.saveFile(fname, new Blob([txt], { type: 'text/plain;charset=utf-8' }));
+    recordWork('export_srt', 'export', fname, song.songId || '');
+    toast(`${c.dlOk} ${fname}`);
+    return;
+  }
+  if (kind === 'json') {
+    const fname = `${slug}.alexura.json`;
+    await J.saveFile(fname, new Blob([JSON.stringify(proj, null, 2)], { type: 'application/json;charset=utf-8' }));
+    recordWork('export_json', 'export', fname, song.songId || '');
+    toast(`${c.dlOk} ${fname}`);
+    return;
+  }
+  if (kind === 'audio') {
+    if (!song || !song.hasAudioChunks || !window.AlexuraCloud) {
+      toast(c.dlNoAudio);
+      return;
+    }
+    try {
+      const res = await window.AlexuraCloud.loadSongFromCloud(song.songId);
+      if (res && res.audioFile) {
+        const fname = res.audioFile.name || `${slug}.mp3`;
+        await J.saveFile(fname, res.audioFile);
+        recordWork('export_audio', 'export', fname, song.songId || '');
+        toast(`${c.dlOk} ${fname}`);
+      } else {
+        toast(c.dlNoAudio);
+      }
+    } catch (err) {
+      showCloudError(err);
+    }
+  }
+}
+function readLocalVercelCfg() {
+  try {
+    const o = JSON.parse(localStorage.getItem(LS_VERCEL) || 'null');
+    if (o && typeof o === 'object') return o;
+  } catch (e) {}
+  return { projectName: 'alexura', appUrl: '', deployHookUrl: '', autoSync: false };
+}
+function applyVercelInputs(cfg) {
+  if (!cfg) return;
+  if ($('vercelProjectName')) $('vercelProjectName').value = cfg.projectName || 'alexura';
+  if ($('vercelAppUrl')) $('vercelAppUrl').value = cfg.appUrl || '';
+  if ($('vercelHookUrl')) $('vercelHookUrl').value = cfg.deployHookUrl || '';
+  if ($('vercelAutoSync')) $('vercelAutoSync').checked = !!cfg.autoSync;
+  const link = $('vercelOpenLink');
+  if (link) {
+    try {
+      const u = cfg.appUrl && /^https:\/\//i.test(cfg.appUrl.trim()) ? new URL(cfg.appUrl.trim()).toString() : 'https://vercel.com/new';
+      link.href = u;
+    } catch (e) { link.href = 'https://vercel.com/new'; }
+  }
+}
+function collectVercelInputs() {
+  return {
+    projectName: ($('vercelProjectName') ? $('vercelProjectName').value.trim() : '') || 'alexura',
+    appUrl: $('vercelAppUrl') ? $('vercelAppUrl').value.trim() : '',
+    deployHookUrl: $('vercelHookUrl') ? $('vercelHookUrl').value.trim() : '',
+    autoSync: !!($('vercelAutoSync') && $('vercelAutoSync').checked),
+  };
+}
+function openCloudHub(tabName = null) {
+  const dlg = $('cloudDlg');
+  if (!dlg) return;
+  applyCloudLabels();
+  showCloudError(null);
+  applyVercelInputs(readLocalVercelCfg());
+  if (tabName) setCloudTab(tabName);
+  renderCloudSongs(S.cloudSongs);
+  renderWorkHistory(S.cloudHistory);
+  if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', '');
+  if ($('btnCloudHub')) $('btnCloudHub').setAttribute('aria-expanded', 'true');
+  refreshServerCapabilities();
+}
+function closeCloudHub() {
+  const dlg = $('cloudDlg');
+  if (!dlg) return;
+  if (dlg.close) dlg.close(); else dlg.removeAttribute('open');
+  if ($('btnCloudHub')) $('btnCloudHub').setAttribute('aria-expanded', 'false');
+}
+async function refreshServerCapabilities() {
+  try {
+    const r = await fetch('/api/health');
+    if (!r.ok) return;
+    const h = await r.json();
+    if ($('vercelConnBadge')) {
+      const fbProj = window.AlexuraCloud && window.AlexuraCloud.config ? window.AlexuraCloud.config.projectId : 'firebase';
+      $('vercelConnBadge').textContent = h.vercelConnected ? `Vercel connecté · ${fbProj}` : `Vercel prêt (/api/*) · ${fbProj}`;
+    }
+    if (h.vercelUrl && $('vercelAppUrl') && !$('vercelAppUrl').value.trim()) {
+      $('vercelAppUrl').value = h.vercelUrl;
+    }
+  } catch (e) {}
+}
+function renderCloudSongs(songs) {
+  S.cloudSongs = Array.isArray(songs) ? songs : S.cloudSongs;
+  const all = S.cloudSongs || [];
+  if ($('fbSongsCount')) $('fbSongsCount').textContent = String(all.length);
+  const listEl = $('cloudSongsList');
+  if (!listEl) return;
+  const c = cloudCopy();
+  const q = ($('cloudSongSearch') ? $('cloudSongSearch').value : '').trim().toLowerCase();
+  const flt = $('cloudSongFilter') ? $('cloudSongFilter').value : 'all';
+  const srt = $('cloudSongSort') ? $('cloudSongSort').value : 'recent';
+
+  let filtered = all.filter(s => {
+    if (flt === 'audio' && !s.hasAudioChunks) return false;
+    if (flt === 'timed' && !String(s.lyrics || '').trim()) return false;
+    if (q) {
+      const hay = `${s.title || ''} ${s.artist || ''} ${s.audioName || ''} ${s.lyrics || ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  filtered = filtered.slice().sort((a, b) => {
+    if (srt === 'title') return String(a.title || '').localeCompare(String(b.title || ''));
+    if (srt === 'duration') return (Number(b.duration) || 0) - (Number(a.duration) || 0);
+    const ta = (a.updatedAt && typeof a.updatedAt.toMillis === 'function') ? a.updatedAt.toMillis() : 0;
+    const tb = (b.updatedAt && typeof b.updatedAt.toMillis === 'function') ? b.updatedAt.toMillis() : 0;
+    return tb - ta;
+  });
+
+  listEl.innerHTML = '';
+  if (!filtered.length) {
+    const emp = document.createElement('div');
+    emp.className = 'muted';
+    emp.style.fontSize = '12px';
+    emp.textContent = S.cloudUser ? c.noSongs : c.signInHint;
+    listEl.appendChild(emp);
+    return;
+  }
+  filtered.forEach((s) => {
+    const row = document.createElement('div');
+    row.className = 'cloud-song-item' + (s.songId === S.cloudSongId ? ' is-active' : '');
+    const info = document.createElement('div');
+    info.className = 'cloud-song-info';
+    const ttl = document.createElement('div');
+    ttl.className = 'cloud-song-title';
+    ttl.textContent = s.title || s.audioName || s.songId;
+    const meta = document.createElement('div');
+    meta.className = 'cloud-song-meta mono';
+    const durTxt = s.duration ? J.fmtTime(Number(s.duration)) : '00:00';
+    const bpmTxt = s.bpm ? `${Math.round(Number(s.bpm))} BPM` : '';
+    const audTxt = s.hasAudioChunks ? '🎵 Audio' : '📝 Paroles';
+    const wMap = s.project && s.project.timing && s.project.timing.wordTimes ? s.project.timing.wordTimes : null;
+    const wCount = wMap ? Object.values(wMap).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0) : 0;
+    const wTxt = wCount ? `${wCount} mots` : '';
+    const dtTxt = formatWhen(s.updatedAt);
+    meta.textContent = [s.artist || 'Alexura', durTxt, bpmTxt, wTxt, audTxt, dtTxt].filter(Boolean).join(' · ');
+    info.append(ttl, meta);
+
+    const acts = document.createElement('div');
+    acts.className = 'cloud-song-acts';
+    const mkBtn = (cls, txt, fn) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = cls; b.textContent = txt;
+      b.addEventListener('click', fn);
+      return b;
+    };
+    acts.append(mkBtn('primary small', c.loadBtn, () => loadCloudSongIntoStudio(s.songId)));
+    if (s.hasAudioChunks) acts.append(mkBtn('ghost small cloud-dl-btn', c.dlAudio, () => downloadCloudSongArtifact(s, 'audio')));
+    acts.append(mkBtn('ghost small cloud-dl-btn', c.dlLrc, () => downloadCloudSongArtifact(s, 'lrc')));
+    acts.append(mkBtn('ghost small cloud-dl-btn', c.dlSrt, () => downloadCloudSongArtifact(s, 'srt')));
+    acts.append(mkBtn('ghost small cloud-dl-btn', c.dlJson, () => downloadCloudSongArtifact(s, 'json')));
+    acts.append(mkBtn('ghost small cloud-dl-btn', c.syncBtn, () => syncSongToVercel(s.songId, s)));
+    acts.append(mkBtn('ghost small cloud-dl-btn', c.delBtn, async () => {
+      if (!window.AlexuraCloud) return;
+      try {
+        showCloudError(null);
+        await window.AlexuraCloud.deleteSongFromCloud(s.songId);
+        if (S.cloudSongId === s.songId) S.cloudSongId = null;
+        if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = S.cloudSongId || '';
+        toast(c.deletedOk);
+      } catch (err) {
+        showCloudError(err);
+      }
+    }));
+    row.append(info, acts);
+    listEl.appendChild(row);
+  });
+}
+function renderWorkHistory(entries) {
+  if (Array.isArray(entries)) S.cloudHistory = entries;
+  const src = S.cloudUser ? (S.cloudHistory || []) : readLocalHistory();
+  if ($('fbHistoryCount')) $('fbHistoryCount').textContent = String(src.length);
+  const listEl = $('cloudHistoryList');
+  if (!listEl) return;
+  const c = cloudCopy();
+  const q = ($('cloudHistorySearch') ? $('cloudHistorySearch').value : '').trim().toLowerCase();
+  const cat = $('cloudHistoryFilter') ? $('cloudHistoryFilter').value : 'all';
+
+  const filtered = src.filter(h => {
+    if (cat !== 'all' && h.category !== cat) return false;
+    if (q) {
+      const hay = `${h.songTitle || ''} ${h.artist || ''} ${h.details || ''} ${h.action || ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  listEl.innerHTML = '';
+  if (!filtered.length) {
+    const emp = document.createElement('div');
+    emp.className = 'muted';
+    emp.style.fontSize = '12px';
+    emp.textContent = c.noHist;
+    listEl.appendChild(emp);
+    return;
+  }
+  filtered.forEach((h) => {
+    const row = document.createElement('div');
+    row.className = 'cloud-song-item';
+    const info = document.createElement('div');
+    info.className = 'cloud-song-info';
+
+    const ttl = document.createElement('div');
+    ttl.className = 'cloud-song-title';
+    const bdg = document.createElement('span');
+    bdg.className = 'cloud-hist-badge cat-' + (h.category || 'save');
+    bdg.textContent = (c.actLabels && c.actLabels[h.action]) || h.action || 'Travail';
+    const txtNode = document.createTextNode(h.songTitle || 'Sans titre');
+    ttl.append(bdg, txtNode);
+
+    const meta = document.createElement('div');
+    meta.className = 'cloud-song-meta mono';
+    const when = formatWhen(h.createdAt || h.localTs);
+    meta.textContent = [h.artist, h.details, when].filter(Boolean).join(' · ');
+    info.append(ttl, meta);
+
+    const acts = document.createElement('div');
+    acts.className = 'cloud-song-acts';
+    if (h.songId && S.cloudUser && S.cloudSongs.some(s => s.songId === h.songId)) {
+      const btnOpen = document.createElement('button');
+      btnOpen.type = 'button';
+      btnOpen.className = 'primary small';
+      btnOpen.textContent = c.findSongBtn;
+      btnOpen.addEventListener('click', () => loadCloudSongIntoStudio(h.songId));
+      acts.append(btnOpen);
+    }
+    const btnDel = document.createElement('button');
+    btnDel.type = 'button';
+    btnDel.className = 'ghost small cloud-dl-btn';
+    btnDel.textContent = '✕';
+    btnDel.addEventListener('click', async () => {
+      if (S.cloudUser && h.historyId && !String(h.historyId).startsWith('local_') && window.AlexuraCloud) {
+        try { await window.AlexuraCloud.deleteHistoryEntry(h.historyId); } catch (err) { showCloudError(err); }
+      } else {
+        writeLocalHistory(readLocalHistory().filter(x => x.historyId !== h.historyId));
+        renderWorkHistory(S.cloudHistory);
+      }
+    });
+    acts.append(btnDel);
+    row.append(info, acts);
+    listEl.appendChild(row);
+  });
+}
+async function saveCurrentSongToFirebase(asNew = false, silent = false) {
+  const c = cloudCopy();
+  if (!window.AlexuraCloud) return null;
+  if (!S.cloudUser) {
+    openCloudHub('songs');
+    try {
+      await window.AlexuraCloud.signInGoogle();
+    } catch (err) {
+      showCloudError(err);
+      return null;
+    }
+  }
+  if (!S.cloudUser) return null;
+  showCloudError(null);
+  if (!silent) toast(c.saving);
+  try {
+    const vCfg = collectVercelInputs();
+    const songInput = {
+      songId: asNew ? undefined : (S.cloudSongId || undefined),
+      title: S.project.title || 'Sans titre',
+      artist: S.project.artist || '',
+      lyrics: S.project.lyrics || '',
+      lang: S.project.lang || 'auto',
+      audioName: S.project.audioName || (S.audioFile && S.audioFile.name) || '',
+      audioMime: (S.audioFile && S.audioFile.type) || (S.audio && S.audio.format ? 'audio/' + S.audio.format : 'audio/mpeg'),
+      audioSize: (S.audioFile && S.audioFile.size) || 0,
+      duration: (S.audio && S.audio.duration) || (S.plan && S.plan.duration) || 0,
+      bpm: (S.audio && S.audio.bpm) || (S.project.timing && S.project.timing.bpm) || 0,
+      vercelSyncedUrl: vCfg.appUrl || '',
+      project: Object.assign({}, S.project, { appVersion: '@VERSION@' }),
+    };
+    const res = await window.AlexuraCloud.saveSongToCloud(songInput, S.audioFile);
+    S.cloudSongId = res.songId;
+    S.project.cloudSongId = res.songId;
+    if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = `ID: ${res.songId}`;
+    try { localStorage.setItem(LS_KEY, JSON.stringify(S.project)); } catch (e) {}
+    if (!silent) {
+      recordWork('cloud_save', 'save', res.audioSaved ? 'Projet + audio complet' : 'Paroles & synchro', res.songId);
+      toast(res.audioTooLarge ? c.savedNoAudio : c.savedOk);
+    }
+    if (vCfg.autoSync && vCfg.appUrl) {
+      await syncSongToVercel(res.songId, null, true);
+    }
+    return res;
+  } catch (err) {
+    showCloudError(err);
+    if (!silent) toast('Firebase: ' + (err && err.message ? err.message.slice(0, 80) : 'Erreur'));
+    return null;
+  }
+}
+async function loadCloudSongIntoStudio(songId) {
+  if (!window.AlexuraCloud) return false;
+  const c = cloudCopy();
+  showCloudError(null);
+  try {
+    const res = await window.AlexuraCloud.loadSongFromCloud(songId);
+    const s = res.song;
+    const np = mergeProject(s.project || {});
+    if (S.tap) stopTap();
+    pause();
+    S.project = np;
+    S.cloudSongId = String(s.songId || songId);
+    S.project.cloudSongId = S.cloudSongId;
+    ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
+    syncUI(); replan(); restoreFonts(); commit(); updateEditBtns(); flushSave();
+    if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = `ID: ${S.cloudSongId}`;
+    if (res.audioFile) {
+      await loadAudioFile(res.audioFile, true);
+    }
+    renderCloudSongs(S.cloudSongs);
+    recordWork('cloud_load', 'save', s.title || s.audioName || S.cloudSongId, S.cloudSongId);
+    toast(c.loadedOk);
+    return true;
+  } catch (err) {
+    showCloudError(err);
+    return false;
+  }
+}
+async function saveVercelSettings() {
+  const cfg = collectVercelInputs();
+  const c = cloudCopy();
+  showCloudError(null);
+  try { localStorage.setItem(LS_VERCEL, JSON.stringify(cfg)); } catch (e) {}
+  applyVercelInputs(cfg);
+  if (S.cloudUser && window.AlexuraCloud) {
+    try {
+      await window.AlexuraCloud.saveVercelConfig(cfg);
+    } catch (err) {
+      showCloudError(err);
+      return false;
+    }
+  }
+  if ($('vercelStatusNote')) $('vercelStatusNote').textContent = `${c.vSavedOk} (${cfg.projectName})`;
+  toast(c.vSavedOk);
+  return true;
+}
+async function testVercelBridge() {
+  const cfg = collectVercelInputs();
+  const c = cloudCopy();
+  if (!cfg.appUrl) {
+    const r = await fetch('/api/health');
+    const h = r.ok ? await r.json() : {};
+    if ($('vercelStatusNote')) $('vercelStatusNote').textContent = `${c.vTestLocal} (ok=${!!h.ok})`;
+    toast(c.vTestLocal);
+    return { ok: true, local: true };
+  }
+  if (!/^https:\/\//i.test(cfg.appUrl)) {
+    if ($('vercelStatusNote')) $('vercelStatusNote').textContent = c.vNeedUrl;
+    toast(c.vNeedUrl);
+    return { ok: false };
+  }
+  try {
+    const r = await fetch('/api/bridge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'ping', targetUrl: cfg.appUrl }),
+    });
+    const res = await r.json();
+    const note = res.success ? `${c.vTestOk} (${res.url || cfg.appUrl})` : `Status ${res.status || res.reason || 'erreur'}`;
+    if ($('vercelStatusNote')) $('vercelStatusNote').textContent = note;
+    toast(note);
+    return res;
+  } catch (err) {
+    if ($('vercelStatusNote')) $('vercelStatusNote').textContent = err.message || 'Erreur';
+    return { ok: false };
+  }
+}
+async function syncSongToVercel(songIdOverride = null, songDoc = null, silent = false) {
+  const cfg = collectVercelInputs();
+  const c = cloudCopy();
+  if (!cfg.appUrl && !cfg.deployHookUrl) {
+    if (!silent) toast(c.vNeedUrl);
+    if ($('vercelStatusNote')) $('vercelStatusNote').textContent = c.vNeedUrl;
+    return { success: false };
+  }
+  const srcProj = (songDoc && songDoc.project) || S.project;
+  const payload = {
+    source: 'Alexura',
+    firebaseProjectId: window.AlexuraCloud ? window.AlexuraCloud.config.projectId : '',
+    songId: songIdOverride || S.cloudSongId || 'local',
+    title: (songDoc && songDoc.title) || srcProj.title || 'Sans titre',
+    artist: (songDoc && songDoc.artist) || srcProj.artist || '',
+    lyrics: (songDoc && songDoc.lyrics) || srcProj.lyrics || '',
+    lang: (songDoc && songDoc.lang) || srcProj.lang || 'auto',
+    timing: srcProj.timing || {},
+    karaokeCfg: srcProj.karaokeCfg || {},
+    timestamp: new Date().toISOString(),
+  };
+  try {
+    const r = await fetch('/api/bridge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'sync', targetUrl: cfg.appUrl, payload }),
+    });
+    const res = await r.json();
+    const msg = res.success ? `${c.vSyncOk} (${res.status})` : `Vercel sync: ${res.reason || res.status}`;
+    if ($('vercelStatusNote')) $('vercelStatusNote').textContent = msg;
+    if (!silent) toast(msg);
+    if (res.success) {
+      recordWork('vercel_sync', 'vercel', cfg.appUrl || cfg.projectName, payload.songId === 'local' ? '' : payload.songId);
+      if (S.cloudUser && window.AlexuraCloud) {
+        window.AlexuraCloud.saveVercelConfig(Object.assign({}, cfg, { lastSyncedAt: new Date().toISOString() })).catch(() => {});
+      }
+    }
+    return res;
+  } catch (err) {
+    if (!silent) toast(err.message || 'Erreur');
+    return { success: false };
+  }
+}
+async function deployToVercel() {
+  const cfg = collectVercelInputs();
+  const c = cloudCopy();
+  if (!cfg.deployHookUrl || !/^https:\/\//i.test(cfg.deployHookUrl)) {
+    toast(c.vNeedHook);
+    if ($('vercelStatusNote')) $('vercelStatusNote').textContent = c.vNeedHook;
+    return { success: false };
+  }
+  try {
+    const r = await fetch('/api/bridge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'deploy',
+        targetUrl: cfg.deployHookUrl,
+        payload: { source: 'Alexura', project: cfg.projectName, firebaseProjectId: window.AlexuraCloud ? window.AlexuraCloud.config.projectId : '' },
+      }),
+    });
+    const res = await r.json();
+    const msg = res.success ? `${c.vDeployOk} (${res.status})` : `Deploy: ${res.reason || res.status}`;
+    if ($('vercelStatusNote')) $('vercelStatusNote').textContent = msg;
+    toast(msg);
+    if (res.success) {
+      recordWork('vercel_deploy', 'vercel', cfg.projectName || 'Vercel');
+      if (S.cloudUser && window.AlexuraCloud) {
+        window.AlexuraCloud.saveVercelConfig(Object.assign({}, cfg, { lastDeployedAt: new Date().toISOString() })).catch(() => {});
+      }
+    }
+    return res;
+  } catch (err) {
+    toast(err.message || 'Deploy error');
+    return { success: false };
+  }
+}
+function bindCloudStudio() {
+  applyCloudLabels();
+  applyVercelInputs(readLocalVercelCfg());
+  try {
+    if ($('chkFbAutoSave')) $('chkFbAutoSave').checked = localStorage.getItem(LS_FBAUTO) === '1';
+  } catch (e) {}
+  if ($('chkFbAutoSave')) $('chkFbAutoSave').addEventListener('change', e => {
+    try { localStorage.setItem(LS_FBAUTO, e.target.checked ? '1' : '0'); } catch (err) {}
+  });
+  if ($('btnGoogleAuth')) $('btnGoogleAuth').addEventListener('click', async () => {
+    if (S.cloudUser) { openCloudHub('songs'); return; }
+    if (!window.AlexuraCloud) { openCloudHub('songs'); return; }
+    try {
+      await window.AlexuraCloud.signInGoogle();
+      openCloudHub('songs');
+    } catch (err) {
+      openCloudHub('songs');
+      showCloudError(err);
+    }
+  });
+  if ($('btnCloudHub')) $('btnCloudHub').addEventListener('click', () => openCloudHub());
+  if ($('btnCloudClose')) $('btnCloudClose').addEventListener('click', closeCloudHub);
+  if ($('cloudDlg')) $('cloudDlg').addEventListener('click', e => {
+    if (e.target === $('cloudDlg')) closeCloudHub();
+  });
+  if ($('tabCloudSongs')) $('tabCloudSongs').addEventListener('click', () => setCloudTab('songs'));
+  if ($('tabCloudHistory')) $('tabCloudHistory').addEventListener('click', () => setCloudTab('history'));
+  if ($('tabCloudVercel')) $('tabCloudVercel').addEventListener('click', () => setCloudTab('vercel'));
+  ['cloudSongSearch', 'cloudSongFilter', 'cloudSongSort'].forEach(id => {
+    if ($(id)) $(id).addEventListener(id === 'cloudSongSearch' ? 'input' : 'change', () => renderCloudSongs(S.cloudSongs));
+  });
+  ['cloudHistorySearch', 'cloudHistoryFilter'].forEach(id => {
+    if ($(id)) $(id).addEventListener(id === 'cloudHistorySearch' ? 'input' : 'change', () => renderWorkHistory(S.cloudHistory));
+  });
+  if ($('btnClearCloudHistory')) $('btnClearCloudHistory').addEventListener('click', async () => {
+    const c = cloudCopy();
+    if (S.cloudUser && window.AlexuraCloud && typeof window.AlexuraCloud.clearWorkHistory === 'function') {
+      try { await window.AlexuraCloud.clearWorkHistory(); } catch (err) { showCloudError(err); return; }
+    }
+    writeLocalHistory([]);
+    S.cloudHistory = [];
+    renderWorkHistory([]);
+    toast(c.histCleared);
+  });
+  if ($('btnCloudSave')) $('btnCloudSave').addEventListener('click', () => saveCurrentSongToFirebase(false, false));
+  if ($('btnFbSaveSong')) $('btnFbSaveSong').addEventListener('click', () => saveCurrentSongToFirebase(false, false));
+  if ($('btnFbSaveNew')) $('btnFbSaveNew').addEventListener('click', () => saveCurrentSongToFirebase(true, false));
+  const doSignIn = async () => {
+    if (!window.AlexuraCloud) return;
+    showCloudError(null);
+    try { await window.AlexuraCloud.signInGoogle(); } catch (err) { showCloudError(err); }
+  };
+  if ($('btnFbSignIn')) $('btnFbSignIn').addEventListener('click', doSignIn);
+  if ($('btnFbSwitchAccount')) $('btnFbSwitchAccount').addEventListener('click', doSignIn);
+  if ($('btnFbSignOut')) $('btnFbSignOut').addEventListener('click', async () => {
+    if (!window.AlexuraCloud) return;
+    showCloudError(null);
+    try { await window.AlexuraCloud.signOutGoogle(); } catch (err) { showCloudError(err); }
+  });
+  if ($('btnVercelSave')) $('btnVercelSave').addEventListener('click', saveVercelSettings);
+  if ($('btnVercelTest')) $('btnVercelTest').addEventListener('click', testVercelBridge);
+  if ($('btnVercelSync')) $('btnVercelSync').addEventListener('click', () => syncSongToVercel(null, null, false));
+  if ($('btnVercelDeploy')) $('btnVercelDeploy').addEventListener('click', deployToVercel);
+
+  if (window.AlexuraCloud && typeof window.AlexuraCloud.subscribeAuth === 'function') {
+    window.AlexuraCloud.subscribeAuth(async (user) => {
+      S.cloudUser = user || null;
+      if (cloudSongsUnsub) { cloudSongsUnsub(); cloudSongsUnsub = null; }
+      if (cloudHistoryUnsub) { cloudHistoryUnsub(); cloudHistoryUnsub = null; }
+      applyCloudLabels();
+      if (user) {
+        if ($('fbSignedOutRow')) $('fbSignedOutRow').hidden = true;
+        if ($('fbSignedInBox')) $('fbSignedInBox').hidden = false;
+        if ($('fbUserName')) $('fbUserName').textContent = user.displayName || 'Creator';
+        if ($('fbUserEmail')) $('fbUserEmail').textContent = user.email || '';
+        const av = $('fbUserAvatar');
+        if (av) {
+          if (user.photoURL) { av.src = user.photoURL; av.hidden = false; }
+          else { av.hidden = true; }
+        }
+        try {
+          const vCfg = await window.AlexuraCloud.loadVercelConfig();
+          if (vCfg) {
+            applyVercelInputs(vCfg);
+            try { localStorage.setItem(LS_VERCEL, JSON.stringify(vCfg)); } catch (e) {}
+          }
+        } catch (err) { showCloudError(err); }
+        cloudSongsUnsub = window.AlexuraCloud.subscribeUserSongs(
+          (songs) => { renderCloudSongs(songs); renderWorkHistory(S.cloudHistory); },
+          (err) => showCloudError(err)
+        );
+        if (typeof window.AlexuraCloud.subscribeWorkHistory === 'function') {
+          cloudHistoryUnsub = window.AlexuraCloud.subscribeWorkHistory(
+            (entries) => renderWorkHistory(entries),
+            (err) => showCloudError(err)
+          );
+        }
+      } else {
+        if ($('fbSignedOutRow')) $('fbSignedOutRow').hidden = false;
+        if ($('fbSignedInBox')) $('fbSignedInBox').hidden = true;
+        S.cloudSongs = [];
+        S.cloudHistory = [];
+        renderCloudSongs([]);
+        renderWorkHistory([]);
+      }
+    });
+  }
+}
+
 /* ---------------- boot ---------------- */
 function boot() {
   S.project = loadLocal();
+  if (S.project && S.project.cloudSongId) S.cloudSongId = S.project.cloudSongId;
   bind(); initVolume(); syncUI(); syncLoopBtn(); replan();
+  bindCloudStudio();
   restoreFonts();
   // first visit on a phone: スマホ mode
   let mode = window.matchMedia && window.matchMedia('(max-width: 760px)').matches ? 'mobile' : 'easy';
@@ -4443,5 +5831,5 @@ function boot() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 J.ui = S;
 // hooks for hosts that embed the app (the After Effects CEP panel)
-J.uiApi = { toast, replan, syncUI, pause, seek, playRange, selectLyricWord, saveCorrectedLyrics, tlWHandleAt, tlDragWordTo, startTap, tapNow, tapEndHold, tapSkip, tapBack, stopTap, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines };
+J.uiApi = { toast, replan, syncUI, pause, seek, playRange, selectLyricWord, saveCorrectedLyrics, tlWHandleAt, tlDragWordTo, tlFocusWord, tlWordBoxAt, syncTimelineInspector, startTap, tapNow, tapEndHold, tapSkip, tapBack, stopTap, openCloudHub, setCloudTab, saveCurrentSongToFirebase, loadCloudSongIntoStudio, downloadCloudSongArtifact, recordWork, testVercelBridge, syncSongToVercel, deployToVercel, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines };
 })();

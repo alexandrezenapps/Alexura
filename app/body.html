@@ -23,6 +23,13 @@
       <button id="btnTour" class="ghost tour-btn" title="かんたんモードの使い方を案内します" aria-label="使い方の案内">？</button>
     </div>
     <div class="acts">
+      <button id="btnGoogleAuth" type="button" class="ghost small google-pill" title="Se connecter avec Google pour retrouver vos chansons et votre historique">
+        <span class="g-dot" aria-hidden="true">G</span>
+        <img id="hdrGoogleAvatar" class="g-hdr-av" alt="" hidden>
+        <span id="hdrGoogleLabel">Google</span>
+      </button>
+      <button id="btnCloudSave" class="accent small" title="Enregistrer la chanson et les données dans Firebase">☁ Sauvegarder</button>
+      <button id="btnCloudHub" class="ghost small" title="Mes Enregistrements, Historique &amp; Vercel" aria-expanded="false">📚 Projets &amp; Historique</button>
       <label class="file" title="保存したプロジェクト(.json)を開く">開く<input id="fileProject" type="file" accept=".json,application/json"></label>
       <button id="btnSave" title="プロジェクトを .json で保存">保存</button>
       <button id="btnAE" title="After Effects パネル用の構成データを書き出す">AE用に書き出し</button>
@@ -256,15 +263,62 @@
         <button id="btnOmakase" class="primary" title="スタイル・雰囲気・演出・配色をまるごとランダムに（キー R）">おまかせ</button>
       </div>
       <div class="tl-bar">
-        <span class="tl-hint muted">行の区切り（上の目盛り）はドラッグで動かせます。<span class="kbd">Shift</span> で拍に吸着しない</span>
+        <div class="tl-head-left">
+          <span id="tlPlayMs" class="tl-tc-ms mono">00:00:00.000</span>
+          <span class="muted mono">/</span>
+          <span id="tlDurMs" class="tl-tc-ms mono muted">00:00:00.000</span>
+          <span id="tlZoomVal" class="tl-zoom-tag mono muted">1.0×</span>
+        </div>
+        <span class="tl-legend">
+          <label class="tl-chk"><input type="checkbox" id="tlShowWave" checked> <span id="lblTlWave">Audio</span></label>
+          <label class="tl-chk"><input type="checkbox" id="tlShowVocal" checked> <span id="lblTlVocal">Voix</span></label>
+          <label class="tl-chk"><input type="checkbox" id="tlFollow" checked> <span id="lblTlFollow">Suivi</span></label>
+        </span>
         <span class="tl-btns">
           <button id="btnUndoEdit" class="ghost small" title="歌詞・タイミングの変更を元に戻す（Ctrl+Z）" disabled>元に戻す</button>
+          <button id="tlZoomWord" class="ghost small" title="Zoomer exactement sur le mot sélectionné">🔍 Mot</button>
           <button id="tlOut" class="ghost small icon-txt" title="縮小" aria-label="タイムラインを縮小">−</button>
           <button id="tlIn" class="ghost small icon-txt" title="拡大（タイムライン上でホイールでも）" aria-label="タイムラインを拡大">＋</button>
           <button id="tlFit" class="ghost small" title="全体を表示">全体</button>
         </span>
       </div>
-      <canvas id="timeline" aria-label="タイムライン（クリックで移動・行の区切りはドラッグで調整）"></canvas>
+      <canvas id="timeline" aria-label="Timeline audio professionnelle multi-pistes (onde audio, voix, segments, mots, caractères)"></canvas>
+      <div id="tlInspector" class="tl-inspector">
+        <div class="tl-insp-row">
+          <span class="tl-insp-target">
+            <strong id="tlSelWordBadge" class="tl-sel-word">—</strong>
+            <span id="tlSelCharBadge" class="tl-sel-char mono muted"></span>
+            <span id="tlConfBadge" class="tl-conf-badge mono">Confiance alignement : —</span>
+            <span id="tlSectionBadge" class="tl-sec-badge mono muted"></span>
+          </span>
+          <span class="tl-insp-acts">
+            <button type="button" id="tlPlayWordBtn" class="ghost small" title="Écouter le mot sélectionné dans son contexte">▶ Mot</button>
+          </span>
+        </div>
+        <div class="tl-insp-times">
+          <label class="tl-ms-field">
+            <span id="lblTlStartMs">Début (HH:MM:SS.mmm)</span>
+            <div class="tl-ms-grp">
+              <button type="button" class="ghost small" data-tl-nudge="start" data-delta="-0.010">-10ms</button>
+              <button type="button" class="ghost small" data-tl-nudge="start" data-delta="-0.001">-1ms</button>
+              <input id="tlWordStartMs" type="text" class="mono" value="00:00:00.000" aria-label="Début exact HH:MM:SS.mmm">
+              <button type="button" class="ghost small" data-tl-nudge="start" data-delta="0.001">+1ms</button>
+              <button type="button" class="ghost small" data-tl-nudge="start" data-delta="0.010">+10ms</button>
+            </div>
+          </label>
+          <label class="tl-ms-field">
+            <span id="lblTlEndMs">Fin (HH:MM:SS.mmm)</span>
+            <div class="tl-ms-grp">
+              <button type="button" class="ghost small" data-tl-nudge="end" data-delta="-0.010">-10ms</button>
+              <button type="button" class="ghost small" data-tl-nudge="end" data-delta="-0.001">-1ms</button>
+              <input id="tlWordEndMs" type="text" class="mono" value="00:00:00.000" aria-label="Fin exacte HH:MM:SS.mmm">
+              <button type="button" class="ghost small" data-tl-nudge="end" data-delta="0.001">+1ms</button>
+              <button type="button" class="ghost small" data-tl-nudge="end" data-delta="0.010">+10ms</button>
+            </div>
+          </label>
+        </div>
+        <div id="tlPrecisionDisclaimer" class="tl-disclaimer muted">Affichage HH:MM:SS.mmm pour l’édition fine image par image — la précision réelle dépend du score de confiance d’alignement acoustique ci-dessus.</div>
+      </div>
       <div class="cutinfo" id="cutInfo"></div>
       <div id="cutPick" class="cut-pick pro-only" hidden>
         <div class="cut-pick-h">
@@ -461,5 +515,103 @@
     </details>
     <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>閉じる</button></div>
   </form>
+</dialog>
+<dialog id="cloudDlg" class="terms cloud-dlg" aria-labelledby="cloudTitle">
+  <div class="cloud-head">
+    <h2 id="cloudTitle">☁ Espace Personnel Google — Enregistrements &amp; Historique</h2>
+    <button type="button" id="btnCloudClose" class="ghost small" aria-label="Fermer">✕</button>
+  </div>
+  <div id="cloudErrorBox" class="cloud-err" hidden></div>
+
+  <section class="cloud-card" aria-label="Compte Google et Sauvegarde rapide">
+    <div class="cloud-card-h">
+      <strong id="lblFbSection">🔐 Compte Google &amp; Sauvegarde Firebase</strong>
+      <span id="fbAuthStatus" class="mono muted">Non connecté</span>
+    </div>
+    <div id="fbSignedOutRow" class="cloud-row">
+      <button type="button" id="btnFbSignIn" class="primary small">Se connecter avec Google</button>
+      <span id="fbSignInHint" class="muted">Connectez votre compte Google pour sauvegarder, retrouver et télécharger toutes vos chansons et votre historique.</span>
+    </div>
+    <div id="fbSignedInBox" hidden>
+      <div class="cloud-user-bar">
+        <div class="cloud-user-meta">
+          <img id="fbUserAvatar" class="cloud-avatar" alt="" hidden>
+          <div>
+            <div id="fbUserName" class="cloud-uname"></div>
+            <div id="fbUserEmail" class="mono muted cloud-uemail"></div>
+          </div>
+        </div>
+        <div class="cloud-user-btns">
+          <button type="button" id="btnFbSwitchAccount" class="ghost small">Changer de compte</button>
+          <button type="button" id="btnFbSignOut" class="ghost small">Déconnexion</button>
+        </div>
+      </div>
+      <div class="cloud-save-bar">
+        <button type="button" id="btnFbSaveSong" class="accent small">☁ Sauvegarder cette chanson</button>
+        <button type="button" id="btnFbSaveNew" class="ghost small" title="Créer une nouvelle entrée séparée dans Firebase">+ Nouvelle copie</button>
+        <label class="cloud-chk"><input type="checkbox" id="chkFbAutoSave"> <span id="lblFbAutoSave">Sauvegarde auto</span></label>
+        <span id="fbCurSongBadge" class="mono muted"></span>
+      </div>
+    </div>
+  </section>
+
+  <div class="cloud-tabs" role="tablist" aria-label="Espace personnel">
+    <button type="button" id="tabCloudSongs" class="cloud-tab is-active" role="tab" aria-selected="true" aria-controls="panelCloudSongs">🎵 <span id="lblTabSongs">Mes Enregistrements</span> (<span id="fbSongsCount">0</span>)</button>
+    <button type="button" id="tabCloudHistory" class="cloud-tab" role="tab" aria-selected="false" aria-controls="panelCloudHistory">🕘 <span id="lblTabHistory">Historique des Travaux</span> (<span id="fbHistoryCount">0</span>)</button>
+    <button type="button" id="tabCloudVercel" class="cloud-tab" role="tab" aria-selected="false" aria-controls="panelCloudVercel">▲ <span id="lblTabVercel">Vercel &amp; Sync</span></button>
+  </div>
+
+  <section id="panelCloudSongs" class="cloud-card" role="tabpanel" aria-labelledby="tabCloudSongs">
+    <div class="cloud-toolbar">
+      <input id="cloudSongSearch" type="search" placeholder="Rechercher par titre, artiste, paroles..." aria-label="Rechercher une chanson enregistrée">
+      <select id="cloudSongFilter" aria-label="Filtrer les chansons">
+        <option value="all">Tout afficher</option>
+        <option value="audio">Avec audio inclus</option>
+        <option value="timed">Avec paroles / synchro</option>
+      </select>
+      <select id="cloudSongSort" aria-label="Trier les chansons">
+        <option value="recent">Plus récents</option>
+        <option value="title">Titre (A → Z)</option>
+        <option value="duration">Durée</option>
+      </select>
+    </div>
+    <div id="cloudSongsList" class="cloud-songs"></div>
+  </section>
+
+  <section id="panelCloudHistory" class="cloud-card" role="tabpanel" aria-labelledby="tabCloudHistory" hidden>
+    <div class="cloud-toolbar">
+      <input id="cloudHistorySearch" type="search" placeholder="Rechercher dans votre historique..." aria-label="Rechercher dans l'historique">
+      <select id="cloudHistoryFilter" aria-label="Filtrer par catégorie">
+        <option value="all">Toutes les actions</option>
+        <option value="save">Sauvegardes</option>
+        <option value="sync">IA &amp; Synchro</option>
+        <option value="export">Téléchargements &amp; Exports</option>
+        <option value="vercel">Vercel</option>
+      </select>
+      <button type="button" id="btnClearCloudHistory" class="ghost small">🗑 Vider</button>
+    </div>
+    <div id="cloudHistoryList" class="cloud-songs"></div>
+  </section>
+
+  <section id="panelCloudVercel" class="cloud-card" role="tabpanel" aria-labelledby="tabCloudVercel" hidden>
+    <div class="cloud-card-h">
+      <strong id="lblVercelSection">▲ Vercel — Liaison &amp; Déploiement</strong>
+      <span id="vercelConnBadge" class="mono muted">Prêt (vercel.json + /api/*)</span>
+    </div>
+    <div class="cloud-grid">
+      <label class="cloud-field"><span id="lblVercelProj">Nom du projet Vercel</span><input id="vercelProjectName" type="text" placeholder="alexura" maxlength="120"></label>
+      <label class="cloud-field"><span id="lblVercelUrl">URL de votre app Vercel</span><input id="vercelAppUrl" type="url" placeholder="https://mon-alexura.vercel.app" maxlength="500"></label>
+      <label class="cloud-field cloud-field-wide"><span id="lblVercelHook">Vercel Deploy Hook URL (optionnel)</span><input id="vercelHookUrl" type="url" placeholder="https://api.vercel.com/v1/integrations/deploy/..." maxlength="500"></label>
+    </div>
+    <label class="cloud-chk" style="margin-top:6px"><input type="checkbox" id="vercelAutoSync"> <span id="lblVercelAutoSync">Synchroniser automatiquement vers Vercel après chaque sauvegarde Firebase</span></label>
+    <div class="cloud-v-actions">
+      <button type="button" id="btnVercelSave" class="primary small">💾 Enregistrer config Vercel</button>
+      <button type="button" id="btnVercelTest" class="ghost small">🔌 Tester Vercel</button>
+      <button type="button" id="btnVercelSync" class="ghost small">📤 Synchroniser la chanson</button>
+      <button type="button" id="btnVercelDeploy" class="accent small">🚀 Déployer sur Vercel</button>
+      <a id="vercelOpenLink" class="cloud-link ghost small" href="https://vercel.com/new" target="_blank" rel="noopener noreferrer">↗ Ouvrir Vercel</a>
+    </div>
+    <div id="vercelStatusNote" class="cloud-note muted mono">Endpoints Vercel actifs : /api/health, /api/transcribe-lyrics, /api/align-vocals, /api/bridge</div>
+  </section>
 </dialog>
 <div id="dropHint" class="drop-hint" hidden><div><strong>ここにドロップして読み込み</strong><span>曲（mp3 / wav など）・歌詞（LRC / SRT / テキスト）・プロジェクト（.json）</span></div></div>

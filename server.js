@@ -28,25 +28,58 @@ app.use("/api", (req, res, next) => {
   }
   next();
 });
+function validateHttpsTarget(raw) {
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  try {
+    const u = new URL(trimmed);
+    if (u.protocol !== "https:") return null;
+    const h = u.hostname.toLowerCase();
+    if (h === "localhost" || h === "127.0.0.1" || h === "0.0.0.0" || h === "::1" || h.endsWith(".local") || /^10\./.test(h) || /^192\.168\./.test(h) || /^172\.(1[6-9]|2\d|3[01])\./.test(h) || /^169\.254\./.test(h)) {
+      return null;
+    }
+    return u.toString();
+  } catch {
+    return null;
+  }
+}
 app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     app: "Alexura",
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+    firebaseConfigured: true,
+    vercelConnected: Boolean(process.env.VERCEL || process.env.VERCEL_URL || process.env.EXTERNAL_APP_URL || process.env.VERCEL_DEPLOY_HOOK_URL),
+    vercelUrl: process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : process.env.EXTERNAL_APP_URL || "",
     bridgeConfigured: Boolean(process.env.EXTERNAL_APP_URL || process.env.VERCEL_DEPLOY_HOOK_URL),
     endpoints: ["/api/health", "/api/transcribe-lyrics", "/api/align-vocals", "/api/bridge"]
   });
 });
 app.post("/api/bridge", async (req, res) => {
-  const { action, payload } = req.body || {};
-  const target = action === "deploy" ? process.env.VERCEL_DEPLOY_HOOK_URL : process.env.EXTERNAL_APP_URL;
+  const { action, targetUrl, payload } = req.body || {};
+  const explicitTarget = validateHttpsTarget(targetUrl);
+  const envTarget = action === "deploy" ? process.env.VERCEL_DEPLOY_HOOK_URL : process.env.EXTERNAL_APP_URL;
+  const target = explicitTarget || (envTarget ? validateHttpsTarget(envTarget) : null);
   if (!target) {
     return res.status(200).json({
       success: false,
-      reason: action === "deploy" ? "vercel_deploy_hook_not_configured" : "external_app_url_not_configured"
+      reason: action === "deploy" ? "vercel_deploy_hook_not_configured" : action === "ping" ? "vercel_url_not_configured" : "external_app_url_not_configured"
     });
   }
   try {
+    if (action === "ping") {
+      const u = new URL(target);
+      const pingUrl = u.pathname === "/" ? `${u.origin}/api/health` : u.toString();
+      const upstream2 = await fetch(pingUrl, { method: "GET" });
+      const text2 = await upstream2.text();
+      return res.json({
+        success: upstream2.ok,
+        status: upstream2.status,
+        url: pingUrl,
+        response: text2.slice(0, 500)
+      });
+    }
     const upstream = await fetch(target, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

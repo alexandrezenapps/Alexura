@@ -11,6 +11,7 @@ VERSION = read('VERSION').strip()
 sources = sorted(glob.glob('src/*.js'))
 js = '\n'.join(read(f) for f in sources)
 mux = '/*! mp4-muxer v5.2.2 | MIT License | (c) 2023 Vanilagy | see THIRD_PARTY_NOTICES.md */\n' + read('vendor/mp4-muxer.min.js')
+fb_bridge = read('vendor/firebase-bridge.js') if os.path.exists('vendor/firebase-bridge.js') else ''
 def build(lang):
     english = lang == 'en'
     local = lang in i18n.MODULES
@@ -34,6 +35,7 @@ def build(lang):
         script = script.replace(marker, inject + '\n' + marker, 1)
     alternates = '\n'.join(f'<link rel="alternate" hreflang="{hl}" href="{i18n.BASE}{f + "/" if f else ""}">' for c, f, hl, _ in i18n.EDITIONS)
     html_lang = dict((c, hl) for c, _, hl, _ in i18n.EDITIONS)[lang]
+    fb_tag = f'\n<script>\n{fb_bridge}\n</script>' if fb_bridge else ''
     html = f'''<!doctype html>
 <html lang="{html_lang}">
 <head>
@@ -59,7 +61,7 @@ def build(lang):
 {body}
 <script>
 {mux}
-</script>
+</script>{fb_tag}
 <script>
 {script}
 </script>

@@ -192,3 +192,23 @@ J.fmtTime = (t, fps) => {
   const m = Math.floor(t / 60), s = Math.floor(t % 60), f = Math.floor((t % 1) * (fps || 100));
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}${fps ? ':' + String(f).padStart(2, '0') : '.' + String(f).padStart(2, '0')}`;
 };
+J.fmtTimeMs = t => {
+  if (!isFinite(t) || t < 0) t = 0;
+  const totalMs = Math.round(t * 1000);
+  const ms = totalMs % 1000;
+  const totalSec = Math.floor(totalMs / 1000);
+  const s = totalSec % 60;
+  const m = Math.floor(totalSec / 60) % 60;
+  const h = Math.floor(totalSec / 3600);
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+};
+J.parseTimeMs = str => {
+  const s = String(str || '').trim().replace(',', '.');
+  if (!s) return NaN;
+  if (/^\d+(?:\.\d+)?$/.test(s)) return Math.max(0, parseFloat(s));
+  const parts = s.split(':').map(p => parseFloat(p));
+  if (parts.some(v => !isFinite(v) || v < 0)) return NaN;
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  return NaN;
+};

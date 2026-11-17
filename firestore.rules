@@ -1,0 +1,244 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Core primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(uid) {
+      return isVerified() && request.auth.uid == uid;
+    }
+
+    function isOptString(data, key, maxLen) {
+      return !(key in data) || (data[key] is string && data[key].size() <= maxLen);
+    }
+
+    // Validation blueprint: UserProfile
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'displayName', 'email', 'photoURL', 'createdAt', 'updatedAt'])
+        && isValidId(data.uid)
+        && data.uid == request.auth.uid
+        && data.displayName is string && data.displayName.size() <= 160
+        && isOptString(data, 'email', 254)
+        && isOptString(data, 'photoURL', 500)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Validation blueprint: VercelSettings
+    function isValidVercelSettings(data) {
+      return data.keys().hasAll(['ownerId', 'projectName', 'appUrl', 'deployHookUrl', 'autoSync', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['ownerId', 'projectName', 'appUrl', 'deployHookUrl', 'autoSync', 'lastSyncedAt', 'lastDeployedAt', 'createdAt', 'updatedAt'])
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.projectName is string && data.projectName.size() <= 120
+        && data.appUrl is string && data.appUrl.size() <= 500
+        && data.deployHookUrl is string && data.deployHookUrl.size() <= 500
+        && data.autoSync is bool
+        && isOptString(data, 'lastSyncedAt', 64)
+        && isOptString(data, 'lastDeployedAt', 64)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Validation blueprint: WorkHistoryEntry
+    function isValidWorkHistoryEntry(data, historyId) {
+      return data.keys().hasAll(['historyId', 'ownerId', 'action', 'category', 'songId', 'songTitle', 'artist', 'details', 'createdAt'])
+        && data.keys().hasOnly(['historyId', 'ownerId', 'action', 'category', 'songId', 'songTitle', 'artist', 'details', 'createdAt'])
+        && isValidId(data.historyId)
+        && data.historyId == historyId
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.action is string && data.action.size() >= 1 && data.action.size() <= 48
+        && data.category is string && data.category.size() >= 1 && data.category.size() <= 32
+        && data.songId is string && data.songId.size() <= 128
+        && data.songTitle is string && data.songTitle.size() <= 200
+        && data.artist is string && data.artist.size() <= 200
+        && data.details is string && data.details.size() <= 500
+        && data.createdAt is timestamp;
+    }
+
+    // Validation blueprint: SongRecord
+    function isValidSongRecord(data, songId) {
+      return data.keys().hasAll([
+          'songId', 'ownerId', 'title', 'artist', 'lyrics', 'lang',
+          'audioName', 'audioMime', 'audioSize', 'duration', 'bpm',
+          'hasAudioChunks', 'chunkCount', 'project', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'songId', 'ownerId', 'title', 'artist', 'lyrics', 'lang',
+          'audioName', 'audioMime', 'audioSize', 'duration', 'bpm',
+          'hasAudioChunks', 'chunkCount', 'vercelSyncedUrl', 'project',
+          'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.songId)
+        && data.songId == songId
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.title is string && data.title.size() <= 200
+        && data.artist is string && data.artist.size() <= 200
+        && data.lyrics is string && data.lyrics.size() <= 60000
+        && data.lang is string && data.lang.size() <= 32
+        && data.audioName is string && data.audioName.size() <= 260
+        && data.audioMime is string && data.audioMime.size() <= 100
+        && data.audioSize is int && data.audioSize >= 0 && data.audioSize <= 104857600
+        && (data.duration is int || data.duration is float) && data.duration >= 0 && data.duration <= 7200
+        && (data.bpm is int || data.bpm is float) && data.bpm >= 0 && data.bpm <= 400
+        && data.hasAudioChunks is bool
+        && data.chunkCount is int && data.chunkCount >= 0 && data.chunkCount <= 64
+        && isOptString(data, 'vercelSyncedUrl', 500)
+        && data.project is map
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Validation blueprint: AudioChunk
+    function isValidAudioChunk(data, chunkId, songId) {
+      return data.keys().hasAll(['chunkId', 'songId', 'ownerId', 'index', 'data', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['chunkId', 'songId', 'ownerId', 'index', 'data', 'createdAt', 'updatedAt'])
+        && isValidId(data.chunkId)
+        && data.chunkId == chunkId
+        && data.chunkId.size() <= 64
+        && isValidId(data.songId)
+        && data.songId == songId
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.index is int && data.index >= 0 && data.index < 64
+        && data.data is string && data.data.size() > 0 && data.data.size() <= 500000
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Connection validation document for startup check
+    match /test/{docId} {
+      allow get: if isVerified() && docId == 'connection';
+      allow list, create, update, delete: if false;
+    }
+
+    // Private User Profile + Vercel integration + Work History subcollections
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list: if false;
+      allow create: if isValidId(userId)
+        && isOwner(userId)
+        && isValidUserProfile(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(userId)
+        && isOwner(userId)
+        && isValidUserProfile(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'email', 'photoURL', 'updatedAt']);
+      allow delete: if isValidId(userId) && isOwner(userId);
+
+      match /integrations/{integrationId} {
+        allow get: if isValidId(userId) && isValidId(integrationId) && isOwner(userId);
+        allow list: if isOwner(userId) && existing().ownerId == request.auth.uid;
+        allow create: if isValidId(userId) && isValidId(integrationId)
+          && integrationId == 'vercel'
+          && isOwner(userId)
+          && isValidVercelSettings(incoming())
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time;
+        allow update: if isValidId(userId) && isValidId(integrationId)
+          && integrationId == 'vercel'
+          && isOwner(userId)
+          && isValidVercelSettings(incoming())
+          && incoming().ownerId == existing().ownerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['projectName', 'appUrl', 'deployHookUrl', 'autoSync', 'lastSyncedAt', 'lastDeployedAt', 'updatedAt']);
+        allow delete: if isValidId(userId) && isValidId(integrationId) && isOwner(userId);
+      }
+
+      match /history/{historyId} {
+        allow get: if isValidId(userId) && isValidId(historyId) && isOwner(userId);
+        allow list: if isOwner(userId) && existing().ownerId == request.auth.uid;
+        allow create: if isValidId(userId) && isValidId(historyId)
+          && isOwner(userId)
+          && isValidWorkHistoryEntry(incoming(), historyId)
+          && incoming().createdAt == request.time;
+        allow update: if false;
+        allow delete: if isValidId(userId) && isValidId(historyId) && isOwner(userId);
+      }
+    }
+
+    // Songs & Karaoke Projects
+    match /songs/{songId} {
+      allow get: if isValidId(songId) && isVerified() && (resource == null || existing().ownerId == request.auth.uid);
+      allow list: if isVerified() && existing().ownerId == request.auth.uid;
+      allow create: if isValidId(songId)
+        && isVerified()
+        && isValidSongRecord(incoming(), songId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(songId)
+        && isOwner(existing().ownerId)
+        && isValidSongRecord(incoming(), songId)
+        && incoming().songId == existing().songId
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'title', 'artist', 'lyrics', 'lang', 'audioName', 'audioMime',
+          'audioSize', 'duration', 'bpm', 'hasAudioChunks', 'chunkCount',
+          'vercelSyncedUrl', 'project', 'updatedAt'
+        ]);
+      allow delete: if isValidId(songId) && isOwner(existing().ownerId);
+
+      // Master Gate subcollection for uploaded song audio binary chunks
+      match /audioChunks/{chunkId} {
+        function parentSongOwned() {
+          return exists(/databases/$(database)/documents/songs/$(songId))
+            && get(/databases/$(database)/documents/songs/$(songId)).data.ownerId == request.auth.uid;
+        }
+        allow get: if isValidId(songId) && isValidId(chunkId) && isVerified() && parentSongOwned() && (resource == null || existing().ownerId == request.auth.uid);
+        allow list: if isVerified() && existing().ownerId == request.auth.uid && existing().songId == songId;
+        allow create: if isValidId(songId) && isValidId(chunkId)
+          && isVerified()
+          && isValidAudioChunk(incoming(), chunkId, songId)
+          && parentSongOwned()
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time;
+        allow update: if isValidId(songId) && isValidId(chunkId)
+          && isVerified()
+          && isValidAudioChunk(incoming(), chunkId, songId)
+          && parentSongOwned()
+          && incoming().chunkId == existing().chunkId
+          && incoming().songId == existing().songId
+          && incoming().ownerId == existing().ownerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['index', 'data', 'updatedAt']);
+        allow delete: if isValidId(songId) && isValidId(chunkId) && isVerified() && parentSongOwned() && existing().ownerId == request.auth.uid;
+      }
+    }
+  }
+}

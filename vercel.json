@@ -1,8 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "buildCommand": "echo 'Static editions and API functions ready'",
+  "buildCommand": "npx esbuild src/firebase_client.ts --bundle --minify --format=iife --platform=browser --outfile=vendor/firebase-bridge.js",
   "outputDirectory": ".",
+  "cleanUrls": true,
   "headers": [
     {
       "source": "/api/(.*)",

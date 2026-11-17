@@ -1,0 +1,278 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Private creator profile linked to Google Authentication.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 254
+        },
+        "photoURL": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "displayName", "createdAt", "updatedAt"]
+    },
+    "VercelSettings": {
+      "title": "Vercel Integration Settings",
+      "description": "Stores user Vercel app URL and deploy hook connection preferences.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "projectName": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "appUrl": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "deployHookUrl": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "autoSync": {
+          "type": "boolean"
+        },
+        "lastSyncedAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "lastDeployedAt": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ownerId", "projectName", "appUrl", "deployHookUrl", "autoSync", "createdAt", "updatedAt"]
+    },
+    "SongRecord": {
+      "title": "Song & Karaoke Project",
+      "description": "Complete song metadata, lyrics, word/char timestamps, detection report, and studio project settings.",
+      "type": "object",
+      "properties": {
+        "songId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "artist": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "lyrics": {
+          "type": "string",
+          "maxLength": 60000
+        },
+        "lang": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "audioName": {
+          "type": "string",
+          "maxLength": 260
+        },
+        "audioMime": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "audioSize": {
+          "type": "integer"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "bpm": {
+          "type": "number"
+        },
+        "hasAudioChunks": {
+          "type": "boolean"
+        },
+        "chunkCount": {
+          "type": "integer"
+        },
+        "vercelSyncedUrl": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "project": {
+          "type": "object",
+          "description": "Native Firestore Map of full Alexura project configuration, timing, wordTimes, karaokeCfg, and detection."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "songId",
+        "ownerId",
+        "title",
+        "artist",
+        "lyrics",
+        "lang",
+        "audioName",
+        "audioMime",
+        "audioSize",
+        "duration",
+        "bpm",
+        "hasAudioChunks",
+        "chunkCount",
+        "project",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AudioChunk": {
+      "title": "Song Audio Chunk",
+      "description": "Segmented base64 audio slice belonging to a parent SongRecord so uploaded songs can be reloaded across devices.",
+      "type": "object",
+      "properties": {
+        "chunkId": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "songId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "index": {
+          "type": "integer"
+        },
+        "data": {
+          "type": "string",
+          "maxLength": 500000
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["chunkId", "songId", "ownerId", "index", "data", "createdAt", "updatedAt"]
+    },
+    "WorkHistoryEntry": {
+      "title": "Work History Entry",
+      "description": "Immutable activity log entry tracking user creations, AI transcriptions, tap syncs, edits, cloud saves, and downloads.",
+      "type": "object",
+      "properties": {
+        "historyId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "action": {
+          "type": "string",
+          "maxLength": 48
+        },
+        "category": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "songId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "songTitle": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "artist": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "details": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["historyId", "ownerId", "action", "category", "songId", "songTitle", "artist", "details", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Authenticated user's private profile (isolated strictly to the owner)."
+    },
+    "/users/{userId}/integrations/{integrationId}": {
+      "schema": { "$ref": "#/entities/VercelSettings" },
+      "description": "User's saved Vercel connection & deploy hook settings."
+    },
+    "/users/{userId}/history/{historyId}": {
+      "schema": { "$ref": "#/entities/WorkHistoryEntry" },
+      "description": "User's chronological activity history across transcriptions, syncs, edits, saves, and downloads."
+    },
+    "/songs/{songId}": {
+      "schema": { "$ref": "#/entities/SongRecord" },
+      "description": "User's cloud-saved songs, lyrics, forced-alignment timestamps, karaoke settings, and project state."
+    },
+    "/songs/{songId}/audioChunks/{chunkId}": {
+      "schema": { "$ref": "#/entities/AudioChunk" },
+      "description": "Chunked audio binary slices tied via Master Gate to parent SongRecord ownership."
+    }
+  }
+}
