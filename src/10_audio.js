@@ -28,13 +28,15 @@ J.analyzeAudio = async (file) => {
   }
 
   // Stage 1: Non-destructive audio normalization for analysis ONLY (original audioBuffer stays 100% untouched for playback & export)
-  let rawPeak = 0, rawSqSum = 0;
+  let rawPeak = 0, rawSqSum = 0, clippedSamples = 0;
   for (let i = 0; i < len; i++) {
     const x = mono[i];
     const ax = x < 0 ? -x : x;
     if (ax > rawPeak) rawPeak = ax;
+    if (ax >= 0.985) clippedSamples++;
     rawSqSum += x * x;
   }
+  const clipRatio = clippedSamples / Math.max(1, len);
   const rawRms = Math.sqrt(rawSqSum / Math.max(1, len));
   const targetRms = 0.14;
   const normGain = rawRms > 1e-5 ? Math.min(8.0, Math.min(0.92 / Math.max(1e-4, rawPeak), targetRms / rawRms)) : 1.0;
@@ -272,6 +274,48 @@ J.analyzeAudio = async (file) => {
     acousticType = 'combination';
   }
 
+  // FUNCTION 08 Track-level & 100Hz frame-level Audio Clarity, Noise, Clipping/Distortion & Reverberation Metrics
+  const vFloor10 = sortedVocal[Math.floor(sortedVocal.length * 0.12)] || 1e-5;
+  const vMed50 = sortedVocal[Math.floor(sortedVocal.length * 0.50)] || 1e-4;
+  const trackSnrRatio = vPeak95 / Math.max(1e-5, vFloor10);
+  const trackNoiseScore = J.clamp(1 - Math.log10(Math.max(1.2, trackSnrRatio)) / 1.85, 0, 1);
+
+  // Estimate reverberation via persistence ratio after vocal peaks (high sustained tail / sluggish decay vs dry consonants)
+  let decaySum = 0, decayCnt = 0;
+  for (let f = 6; f < fn - 6; f++) {
+    if (vocalEnv100[f] > vFloor10 * 2.5 && wordAttack100[f] < 0.08) {
+      const ratio = Math.min(1, vocalEnv100[f] / Math.max(1e-5, vocalEnv100[f - 5]));
+      if (ratio > 0.72 && ratio < 1.06) { decaySum += ratio; decayCnt++; }
+    }
+  }
+  const reverbTailScore = decayCnt > 8 ? J.clamp((decaySum / decayCnt - 0.74) / 0.22, 0, 1) : 0.18;
+  const clarity100 = new Float32Array(fn);
+  let claritySum = 0, ovFrames = 0;
+  for (let f = 0; f < fn; f++) {
+    const localSnr = J.clamp((vocalEnv100[f] / Math.max(1e-5, Math.sqrt(vFloor10) * 1.4) - 0.5) / 5.0, 0.08, 1.0);
+    const vadClarity = 0.55 * localSnr + 0.45 * voicing100[f];
+    const ovDrag = sideRatio100[f] > 0.36 ? (sideRatio100[f] - 0.36) * 0.6 : 0;
+    const revDrag = reverbTailScore * 0.22;
+    const clipDrag = clipRatio > 0.008 ? Math.min(0.35, clipRatio * 12) : 0;
+    const c = J.clamp(vadClarity * (1 - 0.35 * trackNoiseScore) - ovDrag - revDrag - clipDrag, 0.08, 0.97);
+    clarity100[f] = +c.toFixed(3);
+    claritySum += c;
+    if (sideRatio100[f] > 0.38 && voicing100[f] > 0.34) ovFrames++;
+  }
+  const avgClarity = +(claritySum / Math.max(1, fn)).toFixed(3);
+  const overlapRatio = +(ovFrames / Math.max(1, fn)).toFixed(3);
+  const qualityConditions = {
+    isNoisy: trackNoiseScore > 0.54 || trackSnrRatio < 6.5,
+    noiseScore: +trackNoiseScore.toFixed(3),
+    isDistorted: clipRatio > 0.006,
+    clipRatio: +clipRatio.toFixed(4),
+    isReverberated: reverbTailScore > 0.52,
+    reverbScore: +reverbTailScore.toFixed(3),
+    hasOverlappingSingers: overlapSegments.length > 0 || overlapRatio > 0.08,
+    overlapRatio,
+    avgClarity,
+  };
+
   const preprocessing = {
     sampleRate: sr,
     duration: +durSec.toFixed(3),
@@ -285,6 +329,7 @@ J.analyzeAudio = async (file) => {
     overlapSegmentCount: overlapSegments.length,
     shouldSeparate: ch >= 2 || vocalFormantShare < 0.45,
     timelinePreserved: true,
+    qualityConditions,
   };
 
   const acousticSummary = {
@@ -295,6 +340,8 @@ J.analyzeAudio = async (file) => {
     instrumentalGapCount: instrumentalSegments.length,
     vocalPhraseCount: vocalSegments.length,
     overlapSegmentCount: overlapSegments.length,
+    avgClarity,
+    qualityConditions,
     sampleRate: sr,
     channels: ch,
     format,
@@ -304,8 +351,8 @@ J.analyzeAudio = async (file) => {
     name: file.name, format, duration: audioBuffer.duration, sampleRate: sr, channels: ch, buffer: audioBuffer,
     bpm: Math.round(60 / period * 10) / 10, beats, energy: energyN, energyRate: rate, peaks,
     vocalEnergy, vocalOnset, silenceSegments, vocalSegments, instrumentalSegments, overlapSegments,
-    preprocessing, acousticSummary,
-    fineRate, vocalEnv100, consonantFlux100, voicing100, wordAttack100, sideRatio100,
+    preprocessing, acousticSummary, qualityConditions,
+    fineRate, vocalEnv100, consonantFlux100, voicing100, wordAttack100, sideRatio100, clarity100,
   };
 };
 
@@ -339,7 +386,7 @@ J.tokenizeKaraokeWords = (text, lang) => {
     } catch (e) {}
   }
 
-  const re = /[A-Za-zÀ-ÿ\u1e00-\u1eff0-9]+(?:['’\-][A-Za-zÀ-ÿ\u1e00-\u1eff0-9]+)*[,.;:!?…]?|[\uac00-\ud7af]+[,.;:!?…]?|[\u3040-\u309f\u30a0-\u30ff][\u3041\u3043\u3045\u3047\u3049\u3063\u3083\u3085\u3087\u308e\u30a1\u30a3\u30a5\u30a7\u30a9\u30c3\u30e3\u30e5\u30e7\u30ee\u30fc]*[、。，．！？…]?|[\u4e00-\u9fff\u3400-\u4dbf][、。，．！？…]?|[^\s]/g;
+  const re = /[¿¡]?[A-Za-zÀ-ÿ\u0100-\u024f\u1e00-\u1eff0-9]+(?:['’\-][A-Za-zÀ-ÿ\u0100-\u024f\u1e00-\u1eff0-9]+)*[,.;:!?…]?|[\uac00-\ud7af]+[,.;:!?…]?|[\u3040-\u309f\u30a0-\u30ff][\u3041\u3043\u3045\u3047\u3049\u3063\u3083\u3085\u3087\u308e\u30a1\u30a3\u30a5\u30a7\u30a9\u30c3\u30e3\u30e5\u30e7\u30ee\u30fc]*[、。，．！？…]?|[\u4e00-\u9fff\u3400-\u4dbf][、。，．！？…]?|[^\s]/g;
   const rawTokens = clean.match(re) || [clean];
   for (const tk of rawTokens) {
     if (/^[.,!?;:…、。，．！？」』）)]+$/.test(tk) && tokens.length) {
@@ -838,6 +885,281 @@ J.alignLinesToVocals = (analysis, lines) => {
   return lineTimes;
 };
 
+/* Find nearest genuine vocal/consonant attack transient around targetTime (±radiusSec)
+   Used by Tap Studio Adaptive Latency Calibration, Vocal Coordination Radar, and live micro-snapping. */
+J.estimateVocalAttackNear = (analysis, targetTime, radiusSec = 0.22, minBound = 0, maxBound = Infinity) => {
+  const t = Math.max(minBound, Number(targetTime) || 0);
+  const att = analysis && (analysis.wordAttack100 || analysis.vocalOnset);
+  const env = analysis && (analysis.vocalEnv100 || analysis.vocalEnergy);
+  const con = analysis && analysis.consonantFlux100;
+  const vad = analysis && analysis.voicing100;
+  const cla = analysis && analysis.clarity100;
+  const fr = (analysis && (analysis.vocalEnv100 ? analysis.fineRate : analysis.energyRate)) || 100;
+  if (!att || !att.length || !(fr > 0)) {
+    return { found: false, attackTime: +t.toFixed(3), driftMs: 0, strength: 0, voicing: 0, clarity: 0.5 };
+  }
+  const rad = Math.max(0.04, Number(radiusSec) || 0.22);
+  const loT = Math.max(minBound, t - rad);
+  const hiT = Math.min(maxBound, t + rad);
+  const idx0 = Math.max(0, Math.floor(loT * fr));
+  const idx1 = Math.min(att.length - 1, Math.ceil(hiT * fr));
+  let bestF = -1, bestScore = -1, maxEnv = 1e-4;
+  if (env) {
+    for (let f = idx0; f <= idx1; f++) if (env[f] > maxEnv) maxEnv = env[f];
+  }
+  for (let f = idx0; f <= idx1; f++) {
+    const ft = f / fr;
+    if (ft < minBound || ft > maxBound) continue;
+    const distNorm = Math.min(1, Math.abs(ft - t) / rad);
+    const distWeight = 1 - 0.28 * distNorm;
+    const eNorm = env ? Math.min(1, env[f] / Math.max(1e-4, maxEnv)) : 0.4;
+    const cNorm = con ? Math.min(1, con[f] / Math.max(1e-4, maxEnv)) : 0;
+    const score = (0.64 * att[f] + 0.22 * cNorm + 0.14 * eNorm) * distWeight;
+    if (score > bestScore) { bestScore = score; bestF = f; }
+  }
+  if (bestF >= 0 && att[bestF] > 0.025 && bestScore > 0.032) {
+    const atkT = +Math.max(minBound, Math.min(maxBound, bestF / fr)).toFixed(3);
+    return {
+      found: true,
+      attackTime: atkT,
+      driftMs: Math.round((t - atkT) * 1000),
+      strength: +att[bestF].toFixed(3),
+      voicing: vad ? +vad[bestF].toFixed(3) : 0.72,
+      clarity: cla ? +cla[bestF].toFixed(3) : 0.74,
+    };
+  }
+  return { found: false, attackTime: +t.toFixed(3), driftMs: 0, strength: 0, voicing: 0, clarity: 0.5 };
+};
+
+/* Snap vocal release / hold end onto genuine voicing decay around approxEndTime */
+J.alignVocalTailEnd = (analysis, approxEndTime, minStart = 0, maxEnd = Infinity) => {
+  const raw = Math.max(minStart + 0.05, Math.min(maxEnd, Number(approxEndTime) || minStart + 0.2));
+  const env = analysis && analysis.vocalEnv100;
+  const vad = analysis && analysis.voicing100;
+  const fr = (analysis && analysis.fineRate) || 100;
+  if (!env || !env.length || !(fr > 0)) return +raw.toFixed(3);
+
+  const idxCenter = Math.max(0, Math.min(env.length - 1, Math.round(raw * fr)));
+  const idx0 = Math.max(Math.ceil((minStart + 0.04) * fr), idxCenter - 14);
+  const idx1 = Math.min(env.length - 1, Math.floor(Math.min(maxEnd, raw + 0.14) * fr));
+  let peakE = 0;
+  for (let f = idx0; f <= idxCenter; f++) if (env[f] > peakE) peakE = env[f];
+  if (peakE <= 1e-4) return +raw.toFixed(3);
+
+  const dropThr = peakE * 0.28;
+  for (let f = Math.max(idx0, idxCenter - 4); f <= idx1; f++) {
+    const lowV = vad ? vad[f] < 0.18 : false;
+    if (env[f] <= dropThr || lowV) {
+      return +Math.max(minStart + 0.05, Math.min(maxEnd, f / fr)).toFixed(3);
+    }
+  }
+  return +raw.toFixed(3);
+};
+
+/* Constrained Anchor-Warp Word Alignment:
+   Preserves manually tapped/validated anchor words intact while snapping every remaining word
+   between anchors onto 10ms acoustic vocal attack & consonant peaks via Viterbi DP. */
+J.alignLineWordsAnchored = (analysis, words, lineStart, lineEnd, lang, defaultSpeaker = 'Lead') => {
+  if (!Array.isArray(words) || !words.length) return [];
+  const sLine = Math.max(0, Number(lineStart) || 0);
+  const eLine = Math.max(sLine + 0.08 * words.length, Number(lineEnd) || sLine + 2.0);
+  const cloned = words.map(w => Object.assign({}, w, {
+    text: String((w && w.text) || ''),
+    start: Number(w && w.start) || sLine,
+    end: Number(w && w.end) || (sLine + 0.2),
+    speaker: String((w && w.speaker) || defaultSpeaker || 'Lead'),
+    validated: Boolean(w && w.validated),
+  }));
+
+  // Partition into contiguous unvalidated runs separated by validated anchors
+  let idx = 0;
+  while (idx < cloned.length) {
+    if (cloned[idx].validated) {
+      if (!Array.isArray(cloned[idx].chars) || !cloned[idx].chars.length) {
+        cloned[idx].chars = J.buildCharTimings(cloned[idx].text, cloned[idx].start, cloned[idx].end, analysis);
+      }
+      idx++;
+      continue;
+    }
+    let endIdx = idx;
+    while (endIdx + 1 < cloned.length && !cloned[endIdx + 1].validated) endIdx++;
+
+    const leftT = idx === 0
+      ? sLine
+      : Math.max(sLine, cloned[idx - 1].end + 0.006);
+    const rightLimit = endIdx === cloned.length - 1
+      ? eLine
+      : Math.min(eLine, Math.max(leftT + 0.06 * (endIdx - idx + 1), cloned[endIdx + 1].start - 0.006));
+    const spanText = cloned.slice(idx, endIdx + 1).map(w => w.text).join(' ');
+    const avgRec = cloned.slice(idx, endIdx + 1).reduce((s, w) => s + (Number(w.recognitionConfidence) || 0.9), 0) / (endIdx - idx + 1);
+    const aligned = J.alignWordsAcoustic(analysis, spanText, leftT, rightLimit, lang, defaultSpeaker, avgRec);
+
+    const count = endIdx - idx + 1;
+    if (aligned.length === count) {
+      for (let k = 0; k < count; k++) {
+        const tgt = cloned[idx + k];
+        const src = aligned[k];
+        tgt.start = src.start;
+        tgt.end = src.end;
+        tgt.chars = src.chars;
+        tgt.alignmentConfidence = src.alignmentConfidence;
+        tgt.flags = src.flags;
+      }
+    } else {
+      // Fallback: distribute phonetically & build chars if tokenizer split differs
+      const totalWeights = cloned.slice(idx, endIdx + 1).reduce((s, w) => s + wordPhoneticStats(w.text).weight, 0) || count;
+      let cur = leftT;
+      for (let k = 0; k < count; k++) {
+        const tgt = cloned[idx + k];
+        const dur = (wordPhoneticStats(tgt.text).weight / totalWeights) * Math.max(0.06 * count, rightLimit - leftT);
+        tgt.start = +cur.toFixed(3);
+        cur += dur;
+        tgt.end = k === count - 1 ? +Math.max(tgt.start + 0.025, rightLimit).toFixed(3) : +Math.max(tgt.start + 0.025, cur).toFixed(3);
+        tgt.chars = J.buildCharTimings(tgt.text, tgt.start, tgt.end, analysis);
+        tgt.alignmentConfidence = analysis ? 0.82 : 0.64;
+      }
+    }
+    idx = endIdx + 1;
+  }
+  return cloned;
+};
+
+/* Per-word Vocal-to-Lyric Coherence Analyzer:
+   Evaluates how tightly each displayed word aligns with genuine vocal onset, voicing, and envelope in [lineStart, lineEnd]. */
+J.analyzeLineVocalCoordination = (analysis, words, lineStart = 0, lineEnd = 0) => {
+  const list = Array.isArray(words) ? words : [];
+  const env = analysis && analysis.vocalEnv100;
+  const vad = analysis && analysis.voicing100;
+  const fr = (analysis && analysis.fineRate) || 100;
+  const hasAudio = Boolean(env && env.length && fr > 0);
+  if (!list.length) {
+    return { score: 0, syncedCount: 0, total: 0, avgAbsErrMs: 0, hasAudio, words: [] };
+  }
+
+  let peakLineEnv = 1e-4;
+  if (hasAudio) {
+    const s0 = Math.max(0, Math.floor(Math.max(0, lineStart) * fr));
+    const s1 = Math.min(env.length - 1, Math.ceil(Math.max(lineStart + 0.3, lineEnd || (list[list.length - 1].end || 1)) * fr));
+    for (let f = s0; f <= s1; f++) if (env[f] > peakLineEnv) peakLineEnv = env[f];
+  }
+
+  let scoreSum = 0;
+  let errSum = 0;
+  let syncedCount = 0;
+  const analyzedWords = list.map((w, idx) => {
+    const ws = Math.max(0, Number(w && w.start) || 0);
+    const we = Math.max(ws + 0.02, Number(w && w.end) || (ws + 0.2));
+    const dur = we - ws;
+    const minBound = idx > 0 ? Math.max(0, (Number(list[idx - 1].start) || 0) + 0.03) : Math.max(0, ws - 0.22);
+
+    let onsetErrorMs = 0;
+    let avgEnvNorm = 0.72;
+    let maxVoicing = 0.75;
+    let nearestAttack = ws;
+    let attackFound = false;
+
+    if (hasAudio) {
+      const atk = J.estimateVocalAttackNear(analysis, ws, 0.20, minBound, we);
+      attackFound = Boolean(atk && atk.found);
+      if (attackFound) {
+        nearestAttack = atk.attackTime;
+        onsetErrorMs = Math.round((ws - atk.attackTime) * 1000);
+      }
+      const f0 = Math.max(0, Math.floor(ws * fr));
+      const f1 = Math.min(env.length - 1, Math.max(f0, Math.ceil(we * fr)));
+      let sumE = 0, cntE = 0, bestV = 0;
+      for (let f = f0; f <= f1; f++) {
+        sumE += env[f];
+        cntE++;
+        if (vad && vad[f] > bestV) bestV = vad[f];
+      }
+      avgEnvNorm = cntE ? Math.min(1, (sumE / cntE) / Math.max(1e-4, peakLineEnv * 0.55)) : 0;
+      maxVoicing = vad ? bestV : avgEnvNorm;
+    }
+
+    const validated = Boolean(w && w.validated);
+    const cleanTextLen = String((w && w.text) || '').replace(/\s+/g, '').length;
+    let status = 'synced';
+    if (hasAudio) {
+      if (avgEnvNorm < 0.14 && maxVoicing < 0.22 && !validated) status = 'silence';
+      else if (dur < 0.055 && cleanTextLen >= 4) status = 'crowded';
+      else if (Math.abs(onsetErrorMs) <= 45 || (validated && Math.abs(onsetErrorMs) <= 65)) status = 'synced';
+      else if (onsetErrorMs < -45) status = 'early';
+      else status = 'late';
+    } else if (!validated) {
+      status = 'estimated';
+    }
+
+    const absErr = Math.abs(onsetErrorMs);
+    let wordScore = hasAudio
+      ? Math.max(0.15, 1 - Math.min(1, absErr / 180) * 0.65 - (status === 'silence' ? 0.35 : status === 'crowded' ? 0.2 : 0))
+      : (validated ? 0.94 : 0.72);
+    if (validated) wordScore = Math.max(wordScore, 0.88);
+    if (status === 'synced') syncedCount++;
+    scoreSum += wordScore;
+    errSum += absErr;
+
+    return {
+      index: idx,
+      text: String((w && w.text) || ''),
+      status,
+      validated,
+      onsetErrorMs,
+      nearestAttack: +nearestAttack.toFixed(3),
+      attackFound,
+      vocalPresence: +avgEnvNorm.toFixed(2),
+      score: Math.round(wordScore * 100),
+    };
+  });
+
+  return {
+    score: Math.round((scoreSum / list.length) * 100),
+    syncedCount,
+    total: list.length,
+    avgAbsErrMs: Math.round(errSum / list.length),
+    hasAudio,
+    words: analyzedWords,
+  };
+};
+
+/* Two-Pass Vocal-to-Lyric Optimizer:
+   Pass 1 runs anchored 10ms Viterbi alignment; Pass 2 pulls residual >45ms unvalidated words onto clean nearby vocal transients. */
+J.optimizeLineVocalCoordination = (analysis, words, lineStart, lineEnd, lang, defaultSpeaker = 'Lead') => {
+  const pass1 = J.alignLineWordsAnchored(analysis, words, lineStart, lineEnd, lang, defaultSpeaker);
+  if (!analysis || !(analysis.wordAttack100 && analysis.wordAttack100.length) || !pass1.length) {
+    return pass1;
+  }
+  const sLine = Math.max(0, Number(lineStart) || 0);
+  const eLine = Math.max(sLine + 0.08 * pass1.length, Number(lineEnd) || (pass1[pass1.length - 1].end || sLine + 1));
+
+  for (let i = 0; i < pass1.length; i++) {
+    const cur = pass1[i];
+    if (cur.validated) continue;
+    const prevEnd = i > 0 ? pass1[i - 1].end + 0.008 : sLine;
+    const nextStart = i + 1 < pass1.length ? pass1[i + 1].start - 0.008 : eLine;
+    const lo = Math.max(sLine, i > 0 ? pass1[i - 1].start + 0.04 : sLine);
+    const hi = Math.min(eLine, i + 1 < pass1.length ? pass1[i + 1].end - 0.04 : eLine);
+    if (hi - lo < 0.05) continue;
+
+    const atk = J.estimateVocalAttackNear(analysis, cur.start, 0.14, lo, hi - 0.035);
+    if (atk.found && Math.abs(atk.driftMs) >= 35 && Math.abs(atk.driftMs) <= 145) {
+      const snappedS = +J.clamp(atk.attackTime, prevEnd - 0.04, hi - 0.045).toFixed(3);
+      if (i > 0 && pass1[i - 1].end > snappedS - 0.008) {
+        if (pass1[i - 1].validated) continue;
+        pass1[i - 1].end = +Math.max(pass1[i - 1].start + 0.03, snappedS - 0.008).toFixed(3);
+        pass1[i - 1].chars = J.buildCharTimings(pass1[i - 1].text, pass1[i - 1].start, pass1[i - 1].end, analysis);
+      }
+      const nextE = Math.min(nextStart, Math.max(snappedS + 0.05, cur.end));
+      cur.start = snappedS;
+      cur.end = +Math.max(snappedS + 0.04, nextE).toFixed(3);
+      cur.alignmentConfidence = +Math.min(0.95, Math.max(Number(cur.alignmentConfidence) || 0.78, 0.88 + 0.06 * atk.clarity)).toFixed(3);
+      cur.flags = (cur.flags || []).filter(f => f !== 'uncertain_boundary');
+      cur.chars = J.buildCharTimings(cur.text, cur.start, cur.end, analysis);
+    }
+  }
+  return pass1;
+};
+
 const blobToBase64 = (blob) => new Promise((res, rej) => {
   const reader = new FileReader();
   reader.onload = () => {
@@ -904,8 +1226,117 @@ J.audioVocalSeparatedWavWindow = (buffer, startSec = 0, durationSec = 140, targe
   return new Blob([ab], { type: 'audio/wav' });
 };
 
-/* Stage 6: Cross-Validate Detected Lyrics & Timestamps Against Acoustic Vocal Evidence.
-   Flags uncertain/missing/misrecognized/overlapping/boundary issues — NEVER invents fake lyrics. */
+/* FUNCTION 08: Estimate all 5 Quality Control dimensions for an individual word & classify into
+   HIGH CONFIDENCE / MEDIUM CONFIDENCE / LOW CONFIDENCE. Never claims 100% accuracy. */
+J.evaluateWordQuality = (w, analysis = null, lineMeta = null) => {
+  const recRaw = w && w.recognitionConfidence != null ? Number(w.recognitionConfidence) : (w && w.validated ? 0.94 : 0.80);
+  const alignRaw = w && w.alignmentConfidence != null ? Number(w.alignmentConfidence) : (w && w.validated ? 0.95 : 0.78);
+  const env = analysis && analysis.vocalEnv100;
+  const clMap = analysis && analysis.clarity100;
+  const ovMap = analysis && analysis.sideRatio100;
+  const vad = analysis && analysis.voicing100;
+  const fr = (analysis && analysis.fineRate) || 100;
+  const qCond = (analysis && analysis.qualityConditions) || {};
+
+  let audioClarity = w && w.audioClarity != null ? Number(w.audioClarity) : (qCond.avgClarity != null ? qCond.avgClarity : 0.78);
+  let vocalOverlap = w && w.vocalOverlap != null ? Number(w.vocalOverlap) : 0.08;
+  let peakE = 0, avgVad = 0.5;
+
+  if (env && env.length && Number.isFinite(Number(w && w.start)) && Number.isFinite(Number(w && w.end))) {
+    const f0 = Math.max(0, Math.min(env.length - 1, Math.round(Number(w.start) * fr)));
+    const f1 = Math.max(f0, Math.min(env.length - 1, Math.round(Number(w.end) * fr)));
+    let clSum = 0, ovSum = 0, vadSum = 0, cnt = 0;
+    for (let f = f0; f <= f1; f++) {
+      if (env[f] > peakE) peakE = env[f];
+      if (clMap) clSum += clMap[f] || 0;
+      if (ovMap) ovSum += ovMap[f] || 0;
+      if (vad) vadSum += vad[f] || 0;
+      cnt++;
+    }
+    if (cnt > 0) {
+      if (clMap) audioClarity = clSum / cnt;
+      if (ovMap) vocalOverlap = Math.max(vocalOverlap * 0.5, ovSum / cnt);
+      if (vad) avgVad = vadSum / cnt;
+    }
+  }
+  if (analysis && Array.isArray(analysis.overlapSegments) && w) {
+    const mid = (Number(w.start) + Number(w.end)) * 0.5;
+    if (analysis.overlapSegments.some(s => mid >= s.start && mid <= s.end)) {
+      vocalOverlap = Math.max(vocalOverlap, 0.58);
+    }
+  }
+  if (lineMeta && (lineMeta.vocalType === 'overlapping' || lineMeta.vocalType === 'harmony' || lineMeta.vocalType === 'backing' || lineMeta.backingText)) {
+    vocalOverlap = Math.max(vocalOverlap, 0.55);
+  }
+
+  const flags = Array.isArray(w && w.flags) ? w.flags.slice() : [];
+  if (flags.includes('overlapping_vocals')) vocalOverlap = Math.max(vocalOverlap, 0.56);
+
+  // Degrade clarity/certainty honestly when noisy, distorted, or heavily reverberated
+  if (qCond.isDistorted) audioClarity = Math.min(audioClarity, 0.62);
+  if (qCond.isNoisy) audioClarity = Math.min(audioClarity, 0.66);
+  if (qCond.isReverberated) audioClarity = Math.min(audioClarity, 0.70);
+
+  const transcriptionConfidence = +J.clamp(recRaw, 0.05, 0.98).toFixed(3);
+  const alignmentConfidence = +J.clamp(alignRaw, 0.05, 0.98).toFixed(3);
+  audioClarity = +J.clamp(audioClarity, 0.05, 0.97).toFixed(3);
+  vocalOverlap = +J.clamp(vocalOverlap, 0, 1).toFixed(3);
+
+  const hasUncWord = flags.includes('uncertain_word') || flags.includes('misrecognized_word') || flags.includes('missing_word');
+  const hasUncBound = flags.includes('uncertain_boundary');
+
+  const envUncertainty = (qCond.isNoisy ? 0.14 : 0) + (qCond.isDistorted ? 0.16 : 0) + (qCond.isReverberated ? 0.10 : 0) + (vocalOverlap > 0.42 ? 0.18 * vocalOverlap : 0);
+  const rawComposite = (0.40 * transcriptionConfidence + 0.36 * alignmentConfidence + 0.24 * audioClarity) - 0.55 * envUncertainty;
+  const compositeScore = +J.clamp(rawComposite, 0.05, 0.97).toFixed(3);
+  const recognitionUncertainty = +J.clamp((1 - compositeScore) + (hasUncWord ? 0.14 : 0), 0.02, 0.96).toFixed(3);
+
+  let qualityTier = 'MEDIUM';
+  if (w && w.validated) {
+    // Human-verified words keep honest acoustic metrics; if clarity/overlap is severe, reflect medium acoustic confidence while marked validated
+    qualityTier = (audioClarity < 0.45 || qCond.isDistorted) ? 'MEDIUM' : 'HIGH';
+  } else if (
+    !hasUncWord &&
+    !hasUncBound &&
+    transcriptionConfidence >= 0.78 &&
+    alignmentConfidence >= 0.78 &&
+    audioClarity >= 0.64 &&
+    vocalOverlap <= 0.36 &&
+    compositeScore >= 0.77
+  ) {
+    qualityTier = 'HIGH';
+  } else if (
+    hasUncWord ||
+    transcriptionConfidence < 0.66 ||
+    alignmentConfidence < 0.64 ||
+    audioClarity < 0.48 ||
+    compositeScore < 0.59 ||
+    (peakE > 0 && peakE < 0.002 && avgVad < 0.15)
+  ) {
+    qualityTier = 'LOW';
+  }
+
+  const conditionWarnings = [];
+  if (qCond.isNoisy) conditionWarnings.push('noisy');
+  if (qCond.isDistorted) conditionWarnings.push('distorted');
+  if (qCond.isReverberated) conditionWarnings.push('reverberated');
+  if (vocalOverlap > 0.38 || qCond.hasOverlappingSingers) conditionWarnings.push('overlapping_vocals');
+
+  return {
+    transcriptionConfidence,
+    alignmentConfidence,
+    audioClarity,
+    vocalOverlap,
+    recognitionUncertainty,
+    compositeScore,
+    qualityTier,
+    conditionWarnings,
+  };
+};
+
+J.classifyWordQuality = (w, analysis = null, lineMeta = null) => J.evaluateWordQuality(w, analysis, lineMeta);
+
+/* Stage 6: Cross-Validate Detected Lyrics & Timestamps Against Acoustic Vocal Evidence + FUNCTION 08 Quality Control.
+   Flags uncertain/missing/misrecognized/overlapping/boundary issues — NEVER invents fake lyrics & NEVER claims 100% accuracy. */
 J.validateKaraokeAlignment = (analysis, lines, serverValidation = null) => {
   const vocalSegs = (analysis && analysis.vocalSegments) || [];
   const env = analysis && analysis.vocalEnv100;
@@ -913,6 +1344,9 @@ J.validateKaraokeAlignment = (analysis, lines, serverValidation = null) => {
   const ovMap = analysis && analysis.sideRatio100;
   const fr = (analysis && analysis.fineRate) || 100;
   const serverGaps = (serverValidation && Array.isArray(serverValidation.missingVocalGaps)) ? serverValidation.missingVocalGaps : [];
+  const qualityConditions = (analysis && analysis.qualityConditions) || {
+    isNoisy: false, isDistorted: false, isReverberated: false, hasOverlappingSingers: false, avgClarity: 0.78,
+  };
 
   const nonInstLines = (lines || []).filter(l => l && !l.isInstrumentalSection && l.vocalType !== 'instrumental');
   const covIntervals = [];
@@ -960,6 +1394,9 @@ J.validateKaraokeAlignment = (analysis, lines, serverValidation = null) => {
   const missingVocalGaps = serverGaps.concat(uncoveredSegs);
 
   let uncertainWords = 0, misrecognizedWords = 0, overlappingWords = 0, uncertainBoundaries = 0, totalWords = 0;
+  let highConfidenceWords = 0, mediumConfidenceWords = 0, lowConfidenceWords = 0;
+  let claritySum = 0, uncertaintySum = 0, overlapSum = 0;
+
   const validatedLines = (lines || []).map(ln => {
     if (!ln || ln.isInstrumentalSection || ln.vocalType === 'instrumental') return ln;
     const lineFlagSet = new Set(Array.isArray(ln.flags) ? ln.flags : []);
@@ -992,29 +1429,171 @@ J.validateKaraokeAlignment = (analysis, lines, serverValidation = null) => {
       }
 
       const wFlags = Array.from(fSet);
+      const qm = J.evaluateWordQuality(Object.assign({}, w, { flags: wFlags }), analysis, ln);
       if (fSet.has('uncertain_word')) uncertainWords++;
       if (fSet.has('misrecognized_word')) misrecognizedWords++;
-      if (fSet.has('overlapping_vocals')) overlappingWords++;
+      if (fSet.has('overlapping_vocals') || qm.vocalOverlap > 0.42) overlappingWords++;
       if (fSet.has('uncertain_boundary')) uncertainBoundaries++;
+      if (qm.qualityTier === 'HIGH') highConfidenceWords++;
+      else if (qm.qualityTier === 'LOW') lowConfidenceWords++;
+      else mediumConfidenceWords++;
+      claritySum += qm.audioClarity;
+      uncertaintySum += qm.recognitionUncertainty;
+      overlapSum += qm.vocalOverlap;
       wFlags.forEach(fl => lineFlagSet.add(fl));
-      return Object.assign({}, w, { flags: wFlags, validated: Boolean(w.validated) });
+      return Object.assign({}, w, {
+        flags: wFlags,
+        validated: Boolean(w.validated),
+        recognitionConfidence: qm.transcriptionConfidence,
+        alignmentConfidence: qm.alignmentConfidence,
+        audioClarity: qm.audioClarity,
+        vocalOverlap: qm.vocalOverlap,
+        recognitionUncertainty: qm.recognitionUncertainty,
+        qualityTier: qm.qualityTier,
+      });
     });
     if (ln.unclear || ln.vocalType === 'unclear') lineFlagSet.add('uncertain_word');
     if (ln.backingText || ln.vocalType === 'overlapping' || ln.vocalType === 'harmony') lineFlagSet.add('overlapping_vocals');
     return Object.assign({}, ln, { words, flags: Array.from(lineFlagSet) });
   });
 
+  const avgClarity = totalWords ? +(claritySum / totalWords).toFixed(3) : (qualityConditions.avgClarity ?? 0.78);
+  const avgUncertainty = totalWords ? +(uncertaintySum / totalWords).toFixed(3) : 0.25;
+  const avgOverlap = totalWords ? +(overlapSum / totalWords).toFixed(3) : (qualityConditions.overlapRatio ?? 0);
+  // Honest track score capped strictly below 1.00 (never claims 100%)
+  const overallConfidence = +J.clamp(1 - avgUncertainty, 0.05, 0.97).toFixed(3);
+
   return {
     lines: validatedLines,
     validationSummary: {
       totalWords,
+      highConfidenceWords,
+      mediumConfidenceWords,
+      lowConfidenceWords,
       uncertainWords,
       missingWords: missingVocalGaps.length,
       misrecognizedWords,
       overlappingWords,
       uncertainBoundaries,
       missingVocalGaps,
+      avgClarity,
+      avgUncertainty,
+      avgOverlap,
+      overallConfidence,
+      qualityConditions,
     },
+  };
+};
+
+/* FUNCTION 08: Automatic High-Resolution Re-Analysis of Low-Confidence Segments */
+J.reanalyzeLowConfidenceSegments = async (analysis, lines, lang = 'auto', onProgress = null) => {
+  const inputLines = Array.isArray(lines) ? lines : [];
+  if (!inputLines.length) return { lines: inputLines, reanalyzedCount: 0, upgradedCount: 0, source: 'none', validationSummary: null };
+
+  const targetIndices = [];
+  inputLines.forEach((ln, idx) => {
+    if (!ln || ln.interlude || ln.isInstrumentalSection) return;
+    const words = Array.isArray(ln.words) ? ln.words : (Array.isArray(ln.wordsTimed) ? ln.wordsTimed : []);
+    const hasLow = words.some(w => {
+      if (w.validated) return false;
+      const tier = w.qualityTier || J.evaluateWordQuality(w, analysis, ln).qualityTier;
+      return tier === 'LOW';
+    });
+    const f = Array.isArray(ln.flags) ? ln.flags : [];
+    if (hasLow || ln.unclear || f.includes('uncertain_word') || f.includes('misrecognized_word') || f.includes('missing_word')) {
+      targetIndices.push(idx);
+    }
+  });
+
+  if (!targetIndices.length) {
+    const val = J.validateKaraokeAlignment(analysis, inputLines);
+    return { lines: val.lines, reanalyzedCount: 0, upgradedCount: 0, source: 'none', validationSummary: val.validationSummary };
+  }
+
+  const outLines = inputLines.map(ln => Object.assign({}, ln, {
+    words: Array.isArray(ln.words) ? ln.words.map(w => Object.assign({}, w)) : [],
+  }));
+  let upgradedCount = 0;
+  let usedAi = false;
+
+  for (let k = 0; k < targetIndices.length; k++) {
+    const idx = targetIndices[k];
+    const ln = outLines[idx];
+    if (typeof onProgress === 'function') {
+      try { onProgress(k + 1, targetIndices.length, ln); } catch (e) {}
+    }
+    const padS = Math.max(0, (Number(ln.start) || 0) - 0.35);
+    const padE = Math.min((analysis && analysis.duration) || (Number(ln.end) + 1), (Number(ln.end) || padS + 2) + 0.35);
+    let updatedWords = null;
+
+    if (analysis && analysis.buffer && typeof fetch === 'function') {
+      try {
+        const sr = 24000;
+        const wavBlob = J.audioMonoWavWindow(analysis.buffer, padS, Math.max(0.25, padE - padS), sr);
+        const audioBase64 = await blobToBase64(wavBlob);
+        let separatedVocalBase64 = '';
+        if (analysis.preprocessing && analysis.preprocessing.shouldSeparate !== false) {
+          const sepBlob = J.audioVocalSeparatedWavWindow(analysis.buffer, padS, Math.max(0.25, padE - padS), sr);
+          separatedVocalBase64 = await blobToBase64(sepBlob);
+        }
+        const resp = await fetch('/api/reanalyze-segment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            audioBase64,
+            separatedVocalBase64,
+            startSec: padS,
+            endSec: padE,
+            existingWords: ln.words || [],
+            qualityConditions: analysis.qualityConditions || null,
+            lang,
+          }),
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data && data.success && Array.isArray(data.lines) && data.lines.length) {
+            usedAi = true;
+            const aiWords = data.lines.flatMap(dl => dl.words || []);
+            if (aiWords.length) {
+              updatedWords = J.refineWordTimingsAcoustic(analysis, aiWords, ln.start, ln.end, ln.language || lang, ln.speaker || 'Lead');
+              const txtNew = data.lines.map(dl => dl.text).filter(Boolean).join(' ').trim();
+              if (txtNew && !/^\[?unclear/i.test(txtNew)) ln.text = txtNew;
+            }
+          }
+        }
+      } catch (e) {}
+    }
+
+    if (!updatedWords) {
+      // High-precision acoustic re-alignment pass (preserves validated anchors)
+      updatedWords = J.realignLineWords
+        ? J.realignLineWords(analysis, ln.text, ln.start, ln.end, ln.language || lang, ln.speaker || 'Lead', ln.words)
+        : J.alignWordsAcoustic(analysis, ln.text, ln.start, ln.end, ln.language || lang, ln.speaker || 'Lead', 0.86);
+    }
+
+    if (Array.isArray(updatedWords) && updatedWords.length) {
+      // Never overwrite user-validated words; update uncertain/low-confidence words cleanly
+      const oldLow = (ln.words || []).filter(w => (w.qualityTier || 'MEDIUM') === 'LOW').length;
+      const merged = updatedWords.map((nw, wi) => {
+        const ow = ln.words[wi];
+        if (ow && ow.validated) return ow;
+        return nw;
+      });
+      ln.words = merged;
+      const postQ = merged.map(mw => J.evaluateWordQuality(mw, analysis, ln));
+      const newLow = postQ.filter(q => q.qualityTier === 'LOW').length;
+      if (newLow < oldLow) upgradedCount += (oldLow - newLow);
+    }
+  }
+
+  const finalVal = J.validateKaraokeAlignment(analysis, outLines);
+  return {
+    lines: finalVal.lines,
+    reanalyzedCount: targetIndices.length,
+    upgradedCount,
+    remainingLowCount: finalVal.validationSummary.lowConfidenceWords,
+    source: usedAi ? 'ai+acoustic' : 'acoustic_deep',
+    validationSummary: finalVal.validationSummary,
   };
 };
 
@@ -1348,6 +1927,13 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
       data.lines = rv.lines;
       data.validationSummary = rv.validationSummary;
       data.pipelineReport = rv.pipelineReport;
+      const lineLangs = new Set(Array.isArray(data.detectedLanguages) ? data.detectedLanguages.filter(Boolean) : []);
+      if (data.language && data.language !== 'auto' && data.language !== 'multi' && data.language !== 'instrumental') lineLangs.add(data.language);
+      rv.lines.forEach(l => {
+        if (l && !l.isInstrumentalSection && l.language && l.language !== 'auto' && l.language !== 'instrumental') lineLangs.add(l.language);
+      });
+      data.detectedLanguages = Array.from(lineLangs);
+      if (data.detectedLanguages.length > 1 && !lang) data.language = data.detectedLanguages[0];
       return data;
     }
     return null;
@@ -1437,6 +2023,31 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
     pipelineReport: rv.pipelineReport,
     lines: rv.lines,
   };
+};
+
+/* FUNCTION 09 — Optional synchronized translation layer helper (preserves original lines/timestamps) */
+J.translateLyricsLines = async (lines, targetLang) => {
+  const inputLines = Array.isArray(lines) ? lines : [];
+  if (!inputLines.length) {
+    return { success: true, targetLang, detectedSourceLanguages: [], translations: [] };
+  }
+  const resp = await fetch('/api/translate-lyrics', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      lines: inputLines.map((l, idx) => ({
+        index: Number.isInteger(Number(l && l.index)) ? Number(l.index) : idx,
+        text: String((l && l.text) || ''),
+        language: String((l && (l.language || (l.meta && l.meta.language))) || ''),
+        interlude: Boolean(l && (l.interlude || l.isInstrumentalSection)),
+      })),
+      targetLang: String(targetLang || 'en'),
+    }),
+  });
+  if (!resp.ok) {
+    throw new Error(`HTTP ${resp.status}`);
+  }
+  return resp.json();
 };
 
 /* 16-bit PCM WAV of an AudioBuffer, cut / padded to `duration` seconds (the soundtrack next to an MP4 whose

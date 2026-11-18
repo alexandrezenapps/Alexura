@@ -53,18 +53,30 @@
             <span id="lblTapVocal" class="tap-meter-lbl">Voix</span>
             <div class="tap-meter"><i id="tapVocalFill"></i></div>
             <span id="tapSnapNote" class="tap-snap-note mono muted">—</span>
+            <span id="tapCoordBadge" class="tap-coord-badge mono muted">Précision : —</span>
           </div>
+          <canvas id="tapRadarCanvas" class="tap-radar" width="520" height="68" aria-label="Radar de coordination vocale temps réel"></canvas>
           <div class="tap-stage">
             <div id="tapPrevLine" class="tap-prev muted"></div>
             <div class="next tap-cur-row"><b id="tapLine">—</b><b id="tapCountNum" class="tap-count" hidden></b></div>
             <div id="tapWordQueue" class="tap-words" hidden></div>
+            <div class="tap-coord-strip">
+              <span id="tapLineCoherence" class="tap-coh-pill mono muted">Coordination : —</span>
+              <div class="tap-coh-tools">
+                <button type="button" id="tapShiftEarly" class="ghost small" title="Avancer les mots non verrouillés de cette phrase (-25 ms)">-25ms</button>
+                <button type="button" id="tapShiftLate" class="ghost small" title="Retarder les mots non verrouillés de cette phrase (+25 ms)">+25ms</button>
+                <button type="button" id="tapLoopLine" class="ghost small" aria-pressed="false" title="Boucler cette phrase pour perfectionner chaque mot">🔁 Boucler</button>
+                <button type="button" id="tapAssistRest" class="ghost small" title="Synchroniser le reste du morceau depuis cette phrase avec votre rythme vocal">⚡ Finir IA Voix</button>
+              </div>
+            </div>
             <div id="tapNextLine" class="tap-next muted"></div>
           </div>
           <div class="tap-opts">
             <label><span id="lblTapMode">Mode</span> <select id="tapMode" aria-label="Mode de synchro au tap"><option value="line">Phrase / Ligne</option><option value="word">Mot par mot (Précis)</option><option value="cut">Phrases + Coupes [Tab]</option></select></label>
             <label><span id="lblTapRate">Vitesse</span> <select id="tapRate" aria-label="Vitesse de lecture"><option value="1">1×</option><option value="0.85">0.85×</option><option value="0.75">0.75×</option><option value="0.5">0.5×</option></select></label>
             <label><span id="lblTapSnap">Calage</span> <select id="tapSnapMode" aria-label="Accroche de précision"><option value="vocal">Attaque vocale (±90ms)</option><option value="beat">Grille rythmique (BPM)</option><option value="free">Libre (ms exact)</option></select></label>
-            <label><span id="lblTapLatency">Latence</span> <select id="tapLatency" aria-label="Compensation de latence humaine"><option value="0">0 ms</option><option value="45">-45 ms</option><option value="75">-75 ms</option><option value="110">-110 ms</option></select></label>
+            <label><span id="lblTapLatency">Latence</span> <select id="tapLatency" aria-label="Compensation de latence humaine"><option value="auto">Auto-calibré (Voix)</option><option value="0">0 ms</option><option value="45">-45 ms</option><option value="75">-75 ms</option><option value="110">-110 ms</option><option value="-30">+30 ms (anticipation)</option></select></label>
+            <label class="tap-chk"><input type="checkbox" id="tapAutoMicro" checked> <span id="lblTapAutoMicro">Micro-calage mots (Voix)</span></label>
             <label class="tap-chk"><input type="checkbox" id="tapHoldEnd"> <span id="lblTapHoldEnd">Maintenir = Fin [E]</span></label>
             <label class="tap-chk"><input type="checkbox" id="tapCount"> <span id="lblTapCount">Compte 3·2·1</span></label>
             <label class="tap-chk"><input type="checkbox" id="tapClick"> <span id="lblTapClick">Clic métronome</span></label>
@@ -72,6 +84,7 @@
           <div class="tap-actions">
             <button type="button" id="tapBtn" class="tap">TAP [Espace]</button>
             <div class="tap-sub-btns">
+              <button type="button" id="tapMicroAlign" class="ghost small" title="Recaler finement tous les mots non verrouillés de cette phrase sur l'attaque vocale (10 ms)">✨ Micro-caler phrase</button>
               <button type="button" id="tapMarkEnd" class="ghost small" title="Fixer la fin de la phrase/du mot en cours [E]">⏹ Fin [E]</button>
               <button type="button" id="tapPlayPause" class="ghost small" title="Mettre en pause ou reprendre la musique [P]">⏸ Pause [P]</button>
               <button type="button" id="tapRewind" class="ghost small" title="Reculer de 2 secondes">⟲ -2s</button>
@@ -84,7 +97,43 @@
       <div class="sec">
         <div class="sec-h"><h2>歌詞</h2><span class="sec-btns"><label class="file ghost small" title="LRC ファイル（タイムスタンプ付きの歌詞）や字幕ファイル（SRT / VTT）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）。ファイルを画面にドロップしても読み込めます">LRC / SRT を読み込む<input id="fileLrc" type="file" accept=".lrc,.srt,.vtt,.txt,text/plain"></label><button id="btnClearLyrics" class="ghost small" title="歌詞と、行ごとのタイミング・指定・書き出す範囲を消します（「元に戻す」か Ctrl+Z で戻せます）">歌詞を消す</button><button id="btnSyntax" class="ghost small" aria-expanded="false">記法</button></span></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="歌詞（1行 = 1フレーズ）"></textarea>
-        <label class="lang-row">歌詞の言語<select id="lyricLang"><option value="auto">自動判定</option><option value="ja">日本語</option><option value="zh-Hant">繁體中文</option><option value="zh-Hans">简体中文</option><option value="ko">한국어</option><option value="en">English</option><option value="fr">Français</option></select><span id="langNote" class="muted"></span></label>
+        <label class="lang-row">歌詞の言語<select id="lyricLang"><option value="auto">自動判定</option><option value="multi">Multilingue (Mix)</option><option value="en">English</option><option value="fr">Français</option><option value="zh-Hans">简体中文</option><option value="zh-Hant">繁體中文</option><option value="es">Español</option><option value="de">Deutsch</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="it">Italiano</option><option value="pt">Português</option></select><span id="langNote" class="muted"></span></label>
+        <div id="detectedLangPills" class="lang-pills" hidden aria-live="polite"></div>
+        <div id="translationPanel" class="tr-panel">
+          <div class="tr-head">
+            <strong id="trPanelTitle">🌐 Couche de traduction optionnelle</strong>
+            <button type="button" id="btnToggleTrans" class="ghost small" aria-pressed="false">Traduction OFF</button>
+          </div>
+          <div class="tr-action-row">
+            <select id="trTargetLang" aria-label="Langue cible de traduction">
+              <option value="fr">Français</option>
+              <option value="en">English</option>
+              <option value="zh-Hans">简体中文 (Mandarin)</option>
+              <option value="zh-Hant">繁體中文 (Mandarin)</option>
+              <option value="es">Español</option>
+              <option value="de">Deutsch</option>
+              <option value="ja">日本語</option>
+              <option value="ko">한국어</option>
+              <option value="it">Italiano</option>
+              <option value="pt">Português</option>
+            </select>
+            <button type="button" id="btnTranslateLyrics" class="accent small" title="Traduire les paroles sur la même timeline sans modifier les paroles originales">🌐 Traduire</button>
+            <button type="button" id="btnClearTrans" class="ghost small" title="Effacer la traduction sans toucher aux paroles originales">✕</button>
+            <button type="button" id="btnTransCfgToggle" class="ghost small" aria-expanded="false" aria-controls="trDisplayControls" title="Réglages d'affichage indépendants pour la traduction">⚙ Style</button>
+          </div>
+          <div id="trDisplayControls" class="tr-controls" hidden>
+            <label class="tr-ctrl"><span id="lblTrFontSize">Taille trad.</span><input id="trFontSize" type="range" min="0.55" max="1.45" step="0.05" value="0.78"><output id="trFontSizeVal" class="mono">78%</output></label>
+            <label class="tr-ctrl"><span id="lblTrPos">Position</span><select id="trPosMode"><option value="below">Sous l'original</option><option value="above">Au-dessus</option><option value="custom">Libre (Y%)</option></select></label>
+            <label class="tr-ctrl" id="trPosYWrap"><span id="lblTrPosY">Pos. Y</span><input id="trPosY" type="range" min="8" max="94" step="1" value="76"><output id="trPosYVal" class="mono">76%</output></label>
+            <label class="tr-ctrl"><span id="lblTrBgAlpha">Fond trad.</span><input id="trBgAlpha" type="range" min="0" max="100" step="1" value="72"><output id="trBgAlphaVal" class="mono">72%</output></label>
+            <div class="tr-ctrl"><span id="lblTrColor">Couleur</span><input id="trColor" type="color" value="#e2e8f0"><button type="button" id="trColorAuto" class="ghost small">Auto</button></div>
+            <div class="tr-ctrl-chks">
+              <label class="tr-chk"><input id="trItalic" type="checkbox"><span id="lblTrItalic">Italique</span></label>
+              <label class="tr-chk"><input id="trShowPrompter" type="checkbox" checked><span id="lblTrShowPrompter">Prompteur</span></label>
+              <label class="tr-chk"><input id="trShowVideo" type="checkbox" checked><span id="lblTrShowVideo">Vidéo</span></label>
+            </div>
+          </div>
+        </div>
         <div id="syntax" class="syntax" hidden>
           <ul>
             <li>1行が1フレーズ。空行は少し間を空けます</li>
@@ -103,6 +152,18 @@
         <div class="sec-h"><h2>曲とタイミング</h2></div>
         <div id="audioName" class="muted audio-name">曲なし（読み込むと拍を検出してカットを合わせます）</div>
         <div id="audioDetectPanel" class="audio-detect" hidden aria-live="polite"></div>
+        <div id="qcSummaryBox" class="qc-box" hidden aria-live="polite">
+          <div class="qc-head">
+            <strong id="qcBoxTitle">Contrôle Qualité &amp; Précision</strong>
+            <span id="qcOverallBadge" class="qc-overall mono muted">—</span>
+          </div>
+          <div id="qcTierCounts" class="qc-tiers"></div>
+          <div id="qcCondAlerts" class="qc-cond-alerts" hidden></div>
+          <div class="qc-actions">
+            <button type="button" id="btnReanalyzeLow" class="ghost small" title="Ré-analyser automatiquement les segments à faible confiance avec haute résolution vocale">🔬 Ré-analyser segments faibles</button>
+            <button type="button" id="btnNextLowConf" class="ghost small" title="Aller au prochain mot à faible confiance">⚠ Prochain faible</button>
+          </div>
+        </div>
         <div class="row">
           <label class="file" title="mp3 / wav / m4a など">曲を読み込む<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.opus,.webm,.mp4,.aiff,.aif,.wma"></label>
           <button id="btnAiTranscribe" class="accent" title="AI听音识词：自动分析歌曲音频，多语言（中文、法文、英文等）识别人声歌词并即时同步到视频">✨ AI 识词与同步</button>
@@ -147,6 +208,10 @@
           <div class="le-ts-pair">
             <label class="le-ts-field"><span id="lblLeLineStart">Début phrase (s)</span><div class="le-num-grp"><button type="button" class="ghost small" data-nudge="lineStart" data-delta="-0.05">-50ms</button><input id="leLineStart" class="mono" type="number" step="0.01" min="0"><button type="button" class="ghost small" data-nudge="lineStart" data-delta="0.05">+50ms</button></div></label>
             <label class="le-ts-field"><span id="lblLeLineEnd">Fin phrase (s)</span><div class="le-num-grp"><button type="button" class="ghost small" data-nudge="lineEnd" data-delta="-0.05">-50ms</button><input id="leLineEnd" class="mono" type="number" step="0.01" min="0"><button type="button" class="ghost small" data-nudge="lineEnd" data-delta="0.05">+50ms</button></div></label>
+          </div>
+          <div class="le-trans-row">
+            <span id="leLineLangBadge" class="le-lang-badge mono" title="Langue détectée pour cette ligne">—</span>
+            <input id="leLineTransEdit" type="text" placeholder="Traduction optionnelle de cette phrase (ne modifie pas l'original)…" aria-label="Traduction de la phrase sélectionnée">
           </div>
         </div>
 
@@ -205,6 +270,21 @@
           <button type="button" id="btnKaraokeFs" class="ghost small kp-fs-btn" aria-pressed="false" title="Mode Karaoké Plein Écran">⛶ Plein écran</button>
           <button type="button" id="btnKaraokeHud" class="ghost small kp-toggle" aria-pressed="true" title="動画内のカラオケ字幕バーを表示／非表示">字幕バー ON</button>
         </div>
+        <div id="kpSyncBar" class="kp-sync-bar" aria-label="Coordination chant et affichage">
+          <span id="lblKpSyncMaster" class="kp-sync-lbl">Synchro Chant↔Affichage</span>
+          <div class="kp-sync-nudges">
+            <button type="button" class="ghost small" data-sync-nudge="-50" title="Afficher les paroles 50 ms plus tôt">-50ms</button>
+            <button type="button" class="ghost small" data-sync-nudge="-10" title="Afficher les paroles 10 ms plus tôt">-10ms</button>
+            <span id="kpSyncOffsetBadge" class="kp-sync-val mono">0 ms</span>
+            <button type="button" class="ghost small" data-sync-nudge="10" title="Afficher les paroles 10 ms plus tard">+10ms</button>
+            <button type="button" class="ghost small" data-sync-nudge="50" title="Afficher les paroles 50 ms plus tard">+50ms</button>
+            <button type="button" id="btnKpOffsetReset" class="ghost small" title="Réinitialiser le décalage global à 0 ms">↺ 0</button>
+          </div>
+          <div class="kp-sync-actions">
+            <button type="button" id="btnKpTapWord" class="ghost small" title="Fixer immédiatement le mot en cours à l'instant exact de la lecture">⏱ Caler mot ici</button>
+            <button type="button" id="btnKpAutoAlign" class="accent small" title="Aligner automatiquement chaque mot sur la voix du chanteur (Viterbi 10 ms, protège les mots verrouillés)">⚡ Auto-Calage Voix</button>
+          </div>
+        </div>
         <div id="karaokeControls" class="kp-controls" hidden>
           <label class="kp-ctrl">
             <span id="lblKFontSize">Taille</span>
@@ -241,7 +321,9 @@
             <span id="lblKAutoScroll">Défilement auto</span>
           </label>
         </div>
+        <div id="kpLeadBar" class="kp-lead-bar" hidden aria-live="off"><span id="kpLeadText" class="mono"></span><i id="kpLeadFill"></i></div>
         <div id="karaokeActive" class="kp-active" role="region" aria-live="off"></div>
+        <div id="karaokeTransActive" class="kp-trans-active" hidden aria-live="off"></div>
         <div id="karaokeBacking" class="kp-backing muted" hidden></div>
         <div id="karaokeScrollStage" class="kp-scroll" aria-label="Paroles synchronisées">
           <div id="karaokeScrollLines" class="kp-scroll-lines"></div>
@@ -259,7 +341,7 @@
           <button id="btnNext" class="ghost small icon-txt" title="次の案へ進む" aria-label="次の案">▶</button>
         </span>
         <button id="btnShuffle" class="accent" title="設定はそのままで構成だけ再抽選（ロックした行は維持）">シャッフル</button>
-        <select class="themeSel" aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"><option value="">テーマなし</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option></select>
+        <select class="themeSel" aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"><option value="">テーマなし</option><option value="cinematic">CINEMATIC — 映画・予告編・Blade Runner</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B</option><option value="artmotion">ART &amp; MOTION — Kinetic・Pop Art・3D・Glitch</option><option value="futuristic">FUTURISTIC — Cyberpunk・Sci-Fi・Neon・AI</option><option value="lifestyle">LIFESTYLE — Luxury・Fashion・Travel・Doc</option><option value="animation">ANIMATION — Anime・Cartoon・Fantasy・Surreal</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option></select>
         <button id="btnOmakase" class="primary" title="スタイル・雰囲気・演出・配色をまるごとランダムに（キー R）">おまかせ</button>
       </div>
       <div class="tl-bar">
@@ -293,8 +375,10 @@
           </span>
           <span class="tl-insp-acts">
             <button type="button" id="tlPlayWordBtn" class="ghost small" title="Écouter le mot sélectionné dans son contexte">▶ Mot</button>
+            <button type="button" id="tlReanalyzeBtn" class="ghost small" title="Ré-analyser cette phrase / ce segment en haute précision">🔬 Ré-analyser</button>
           </span>
         </div>
+        <div id="tlQcMetrics" class="tl-qc-metrics mono muted"></div>
         <div class="tl-insp-times">
           <label class="tl-ms-field">
             <span id="lblTlStartMs">Début (HH:MM:SS.mmm)</span>
@@ -336,7 +420,7 @@
       <div id="easyPanel" class="easy" hidden>
         <div class="easy-hero">
           <button id="btnOmakaseBig" class="omakase">おまかせで作る</button>
-          <label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ"><option value="">テーマなし</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option></select><small class="muted">選ぶと、その方向の中でおまかせします</small></label>
+          <label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ"><option value="">テーマなし</option><option value="cinematic">CINEMATIC — 映画・予告編・Blade Runner</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B</option><option value="artmotion">ART &amp; MOTION — Kinetic・Pop Art・3D・Glitch</option><option value="futuristic">FUTURISTIC — Cyberpunk・Sci-Fi・Neon・AI</option><option value="lifestyle">LIFESTYLE — Luxury・Fashion・Travel・Doc</option><option value="animation">ANIMATION — Anime・Cartoon・Fantasy・Surreal</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option></select><small class="muted">選ぶと、その方向の中でおまかせします</small></label>
           <p class="hint">押すたびに、スタイル・雰囲気・動き・配色・構成がまるごと変わります。キーボードの <span class="kbd">R</span> でも実行できます。</p>
           <div class="hist-row">
             <button id="btnPrev2" class="ghost">◀ 前の案</button>
@@ -379,6 +463,13 @@
           <label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>
           <div class="rng-row"><span class="rng-lab">書き出す範囲</span><select class="rngFrom" aria-label="書き出す範囲の最初の行"></select><span class="muted">〜</span><select class="rngTo" aria-label="書き出す範囲の最後の行"></select><span class="rngInfo muted mono"></span></div>
           <div class="outbtns"><button id="eMP4" class="primary">MP4 を書き出す</button><button id="eMP4File" class="ghost mp4file" hidden title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">大きな動画用（ファイルに直接保存）</button><button id="eLRC" class="ghost" title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">LRC を書き出す</button></div>
+          <div class="lyrics-exp-sub">
+            <button type="button" id="eSRT" class="ghost small">SRT</button>
+            <button type="button" id="eVTT" class="ghost small">VTT</button>
+            <button type="button" id="eELRC" class="ghost small" title="Enhanced LRC avec minutage mot par mot">Enhanced LRC</button>
+            <button type="button" id="eJSON" class="ghost small" title="JSON complet avec minutage par segment, mot et caractère">JSON</button>
+            <button type="button" id="eTXT" class="ghost small" title="Paroles en texte brut (.txt)">TXT</button>
+          </div>
           <div class="outbtns out-png"><button id="ePNG" class="ghost">連番PNG（ZIP）</button><button id="ePNGA" class="ghost">透過PNG（ZIP・背景なし）</button><button id="ePNGL" class="ghost" title="後景（背景のグラフィックと歌詞の後ろの装飾）と前景（歌詞とその装飾・ゴースト）を、別々のフォルダ（back / front）に透過PNGで書き出します。画面全体の演出は両方にかかるので、前景を後景の上に重ねると通常の見た目になります">透過PNG 前景／後景（ZIP）</button></div>
           <button class="terms-open linkish">書き出した動画の権利について</button>
           <div class="exp-box" hidden>
@@ -472,6 +563,19 @@
           <button id="btnPNGA">透過PNG（ZIP・背景なし）</button>
           <button id="btnLRC" title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">歌詞（LRC）</button>
           <button id="btnPNGL" title="後景（背景のグラフィックと歌詞の後ろの装飾）と前景（歌詞とその装飾・ゴースト）を、別々のフォルダ（back / front）に透過PNGで書き出します。画面全体の演出は両方にかかるので、前景を後景の上に重ねると通常の見た目になります">透過PNG 前景／後景（ZIP）</button>
+        </div>
+        <div id="lyricsExportBox" class="lyrics-exp-box">
+          <div class="lyrics-exp-head">
+            <strong id="lblLyricsExpTitle">Exporter les paroles synchronisées</strong>
+            <label class="lyrics-exp-opt"><input id="expIncludeTrans" type="checkbox"><span id="lblExpIncludeTrans">Inclure traduction</span></label>
+          </div>
+          <div class="lyrics-exp-btns">
+            <button type="button" id="btnExpSRT" class="ghost small">SRT</button>
+            <button type="button" id="btnExpVTT" class="ghost small">VTT</button>
+            <button type="button" id="btnExpELRC" class="ghost small" title="Enhanced LRC avec timestamps mot par mot">Enhanced LRC</button>
+            <button type="button" id="btnExpJSON" class="ghost small" title="JSON détaillé avec minutage par segment, mot et caractère">JSON (mots &amp; car.)</button>
+            <button type="button" id="btnExpTXT" class="ghost small" title="Paroles brutes sans balises temporelles">TXT</button>
+          </div>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
           <button class="exp-share primary" hidden>共有して保存</button>
@@ -611,7 +715,7 @@
       <button type="button" id="btnVercelDeploy" class="accent small">🚀 Déployer sur Vercel</button>
       <a id="vercelOpenLink" class="cloud-link ghost small" href="https://vercel.com/new" target="_blank" rel="noopener noreferrer">↗ Ouvrir Vercel</a>
     </div>
-    <div id="vercelStatusNote" class="cloud-note muted mono">Endpoints Vercel actifs : /api/health, /api/transcribe-lyrics, /api/align-vocals, /api/bridge</div>
+    <div id="vercelStatusNote" class="cloud-note muted mono">Endpoints Vercel actifs : /api/health, /api/transcribe-lyrics, /api/align-vocals, /api/reanalyze-segment, /api/translate-lyrics, /api/bridge</div>
   </section>
 </dialog>
 <div id="dropHint" class="drop-hint" hidden><div><strong>ここにドロップして読み込み</strong><span>曲（mp3 / wav など）・歌詞（LRC / SRT / テキスト）・プロジェクト（.json）</span></div></div>

@@ -71,12 +71,14 @@ function syncLoopBtn() {
 const AP = {
   ctx: null, src: null, startAt: 0, base: 0, rate: 1, gain: null, vol: 0.8, muted: false,
   play(buffer, offset, rate = 1) {
+    if (!buffer) return;
     if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if (this.ctx.state === 'suspended') this.ctx.resume();
+    if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
     this.stop();
     if (!this.gain) { this.gain = this.ctx.createGain(); this.gain.connect(this.ctx.destination); this.applyVol(); }
     const s = this.ctx.createBufferSource(); s.buffer = buffer; s.connect(this.gain);
-    const off = Math.max(0, Math.min(offset, buffer.duration - 0.01));
+    const maxOff = Math.max(0, (Number(buffer.duration) || 0) - 0.01);
+    const off = Math.max(0, Math.min(Number(offset) || 0, maxOff));
     this.rate = rate > 0 ? rate : 1; s.playbackRate.value = this.rate;
     s.start(0, off); this.src = s; this.startAt = this.ctx.currentTime; this.base = off;
   },
@@ -101,17 +103,18 @@ function initVolume() {
 
 /* ---------------- project persistence ---------------- */
 function mergeProject(p) {
+  const defs = J.defaultProject();
   const d = J.defaultProject();
   const o = Object.assign(d, p || {});
-  o.fx = Object.assign(J.defaultProject().fx, (p && p.fx) || {});
-  o.timing = Object.assign(J.defaultProject().timing, (p && p.timing) || {});
+  o.fx = Object.assign(defs.fx, (p && p.fx) || {});
+  o.timing = Object.assign(defs.timing, (p && p.timing) || {});
   if (!o.timing.lineEnds || typeof o.timing.lineEnds !== 'object') o.timing.lineEnds = {};
   if (!o.timing.wordTimes || typeof o.timing.wordTimes !== 'object') o.timing.wordTimes = {};
   if (!o.timing.lineMeta || typeof o.timing.lineMeta !== 'object') o.timing.lineMeta = {};
   o.detection = (p && p.detection && typeof p.detection === 'object') ? p.detection : null;
   o.karaoke = p && typeof p.karaoke === 'boolean' ? p.karaoke : true;
   const kc = (p && p.karaokeCfg && typeof p.karaokeCfg === 'object') ? p.karaokeCfg : {};
-  const defKc = d.karaokeCfg || { mode: 'progressive', fontSize: 1.0, yPct: 86, autoScroll: true, baseColor: '', activeColor: '', bgAlpha: 0.78 };
+  const defKc = defs.karaokeCfg || { mode: 'progressive', fontSize: 1.0, yPct: 86, autoScroll: true, baseColor: '', activeColor: '', bgAlpha: 0.78 };
   o.karaokeCfg = {
     mode: kc.mode === 'word' || kc.mode === 'progressive' || kc.mode === 'char' ? kc.mode : defKc.mode,
     fontSize: J.clamp(isFinite(+kc.fontSize) ? +kc.fontSize : defKc.fontSize, 0.65, 1.85),
@@ -120,6 +123,36 @@ function mergeProject(p) {
     baseColor: typeof kc.baseColor === 'string' && /^#[0-9a-f]{3,8}$/i.test(kc.baseColor) ? kc.baseColor : '',
     activeColor: typeof kc.activeColor === 'string' && /^#[0-9a-f]{3,8}$/i.test(kc.activeColor) ? kc.activeColor : '',
     bgAlpha: J.clamp(isFinite(+kc.bgAlpha) ? +kc.bgAlpha : defKc.bgAlpha, 0, 1),
+  };
+  const tr = (p && p.translation && typeof p.translation === 'object') ? p.translation : {};
+  const defTr = defs.translation || {
+    enabled: false,
+    targetLang: 'fr',
+    lines: {},
+    cfg: { fontSize: 0.78, yPct: 76, position: 'below', color: '', bgAlpha: 0.72, italic: false, showInPrompter: true, showInVideo: true },
+  };
+  const trLines = {};
+  if (tr.lines && typeof tr.lines === 'object') {
+    for (const [k, v] of Object.entries(tr.lines)) {
+      if (typeof v === 'string' && v.trim()) trLines[k] = v;
+    }
+  }
+  const trCfg = (tr.cfg && typeof tr.cfg === 'object') ? tr.cfg : {};
+  const defTrCfg = defTr.cfg || { fontSize: 0.78, yPct: 76, position: 'below', color: '', bgAlpha: 0.72, italic: false, showInPrompter: true, showInVideo: true };
+  o.translation = {
+    enabled: Boolean(tr.enabled),
+    targetLang: typeof tr.targetLang === 'string' && J.LANG_LABEL[tr.targetLang] && tr.targetLang !== 'auto' && tr.targetLang !== 'multi' ? tr.targetLang : defTr.targetLang,
+    lines: trLines,
+    cfg: {
+      fontSize: J.clamp(isFinite(+trCfg.fontSize) ? +trCfg.fontSize : defTrCfg.fontSize, 0.5, 1.5),
+      yPct: J.clamp(isFinite(+trCfg.yPct) ? +trCfg.yPct : defTrCfg.yPct, 8, 94),
+      position: trCfg.position === 'above' || trCfg.position === 'below' || trCfg.position === 'custom' ? trCfg.position : defTrCfg.position,
+      color: typeof trCfg.color === 'string' && /^#[0-9a-f]{3,8}$/i.test(trCfg.color) ? trCfg.color : '',
+      bgAlpha: J.clamp(isFinite(+trCfg.bgAlpha) ? +trCfg.bgAlpha : defTrCfg.bgAlpha, 0, 1),
+      italic: typeof trCfg.italic === 'boolean' ? trCfg.italic : false,
+      showInPrompter: typeof trCfg.showInPrompter === 'boolean' ? trCfg.showInPrompter : true,
+      showInVideo: typeof trCfg.showInVideo === 'boolean' ? trCfg.showInVideo : true,
+    },
   };
   const en = J.defaultProject().enabled;
   for (const g of Object.keys(en)) en[g] = Object.assign(en[g], ((p && p.enabled) || {})[g] || {});
@@ -192,14 +225,41 @@ function audioLike() {
   if (T.bpm > 0) return { beats: J.beatGrid(T.bpm, T.beatOffset || 0, 600) };
   return null;
 }
-/* 自動判定のとき、判定結果を言語欄の横に出す */
+/* 自動判定・多言語のとき、判定結果を言語欄の横に出す */
 function langNote() {
-  const el = $('langNote'); if (!el) return;
-  el.textContent = (S.project.lang || 'auto') === 'auto' ? '→ ' + J.LANG_LABEL[J.resolveLang(S.project)] : '';
+  const el = $('langNote');
+  const pillsEl = $('detectedLangPills');
+  const info = J.resolveLangInfo ? J.resolveLangInfo(S.project) : { primary: J.resolveLang(S.project), detectedLanguages: [J.resolveLang(S.project)], isMixed: false };
+  const curMode = (S.project && S.project.lang) || 'auto';
+  if (el) {
+    if (curMode === 'auto' || curMode === 'multi') {
+      const names = (info.detectedLanguages || []).map(c => J.LANG_LABEL[c] || c);
+      el.textContent = info.isMixed
+        ? '→ Mix : ' + names.join(' + ')
+        : '→ ' + (J.LANG_LABEL[info.primary] || info.primary);
+    } else {
+      el.textContent = info.isMixed ? ('(' + (info.detectedLanguages || []).map(c => J.LANG_LABEL[c] || c).join(' + ') + ')') : '';
+    }
+  }
+  if (pillsEl) {
+    const langs = (info.detectedLanguages || []).filter(c => c && c !== 'auto' && c !== 'multi');
+    const showPills = langs.length > 1 || (langs.length === 1 && (curMode === 'auto' || curMode === 'multi' || (S.project.detection && S.project.detection.source === 'ai')));
+    if (showPills) {
+      let html = info.isMixed ? `<span class="lang-pill is-mixed">Mix ×${langs.length}</span>` : '';
+      html += langs.map(c => `<span class="lang-pill">${escapeHtml(J.LANG_LABEL[c] || c)}</span>`).join('');
+      pillsEl.innerHTML = html;
+      pillsEl.hidden = false;
+    } else {
+      pillsEl.innerHTML = '';
+      pillsEl.hidden = true;
+    }
+  }
   if (langNote.last !== undefined && langNote.last !== J.lang) { try { renderFontRoles(); } catch (e) {} }   // font menus show the language's faces
   langNote.last = J.lang;
 }
+let tlPlanRev = 0;
 function replan() {
+  tlPlanRev++;
   S.plan = J.plan(S.project, audioLike());
   // lines locked in older projects (seed only): take a snapshot now, so from here on they stay exactly as they are
   for (const [i, o] of Object.entries(S.project.overrides || {})) if (o && o.lock && !Array.isArray(o.lockedCuts)) { const snap = J.lineSnapshot(S.plan, +i); if (snap) o.lockedCuts = snap; }
@@ -265,17 +325,23 @@ document.documentElement.classList.add('fixed-ok');
 function fixedLayout() { return !!(FIXED_MQ && FIXED_MQ.matches) && document.documentElement.classList.contains('fixed-ok'); }
 function sizeViewport() {
   const vp = $('viewport'), c = $('view');
+  if (!vp || !c) return;
   const ar = S.plan.W / S.plan.H;
   let cssW = vp.clientWidth || 800, cssH = cssW / ar;
   // fixed workspace or full-screen karaoke: respect the viewport container height
   const inFs = !!(vp.closest('.col-stage') && vp.closest('.col-stage').classList.contains('is-karaoke-fs'));
   const maxH = (fixedLayout() || inFs) ? Math.max(160, vp.clientHeight - 2) : Math.max(220, window.innerHeight * 0.68);
   if (cssH > maxH) { cssH = maxH; cssW = cssH * ar; }
+  const roundW = Math.max(10, Math.round(cssW));
+  const roundH = Math.max(10, Math.round(cssH));
   const dpr = Math.min(2, window.devicePixelRatio || 1);
-  const pw = Math.round(Math.min(S.plan.W, cssW * dpr)), ph = Math.round(pw / ar);
-  if (c.width !== pw || c.height !== ph) { c.width = pw; c.height = ph; }
-  c.style.width = cssW + 'px'; c.style.height = cssH + 'px';
-  S.need = true;
+  const pw = Math.round(Math.min(S.plan.W, roundW * dpr)), ph = Math.round(pw / ar);
+  let changed = false;
+  if (c.width !== pw || c.height !== ph) { c.width = pw; c.height = ph; changed = true; }
+  const wPx = roundW + 'px', hPx = roundH + 'px';
+  if (c.style.width !== wPx) { c.style.width = wPx; changed = true; }
+  if (c.style.height !== hPx) { c.style.height = hPx; changed = true; }
+  if (changed) S.need = true;
 }
 // preview only: dotted outline of the centre that 中央を空ける keeps free (never in exports)
 function drawCenterGuide(ctx, k) {
@@ -319,11 +385,16 @@ function tick(now) {
   if (S.tap) updateTapTelemetry(S.t);
   if (S.need) { S.need = false; draw(); }
 }
+let lastTimeMsTxt = '', lastDurMsTxt = '';
 function updateTimeUI() {
   $('timeNow').textContent = J.fmtTime(S.t);
   $('timeDur').textContent = J.fmtTime(S.plan.duration);
-  if ($('tlPlayMs') && J.fmtTimeMs) $('tlPlayMs').textContent = J.fmtTimeMs(S.t);
-  if ($('tlDurMs') && J.fmtTimeMs) $('tlDurMs').textContent = J.fmtTimeMs(S.plan.duration);
+  if (J.fmtTimeMs) {
+    const pMs = J.fmtTimeMs(S.t);
+    if (pMs !== lastTimeMsTxt && $('tlPlayMs')) { lastTimeMsTxt = pMs; $('tlPlayMs').textContent = pMs; }
+    const dMs = J.fmtTimeMs(S.plan.duration);
+    if (dMs !== lastDurMsTxt && $('tlDurMs')) { lastDurMsTxt = dMs; $('tlDurMs').textContent = dMs; }
+  }
   if (!S.scrubbing) $('scrub').value = String(Math.round(S.t / Math.max(0.001, S.plan.duration) * 10000));
 }
 // タップ同期の速さ (0.5× / 0.75×): only while tapping — the song's own time is what gets stored
@@ -373,22 +444,27 @@ function applyKaraokeLabels() {
     title: '🎤 Karaoké', word: 'Mot', prog: 'Progressif', char: 'Caractère', cfg: '⚙ Réglages',
     fsOn: '✕ Quitter plein écran', fsOff: '⛶ Plein écran', size: 'Taille', pos: 'Position', bg: 'Fond',
     base: 'Texte', active: 'Chanté', scroll: 'Défilement auto', top: 'Haut', mid: 'Centre', bot: 'Bas',
+    syncMaster: 'Synchro Chant↔Affichage', tapWord: '⏱ Caler mot ici', autoAlign: '⚡ Auto-Calage Voix',
   } : isEn ? {
     title: '🎤 Karaoke', word: 'Word', prog: 'Progressive', char: 'Char', cfg: '⚙ Settings',
     fsOn: '✕ Exit Fullscreen', fsOff: '⛶ Fullscreen', size: 'Size', pos: 'Position', bg: 'Backdrop',
     base: 'Base', active: 'Active', scroll: 'Auto-scroll', top: 'Top', mid: 'Center', bot: 'Bottom',
+    syncMaster: 'Vocal↔Display Sync', tapWord: '⏱ Pin word here', autoAlign: '⚡ Auto-Align Vocals',
   } : isZh ? {
     title: '🎤 卡拉OK同步', word: '逐词', prog: '渐进', char: '逐字', cfg: '⚙ 样式设置',
     fsOn: '✕ 退出全屏', fsOff: '⛶ 全屏卡拉OK', size: '字号', pos: '位置', bg: '透明度',
     base: '未唱', active: '高亮', scroll: '自动滚动', top: '上', mid: '中', bot: '下',
+    syncMaster: '歌声↔歌词微调', tapWord: '⏱ 锁定当前词', autoAlign: '⚡ 人声自动精对齐',
   } : isKo ? {
     title: '🎤 노래방 싱크', word: '단어별', prog: '점진적', char: '글자별', cfg: '⚙ 설정',
     fsOn: '✕ 전체화면 종료', fsOff: '⛶ 전체화면', size: '크기', pos: '위치', bg: '배경',
     base: '기본색', active: '하이라이트', scroll: '자동 스크롤', top: '상', mid: '중', bot: '하',
+    syncMaster: '보컬↔가사 싱크', tapWord: '⏱ 현재 단어 고정', autoAlign: '⚡ 보컬 자동 정렬',
   } : {
     title: '🎤 カラオケ同期', word: '単語別', prog: 'プログレッシブ', char: '文字別', cfg: '⚙ 設定',
     fsOn: '✕ 全画面終了', fsOff: '⛶ 全画面', size: '文字サイズ', pos: '表示位置', bg: '背景透過',
     base: '通常色', active: '強調色', scroll: '自動スクロール', top: '上', mid: '中央', bot: '下',
+    syncMaster: 'ボーカル↔表示補正', tapWord: '⏱ 今の単語を固定', autoAlign: '⚡ 声に自動フィット',
   };
   const setT = (id, t) => { const el = $(id); if (el) el.textContent = t; };
   setT('kpTitle', copy.title);
@@ -399,6 +475,9 @@ function applyKaraokeLabels() {
   setT('lblKBaseColor', copy.base);
   setT('lblKActiveColor', copy.active);
   setT('lblKAutoScroll', copy.scroll);
+  setT('lblKpSyncMaster', copy.syncMaster);
+  setT('btnKpTapWord', copy.tapWord);
+  setT('btnKpAutoAlign', copy.autoAlign);
   const seg = $('kModeSeg');
   if (seg) {
     const bw = seg.querySelector('[data-kmode="word"]'), bp = seg.querySelector('[data-kmode="progressive"]'), bc = seg.querySelector('[data-kmode="char"]');
@@ -449,6 +528,259 @@ function syncKaraokeControls() {
   if ($('kBaseColor')) $('kBaseColor').value = cfg.baseColor || '#b8bec8';
   if ($('kActiveColor')) $('kActiveColor').value = cfg.activeColor || '#0071e3';
   if ($('kAutoScroll')) $('kAutoScroll').checked = cfg.autoScroll !== false;
+  const gOff = Math.round(J.clamp(Number((S.project.timing && S.project.timing.globalOffsetMs) || 0), -600, 600));
+  const offBadge = $('kpSyncOffsetBadge');
+  if (offBadge) {
+    offBadge.textContent = gOff === 0 ? '0 ms' : `${gOff > 0 ? '+' : ''}${gOff} ms`;
+    offBadge.classList.toggle('is-shifted', gOff !== 0);
+  }
+}
+function ensureTranslationState() {
+  if (!S.project) return null;
+  if (!S.project.translation || typeof S.project.translation !== 'object') {
+    S.project.translation = J.defaultProject().translation;
+  }
+  if (!S.project.translation.lines || typeof S.project.translation.lines !== 'object') {
+    S.project.translation.lines = {};
+  }
+  if (!S.project.translation.cfg || typeof S.project.translation.cfg !== 'object') {
+    S.project.translation.cfg = Object.assign({}, J.defaultProject().translation.cfg);
+  }
+  return S.project.translation;
+}
+function getTransCfg() {
+  const tr = ensureTranslationState();
+  return Object.assign({
+    fontSize: 0.78, yPct: 76, position: 'below', color: '', bgAlpha: 0.72, italic: false, showInPrompter: true, showInVideo: true,
+  }, (tr && tr.cfg) || {});
+}
+function transCopy() {
+  const lang = document.documentElement.lang;
+  if (lang === 'en') {
+    return {
+      title: '🌐 Optional Translation Layer',
+      on: 'Translation ON',
+      off: 'Translation OFF',
+      translateBtn: '🌐 Translate',
+      translating: '🌐 Translating…',
+      styleBtn: '⚙ Style',
+      fontSize: 'Trans. size',
+      pos: 'Position',
+      posY: 'Y Pos.',
+      bgAlpha: 'Trans. bg',
+      color: 'Color',
+      italic: 'Italic',
+      prompter: 'Prompter',
+      video: 'Video',
+      noLines: 'No lyric lines to translate.',
+      translatedMsg: (n, l) => `Translated ${n} line(s) into ${l} (original lyrics untouched).`,
+      clearedMsg: 'Translation layer cleared (original lyrics & timestamps preserved).',
+      billingMsg: 'Translation API requires Cloud billing; you can also type translations per line in the Lyrics Editor.',
+      failMsg: 'Translation error; manual per-line translation remains available below.',
+    };
+  }
+  if (lang === 'fr') {
+    return {
+      title: '🌐 Couche de traduction optionnelle',
+      on: 'Traduction ON',
+      off: 'Traduction OFF',
+      translateBtn: '🌐 Traduire',
+      translating: '🌐 Traduction…',
+      styleBtn: '⚙ Style',
+      fontSize: 'Taille trad.',
+      pos: 'Position',
+      posY: 'Pos. Y',
+      bgAlpha: 'Fond trad.',
+      color: 'Couleur',
+      italic: 'Italique',
+      prompter: 'Prompteur',
+      video: 'Vidéo',
+      noLines: 'Aucune ligne de paroles à traduire.',
+      translatedMsg: (n, l) => `${n} ligne(s) traduite(s) en ${l} (paroles originales intactes).`,
+      clearedMsg: 'Couche de traduction effacée (paroles et minutages originaux préservés).',
+      billingMsg: 'La traduction IA nécessite la facturation Cloud ; vous pouvez saisir une traduction par ligne dans l’éditeur.',
+      failMsg: 'Erreur de traduction ; vous pouvez saisir la traduction manuellement dans l’éditeur de paroles.',
+    };
+  }
+  if (lang === 'ja') {
+    return {
+      title: '🌐 オプション翻訳レイヤー',
+      on: '翻訳 ON',
+      off: '翻訳 OFF',
+      translateBtn: '🌐 翻訳する',
+      translating: '🌐 翻訳中…',
+      styleBtn: '⚙ 表示設定',
+      fontSize: '翻訳サイズ',
+      pos: '配置',
+      posY: '縦位置 Y',
+      bgAlpha: '翻訳背景',
+      color: '文字色',
+      italic: '斜体',
+      prompter: 'プロンプター',
+      video: '動画内',
+      noLines: '翻訳する歌詞行がありません。',
+      translatedMsg: (n, l) => `${n}行を ${l} に翻訳しました（元の歌詞と時刻は変更されません）。`,
+      clearedMsg: '翻訳レイヤーを消去しました（元の歌詞は保持）。',
+      billingMsg: '自動翻訳APIには課金有効化が必要です。歌詞エディタから手動翻訳も入力できます。',
+      failMsg: '翻訳エラー：下の歌詞エディタから行ごとに手動翻訳を入力できます。',
+    };
+  }
+  return {
+    title: '🌐 Optional Translation Layer',
+    on: 'Translation ON',
+    off: 'Translation OFF',
+    translateBtn: '🌐 Translate',
+    translating: '🌐 Translating…',
+    styleBtn: '⚙ Style',
+    fontSize: 'Trans. size',
+    pos: 'Position',
+    posY: 'Y Pos.',
+    bgAlpha: 'Trans. bg',
+    color: 'Color',
+    italic: 'Italic',
+    prompter: 'Prompter',
+    video: 'Video',
+    noLines: 'No lyric lines to translate.',
+    translatedMsg: (n, l) => `Translated ${n} line(s) into ${l} (original lyrics untouched).`,
+    clearedMsg: 'Translation layer cleared (original lyrics & timestamps preserved).',
+    billingMsg: 'Translation API requires Cloud billing; you can also type translations per line in the Lyrics Editor.',
+    failMsg: 'Translation error; manual per-line translation remains available below.',
+  };
+}
+function applyTranslationStyleVars() {
+  const kp = $('karaokePrompter');
+  if (!kp) return;
+  const cfg = getTransCfg();
+  kp.style.setProperty('--t-size', String(cfg.fontSize));
+  kp.style.setProperty('--t-bg-alpha', String(cfg.bgAlpha));
+  kp.style.setProperty('--t-style', cfg.italic ? 'italic' : 'normal');
+  if (cfg.color) kp.style.setProperty('--t-color', cfg.color);
+  else kp.style.removeProperty('--t-color');
+}
+function syncTranslationControls() {
+  if (!S.project) return;
+  const tr = ensureTranslationState();
+  const cfg = getTransCfg();
+  const c = transCopy();
+  applyTranslationStyleVars();
+  if ($('trPanelTitle')) $('trPanelTitle').textContent = c.title;
+  const btnT = $('btnToggleTrans');
+  if (btnT) {
+    btnT.textContent = tr.enabled ? c.on : c.off;
+    btnT.setAttribute('aria-pressed', String(!!tr.enabled));
+  }
+  if ($('trTargetLang')) $('trTargetLang').value = tr.targetLang || 'fr';
+  if ($('btnTransCfgToggle')) $('btnTransCfgToggle').textContent = c.styleBtn;
+  if ($('lblTrFontSize')) $('lblTrFontSize').textContent = c.fontSize;
+  if ($('lblTrPos')) $('lblTrPos').textContent = c.pos;
+  if ($('lblTrPosY')) $('lblTrPosY').textContent = c.posY;
+  if ($('lblTrBgAlpha')) $('lblTrBgAlpha').textContent = c.bgAlpha;
+  if ($('lblTrColor')) $('lblTrColor').textContent = c.color;
+  if ($('lblTrItalic')) $('lblTrItalic').textContent = c.italic;
+  if ($('lblTrShowPrompter')) $('lblTrShowPrompter').textContent = c.prompter;
+  if ($('lblTrShowVideo')) $('lblTrShowVideo').textContent = c.video;
+  if ($('trFontSize')) $('trFontSize').value = String(cfg.fontSize);
+  if ($('trFontSizeVal')) $('trFontSizeVal').textContent = Math.round(cfg.fontSize * 100) + '%';
+  if ($('trPosMode')) $('trPosMode').value = cfg.position || 'below';
+  if ($('trPosYWrap')) $('trPosYWrap').style.opacity = cfg.position === 'custom' ? '1' : '0.55';
+  if ($('trPosY')) $('trPosY').value = String(Math.round(cfg.yPct));
+  if ($('trPosYVal')) $('trPosYVal').textContent = Math.round(cfg.yPct) + '%';
+  if ($('trBgAlpha')) $('trBgAlpha').value = String(Math.round(cfg.bgAlpha * 100));
+  if ($('trBgAlphaVal')) $('trBgAlphaVal').textContent = Math.round(cfg.bgAlpha * 100) + '%';
+  if ($('trColor')) $('trColor').value = cfg.color || '#e2e8f0';
+  if ($('trItalic')) $('trItalic').checked = Boolean(cfg.italic);
+  if ($('trShowPrompter')) $('trShowPrompter').checked = cfg.showInPrompter !== false;
+  if ($('trShowVideo')) $('trShowVideo').checked = cfg.showInVideo !== false;
+}
+function updateTransCfg(patch, needReplan = true) {
+  if (!S.project) return;
+  const tr = ensureTranslationState();
+  tr.cfg = Object.assign(getTransCfg(), patch || {});
+  syncTranslationControls();
+  if (needReplan) {
+    replanSoon(35);
+  } else {
+    updateKaraokePrompter();
+    autosave();
+  }
+}
+function toggleTranslationLayer(force) {
+  const tr = ensureTranslationState();
+  if (!tr) return;
+  tr.enabled = typeof force === 'boolean' ? force : !tr.enabled;
+  syncTranslationControls();
+  replan();
+  flushSave();
+}
+function clearTranslationLayer() {
+  const tr = ensureTranslationState();
+  if (!tr) return;
+  tr.lines = {};
+  tr.enabled = false;
+  syncTranslationControls();
+  replan();
+  flushSave();
+  toast(transCopy().clearedMsg);
+}
+async function translateAllLyrics() {
+  const tr = ensureTranslationState();
+  if (!tr) return false;
+  const c = transCopy();
+  const parsed = J.parseLyrics(S.project.lyrics || '');
+  const payloadLines = [];
+  parsed.lines.forEach((ln, idx) => {
+    if (!ln.interlude && ln.text && ln.text.trim()) {
+      const langHint = ln.language || (S.project.timing && S.project.timing.lineMeta && S.project.timing.lineMeta[idx] && S.project.timing.lineMeta[idx].language) || (J.detectLineLang ? J.detectLineLang(ln.text) : '');
+      payloadLines.push({ index: idx, text: ln.text, language: langHint || '' });
+    }
+  });
+  if (!payloadLines.length) {
+    toast(c.noLines);
+    return false;
+  }
+  const targetLang = ($('trTargetLang') && $('trTargetLang').value) || tr.targetLang || 'fr';
+  tr.targetLang = targetLang;
+  const btn = $('btnTranslateLyrics');
+  const origTxt = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = c.translating; }
+  try {
+    const res = await J.translateLyricsLines(payloadLines, targetLang);
+    if (res && res.billingRequired) {
+      toast(c.billingMsg);
+      return false;
+    }
+    if (!res || !res.success || !Array.isArray(res.translations)) {
+      toast(c.failMsg);
+      return false;
+    }
+    // Store translation on separate layer WITHOUT mutating S.project.lyrics or timing maps
+    const nextMap = {};
+    let count = 0;
+    for (const item of res.translations) {
+      if (item && Number.isInteger(+item.index) && typeof item.translatedText === 'string' && item.translatedText.trim()) {
+        nextMap[+item.index] = item.translatedText.trim();
+        count++;
+      }
+    }
+    tr.lines = nextMap;
+    tr.enabled = true;
+    if (Array.isArray(res.detectedSourceLanguages) && res.detectedSourceLanguages.length) {
+      if (!S.project.detection) S.project.detection = { detectedLanguages: [] };
+      const merged = Array.from(new Set([...(S.project.detection.detectedLanguages || []), ...res.detectedSourceLanguages]));
+      S.project.detection.detectedLanguages = merged;
+    }
+    syncTranslationControls();
+    replan();
+    flushSave();
+    recordWork('translate_lyrics', 'sync', `${count} ligne(s) → ${J.LANG_LABEL[targetLang] || targetLang}`);
+    toast(c.translatedMsg(count, J.LANG_LABEL[targetLang] || targetLang));
+    return true;
+  } catch (err) {
+    toast(c.failMsg);
+    return false;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = origTxt || c.translateBtn; }
+  }
 }
 function toggleKaraokeFullscreen(force) {
   const stg = document.querySelector('.col-stage');
@@ -546,6 +878,185 @@ function syncAudioDetectPanel() {
   }
   el.innerHTML = pills.join('');
   el.hidden = pills.length === 0;
+  syncQualityControlPanel();
+}
+function qcCopy() {
+  const l = (document.documentElement.lang || 'fr').toLowerCase();
+  if (l === 'fr') return {
+    title: 'Contrôle Qualité & Précision',
+    overallPrefix: 'Fiabilité estimée',
+    high: 'Haute confiance', highDesc: 'Preuve acoustique solide pour le mot et son minutage',
+    med: 'Confiance moyenne', medDesc: 'Mot reconnu, borne exacte à vérifier',
+    low: 'Faible confiance', lowDesc: 'Incertain — révision manuelle recommandée',
+    noisy: '⚠ Bruit ambiant détecté',
+    distorted: '⚠ Distorsion / écrêtage audio',
+    reverb: '⚠ Forte réverbération',
+    overlap: '⚠ Chanteurs / voix superposés',
+    reanalyzeAll: '🔬 Ré-analyser segments faibles',
+    reanalyzing: '⏳ Ré-analyse haute précision…',
+    nextLow: '⚠ Prochain faible',
+    reanalyzeDone: (n, up) => n ? `✓ ${n} segment(s) ré-analysé(s) · ${up} mot(s) amélioré(s)` : 'Aucun segment à faible confiance à ré-analyser',
+    trLbl: 'Transcr.', alLbl: 'Align.', clLbl: 'Clarté', ovLbl: 'Superpos.', unLbl: 'Incertitude',
+    reanalyzeLine: '🔬 Ré-analyser',
+    honestCap: 'max honnête <100%',
+  };
+  if (l === 'ja') return {
+    title: '精度・品質管理 (QC)',
+    overallPrefix: '推定信頼度',
+    high: '高信頼', highDesc: '強い音響証拠に基づく単語とタイミング',
+    med: '中信頼', medDesc: '単語は認識済み・境界の目視確認推奨',
+    low: '低信頼', lowDesc: '不確実 — 手動確認と再解析を推奨',
+    noisy: '⚠ 背景ノイズ検出',
+    distorted: '⚠ 音割れ・歪み検出',
+    reverb: '⚠ 強い残響 (リバーブ)',
+    overlap: '⚠ 重複ボーカル検出',
+    reanalyzeAll: '🔬 低信頼区間を再解析',
+    reanalyzing: '⏳ 高精度で再解析中…',
+    nextLow: '⚠ 次の低信頼単語',
+    reanalyzeDone: (n, up) => n ? `✓ ${n}区間を再解析 · ${up}語を改善` : '再解析が必要な低信頼区間はありません',
+    trLbl: '認識', alLbl: '整合', clLbl: '明瞭度', ovLbl: '重複', unLbl: '不確実性',
+    reanalyzeLine: '🔬 再解析',
+    honestCap: '推定上限 <100%',
+  };
+  return {
+    title: 'Accuracy & Quality Control',
+    overallPrefix: 'Estimated reliability',
+    high: 'HIGH CONFIDENCE', highDesc: 'Strong acoustic evidence for word and timing',
+    med: 'MEDIUM CONFIDENCE', medDesc: 'Word recognized, boundary needs verification',
+    low: 'LOW CONFIDENCE', lowDesc: 'Uncertain — manual review required',
+    noisy: '⚠ Background noise detected',
+    distorted: '⚠ Audio clipping / distortion',
+    reverb: '⚠ Heavy reverberation',
+    overlap: '⚠ Overlapping singers / vocals',
+    reanalyzeAll: '🔬 Re-analyze low segments',
+    reanalyzing: '⏳ Re-analyzing with high accuracy…',
+    nextLow: '⚠ Next low-conf',
+    reanalyzeDone: (n, up) => n ? `✓ Re-analyzed ${n} segment(s) · improved ${up} word(s)` : 'No low-confidence segments require re-analysis',
+    trLbl: 'Transcr.', alLbl: 'Align.', clLbl: 'Clarity', ovLbl: 'Overlap', unLbl: 'Uncertainty',
+    reanalyzeLine: '🔬 Re-analyze',
+    honestCap: 'honest cap <100%',
+  };
+}
+function syncQualityControlPanel() {
+  const box = $('qcSummaryBox');
+  if (!box) return;
+  const L = (S.plan && S.plan.lines) || [];
+  const hasContent = Boolean(S.audio || (L && L.some(ln => !ln.interlude && (ln.wordsTimed || []).length)));
+  if (!hasContent) { box.hidden = true; return; }
+  box.hidden = false;
+  const cp = qcCopy();
+  if ($('qcBoxTitle')) $('qcBoxTitle').textContent = cp.title;
+
+  let hi = 0, med = 0, lo = 0, total = 0, uncSum = 0;
+  for (const ln of L) {
+    if (!ln || ln.interlude) continue;
+    const words = (S.project && S.project.timing && S.project.timing.wordTimes && S.project.timing.wordTimes[ln.index]) || ln.wordsTimed || [];
+    for (const w of words) {
+      total++;
+      const q = J.evaluateWordQuality ? J.evaluateWordQuality(w, S.audio, ln.meta) : { qualityTier: 'MEDIUM', recognitionUncertainty: 0.25 };
+      if (q.qualityTier === 'HIGH') hi++;
+      else if (q.qualityTier === 'LOW') lo++;
+      else med++;
+      uncSum += q.recognitionUncertainty;
+    }
+  }
+  const avgScore = total ? Math.min(97, Math.max(5, Math.round((1 - uncSum / total) * 100))) : null;
+  if ($('qcOverallBadge')) {
+    $('qcOverallBadge').textContent = avgScore != null ? `${cp.overallPrefix} : ${avgScore}% (${cp.honestCap})` : '—';
+  }
+  const tiersEl = $('qcTierCounts');
+  if (tiersEl) {
+    tiersEl.innerHTML =
+      `<span class="qc-tier-pill is-high" title="${escapeHtml(cp.highDesc)}">● ${escapeHtml(cp.high)}: ${hi}</span>` +
+      `<span class="qc-tier-pill is-mid" title="${escapeHtml(cp.medDesc)}">◐ ${escapeHtml(cp.med)}: ${med}</span>` +
+      `<span class="qc-tier-pill is-low" title="${escapeHtml(cp.lowDesc)}">▲ ${escapeHtml(cp.low)}: ${lo}</span>`;
+  }
+  const qCond = (S.audio && S.audio.qualityConditions) || (S.project && S.project.detection && S.project.detection.validationSummary && S.project.detection.validationSummary.qualityConditions) || null;
+  const alertsEl = $('qcCondAlerts');
+  if (alertsEl) {
+    const warns = [];
+    if (qCond && qCond.isNoisy) warns.push(cp.noisy);
+    if (qCond && qCond.isDistorted) warns.push(cp.distorted);
+    if (qCond && qCond.isReverberated) warns.push(cp.reverb);
+    if (qCond && qCond.hasOverlappingSingers) warns.push(cp.overlap);
+    alertsEl.innerHTML = warns.map(w => `<span>${escapeHtml(w)}</span>`).join('');
+    alertsEl.hidden = warns.length === 0;
+  }
+  const btnRe = $('btnReanalyzeLow'), btnNext = $('btnNextLowConf');
+  if (btnRe && !btnRe.dataset.busy) {
+    btnRe.textContent = lo > 0 ? `${cp.reanalyzeAll} (${lo})` : cp.reanalyzeAll;
+    btnRe.disabled = total === 0;
+  }
+  if (btnNext) {
+    btnNext.textContent = cp.nextLow;
+    btnNext.disabled = lo === 0;
+  }
+}
+function jumpToNextLowConfWord() {
+  const L = (S.plan && S.plan.lines) || [];
+  const candidates = [];
+  for (const ln of L) {
+    if (!ln || ln.interlude) continue;
+    const words = getEditableWords(ln.index);
+    words.forEach((w, wi) => {
+      const q = J.evaluateWordQuality ? J.evaluateWordQuality(w, S.audio, ln.meta) : { qualityTier: 'MEDIUM' };
+      if (q.qualityTier === 'LOW') candidates.push({ li: ln.index, wi });
+    });
+  }
+  if (!candidates.length) { toast(qcCopy().reanalyzeDone(0, 0)); return; }
+  const curIdx = candidates.findIndex(c => c.li > EDL.lineIdx || (c.li === EDL.lineIdx && c.wi > EDL.wordIdx));
+  const pick = candidates[curIdx >= 0 ? curIdx : 0];
+  tlFocusWord(pick.li, pick.wi);
+}
+async function reanalyzeLowConfidenceUI(onlyLineIdx = null) {
+  if (!J.reanalyzeLowConfidenceSegments || !S.plan || !S.plan.lines) return;
+  const cp = qcCopy();
+  const btn = $('btnReanalyzeLow');
+  if (btn) { btn.dataset.busy = '1'; btn.disabled = true; btn.textContent = cp.reanalyzing; }
+  try {
+    ensureTimingMaps();
+    const inputLines = S.plan.lines.map((ln, idx) => {
+      const words = ln.interlude ? [] : getEditableWords(idx);
+      const lineForcedLow = onlyLineIdx != null && idx === onlyLineIdx;
+      return {
+        index: idx,
+        start: ln.start,
+        end: ln.visEnd || ln.end,
+        text: ln.text,
+        interlude: !!ln.interlude,
+        isInstrumentalSection: !!ln.interlude,
+        language: (ln.meta && ln.meta.language) || J.resolveLang(S.project),
+        speaker: (ln.meta && ln.meta.speaker) || 'Lead',
+        unclear: lineForcedLow || Boolean(ln.meta && ln.meta.unclear),
+        flags: lineForcedLow ? Array.from(new Set(((ln.meta && ln.meta.flags) || []).concat(['uncertain_boundary']))) : ((ln.meta && ln.meta.flags) || []),
+        words,
+      };
+    });
+    const res = await J.reanalyzeLowConfidenceSegments(S.audio, inputLines, J.resolveLang(S.project));
+    if (res && Array.isArray(res.lines)) {
+      pushEdit();
+      res.lines.forEach((rl, idx) => {
+        if (!rl || rl.interlude || rl.isInstrumentalSection) return;
+        if (Array.isArray(rl.words) && rl.words.length) S.project.timing.wordTimes[idx] = rl.words;
+        if (rl.flags) S.project.timing.lineMeta[idx] = Object.assign({}, S.project.timing.lineMeta[idx] || {}, { flags: rl.flags });
+        if (rl.text && S.plan.lines[idx] && rl.text !== S.plan.lines[idx].text && !/^\[?unclear/i.test(rl.text) && Array.isArray(rl.words) && rl.words.length) {
+          syncLineTextFromWords(idx, rl.words);
+        }
+      });
+      if (S.project.detection && res.validationSummary) {
+        S.project.detection.validationSummary = res.validationSummary;
+        S.project.detection.hasUnclearSections = res.validationSummary.lowConfidenceWords > 0;
+      }
+      replan();
+      flushSave();
+      syncUI();
+      if (res.reanalyzedCount > 0) recordWork('reanalyze_low', 'sync', `${res.reanalyzedCount} seg · +${res.upgradedCount}`);
+      toast(cp.reanalyzeDone(res.reanalyzedCount, res.upgradedCount));
+    }
+  } finally {
+    if (btn) { delete btn.dataset.busy; }
+    syncQualityControlPanel();
+  }
 }
 function renderLineTagsHtml(ln) {
   if (!ln || ln.interlude || !ln.meta) return '';
@@ -670,11 +1181,15 @@ function applyWordElementHighlight(sp, w, t, mode, lang) {
   sp.classList.toggle('is-sung', mode === 'word' ? t >= w.start : pct >= 99.5);
   sp.classList.toggle('is-now', t >= w.start && t <= w.end);
 }
+let lastKpBadgeText = '';
 function updateKaraokePrompter() {
-  const activeEl = $('karaokeActive'), backingEl = $('karaokeBacking'), nextEl = $('karaokeNext'), badge = $('karaokeModeBadge');
+  const activeEl = $('karaokeActive'), transActiveEl = $('karaokeTransActive'), backingEl = $('karaokeBacking'), nextEl = $('karaokeNext'), badge = $('karaokeModeBadge');
   const scrollStage = $('karaokeScrollStage'), scrollLinesEl = $('karaokeScrollLines');
   if (!activeEl || !S.plan || !S.plan.lines) return;
   const cfg = getKaraokeCfg();
+  const trCfg = getTransCfg();
+  const trEnabled = !!(S.project && S.project.translation && S.project.translation.enabled);
+  const trShowPrompter = trEnabled && trCfg.showInPrompter !== false;
   const mode = cfg.mode || 'progressive';
   const langCode = J.resolveLang ? J.resolveLang(S.project) : 'auto';
   const t = S.t;
@@ -688,7 +1203,8 @@ function updateKaraokePrompter() {
   }
 
   const displayLn = (ln && !ln.interlude) ? ln : (upcoming && upcoming.start - t <= 1.2 ? upcoming : null);
-  const key = (displayLn ? `${displayLn.index}:${displayLn.text}:${(displayLn.wordsTimed || []).length}` : (upcoming ? `wait:${upcoming.index}` : 'none'));
+  const displayTrans = (trShowPrompter && displayLn && displayLn.translatedText) ? displayLn.translatedText : '';
+  const key = (displayLn ? `${displayLn.index}:${displayLn.text}:${(displayLn.wordsTimed || []).length}:${displayTrans}` : (upcoming ? `wait:${upcoming.index}` : 'none'));
 
   if (badge) {
     const wt = S.project && S.project.timing && S.project.timing.wordTimes;
@@ -703,9 +1219,14 @@ function updateKaraokePrompter() {
       const spk = (displayLn.meta && displayLn.meta.speaker && displayLn.meta.speaker !== 'Lead')
         ? displayLn.meta.speaker
         : (words[0].speaker && words[0].speaker !== 'Lead' ? words[0].speaker : '');
-      baseLbl += ` · ${avgAlign}%` + (spk ? ` · ${spk}` : '');
+      const lCode = displayLn.language || (displayLn.meta && displayLn.meta.language) || '';
+      const lTag = lCode && J.LANG_LABEL[lCode] ? ` · ${lCode}` : '';
+      baseLbl += ` · ${avgAlign}%${lTag}` + (spk ? ` · ${spk}` : '');
     }
-    badge.textContent = baseLbl;
+    if (baseLbl !== lastKpBadgeText) {
+      lastKpBadgeText = baseLbl;
+      badge.textContent = baseLbl;
+    }
   }
 
   if (lastKpState.key !== key || lastKpState.mode !== mode) {
@@ -720,6 +1241,15 @@ function updateKaraokePrompter() {
         ln && ln.interlude ? '♪ Interlude' : upcoming ? `♪ ${upcoming.text}` : (lang === 'fr' ? 'Prêt pour le karaoké' : lang === 'en' ? 'Karaoke ready' : 'カラオケ待機中')
       )}</span>`;
     }
+    if (transActiveEl) {
+      if (displayTrans) {
+        transActiveEl.textContent = displayTrans;
+        transActiveEl.hidden = false;
+      } else {
+        transActiveEl.textContent = '';
+        transActiveEl.hidden = true;
+      }
+    }
     if (backingEl) {
       const m = displayLn && displayLn.meta;
       const bTxt = m && m.backingText ? `♪ (${m.backingText})` : '';
@@ -729,6 +1259,13 @@ function updateKaraokePrompter() {
     if (nextEl) {
       const preview = displayLn ? upcoming : null;
       nextEl.textContent = preview ? `↳ ${preview.text}` : '';
+    }
+  } else if (transActiveEl) {
+    if (displayTrans) {
+      if (transActiveEl.textContent !== displayTrans) transActiveEl.textContent = displayTrans;
+      transActiveEl.hidden = false;
+    } else {
+      transActiveEl.hidden = true;
     }
   }
 
@@ -742,7 +1279,7 @@ function updateKaraokePrompter() {
   // Scrollable multi-line karaoke stage + automatic lyric centering
   if (scrollStage && scrollLinesEl) {
     const vocalLines = L.filter(l => !l.interlude && l.text);
-    const sig = mode + '|' + vocalLines.map(l => `${l.index}:${l.text}:${l.start}`).join(';');
+    const sig = mode + '|' + (trShowPrompter ? '1' : '0') + '|' + vocalLines.map(l => `${l.index}:${l.text}:${l.start}:${trShowPrompter ? (l.translatedText || '') : ''}`).join(';');
     if (sig !== lastKpScrollSig) {
       lastKpScrollSig = sig;
       lastKpScrollIdx = -2;
@@ -754,7 +1291,16 @@ function updateKaraokePrompter() {
         if (Array.isArray(l.wordsTimed) && l.wordsTimed.length) {
           l.wordsTimed.forEach((w, wi) => row.appendChild(createWordSpan(w, wi, mode, langCode)));
         } else {
-          row.textContent = l.text;
+          const origSpan = document.createElement('span');
+          origSpan.className = 'ks-orig';
+          origSpan.textContent = l.text;
+          row.appendChild(origSpan);
+        }
+        if (trShowPrompter && l.translatedText) {
+          const trDiv = document.createElement('div');
+          trDiv.className = 'ks-trans';
+          trDiv.textContent = l.translatedText;
+          row.appendChild(trDiv);
         }
         row.addEventListener('click', () => { seek(l.start + 0.002); if (!S.playing && S.audio) play(); });
         scrollLinesEl.appendChild(row);
@@ -772,12 +1318,16 @@ function updateKaraokePrompter() {
       row.classList.toggle('is-cur', isCur);
       row.classList.toggle('is-past', !isCur && isPast);
       if (isCur) activeRow = row;
+      if (isCur || !isPast) {
+        if (row.dataset.pastDone === '1') row.dataset.pastDone = '';
+      }
       if (lObj && Array.isArray(lObj.wordsTimed)) {
-        if (isCur || isPast || row.dataset.dirty === '1') {
+        if (isCur || (isPast && row.dataset.pastDone !== '1') || row.dataset.dirty === '1') {
           row.dataset.dirty = isCur ? '1' : '';
           for (let wi = 0; wi < lObj.wordsTimed.length; wi++) {
             applyWordElementHighlight(row.children[wi], lObj.wordsTimed[wi], isCur ? t : (isPast ? lObj.end + 1 : -1), mode, langCode);
           }
+          if (!isCur && isPast) row.dataset.pastDone = '1';
         }
       }
     }
@@ -794,12 +1344,167 @@ function updateKaraokePrompter() {
       lastKpScrollIdx = curIdx;
     }
   }
+
+  // Vocal entry lead-in countdown bar during rests/interludes before next sung phrase
+  const leadBar = $('kpLeadBar'), leadText = $('kpLeadText'), leadFill = $('kpLeadFill');
+  if (leadBar && leadText && leadFill) {
+    const waitTarget = upcoming && (!ln || ln.interlude || t < ln.start - 0.04) ? upcoming : null;
+    const diff = waitTarget ? (waitTarget.start - t) : -1;
+    if (waitTarget && diff > 0.04 && diff <= 2.8) {
+      const l = (document.documentElement.lang || 'fr').toLowerCase();
+      leadBar.hidden = false;
+      leadText.textContent = l === 'fr'
+        ? `♪ Entrée vocale dans ${diff.toFixed(1)}s`
+        : l === 'en'
+        ? `♪ Vocal entry in ${diff.toFixed(1)}s`
+        : l.startsWith('zh')
+        ? `♪ 准备开唱 ${diff.toFixed(1)}s`
+        : l === 'ko'
+        ? `♪ 보컬 시작 ${diff.toFixed(1)}초 전`
+        : `♪ 歌い出しまで ${diff.toFixed(1)}秒`;
+      const pct = J.clamp((1 - diff / 2.8) * 100, 4, 100);
+      leadFill.style.width = pct.toFixed(1) + '%';
+    } else {
+      leadBar.hidden = true;
+      leadFill.style.width = '0%';
+    }
+  }
+}
+
+/* Pro Vocal Coordination Actions: global live sync nudge, anchored phrase/song alignment, 1-click live word pin */
+function nudgeGlobalSyncOffset(deltaMs, exactMs = null) {
+  if (!S.project) return 0;
+  ensureTimingMaps();
+  const prev = Number(S.project.timing.globalOffsetMs) || 0;
+  const next = J.clamp(Math.round(exactMs != null ? exactMs : (prev + (Number(deltaMs) || 0))), -600, 600);
+  if (next === prev && exactMs == null) return next;
+  pushEdit();
+  S.project.timing.globalOffsetMs = next;
+  replan();
+  syncKaraokeControls();
+  syncLyricsEditor();
+  flushSave();
+  return next;
+}
+
+function alignAllWordsAcousticallyUI() {
+  if (!S.project || !S.plan || !Array.isArray(S.plan.lines) || !S.plan.lines.length) return { linesAligned: 0, wordsAligned: 0 };
+  const lang = (document.documentElement.lang || 'fr').toLowerCase();
+  if (!S.audio || !(S.audio.wordAttack100 && S.audio.wordAttack100.length)) {
+    toast(lang === 'fr'
+      ? "Chargez un fichier audio pour aligner automatiquement les mots sur la voix."
+      : lang === 'en'
+      ? 'Load an audio file first to align words with vocals.'
+      : '请先加载音频文件后再执行声学词对齐。');
+    return { linesAligned: 0, wordsAligned: 0 };
+  }
+  pushEdit();
+  ensureTimingMaps();
+  const globalLang = J.resolveLang ? J.resolveLang(S.project) : 'auto';
+  const gShift = J.clamp(Number(S.project.timing.globalOffsetMs) || 0, -600, 600) / 1000 - (S.project.typeset ? 0.2 : 0);
+  let linesAligned = 0, wordsAligned = 0;
+  S.plan.lines.forEach((ln, li) => {
+    if (!ln || ln.interlude || !ln.text) return;
+    const words = getEditableWords(li);
+    if (!words.length) return;
+    const spk = (ln.meta && ln.meta.speaker) || 'Lead';
+    const lineLang = ln.language || globalLang;
+    const rawStart = Math.max(0, ln.start - gShift);
+    const rawEnd = Math.max(rawStart + 0.15, (ln.visEnd || ln.end) - gShift);
+    const aligned = J.alignLineWordsAnchored
+      ? J.alignLineWordsAnchored(S.audio, words, rawStart, rawEnd, lineLang, spk)
+      : words;
+    S.project.timing.wordTimes[li] = aligned;
+    linesAligned++;
+    wordsAligned += aligned.filter(w => !w.validated).length;
+  });
+  replan();
+  syncLyricsEditor();
+  syncQualityControlPanel();
+  flushSave();
+  recordWork('vocal_coord_align', 'sync', `${linesAligned} lignes · ${wordsAligned} mots calés (10ms)`);
+  toast(lang === 'fr'
+    ? `⚡ Auto-calage vocal terminé : ${linesAligned} phrases alignées (mots verrouillés conservés).`
+    : lang === 'en'
+    ? `⚡ Auto vocal word alignment finished: ${linesAligned} lines synced.`
+    : `⚡ 人声逐词自动对齐完成：已校准 ${linesAligned} 行（已锁定词保持不变）。`);
+  return { linesAligned, wordsAligned };
+}
+
+function kpQuickTapCurrentWord() {
+  if (!S.project || !S.plan || !Array.isArray(S.plan.lines)) return null;
+  const L = S.plan.lines;
+  const gShift = J.clamp(Number(S.project.timing.globalOffsetMs) || 0, -600, 600) / 1000 - (S.project.typeset ? 0.2 : 0);
+  const tDisp = Math.max(0, S.t);
+  let ln = (J.lineAt && J.lineAt(S.plan, tDisp));
+  if (!ln || ln.interlude) {
+    ln = L.find(l => !l.interlude && l.end >= tDisp - 0.15) || L.find(l => !l.interlude);
+  }
+  if (!ln) return null;
+  const li = ln.index;
+  const words = getEditableWords(li);
+  if (!words.length) return null;
+  ensureTimingMaps();
+
+  // Target word: closest unvalidated/active word at current timestamp
+  let wi = words.findIndex((w, idx) => {
+    const dispWStart = (ln.wordsTimed && ln.wordsTimed[idx]) ? ln.wordsTimed[idx].start : (w.start + gShift);
+    const dispWEnd = (ln.wordsTimed && ln.wordsTimed[idx]) ? ln.wordsTimed[idx].end : (w.end + gShift);
+    return tDisp <= dispWEnd + 0.05 && tDisp >= dispWStart - 0.35;
+  });
+  if (wi < 0) wi = words.findIndex(w => !w.validated);
+  if (wi < 0) wi = 0;
+
+  pushEdit();
+  const minRaw = wi > 0 ? (words[wi - 1].start + 0.03) : Math.max(0, (ln.start - gShift) - 0.25);
+  const rawTapT = Math.max(minRaw, tDisp - gShift);
+  const atk = J.estimateVocalAttackNear
+    ? J.estimateVocalAttackNear(S.audio, rawTapT, 0.085, minRaw)
+    : { found: false, attackTime: +rawTapT.toFixed(3) };
+  const pinT = atk.found ? atk.attackTime : +rawTapT.toFixed(3);
+  const prevDur = Math.max(0.12, (words[wi].end || 0) - (words[wi].start || 0));
+
+  if (wi > 0 && words[wi - 1].end > pinT - 0.005) {
+    words[wi - 1].end = +Math.max(words[wi - 1].start + 0.03, pinT - 0.005).toFixed(3);
+    rescaleWordChars(words[wi - 1], words[wi - 1].start, words[wi - 1].end);
+  }
+  words[wi].start = pinT;
+  words[wi].end = +Math.max(pinT + 0.08, pinT + prevDur).toFixed(3);
+  words[wi].validated = true;
+  words[wi].alignmentConfidence = 0.96;
+  words[wi].flags = (words[wi].flags || []).filter(f => f !== 'uncertain_boundary');
+  rescaleWordChars(words[wi], words[wi].start, words[wi].end);
+  if (wi === 0 && pinT < (ln.start - gShift)) {
+    S.project.timing.lineTimes[li] = pinT;
+  }
+
+  // Re-align unvalidated neighbors cleanly around the new anchor if audio exists
+  const rawLineStart = S.project.timing.lineTimes[li] != null ? S.project.timing.lineTimes[li] : Math.max(0, ln.start - gShift);
+  const rawLineEnd = Math.max(rawLineStart + 0.2, (ln.visEnd || ln.end) - gShift, words[words.length - 1].end);
+  const spk = (ln.meta && ln.meta.speaker) || 'Lead';
+  const resultWords = (S.audio && J.alignLineWordsAnchored)
+    ? J.alignLineWordsAnchored(S.audio, words, rawLineStart, rawLineEnd, ln.language || (J.resolveLang ? J.resolveLang(S.project) : 'auto'), spk)
+    : words;
+
+  S.project.timing.wordTimes[li] = resultWords;
+  replan();
+  if (typeof selectLyricWord === 'function') selectLyricWord(li, wi);
+  syncLyricsEditor();
+  syncQualityControlPanel();
+  flushSave();
+
+  const lang = (document.documentElement.lang || 'fr').toLowerCase();
+  toast(lang === 'fr'
+    ? `⏱ Mot "${words[wi].text}" calé à ${J.fmtTime(pinT)}${atk.found ? ' (attaque vocale)' : ''}`
+    : `⏱ Pinned "${words[wi].text}" at ${J.fmtTime(pinT)}`);
+  return { lineIdx: li, wordIdx: wi, start: pinT };
 }
 
 /* ---------------- timeline (CORE FUNCTION 07: Professional Multi-Track Audio Timeline) ---------------- */
 // zoomable view: [TL.off, TL.off + D / TL.z] seconds across ruler, waveform+vocal, lyric segments, word boxes & char timings
 const layoutHue = k => (J.LAYOUT_ORDER.indexOf(k) * 37 + 30) % 360;
-const TL = { z: 1, off: 0, hover: -1, drag: -1, wHover: null, wDrag: null, showWave: true, showVocal: true, follow: true, selCharIdx: -1, hoverTime: null };
+const TL = { z: 1, off: 0, hover: -1, drag: -1, wHover: null, wDrag: null, showWave: true, showVocal: true, follow: true, selCharIdx: -1, hoverTime: null, cache: { cv: null, key: '' } };
+let tlMonoFont = '';
 function tlView() {
   const D = Math.max(0.001, S.plan.duration), vd = D / TL.z;
   TL.off = J.clamp(TL.off, 0, Math.max(0, D - vd));
@@ -891,12 +1596,14 @@ function tlAudioSectionAt(t) {
 }
 function syncTimelineInspector() {
   const c = tlInspCopy();
+  const qc = qcCopy();
   const setT = (id, v) => { const el = $(id); if (el) el.textContent = v; };
   setT('lblTlWave', c.waveLbl);
   setT('lblTlVocal', c.vocalLbl);
   setT('lblTlFollow', c.followLbl);
   setT('tlZoomWord', c.zoomWord);
   setT('tlPlayWordBtn', c.playWord);
+  setT('tlReanalyzeBtn', qc.reanalyzeLine);
   setT('lblTlStartMs', c.startLbl);
   setT('lblTlEndMs', c.endLbl);
   setT('tlPrecisionDisclaimer', c.disclaimer);
@@ -912,6 +1619,7 @@ function syncTimelineInspector() {
   if (insp) insp.classList.toggle('is-empty', !w);
   const startInp = $('tlWordStartMs'), endInp = $('tlWordEndMs');
   const confEl = $('tlConfBadge');
+  const qcMetricsEl = $('tlQcMetrics');
   if (!w) {
     setT('tlSelWordBadge', c.noSel);
     setT('tlSelCharBadge', '');
@@ -919,6 +1627,7 @@ function syncTimelineInspector() {
       confEl.className = 'tl-conf-badge mono';
       confEl.textContent = `${c.confPrefix} : —`;
     }
+    if (qcMetricsEl) qcMetricsEl.innerHTML = '';
     setT('tlSectionBadge', S.audio ? c.secMix : c.noAudio);
     if (startInp && document.activeElement !== startInp) startInp.value = J.fmtTimeMs ? J.fmtTimeMs(0) : '00:00:00.000';
     if (endInp && document.activeElement !== endInp) endInp.value = J.fmtTimeMs ? J.fmtTimeMs(0) : '00:00:00.000';
@@ -934,20 +1643,40 @@ function syncTimelineInspector() {
   } else {
     setT('tlSelCharBadge', chs.length ? `${chs.length} ${c.chars}` : '');
   }
-  const alignConf = w.alignmentConfidence != null ? Number(w.alignmentConfidence) : null;
-  const recConf = w.recognitionConfidence != null ? Number(w.recognitionConfidence) : null;
-  const alignPct = alignConf != null ? Math.round(alignConf * 100) : null;
-  const recPct = recConf != null ? Math.round(recConf * 100) : null;
-  const rawConf = alignConf != null ? alignConf : (recConf != null ? recConf : 0.75);
-  const flags = Array.isArray(w.flags) ? w.flags : [];
-  const hasUnc = flags.includes('uncertain_word') || flags.includes('misrecognized_word') || flags.includes('uncertain_boundary');
+  const qm = J.evaluateWordQuality ? J.evaluateWordQuality(w, S.audio, ln && ln.meta) : {
+    transcriptionConfidence: w.recognitionConfidence ?? 0.8,
+    alignmentConfidence: w.alignmentConfidence ?? 0.78,
+    audioClarity: w.audioClarity ?? 0.75,
+    vocalOverlap: w.vocalOverlap ?? 0.08,
+    recognitionUncertainty: w.recognitionUncertainty ?? 0.24,
+    qualityTier: 'MEDIUM',
+    conditionWarnings: [],
+  };
+  const tierLabel = qm.qualityTier === 'HIGH' ? qc.high : qm.qualityTier === 'LOW' ? qc.low : qc.med;
+  const tierDesc = qm.qualityTier === 'HIGH' ? qc.highDesc : qm.qualityTier === 'LOW' ? qc.lowDesc : qc.medDesc;
+  const alignPct = Math.round(qm.alignmentConfidence * 100);
+  const recPct = Math.round(qm.transcriptionConfidence * 100);
   if (confEl) {
-    confEl.className = 'tl-conf-badge mono ' + (rawConf >= 0.85 && !hasUnc ? 'is-high' : (rawConf >= 0.65 && !hasUnc ? 'is-mid' : 'is-low'));
-    const parts = [];
-    parts.push(`${c.confPrefix} : ${alignPct != null ? alignPct + '%' : '—'}`);
-    if (recPct != null) parts.push(`${c.recPrefix} ${recPct}%`);
+    confEl.className = 'tl-conf-badge mono ' + (qm.qualityTier === 'HIGH' ? 'is-high' : qm.qualityTier === 'LOW' ? 'is-low' : 'is-mid');
+    confEl.title = tierDesc;
+    const parts = [tierLabel, `${c.confPrefix} : ${alignPct}%`, `${c.recPrefix} ${recPct}%`];
     if (w.validated) parts.push(c.manualVal);
     confEl.textContent = parts.join(' · ');
+  }
+  if (qcMetricsEl) {
+    const clPct = Math.round(qm.audioClarity * 100);
+    const ovPct = Math.round(qm.vocalOverlap * 100);
+    const unPct = Math.round(qm.recognitionUncertainty * 100);
+    const condTags = (qm.conditionWarnings || []).map(cw =>
+      cw === 'noisy' ? qc.noisy : cw === 'distorted' ? qc.distorted : cw === 'reverberated' ? qc.reverb : qc.overlap
+    ).join(' ');
+    qcMetricsEl.innerHTML =
+      `<span class="qm-item">${escapeHtml(qc.trLbl)}: <strong>${recPct}%</strong></span>` +
+      `<span class="qm-item">${escapeHtml(qc.alLbl)}: <strong>${alignPct}%</strong></span>` +
+      `<span class="qm-item">${escapeHtml(qc.clLbl)}: <strong>${clPct}%</strong></span>` +
+      `<span class="qm-item">${escapeHtml(qc.ovLbl)}: <strong>${ovPct}%</strong></span>` +
+      `<span class="qm-item">${escapeHtml(qc.unLbl)}: <strong>${unPct}%</strong></span>` +
+      (condTags ? `<span class="qm-item" style="color:#b45309"><strong>${escapeHtml(condTags)}</strong></span>` : '');
   }
   const secType = tlAudioSectionAt((w.start + w.end) * 0.5);
   const secLabel = secType === 'overlap' ? c.secOverlap : secType === 'vocal' ? c.secVocal : secType === 'inst' ? c.secInst : c.secMix;
@@ -955,6 +1684,7 @@ function syncTimelineInspector() {
   if (startInp && document.activeElement !== startInp && J.fmtTimeMs) startInp.value = J.fmtTimeMs(w.start);
   if (endInp && document.activeElement !== endInp && J.fmtTimeMs) endInp.value = J.fmtTimeMs(w.end);
 }
+let lastTlZoomTxt = '';
 function drawTimeline() {
   const c = $('timeline'), dpr = Math.min(2, window.devicePixelRatio || 1);
   const w = Math.max(10, Math.round(c.clientWidth * dpr)), h = Math.max(10, Math.round(c.clientHeight * dpr));
@@ -962,251 +1692,281 @@ function drawTimeline() {
   let { D, vd, off } = tlView();
   // follow the playhead while playing (zoomed in)
   if (TL.follow && TL.z > 1 && S.playing && TL.drag < 0 && !TL.wDrag && (S.t < off || S.t > off + vd * 0.90)) { TL.off = S.t - vd * 0.1; ({ D, vd, off } = tlView()); }
-  if ($('tlPlayMs') && J.fmtTimeMs) $('tlPlayMs').textContent = J.fmtTimeMs(S.t);
-  if ($('tlDurMs') && J.fmtTimeMs) $('tlDurMs').textContent = J.fmtTimeMs(D);
-  if ($('tlZoomVal')) $('tlZoomVal').textContent = TL.z.toFixed(1) + '×';
+  if (J.fmtTimeMs) {
+    const pMs = J.fmtTimeMs(S.t);
+    if (pMs !== lastTimeMsTxt && $('tlPlayMs')) { lastTimeMsTxt = pMs; $('tlPlayMs').textContent = pMs; }
+    const dMs = J.fmtTimeMs(D);
+    if (dMs !== lastDurMsTxt && $('tlDurMs')) { lastDurMsTxt = dMs; $('tlDurMs').textContent = dMs; }
+  }
+  const zTxt = TL.z.toFixed(1) + '×';
+  if (zTxt !== lastTlZoomTxt && $('tlZoomVal')) { lastTlZoomTxt = zTxt; $('tlZoomVal').textContent = zTxt; }
 
-  const x = c.getContext('2d'), X = t => (t - off) / vd * w, T = px => off + px / w * vd;
+  const outX = c.getContext('2d');
+  if (!outX) return;
+  const X = t => (t - off) / vd * w, T = px => off + px / w * vd;
   const B = tlBands(h, dpr);
-  const monoFont = getComputedStyle(document.body).getPropertyValue('--mono') || 'monospace';
+  if (!tlMonoFont) tlMonoFont = getComputedStyle(document.body).getPropertyValue('--mono') || 'monospace';
+  const monoFont = tlMonoFont;
 
-  // Background
-  x.fillStyle = '#f8f9fb'; x.fillRect(0, 0, w, h);
-  // Track separators
-  x.fillStyle = '#ffffff'; x.fillRect(0, B.rulerTop, w, B.rulerBot - B.rulerTop);
-  x.fillStyle = 'rgba(15,23,42,0.06)';
-  [B.rulerBot, B.waveBot, B.segBot, B.wordBot, B.charBot].forEach(y => x.fillRect(0, y, w, 1));
+  const expR = S.project && S.project.exportRange ? `${S.project.exportRange.from}:${S.project.exportRange.to}` : '';
+  const whKey = TL.wHover ? `${TL.wHover.lineIdx}:${TL.wHover.wordIdx}:${TL.wHover.edge}` : '';
+  const wdKey = TL.wDrag ? `${TL.wDrag.lineIdx}:${TL.wDrag.wordIdx}:${TL.wDrag.edge}` : '';
+  const cacheKey = `${w}x${h}:${dpr}|${tlPlanRev}|${TL.z.toFixed(4)}|${off.toFixed(4)}|${TL.showWave ? 1 : 0}${TL.showVocal ? 1 : 0}|${TL.hover}|${TL.drag}|${whKey}|${wdKey}|${EDL.lineIdx}:${EDL.wordIdx}:${TL.selCharIdx}|${S.loop}|${expR}|${S.audio ? S.audio.duration : 0}`;
 
-  // Time ruler ticks (adaptive step down to 100ms / 50ms on deep zoom)
-  const pxPerSec = w / Math.max(0.05, vd);
-  const steps = [0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 15, 30, 60];
-  let step = 60;
-  for (const s of steps) { if (s * pxPerSec >= 44 * dpr) { step = s; break; } }
-  const tStart = Math.floor(off / step) * step;
-  x.font = `500 ${8.5 * dpr}px ${monoFont}`;
-  for (let tt = tStart; tt <= off + vd + step * 0.5; tt += step) {
-    if (tt < 0 || tt > D) continue;
-    const rx = Math.round(X(tt));
-    x.fillStyle = 'rgba(15,23,42,0.16)';
-    x.fillRect(rx, B.rulerBot - 5 * dpr, 1, 5 * dpr);
-    x.fillStyle = '#64748b';
-    const lbl = step < 1 ? J.fmtTimeMs(tt).slice(3) : J.fmtTime(tt);
-    x.fillText(lbl, rx + 3 * dpr, B.rulerTop + 10 * dpr);
-  }
+  if (!TL.cache) TL.cache = { cv: null, key: '' };
+  let cacheCtx = null;
+  if (TL.cache.cv && TL.cache.cv.width === w && TL.cache.cv.height === h && TL.cache.key === cacheKey) {
+    outX.drawImage(TL.cache.cv, 0, 0);
+  } else {
+    try {
+      if (!TL.cache.cv) TL.cache.cv = document.createElement('canvas');
+      if (TL.cache.cv.width !== w || TL.cache.cv.height !== h) { TL.cache.cv.width = w; TL.cache.cv.height = h; }
+      cacheCtx = TL.cache.cv.getContext('2d');
+    } catch (e) { cacheCtx = null; }
 
-  // Export range shading
-  const R = exportRange();
-  if (R) { x.fillStyle = 'rgba(0,113,227,0.07)'; x.fillRect(X(R.t0), 0, X(R.t1) - X(R.t0), h); }
+    const x = cacheCtx || outX;
 
-  // Instrumental, vocal & overlap sections inside waveform track
-  if (S.audio) {
-    const drawSegs = (segs, fill, border, tag) => {
-      if (!Array.isArray(segs)) return;
-      for (const s of segs) {
-        const x0 = X(s.start), x1 = X(s.end);
-        if (x1 < 0 || x0 > w) continue;
-        const cx0 = Math.max(0, x0), cw = Math.max(1, Math.min(w, x1) - cx0);
-        x.fillStyle = fill;
-        x.fillRect(cx0, B.waveTop + 1, cw, B.waveBot - B.waveTop - 2);
-        x.fillStyle = border;
-        x.fillRect(cx0, B.waveTop + 1, cw, 2 * dpr);
-        if (cw > 34 * dpr && tag) {
+    // Background
+    x.fillStyle = '#f8f9fb'; x.fillRect(0, 0, w, h);
+    // Track separators
+    x.fillStyle = '#ffffff'; x.fillRect(0, B.rulerTop, w, B.rulerBot - B.rulerTop);
+    x.fillStyle = 'rgba(15,23,42,0.06)';
+    [B.rulerBot, B.waveBot, B.segBot, B.wordBot, B.charBot].forEach(y => x.fillRect(0, y, w, 1));
+
+    // Time ruler ticks (adaptive step down to 100ms / 50ms on deep zoom)
+    const pxPerSec = w / Math.max(0.05, vd);
+    const steps = [0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 15, 30, 60];
+    let step = 60;
+    for (const s of steps) { if (s * pxPerSec >= 44 * dpr) { step = s; break; } }
+    const tStart = Math.floor(off / step) * step;
+    x.font = `500 ${8.5 * dpr}px ${monoFont}`;
+    for (let tt = tStart; tt <= off + vd + step * 0.5; tt += step) {
+      if (tt < 0 || tt > D) continue;
+      const rx = Math.round(X(tt));
+      x.fillStyle = 'rgba(15,23,42,0.16)';
+      x.fillRect(rx, B.rulerBot - 5 * dpr, 1, 5 * dpr);
+      x.fillStyle = '#64748b';
+      const lbl = step < 1 ? J.fmtTimeMs(tt).slice(3) : J.fmtTime(tt);
+      x.fillText(lbl, rx + 3 * dpr, B.rulerTop + 10 * dpr);
+    }
+
+    // Export range shading
+    const R = exportRange();
+    if (R) { x.fillStyle = 'rgba(0,113,227,0.07)'; x.fillRect(X(R.t0), 0, X(R.t1) - X(R.t0), h); }
+
+    // Instrumental, vocal & overlap sections inside waveform track
+    if (S.audio) {
+      const drawSegs = (segs, fill, border, tag) => {
+        if (!Array.isArray(segs)) return;
+        for (const s of segs) {
+          const x0 = X(s.start), x1 = X(s.end);
+          if (x1 < 0 || x0 > w) continue;
+          const cx0 = Math.max(0, x0), cw = Math.max(1, Math.min(w, x1) - cx0);
+          x.fillStyle = fill;
+          x.fillRect(cx0, B.waveTop + 1, cw, B.waveBot - B.waveTop - 2);
           x.fillStyle = border;
-          x.font = `700 ${7.5 * dpr}px ${monoFont}`;
-          x.fillText(tag, cx0 + 4 * dpr, B.waveTop + 11 * dpr);
-        }
-      }
-    };
-    drawSegs(S.audio.instrumentalSegments, 'rgba(100,116,139,0.08)', 'rgba(100,116,139,0.45)', 'INST');
-    drawSegs(S.audio.vocalSegments, 'rgba(16,185,129,0.09)', 'rgba(5,150,105,0.55)', 'VOIX');
-    drawSegs(S.audio.overlapSegments, 'rgba(139,92,246,0.12)', 'rgba(124,58,237,0.70)', 'DUO');
-  }
-
-  // Track 1: Full audio waveform + separate Vocal waveform overlay
-  const waveMid = (B.waveTop + B.waveBot) * 0.5;
-  const waveAmp = Math.max(6 * dpr, (B.waveBot - B.waveTop) * 0.44);
-  if (TL.showWave && S.audio && S.audio.peaks) {
-    const pk = S.audio.peaks, n = pk.length, sd = S.audio.duration;
-    x.fillStyle = 'rgba(100,116,139,0.48)';
-    for (let i = 0; i < w; i += 2) {
-      const t = T(i); if (t > sd) break; if (t < 0) continue;
-      const v = pk[Math.min(n - 1, Math.floor(t / sd * n))];
-      const hh = Math.max(1, v * waveAmp * 2);
-      x.fillRect(i, waveMid - hh / 2, 1.5, hh);
-    }
-  }
-  if (TL.showVocal && S.audio && (S.audio.vocalEnv100 || S.audio.vocalEnergy)) {
-    const env = S.audio.vocalEnv100 || S.audio.vocalEnergy;
-    const rate = S.audio.vocalEnv100 ? 100 : 50;
-    let maxV = 0.05;
-    for (let k = 0; k < env.length; k += 4) if (env[k] > maxV) maxV = env[k];
-    x.fillStyle = 'rgba(14,165,233,0.76)';
-    for (let i = 0; i < w; i += 2) {
-      const t = T(i);
-      const idx = Math.floor(t * rate);
-      if (idx < 0 || idx >= env.length) continue;
-      const norm = J.clamp(env[idx] / maxV, 0, 1);
-      const vh = norm * waveAmp * 1.75;
-      if (vh > 1) x.fillRect(i, waveMid - vh / 2, 1.5, vh);
-    }
-  }
-
-  // Track 2: Individual Lyric Segments (lines & interludes)
-  const segH = B.segBot - B.segTop - 2;
-  const L = (S.plan && S.plan.lines) || [];
-  for (const ln of L) {
-    const x0 = X(ln.start), x1 = X(ln.visEnd || ln.end);
-    if (x1 < 0 || x0 > w) continue;
-    const isSelL = ln.index === EDL.lineIdx;
-    const cx0 = Math.max(0, x0), cw = Math.max(2 * dpr, Math.min(w, x1) - cx0 - 1);
-    const hue = ln.interlude ? 215 : ((ln.index * 47 + 205) % 360);
-    x.fillStyle = ln.interlude ? 'rgba(100,116,139,0.14)' : (isSelL ? 'rgba(0,113,227,0.18)' : `hsla(${hue},68%,50%,0.13)`);
-    x.fillRect(cx0, B.segTop + 1, cw, segH);
-    x.fillStyle = isSelL ? '#0071e3' : (ln.interlude ? '#64748b' : `hsla(${hue},75%,42%,0.75)`);
-    x.fillRect(cx0, B.segTop + 1, Math.max(1.5 * dpr, isSelL ? 2.5 * dpr : 1.5 * dpr), segH);
-    if (isSelL) {
-      x.strokeStyle = 'rgba(0,113,227,0.55)'; x.lineWidth = dpr;
-      x.strokeRect(cx0 + 0.5, B.segTop + 1.5, Math.max(1, cw - 1), segH - 1);
-    }
-    if (cw > 26 * dpr) {
-      x.fillStyle = isSelL ? '#0051a8' : '#1e293b';
-      x.font = `600 ${9 * dpr}px ${monoFont}`;
-      x.save(); x.beginPath(); x.rect(cx0 + 3 * dpr, B.segTop + 1, Math.max(1, cw - 5 * dpr), segH); x.clip();
-      const segTxt = ln.interlude ? `♪ ${ln.secs || Math.round(ln.end - ln.start)}s` : `${ln.index + 1}. ${ln.text}`;
-      x.fillText(segTxt, cx0 + 4 * dpr, B.segTop + segH - 4 * dpr);
-      x.restore();
-    }
-  }
-
-  // Track 3: Word-level timestamps across all visible lines (plus acoustic audio highlight for selected word)
-  const wordH = B.wordBot - B.wordTop - 2;
-  const charH = B.charBot - B.charTop - 2;
-  let selWordObj = null;
-  for (const ln of L) {
-    if (ln.interlude) continue;
-    const words = Array.isArray(ln.wordsTimed) ? ln.wordsTimed : getEditableWords(ln.index);
-    const isSelLine = ln.index === EDL.lineIdx;
-    words.forEach((wd, wi) => {
-      const wx0 = X(wd.start), wx1 = X(wd.end);
-      if (wx1 < -4 || wx0 > w + 4) return;
-      const isSelW = isSelLine && wi === EDL.wordIdx;
-      const isValW = Boolean(wd.validated);
-      const flags = Array.isArray(wd.flags) ? wd.flags : [];
-      const lowConf = (wd.alignmentConfidence != null && wd.alignmentConfidence < 0.65) || flags.includes('uncertain_word') || flags.includes('uncertain_boundary');
-
-      if (isSelW) {
-        selWordObj = wd;
-        // Acoustic spotlight projecting from waveform band down onto the selected word
-        x.fillStyle = 'rgba(0,113,227,0.11)';
-        x.fillRect(wx0, B.waveTop, Math.max(2 * dpr, wx1 - wx0), B.charBot - B.waveTop);
-      }
-
-      x.fillStyle = isSelW
-        ? 'rgba(0,113,227,0.28)'
-        : lowConf
-          ? 'rgba(217,119,6,0.20)'
-          : isValW
-            ? 'rgba(5,150,105,0.18)'
-            : 'rgba(15,23,42,0.08)';
-      x.fillRect(wx0, B.wordTop + 1, Math.max(2 * dpr, wx1 - wx0 - 1), wordH);
-
-      if (isSelLine) {
-        const hStart = (TL.wDrag && TL.wDrag.lineIdx === ln.index && TL.wDrag.wordIdx === wi && TL.wDrag.edge === 'start') || (TL.wHover && TL.wHover.lineIdx === ln.index && TL.wHover.wordIdx === wi && TL.wHover.edge === 'start');
-        const hEnd = (TL.wDrag && TL.wDrag.lineIdx === ln.index && TL.wDrag.wordIdx === wi && TL.wDrag.edge === 'end') || (TL.wHover && TL.wHover.lineIdx === ln.index && TL.wHover.wordIdx === wi && TL.wHover.edge === 'end');
-        x.fillStyle = hStart ? '#0071e3' : lowConf ? '#d97706' : isValW ? '#059669' : '#334155';
-        x.fillRect(wx0 - dpr * 0.5, B.wordTop + 1, 2 * dpr, wordH);
-        x.beginPath(); x.arc(wx0, B.wordTop + 4 * dpr, (hStart ? 3.8 : 2.5) * dpr, 0, Math.PI * 2); x.fill();
-        x.fillStyle = hEnd ? '#0071e3' : '#64748b';
-        x.fillRect(wx1 - dpr * 0.5, B.wordTop + 1, 2 * dpr, wordH);
-        x.beginPath(); x.arc(wx1, B.wordBot - 4 * dpr, (hEnd ? 3.8 : 2.2) * dpr, 0, Math.PI * 2); x.fill();
-      } else {
-        x.fillStyle = lowConf ? 'rgba(217,119,6,0.65)' : 'rgba(51,65,85,0.45)';
-        x.fillRect(wx0, B.wordTop + 1, 1.2 * dpr, wordH);
-      }
-
-      if (wx1 - wx0 > 14 * dpr) {
-        x.fillStyle = isSelW ? '#004999' : (lowConf ? '#92400e' : '#0f172a');
-        x.font = `${isSelW ? 700 : 600} ${8.5 * dpr}px ${monoFont}`;
-        x.save(); x.beginPath(); x.rect(wx0 + 2 * dpr, B.wordTop + 1, Math.max(1, wx1 - wx0 - 4 * dpr), wordH); x.clip();
-        x.fillText(wd.text, wx0 + 3 * dpr, B.wordTop + wordH - 5 * dpr);
-        x.restore();
-      }
-
-      // Draw character timings inside visible span for non-selected words when tightly zoomed in
-      if (!isSelW && vd <= 8) {
-        const chs = buildWordChars(wd);
-        chs.forEach(ch => {
-          const cx0 = X(ch.start), cx1 = X(ch.end);
-          if (cx1 < 0 || cx0 > w) return;
-          x.fillStyle = 'rgba(100,116,139,0.12)';
-          x.fillRect(cx0, B.charTop + 1, Math.max(1, cx1 - cx0 - 1), charH);
-          if (cx1 - cx0 > 10 * dpr) {
-            x.fillStyle = '#475569';
-            x.font = `500 ${8 * dpr}px ${monoFont}`;
-            x.fillText(ch.ch != null ? ch.ch : (ch.char || ''), cx0 + 2 * dpr, B.charTop + charH - 4 * dpr);
+          x.fillRect(cx0, B.waveTop + 1, cw, 2 * dpr);
+          if (cw > 34 * dpr && tag) {
+            x.fillStyle = border;
+            x.font = `700 ${7.5 * dpr}px ${monoFont}`;
+            x.fillText(tag, cx0 + 4 * dpr, B.waveTop + 11 * dpr);
           }
-        });
-      }
-    });
-  }
+        }
+      };
+      drawSegs(S.audio.instrumentalSegments, 'rgba(100,116,139,0.08)', 'rgba(100,116,139,0.45)', 'INST');
+      drawSegs(S.audio.vocalSegments, 'rgba(16,185,129,0.09)', 'rgba(5,150,105,0.55)', 'VOIX');
+      drawSegs(S.audio.overlapSegments, 'rgba(139,92,246,0.12)', 'rgba(124,58,237,0.70)', 'DUO');
+    }
 
-  // Track 4: Selected Word Character-Level Timestamps
-  if (selWordObj) {
-    const chs = buildWordChars(selWordObj);
-    chs.forEach((ch, ci) => {
-      const cx0 = X(ch.start), cx1 = X(ch.end);
-      if (cx1 < -2 || cx0 > w + 2) return;
-      const isSelCh = ci === TL.selCharIdx;
-      x.fillStyle = isSelCh ? 'rgba(0,113,227,0.34)' : 'rgba(14,165,233,0.18)';
-      x.fillRect(cx0, B.charTop + 1, Math.max(2 * dpr, cx1 - cx0 - 1), charH);
-      x.fillStyle = isSelCh ? '#0071e3' : 'rgba(14,165,233,0.72)';
-      x.fillRect(cx0, B.charTop + 1, dpr, charH);
-      if (cx1 - cx0 > 8 * dpr) {
-        x.fillStyle = isSelCh ? '#004999' : '#0369a1';
-        x.font = `700 ${8.5 * dpr}px ${monoFont}`;
-        const label = (ch.ch != null ? ch.ch : (ch.char || '')) + (cx1 - cx0 > 46 * dpr ? ` ${(ch.end - ch.start) * 1000 | 0}ms` : '');
-        x.save(); x.beginPath(); x.rect(cx0 + dpr, B.charTop + 1, Math.max(1, cx1 - cx0 - 2 * dpr), charH); x.clip();
-        x.fillText(label, cx0 + 2.5 * dpr, B.charTop + charH - 4 * dpr);
+    // Track 1: Full audio waveform + separate Vocal waveform overlay
+    const waveMid = (B.waveTop + B.waveBot) * 0.5;
+    const waveAmp = Math.max(6 * dpr, (B.waveBot - B.waveTop) * 0.44);
+    if (TL.showWave && S.audio && S.audio.peaks) {
+      const pk = S.audio.peaks, n = pk.length, sd = S.audio.duration;
+      x.fillStyle = 'rgba(100,116,139,0.48)';
+      for (let i = 0; i < w; i += 2) {
+        const t = T(i); if (t > sd) break; if (t < 0) continue;
+        const v = pk[Math.min(n - 1, Math.floor(t / sd * n))];
+        const hh = Math.max(1, v * waveAmp * 2);
+        x.fillRect(i, waveMid - hh / 2, 1.5, hh);
+      }
+    }
+    if (TL.showVocal && S.audio && (S.audio.vocalEnv100 || S.audio.vocalEnergy)) {
+      const env = S.audio.vocalEnv100 || S.audio.vocalEnergy;
+      const rate = S.audio.vocalEnv100 ? 100 : 50;
+      let maxV = 0.05;
+      for (let k = 0; k < env.length; k += 4) if (env[k] > maxV) maxV = env[k];
+      x.fillStyle = 'rgba(14,165,233,0.76)';
+      for (let i = 0; i < w; i += 2) {
+        const t = T(i);
+        const idx = Math.floor(t * rate);
+        if (idx < 0 || idx >= env.length) continue;
+        const norm = J.clamp(env[idx] / maxV, 0, 1);
+        const vh = norm * waveAmp * 1.75;
+        if (vh > 1) x.fillRect(i, waveMid - vh / 2, 1.5, vh);
+      }
+    }
+
+    // Track 2: Individual Lyric Segments (lines & interludes)
+    const segH = B.segBot - B.segTop - 2;
+    const L = (S.plan && S.plan.lines) || [];
+    for (const ln of L) {
+      const x0 = X(ln.start), x1 = X(ln.visEnd || ln.end);
+      if (x1 < 0 || x0 > w) continue;
+      const isSelL = ln.index === EDL.lineIdx;
+      const cx0 = Math.max(0, x0), cw = Math.max(2 * dpr, Math.min(w, x1) - cx0 - 1);
+      const hue = ln.interlude ? 215 : ((ln.index * 47 + 205) % 360);
+      x.fillStyle = ln.interlude ? 'rgba(100,116,139,0.14)' : (isSelL ? 'rgba(0,113,227,0.18)' : `hsla(${hue},68%,50%,0.13)`);
+      x.fillRect(cx0, B.segTop + 1, cw, segH);
+      x.fillStyle = isSelL ? '#0071e3' : (ln.interlude ? '#64748b' : `hsla(${hue},75%,42%,0.75)`);
+      x.fillRect(cx0, B.segTop + 1, Math.max(1.5 * dpr, isSelL ? 2.5 * dpr : 1.5 * dpr), segH);
+      if (isSelL) {
+        x.strokeStyle = 'rgba(0,113,227,0.55)'; x.lineWidth = dpr;
+        x.strokeRect(cx0 + 0.5, B.segTop + 1.5, Math.max(1, cw - 1), segH - 1);
+      }
+      if (cw > 26 * dpr) {
+        x.fillStyle = isSelL ? '#0051a8' : '#1e293b';
+        x.font = `600 ${9 * dpr}px ${monoFont}`;
+        x.save(); x.beginPath(); x.rect(cx0 + 3 * dpr, B.segTop + 1, Math.max(1, cw - 5 * dpr), segH); x.clip();
+        const segTxt = ln.interlude ? `♪ ${ln.secs || Math.round(ln.end - ln.start)}s` : `${ln.index + 1}. ${ln.text}`;
+        x.fillText(segTxt, cx0 + 4 * dpr, B.segTop + segH - 4 * dpr);
         x.restore();
       }
-    });
+    }
+
+    // Track 3: Word-level timestamps across all visible lines (plus acoustic audio highlight for selected word)
+    const wordH = B.wordBot - B.wordTop - 2;
+    const charH = B.charBot - B.charTop - 2;
+    let selWordObj = null;
+    for (const ln of L) {
+      if (ln.interlude) continue;
+      const words = Array.isArray(ln.wordsTimed) ? ln.wordsTimed : getEditableWords(ln.index);
+      const isSelLine = ln.index === EDL.lineIdx;
+      words.forEach((wd, wi) => {
+        const wx0 = X(wd.start), wx1 = X(wd.end);
+        if (wx1 < -4 || wx0 > w + 4) return;
+        const isSelW = isSelLine && wi === EDL.wordIdx;
+        const qm = J.evaluateWordQuality ? J.evaluateWordQuality(wd, S.audio, ln.meta) : { qualityTier: 'MEDIUM' };
+        const isLow = qm.qualityTier === 'LOW';
+        const isHigh = qm.qualityTier === 'HIGH';
+
+        if (isSelW) {
+          selWordObj = wd;
+          x.fillStyle = 'rgba(0,113,227,0.11)';
+          x.fillRect(wx0, B.waveTop, Math.max(2 * dpr, wx1 - wx0), B.charBot - B.waveTop);
+        }
+
+        x.fillStyle = isSelW
+          ? 'rgba(0,113,227,0.28)'
+          : isLow
+            ? 'rgba(220,38,38,0.22)'
+            : isHigh
+              ? 'rgba(5,150,105,0.18)'
+              : 'rgba(217,119,6,0.16)';
+        x.fillRect(wx0, B.wordTop + 1, Math.max(2 * dpr, wx1 - wx0 - 1), wordH);
+
+        if (isSelLine) {
+          const hStart = (TL.wDrag && TL.wDrag.lineIdx === ln.index && TL.wDrag.wordIdx === wi && TL.wDrag.edge === 'start') || (TL.wHover && TL.wHover.lineIdx === ln.index && TL.wHover.wordIdx === wi && TL.wHover.edge === 'start');
+          const hEnd = (TL.wDrag && TL.wDrag.lineIdx === ln.index && TL.wDrag.wordIdx === wi && TL.wDrag.edge === 'end') || (TL.wHover && TL.wHover.lineIdx === ln.index && TL.wHover.wordIdx === wi && TL.wHover.edge === 'end');
+          x.fillStyle = hStart ? '#0071e3' : isLow ? '#dc2626' : isHigh ? '#059669' : '#d97706';
+          x.fillRect(wx0 - dpr * 0.5, B.wordTop + 1, 2 * dpr, wordH);
+          x.beginPath(); x.arc(wx0, B.wordTop + 4 * dpr, (hStart ? 3.8 : 2.5) * dpr, 0, Math.PI * 2); x.fill();
+          x.fillStyle = hEnd ? '#0071e3' : '#64748b';
+          x.fillRect(wx1 - dpr * 0.5, B.wordTop + 1, 2 * dpr, wordH);
+          x.beginPath(); x.arc(wx1, B.wordBot - 4 * dpr, (hEnd ? 3.8 : 2.2) * dpr, 0, Math.PI * 2); x.fill();
+        } else {
+          x.fillStyle = isLow ? 'rgba(220,38,38,0.75)' : isHigh ? 'rgba(5,150,105,0.55)' : 'rgba(217,119,6,0.60)';
+          x.fillRect(wx0, B.wordTop + 1, 1.2 * dpr, wordH);
+        }
+
+        if (wx1 - wx0 > 14 * dpr) {
+          x.fillStyle = isSelW ? '#004999' : (isLow ? '#991b1b' : isHigh ? '#065f46' : '#92400e');
+          x.font = `${isSelW ? 700 : 600} ${8.5 * dpr}px ${monoFont}`;
+          x.save(); x.beginPath(); x.rect(wx0 + 2 * dpr, B.wordTop + 1, Math.max(1, wx1 - wx0 - 4 * dpr), wordH); x.clip();
+          x.fillText(wd.text, wx0 + 3 * dpr, B.wordTop + wordH - 5 * dpr);
+          x.restore();
+        }
+
+        if (!isSelW && vd <= 8) {
+          const chs = buildWordChars(wd);
+          chs.forEach(ch => {
+            const cx0 = X(ch.start), cx1 = X(ch.end);
+            if (cx1 < 0 || cx0 > w) return;
+            x.fillStyle = 'rgba(100,116,139,0.12)';
+            x.fillRect(cx0, B.charTop + 1, Math.max(1, cx1 - cx0 - 1), charH);
+            if (cx1 - cx0 > 10 * dpr) {
+              x.fillStyle = '#475569';
+              x.font = `500 ${8 * dpr}px ${monoFont}`;
+              x.fillText(ch.ch != null ? ch.ch : (ch.char || ''), cx0 + 2 * dpr, B.charTop + charH - 4 * dpr);
+            }
+          });
+        }
+      });
+    }
+
+    // Track 4: Selected Word Character-Level Timestamps
+    if (selWordObj) {
+      const chs = buildWordChars(selWordObj);
+      chs.forEach((ch, ci) => {
+        const cx0 = X(ch.start), cx1 = X(ch.end);
+        if (cx1 < -2 || cx0 > w + 2) return;
+        const isSelCh = ci === TL.selCharIdx;
+        x.fillStyle = isSelCh ? 'rgba(0,113,227,0.34)' : 'rgba(14,165,233,0.18)';
+        x.fillRect(cx0, B.charTop + 1, Math.max(2 * dpr, cx1 - cx0 - 1), charH);
+        x.fillStyle = isSelCh ? '#0071e3' : 'rgba(14,165,233,0.72)';
+        x.fillRect(cx0, B.charTop + 1, dpr, charH);
+        if (cx1 - cx0 > 8 * dpr) {
+          x.fillStyle = isSelCh ? '#004999' : '#0369a1';
+          x.font = `700 ${8.5 * dpr}px ${monoFont}`;
+          const label = (ch.ch != null ? ch.ch : (ch.char || '')) + (cx1 - cx0 > 46 * dpr ? ` ${(ch.end - ch.start) * 1000 | 0}ms` : '');
+          x.save(); x.beginPath(); x.rect(cx0 + dpr, B.charTop + 1, Math.max(1, cx1 - cx0 - 2 * dpr), charH); x.clip();
+          x.fillText(label, cx0 + 2.5 * dpr, B.charTop + charH - 4 * dpr);
+          x.restore();
+        }
+      });
+    }
+
+    // Beats + Zoom overview bar at bottom
+    const beats = S.plan.beats || [];
+    x.fillStyle = '#cbd5e1';
+    for (const b of beats) { if (b < off) continue; if (b > off + vd) break; x.fillRect(Math.round(X(b)), h - 5 * dpr, 1, 5 * dpr); }
+    if (TL.z > 1) {
+      x.fillStyle = 'rgba(0,0,0,0.08)'; x.fillRect(0, h - 3 * dpr, w, 3 * dpr);
+      x.fillStyle = '#0071e3'; x.fillRect(off / D * w, h - 3 * dpr, Math.max(6 * dpr, vd / D * w), 3 * dpr);
+    }
+
+    // Top Ruler Line-Start Handles
+    x.font = `600 ${8.5 * dpr}px ${monoFont}`;
+    const LT = S.project.timing.lineTimes || {};
+    for (const ln of L) {
+      const lx = X(ln.start);
+      if (lx < -20 * dpr || lx > w + 2) continue;
+      const on = ln.index === TL.drag || ln.index === TL.hover, man = LT[ln.index] != null;
+      x.fillStyle = on ? '#0071e3' : man ? '#0284c7' : '#64748b';
+      x.fillRect(lx - (on ? dpr : 0), B.rulerTop, on ? 2 * dpr : 1, B.rulerBot - B.rulerTop);
+      x.beginPath(); x.moveTo(lx - 4.5 * dpr, B.rulerTop); x.lineTo(lx + 4.5 * dpr, B.rulerTop); x.lineTo(lx, B.rulerTop + 6.5 * dpr); x.closePath(); x.fill();
+      x.fillStyle = on ? '#0071e3' : '#475569';
+      x.fillText(String(ln.index + 1).padStart(2, '0'), lx + 3 * dpr, B.rulerTop + 17.5 * dpr);
+    }
+
+    // Active Loop Highlight
+    if (S.loop === 'line' || S.loop === 'cut') {
+      const r = activeLoopRange();
+      x.fillStyle = 'rgba(0,113,227,0.10)';
+      x.fillRect(X(r.start), 0, Math.max(2 * dpr, X(r.end) - X(r.start)), h);
+    }
+
+    if (cacheCtx) {
+      TL.cache.key = cacheKey;
+      outX.drawImage(TL.cache.cv, 0, 0);
+    }
   }
 
-  // Beats + Zoom overview bar at bottom
-  const beats = S.plan.beats || [];
-  x.fillStyle = '#cbd5e1';
-  for (const b of beats) { if (b < off) continue; if (b > off + vd) break; x.fillRect(Math.round(X(b)), h - 5 * dpr, 1, 5 * dpr); }
-  if (TL.z > 1) {
-    x.fillStyle = 'rgba(0,0,0,0.08)'; x.fillRect(0, h - 3 * dpr, w, 3 * dpr);
-    x.fillStyle = '#0071e3'; x.fillRect(off / D * w, h - 3 * dpr, Math.max(6 * dpr, vd / D * w), 3 * dpr);
-  }
-
-  // Top Ruler Line-Start Handles
-  x.font = `600 ${8.5 * dpr}px ${monoFont}`;
-  const LT = S.project.timing.lineTimes || {};
-  for (const ln of L) {
-    const lx = X(ln.start);
-    if (lx < -20 * dpr || lx > w + 2) continue;
-    const on = ln.index === TL.drag || ln.index === TL.hover, man = LT[ln.index] != null;
-    x.fillStyle = on ? '#0071e3' : man ? '#0284c7' : '#64748b';
-    x.fillRect(lx - (on ? dpr : 0), B.rulerTop, on ? 2 * dpr : 1, B.rulerBot - B.rulerTop);
-    x.beginPath(); x.moveTo(lx - 4.5 * dpr, B.rulerTop); x.lineTo(lx + 4.5 * dpr, B.rulerTop); x.lineTo(lx, B.rulerTop + 6.5 * dpr); x.closePath(); x.fill();
-    x.fillStyle = on ? '#0071e3' : '#475569';
-    x.fillText(String(ln.index + 1).padStart(2, '0'), lx + 3 * dpr, B.rulerTop + 17.5 * dpr);
-  }
-
-  // Active Loop Highlight
-  if (S.loop === 'line' || S.loop === 'cut') {
-    const r = activeLoopRange();
-    x.fillStyle = 'rgba(0,113,227,0.10)';
-    x.fillRect(X(r.start), 0, Math.max(2 * dpr, X(r.end) - X(r.start)), h);
-  }
-
-  // Playhead cursor
+  // Playhead cursor (dynamic overlay per frame)
   const px = X(S.t);
-  x.fillStyle = '#0071e3';
-  x.fillRect(Math.round(px) - dpr, 0, 2 * dpr, h);
-  x.beginPath(); x.moveTo(px - 5 * dpr, 0); x.lineTo(px + 5 * dpr, 0); x.lineTo(px, 6 * dpr); x.closePath(); x.fill();
+  outX.fillStyle = '#0071e3';
+  outX.fillRect(Math.round(px) - dpr, 0, 2 * dpr, h);
+  outX.beginPath(); outX.moveTo(px - 5 * dpr, 0); outX.lineTo(px + 5 * dpr, 0); outX.lineTo(px, 6 * dpr); outX.closePath(); outX.fill();
 }
 function tlTime(ev) {
   const r = $('timeline').getBoundingClientRect(), { vd, off } = tlView();
@@ -1285,7 +2045,7 @@ function tlDragTo(i, ev) {
 function tlDragWordTo(wh, ev) {
   if (!wh) return;
   const t = tlTime(ev);
-  applyWordTimeBoundary(wh.lineIdx, wh.wordIdx, wh.edge, t, { quiet: true });
+  applyWordTimeBoundary(wh.lineIdx, wh.wordIdx, wh.edge, t, { quiet: true, fastDrag: true });
 }
 
 /* ---------------- keep the playing line in view (the list scrolls inside its column) ---------------- */
@@ -1878,10 +2638,19 @@ function applyWordTimeBoundary(li, wi, edge, rawTime, opts = {}) {
   w.start = ws;
   w.end = we;
   w.validated = true;
-  w.alignmentConfidence = 1;
+  w.alignmentConfidence = 0.96;
   w.flags = (w.flags || []).filter(f => f !== 'uncertain_boundary');
   rescaleWordChars(w, ws, we);
   S.project.timing.wordTimes[li] = words;
+  if (opts.fastDrag) {
+    ln.wordsTimed = words;
+    if (S.project.timing.lineTimes[li] != null) ln.start = S.project.timing.lineTimes[li];
+    if (S.project.timing.lineEnds[li] != null) { ln.visEnd = S.project.timing.lineEnds[li]; ln.end = Math.max(ln.end, ln.visEnd); }
+    tlPlanRev++;
+    syncTimelineInspector();
+    drawTimeline();
+    return;
+  }
   refreshStage6Validation();
   replan();
   syncTimelineInspector();
@@ -2247,6 +3016,20 @@ function syncLyricsEditor() {
   }
   if ($('leLineStart')) $('leLineStart').value = ln.start.toFixed(3);
   if ($('leLineEnd')) $('leLineEnd').value = (ln.visEnd || ln.end).toFixed(3);
+  const langBadge = $('leLineLangBadge');
+  if (langBadge) {
+    const lCode = !ln.interlude ? (ln.language || (ln.meta && ln.meta.language) || (J.detectLineLang ? J.detectLineLang(ln.text) : '') || '') : '';
+    langBadge.textContent = lCode ? (J.LANG_LABEL[lCode] || lCode) : '—';
+    langBadge.title = lCode ? `Langue de la ligne : ${J.LANG_LABEL[lCode] || lCode}` : 'Interlude / non linguistique';
+  }
+  const transInp = $('leLineTransEdit');
+  if (transInp) {
+    transInp.disabled = !!ln.interlude;
+    if (document.activeElement !== transInp) {
+      const trMap = (S.project.translation && S.project.translation.lines) || {};
+      transInp.value = ln.interlude ? '' : (trMap[ln.index] || '');
+    }
+  }
 
   const words = ln.interlude ? [] : getEditableWords(EDL.lineIdx);
   EDL.wordIdx = words.length ? J.clamp(EDL.wordIdx | 0, 0, words.length - 1) : 0;
@@ -2290,9 +3073,16 @@ function syncLyricsEditor() {
   if ($('leWordValid')) $('leWordValid').checked = Boolean(selWord && selWord.validated);
   if ($('leWordConf')) {
     if (selWord) {
-      const rp = selWord.recognitionConfidence != null ? Math.round(selWord.recognitionConfidence * 100) + '%' : '-';
-      const ap = selWord.alignmentConfidence != null ? Math.round(selWord.alignmentConfidence * 100) + '%' : '-';
-      $('leWordConf').textContent = `rec ${rp} · align ${ap}`;
+      const qm = J.evaluateWordQuality ? J.evaluateWordQuality(selWord, S.audio, ln && ln.meta) : null;
+      if (qm) {
+        const cp = qcCopy();
+        const tLbl = qm.qualityTier === 'HIGH' ? cp.high : qm.qualityTier === 'LOW' ? cp.low : cp.med;
+        $('leWordConf').textContent = `${tLbl} · ${cp.trLbl} ${Math.round(qm.transcriptionConfidence * 100)}% · ${cp.alLbl} ${Math.round(qm.alignmentConfidence * 100)}% · ${cp.clLbl} ${Math.round(qm.audioClarity * 100)}% · ${cp.ovLbl} ${Math.round(qm.vocalOverlap * 100)}% · ${cp.unLbl} ${Math.round(qm.recognitionUncertainty * 100)}%`;
+      } else {
+        const rp = selWord.recognitionConfidence != null ? Math.round(selWord.recognitionConfidence * 100) + '%' : '-';
+        const ap = selWord.alignmentConfidence != null ? Math.round(selWord.alignmentConfidence * 100) + '%' : '-';
+        $('leWordConf').textContent = `rec ${rp} · align ${ap}`;
+      }
     } else {
       $('leWordConf').textContent = '';
     }
@@ -2324,6 +3114,7 @@ function syncLyricsEditor() {
     }
   }
   syncTimelineInspector();
+  syncQualityControlPanel();
 }
 function bindLyricsEditor() {
   applyLeLabels();
@@ -2385,12 +3176,33 @@ function bindLyricsEditor() {
   if ($('leAddChar')) $('leAddChar').addEventListener('click', () => addWordChar(EDL.lineIdx, EDL.wordIdx));
   if ($('btnLeRecalcLine')) $('btnLeRecalcLine').addEventListener('click', () => recalculateLineAlignment(EDL.lineIdx));
   if ($('btnLeSave')) $('btnLeSave').addEventListener('click', saveCorrectedLyrics);
+  if ($('leLineTransEdit')) {
+    const commitLineTrans = (val, flushNow) => {
+      const L = (S.plan && S.plan.lines) || [];
+      const ln = L[EDL.lineIdx];
+      if (!ln || ln.interlude) return;
+      const tr = ensureTranslationState();
+      const txt = String(val || '').trim();
+      if (txt) {
+        tr.lines[ln.index] = txt;
+        if (!tr.enabled) tr.enabled = true;
+      } else {
+        delete tr.lines[ln.index];
+      }
+      syncTranslationControls();
+      replanSoon(90);
+      if (flushNow) flushSave();
+      else autosave();
+    };
+    $('leLineTransEdit').addEventListener('input', e => commitLineTrans(e.target.value, false));
+    $('leLineTransEdit').addEventListener('change', e => commitLineTrans(e.target.value, true));
+  }
 }
 
 /* ---------------- 歌詞・タイミングの取り消し（Ctrl+Z） ---------------- */
 // separate from the ◀ ▶ history of looks: lyric edits, dragged / typed / tapped line times
 const ED = { undo: [], redo: [] };
-const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {}, lineEnds: S.project.timing.lineEnds || {}, wordTimes: S.project.timing.wordTimes || {}, lineMeta: S.project.timing.lineMeta || {}, detection: S.project.detection || null });
+const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {}, lineEnds: S.project.timing.lineEnds || {}, wordTimes: S.project.timing.wordTimes || {}, lineMeta: S.project.timing.lineMeta || {}, detection: S.project.detection || null, translation: S.project.translation || null });
 function pushEdit() { const s = edSnap(); if (ED.undo[ED.undo.length - 1] !== s) ED.undo.push(s); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = []; updateEditBtns(); }
 function edGo(d) {
   const from = d < 0 ? ED.undo : ED.redo, to = d < 0 ? ED.redo : ED.undo;
@@ -2399,8 +3211,9 @@ function edGo(d) {
   if ('ov' in o) { cur.ov = S.project.overrides; cur.range = S.project.exportRange || null; }   // clearLyrics() also cleared these
   to.push(JSON.stringify(cur));
   S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; S.project.timing.lineEnds = o.lineEnds || {}; S.project.timing.wordTimes = o.wordTimes || {}; S.project.timing.lineMeta = o.lineMeta || {}; S.project.detection = o.detection || null; $('lyrics').value = o.lyrics;
+  if ('translation' in o && o.translation) S.project.translation = o.translation;
   if ('ov' in o) { S.project.overrides = o.ov || {}; S.project.exportRange = o.range || null; }
-  replan(); syncAudioDetectPanel(); flushSave(); updateEditBtns();
+  replan(); syncTranslationControls(); syncAudioDetectPanel(); flushSave(); updateEditBtns();
   toast(d < 0 ? '元に戻しました' : 'やり直しました');
 }
 // LRC を読み込む: replaces the lyrics (and everything tied to line numbers, like 歌詞を消す); undoable
@@ -2417,12 +3230,77 @@ function loadLrc(text, sub) {
   if (sub) toast(`字幕ファイルを読み込みました（${sub.lines} 行・間奏 ${sub.gaps} か所・「元に戻す」で戻せます）`);
   else toast(`LRC を読み込みました（時刻付き ${n} 行・「元に戻す」で戻せます）`);
 }
-function saveLrc() {
+function applyExportLabels() {
+  const lang = document.documentElement.lang || 'ja';
+  const titleEl = $('lblLyricsExpTitle'), transEl = $('lblExpIncludeTrans');
+  if (lang === 'en') {
+    if (titleEl) titleEl.textContent = 'Export synchronized lyrics';
+    if (transEl) transEl.textContent = 'Include translation';
+    if ($('btnExpJSON')) $('btnExpJSON').textContent = 'JSON (Words & Chars)';
+    if ($('btnExpELRC')) $('btnExpELRC').textContent = 'Enhanced LRC';
+  } else if (lang === 'fr') {
+    if (titleEl) titleEl.textContent = 'Exporter les paroles synchronisées';
+    if (transEl) transEl.textContent = 'Inclure traduction';
+    if ($('btnExpJSON')) $('btnExpJSON').textContent = 'JSON (mots & car.)';
+    if ($('btnExpELRC')) $('btnExpELRC').textContent = 'Enhanced LRC';
+  } else {
+    if (titleEl) titleEl.textContent = '同期歌詞エクスポート';
+    if (transEl) transEl.textContent = '翻訳を含める';
+    if ($('btnExpJSON')) $('btnExpJSON').textContent = 'JSON (語・文字)';
+    if ($('btnExpELRC')) $('btnExpELRC').textContent = 'Enhanced LRC';
+  }
+  const chk = $('expIncludeTrans');
+  if (chk && chk.dataset.userTouched !== '1') {
+    chk.checked = !!(S.project && S.project.translation && S.project.translation.enabled);
+  }
+}
+function saveSyncedLyrics(format = 'lrc') {
+  const fmt = String(format || 'lrc').toLowerCase();
   const R = exportRangeLines(), r = exportRange();
-  const txt = J.lrcText(S.project, S.plan.lines, R ? { from: R.from, to: R.to, t0: r.t0 } : null);
-  const fname = baseName() + rangeSuffix() + '.lrc';
-  J.saveFile(fname, new Blob([txt], { type: 'text/plain;charset=utf-8' }));
-  recordWork('export_lrc', 'export', fname);
+  const rangeObj = R && r ? { from: R.from, to: R.to, t0: r.t0, t1: r.t1 } : null;
+  const chk = $('expIncludeTrans');
+  const includeTranslation = chk ? !!chk.checked : !!(S.project && S.project.translation && S.project.translation.enabled);
+  const opts = { includeTranslation, audio: S.audio };
+  const base = baseName() + rangeSuffix();
+  let txt = '', ext = '.lrc', mime = 'text/plain;charset=utf-8', act = 'export_lrc';
+
+  if (fmt === 'srt') {
+    txt = J.srtText(S.project, S.plan, rangeObj, opts);
+    ext = '.srt';
+    act = 'export_srt';
+  } else if (fmt === 'vtt') {
+    txt = J.vttText(S.project, S.plan, rangeObj, opts);
+    ext = '.vtt';
+    mime = 'text/vtt;charset=utf-8';
+    act = 'export_vtt';
+  } else if (fmt === 'elrc' || fmt === 'enhanced-lrc') {
+    txt = J.enhancedLrcText(S.project, S.plan, rangeObj, opts);
+    ext = '.elrc.lrc';
+    act = 'export_elrc';
+  } else if (fmt === 'json') {
+    txt = J.lyricsJsonText(S.project, S.plan, rangeObj, opts);
+    ext = '.lyrics.json';
+    mime = 'application/json;charset=utf-8';
+    act = 'export_lyrics_json';
+  } else if (fmt === 'txt') {
+    txt = J.txtLyricsText(S.project, S.plan, rangeObj, opts);
+    ext = '.txt';
+    act = 'export_txt';
+  } else {
+    txt = J.lrcText(S.project, S.plan.lines, rangeObj, opts);
+    ext = '.lrc';
+    act = 'export_lrc';
+  }
+
+  const fname = base + ext;
+  J.saveFile(fname, new Blob([txt], { type: mime }));
+  recordWork(act, 'export', fname);
+  const lang = document.documentElement.lang;
+  toast((lang === 'en' ? 'Exported: ' : lang === 'fr' ? 'Exporté : ' : '書き出しました: ') + fname);
+  return { filename: fname, content: txt };
+}
+function saveLrc() {
+  return saveSyncedLyrics('lrc');
 }
 // 歌詞を消す: lyrics + everything tied to line numbers (times, per-line settings, export range); undoable
 function clearLyrics() {
@@ -2444,7 +3322,10 @@ async function resetAll() {
   pause();
   audioSeq++;                                  // a song still being analysed must not come back after the reset
   S.project = mergeProject(null); S.project.lyrics = '';
-  S.audio = null; if ($('audioFile')) $('audioFile').value = '';
+  delete S.project.cloudSongId;
+  S.cloudSongId = null;
+  if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = '';
+  S.audio = null; S.audioFile = null; if ($('audioFile')) $('audioFile').value = '';
   if (J.forgetSong) await J.forgetSong();
   $('audioName').textContent = audioNameDefault;
   ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
@@ -2831,10 +3712,175 @@ function setMode(m) {
     if (easy) closeCutPick();
     if (S.plan && S.lineEls && S.lineEls.length) { lastCutIdx = -2; updateCutInfo(); }
   sizeViewport(); drawTimeline(); loadThumbFonts();
+  syncSlidingMenus(true);
+}
+
+/* ---------------- sliding rounded menu highlight indicator ---------------- */
+const SLIDING_MENUS = [
+  { sel: '.tabs', activeSel: 'button[aria-selected="true"]' },
+  { sel: '.modes', activeSel: 'button:not(#btnTour)[aria-pressed="true"]' },
+  { sel: '.cloud-tabs', activeSel: '.cloud-tab.is-active, button[aria-selected="true"]' },
+  { sel: '.kp-seg', activeSel: 'button[aria-pressed="true"]' },
+  { sel: '.lang-switch', activeSel: '[aria-current="page"]' },
+];
+let slidingMenusBound = false;
+
+function ensureSlidingPill(container) {
+  if (!container) return null;
+  container.classList.add('has-sliding-pill');
+  let pill = container.querySelector(':scope > .sliding-pill');
+  if (!pill) {
+    pill = document.createElement('span');
+    pill.className = 'sliding-pill is-instant';
+    pill.setAttribute('aria-hidden', 'true');
+    container.prepend(pill);
+  }
+  return pill;
+}
+
+function updateSlidingMenu(container, activeSel, animate = true) {
+  if (!container) return null;
+  const pill = ensureSlidingPill(container);
+  const target = container.querySelector(activeSel);
+  if (!target) {
+    pill.classList.remove('is-ready');
+    pill.dataset.placed = '0';
+    return null;
+  }
+
+  const cRect = container.getBoundingClientRect ? container.getBoundingClientRect() : { left: 0, top: 0, width: 0, height: 0 };
+  const tRect = target.getBoundingClientRect ? target.getBoundingClientRect() : { left: 0, top: 0, width: 0, height: 0 };
+
+  let x = 0, y = 0, w = 0, h = 0;
+  if (cRect.width > 0 && tRect.width > 0) {
+    x = +(tRect.left - cRect.left + (container.scrollLeft || 0) - (container.clientLeft || 0)).toFixed(2);
+    y = +(tRect.top - cRect.top + (container.scrollTop || 0) - (container.clientTop || 0)).toFixed(2);
+    w = +tRect.width.toFixed(2);
+    h = +tRect.height.toFixed(2);
+  } else if ((container.offsetWidth > 0 || target.offsetWidth > 0) && target.offsetWidth > 0) {
+    x = +(target.offsetLeft || 0).toFixed(2);
+    y = +(target.offsetTop || 0).toFixed(2);
+    w = +(target.offsetWidth || 0).toFixed(2);
+    h = +(target.offsetHeight || 0).toFixed(2);
+  } else {
+    pill.dataset.placed = '0';
+    return null;
+  }
+
+  const nextW = `${w}px`;
+  const nextH = `${h}px`;
+  const nextT = `translate3d(${x}px, ${y}px, 0)`;
+  const wasPlaced = pill.dataset.placed === '1';
+  const prevTarget = pill._lastTarget;
+  const shouldInstant = !wasPlaced || animate === false;
+
+  if (
+    wasPlaced &&
+    prevTarget === target &&
+    pill.style.width === nextW &&
+    pill.style.height === nextH &&
+    pill.style.transform === nextT &&
+    pill.classList.contains('is-ready') &&
+    (!shouldInstant || pill.classList.contains('is-instant'))
+  ) {
+    return { x, y, width: w, height: h, target };
+  }
+
+  if (shouldInstant) {
+    if (!pill.classList.contains('is-instant')) pill.classList.add('is-instant');
+  } else {
+    if (pill.classList.contains('is-instant')) pill.classList.remove('is-instant');
+  }
+
+  pill.style.width = nextW;
+  pill.style.height = nextH;
+  pill.style.transform = nextT;
+  if (!pill.classList.contains('is-ready')) pill.classList.add('is-ready');
+  pill._lastTarget = target;
+
+  if (shouldInstant) {
+    void pill.offsetWidth;
+    pill.dataset.placed = '1';
+    requestAnimationFrame(() => {
+      if (pill.classList.contains('is-instant')) pill.classList.remove('is-instant');
+    });
+  } else if (prevTarget !== target) {
+    pill.dataset.placed = '1';
+  }
+
+  return { x, y, width: w, height: h, target };
+}
+
+function syncSlidingMenus(animate = true) {
+  for (const spec of SLIDING_MENUS) {
+    document.querySelectorAll(spec.sel).forEach((el) => {
+      updateSlidingMenu(el, spec.activeSel, animate);
+    });
+  }
+}
+
+function initSlidingMenus() {
+  for (const spec of SLIDING_MENUS) {
+    document.querySelectorAll(spec.sel).forEach((container) => {
+      ensureSlidingPill(container);
+      updateSlidingMenu(container, spec.activeSel, false);
+
+      if (container._slidingObs) return;
+      if (typeof MutationObserver !== 'undefined') {
+        const obs = new MutationObserver((mutations) => {
+          const isPillNode = n => n && n.classList && n.classList.contains('sliding-pill');
+          const relevant = mutations.some(m => {
+            if (isPillNode(m.target)) return false;
+            if (m.target === container) {
+              if (m.type === 'attributes') return false;
+              const touched = [...(m.addedNodes || []), ...(m.removedNodes || [])];
+              return touched.some(n => !isPillNode(n));
+            }
+            return true;
+          });
+          if (!relevant) return;
+          updateSlidingMenu(container, spec.activeSel, true);
+        });
+        obs.observe(container, {
+          attributes: true,
+          subtree: true,
+          childList: true,
+          attributeFilter: ['aria-selected', 'aria-pressed', 'aria-current', 'class', 'hidden'],
+        });
+        container._slidingObs = obs;
+      }
+      if (typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(() => {
+          if (container._slidingRaf) return;
+          container._slidingRaf = requestAnimationFrame(() => {
+            container._slidingRaf = 0;
+            updateSlidingMenu(container, spec.activeSel, false);
+          });
+        });
+        ro.observe(container);
+        container._slidingRo = ro;
+      }
+    });
+  }
+  if (!slidingMenusBound) {
+    slidingMenusBound = true;
+    window.addEventListener('resize', () => syncSlidingMenus(false));
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => syncSlidingMenus(false)).catch(() => {});
+    }
+  }
 }
 
 /* スマホ: the preview sticks right under the header; the first time, a phone-friendly size and the line list folded */
-function mobileBar() { const b = document.querySelector('.bar'); if (b) document.documentElement.style.setProperty('--mbar', b.offsetHeight + 'px'); }
+function mobileBar() {
+  const b = document.querySelector('.bar');
+  if (!b) return;
+  const h = b.offsetHeight + 'px';
+  if (b._lastMbar !== h) {
+    b._lastMbar = h;
+    document.documentElement.style.setProperty('--mbar', h);
+  }
+}
 function mobileInit() {
   mobileBar();
   let first = true; try { first = localStorage.getItem('jizura.mobileInit') !== '1'; localStorage.setItem('jizura.mobileInit', '1'); } catch (e) {}
@@ -3139,10 +4185,20 @@ function tapCopy() {
       sBeat: 'Grille rythmique (BPM)',
       sFree: 'Libre (ms exact)',
       latency: 'Latence',
+      autoMicro: 'Micro-calage mots (Voix)',
+      microBtn: '✨ Micro-caler phrase',
       holdEnd: 'Maintenir = Fin [E]',
       count: 'Compte 3·2·1',
       click: 'Clic métronome',
       vocal: 'Voix',
+      precisionPrefix: 'Précision',
+      perfectHit: 'Parfait',
+      earlyHit: 'En avance',
+      lateHit: 'En retard',
+      loopLine: '🔁 Boucler',
+      assistRest: '⚡ Finir IA Voix',
+      coherenceLbl: 'Coordination',
+      syncedWords: 'mots calés',
       tapBtn: 'TAP [Espace]',
       tapWordBtn: 'TAP MOT [Espace]',
       markEnd: '⏹ Fin [E]',
@@ -3177,10 +4233,20 @@ function tapCopy() {
       sBeat: 'Beat Grid (BPM)',
       sFree: 'Free (exact ms)',
       latency: 'Latency',
+      autoMicro: 'Micro-align words (Vocal)',
+      microBtn: '✨ Micro-align line',
       holdEnd: 'Hold = Mark End [E]',
       count: '3·2·1 Count',
       click: 'Metronome Click',
       vocal: 'Vocal',
+      precisionPrefix: 'Precision',
+      perfectHit: 'Spot on',
+      earlyHit: 'Early',
+      lateHit: 'Late',
+      loopLine: '🔁 Loop Line',
+      assistRest: '⚡ Auto-Finish Vocal',
+      coherenceLbl: 'Coordination',
+      syncedWords: 'words synced',
       tapBtn: 'TAP [Space]',
       tapWordBtn: 'TAP WORD [Space]',
       markEnd: '⏹ End [E]',
@@ -3215,10 +4281,20 @@ function tapCopy() {
       sBeat: '節拍網格 (BPM)',
       sFree: '自由毫秒',
       latency: '延遲補償',
+      autoMicro: '人聲逐詞微對齊',
+      microBtn: '✨ 微對齊本句',
       holdEnd: '按住設定結束 [E]',
       count: '倒數 3·2·1',
       click: '節拍器音效',
       vocal: '人聲',
+      precisionPrefix: '精準度',
+      perfectHit: '極準',
+      earlyHit: '偏早',
+      lateHit: '偏晚',
+      loopLine: '🔁 單句循環',
+      assistRest: '⚡ AI 自動對齊後續',
+      coherenceLbl: '人聲協調度',
+      syncedWords: '詞已對齊',
       tapBtn: '點擊 TAP [Space]',
       tapWordBtn: '點擊詞彙 [Space]',
       markEnd: '⏹ 結束 [E]',
@@ -3252,10 +4328,20 @@ function tapCopy() {
     sBeat: '拍グリッド (BPM)',
     sFree: 'フリー (ms単位)',
     latency: '遅延補正',
+    autoMicro: '単語を声に自動微調整',
+    microBtn: '✨ 行内の単語を自動整列',
     holdEnd: '長押し＝終了 [E]',
     count: '3·2·1 カウント',
     click: 'クリック音',
     vocal: '声量',
+    precisionPrefix: '精度',
+    perfectHit: '完璧',
+    earlyHit: '早め',
+    lateHit: '遅め',
+    loopLine: '🔁 この行をループ',
+    assistRest: '⚡ 残りをAI声頭自動同期',
+    coherenceLbl: '一致度',
+    syncedWords: '語同期済',
     tapBtn: 'TAP [Space]',
     tapWordBtn: '単語TAP [Space]',
     markEnd: '⏹ 終了 [E]',
@@ -3285,6 +4371,10 @@ function applyTapLabels() {
   setT('lblTapRate', c.rate);
   setT('lblTapSnap', c.snap);
   setT('lblTapLatency', c.latency);
+  setT('lblTapAutoMicro', c.autoMicro);
+  setT('tapMicroAlign', c.microBtn);
+  setT('tapLoopLine', c.loopLine);
+  setT('tapAssistRest', c.assistRest);
   setT('lblTapHoldEnd', c.holdEnd);
   setT('lblTapCount', c.count);
   setT('lblTapClick', c.click);
@@ -3342,38 +4432,230 @@ function playTapClick(accent = false) {
 function tapOpts() {
   let o = null;
   try { o = JSON.parse(localStorage.getItem('jizura.tapOpts') || 'null'); } catch (e) {}
+  let learned = 45;
+  try {
+    const lv = Number(localStorage.getItem('jizura.tapLearnedMs'));
+    if (Number.isFinite(lv) && lv >= -60 && lv <= 180) learned = Math.round(lv);
+  } catch (e) {}
   const mode = o && ['line', 'word', 'cut'].includes(o.mode) ? o.mode : 'line';
   const rate = o && [1, 0.85, 0.75, 0.5].includes(+o.rate) ? +o.rate : 1;
   const snapMode = o && ['vocal', 'beat', 'free'].includes(o.snapMode) ? o.snapMode : 'vocal';
-  const latencyMs = o && [0, 45, 75, 110].includes(+o.latencyMs) ? +o.latencyMs : 45;
+  const rawLat = o && o.latencyRaw != null ? String(o.latencyRaw) : (o && o.latencyMs != null ? String(o.latencyMs) : 'auto');
+  const latencyMode = ['auto', '0', '45', '75', '110', '-30'].includes(rawLat) ? rawLat : 'auto';
+  const latencyMs = latencyMode === 'auto' ? learned : (Number(latencyMode) || 0);
   return {
     mode,
     rate,
     snapMode,
+    latencyMode,
     latencyMs,
+    learnedLatMs: learned,
+    autoMicro: o && o.autoMicro === false ? false : true,
     holdEnd: !!(o && o.holdEnd),
     count: !!(o && o.count),
     click: !!(o && o.click),
   };
 }
 function saveTapOpts() {
+  const latVal = $('tapLatency') ? String($('tapLatency').value || 'auto') : 'auto';
+  const learned = (S.tap && Number.isFinite(S.tap.learnedLatMs)) ? S.tap.learnedLatMs : 45;
   const payload = {
     mode: $('tapMode') ? $('tapMode').value : 'line',
     rate: $('tapRate') ? (+$('tapRate').value || 1) : 1,
     snapMode: $('tapSnapMode') ? $('tapSnapMode').value : 'vocal',
-    latencyMs: $('tapLatency') ? (+$('tapLatency').value || 0) : 45,
+    latencyRaw: latVal,
+    latencyMs: latVal === 'auto' ? learned : (+latVal || 0),
+    autoMicro: $('tapAutoMicro') ? !!$('tapAutoMicro').checked : true,
     holdEnd: !!($('tapHoldEnd') && $('tapHoldEnd').checked),
     count: !!($('tapCount') && $('tapCount').checked),
     click: !!($('tapClick') && $('tapClick').checked),
   };
   try { localStorage.setItem('jizura.tapOpts', JSON.stringify(payload)); } catch (e) {}
 }
+function updateTapCoordBadge() {
+  const el = $('tapCoordBadge');
+  if (!el || !S.tap) return;
+  const c = tapCopy();
+  const tap = S.tap;
+  const st = tap.stats || { count: 0, proHits: 0, absErrSum: 0, lastDriftMs: null };
+  const latTxt = tap.latencyMode === 'auto' ? `Auto ${tap.learnedLatMs}ms` : `${tap.latencyMs}ms`;
+  if (!st.count) {
+    el.textContent = `${c.precisionPrefix} : ${latTxt}`;
+    el.classList.remove('is-pro', 'is-warn');
+    return;
+  }
+  const avgErr = Math.round(st.absErrSum / st.count);
+  const lastD = st.lastDriftMs != null ? `${st.lastDriftMs >= 0 ? '+' : ''}${st.lastDriftMs}ms` : '';
+  const isPro = avgErr <= 45;
+  const isWarn = avgErr > 95;
+  el.textContent = `±${avgErr} ms · ${latTxt}` + (lastD ? ` (${lastD})` : '');
+  el.classList.toggle('is-pro', isPro);
+  el.classList.toggle('is-warn', isWarn);
+}
+function drawTapRadar(t) {
+  const cvs = $('tapRadarCanvas');
+  if (!cvs || !S.tap || typeof cvs.getContext !== 'function') return;
+  const ctx = cvs.getContext('2d');
+  if (!ctx) return;
+  const W = cvs.width || 520, H = cvs.height || 68;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, W, H);
+
+  const winBack = 1.1, winAhead = 2.3, span = winBack + winAhead;
+  const tMin = t - winBack, tMax = t + winAhead;
+  const xOf = (sec) => ((sec - tMin) / span) * W;
+  const playX = xOf(t);
+
+  // Beat grid lines
+  const beats = S.plan && S.plan.beats;
+  if (beats && beats.length) {
+    ctx.strokeStyle = 'rgba(148,163,184,0.18)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < beats.length; i++) {
+      const b = beats[i];
+      if (b < tMin) continue;
+      if (b > tMax) break;
+      const bx = xOf(b);
+      ctx.beginPath(); ctx.moveTo(bx, 0); ctx.lineTo(bx, H); ctx.stroke();
+    }
+  }
+
+  // Real vocal envelope, pitch voicing band & 10ms attack transients
+  if (S.audio && S.audio.vocalEnv100 && S.audio.vocalEnv100.length) {
+    const env = S.audio.vocalEnv100;
+    const vad = S.audio.voicing100;
+    const att = S.audio.wordAttack100;
+    const fr = S.audio.fineRate || 100;
+    let peakE = 0.05;
+    const f0 = Math.max(0, Math.floor(Math.max(0, tMin) * fr));
+    const f1 = Math.min(env.length - 1, Math.ceil(tMax * fr));
+    for (let f = f0; f <= f1; f++) if (env[f] > peakE) peakE = env[f];
+
+    // Voicing / singing presence floor band
+    if (vad && vad.length) {
+      ctx.fillStyle = 'rgba(16,185,129,0.12)';
+      for (let f = f0; f <= f1; f++) {
+        if (vad[f] >= 0.42) {
+          const px = xOf(f / fr);
+          ctx.fillRect(px, H - 6, Math.max(2, W / ((span * fr) + 1) + 0.5), 4);
+        }
+      }
+    }
+
+    // Vocal envelope ribbon
+    ctx.fillStyle = 'rgba(56,189,248,0.22)';
+    ctx.beginPath();
+    ctx.moveTo(Math.max(0, xOf(f0 / fr)), H);
+    for (let f = f0; f <= f1; f++) {
+      const px = xOf(f / fr);
+      const py = H - 8 - (env[f] / peakE) * (H * 0.54);
+      ctx.lineTo(px, py);
+    }
+    ctx.lineTo(Math.min(W, xOf(f1 / fr)), H);
+    ctx.closePath();
+    ctx.fill();
+
+    // Attack spikes
+    if (att && att.length) {
+      ctx.strokeStyle = 'rgba(52,211,153,0.82)';
+      ctx.lineWidth = 1.5;
+      for (let f = f0; f <= f1; f++) {
+        if (att[f] > 0.14) {
+          const px = xOf(f / fr);
+          const sh = Math.min(H - 12, att[f] * (H * 0.85));
+          ctx.beginPath(); ctx.moveTo(px, H - 4); ctx.lineTo(px, H - 4 - sh); ctx.stroke();
+        }
+      }
+    }
+  }
+
+  // Upcoming words scrolling toward the playhead target line + active target cue
+  const L = (S.plan && S.plan.lines) || [];
+  const tap = S.tap;
+  let targetWordStart = null;
+  ctx.font = '600 10px system-ui, sans-serif';
+  ctx.textBaseline = 'top';
+  for (let li = Math.max(0, tap.i - 1); li < Math.min(L.length, tap.i + 3); li++) {
+    const ln = L[li];
+    if (!ln || ln.interlude || ln.end < tMin || ln.start > tMax) continue;
+    const words = Array.isArray(ln.wordsTimed) && ln.wordsTimed.length ? ln.wordsTimed : [];
+    for (let wi = 0; wi < words.length; wi++) {
+      const w = words[wi];
+      const isCurTarget = (tap.mode === 'word' && li === tap.i && wi === tap.wi) || (tap.mode !== 'word' && li === tap.i && wi === 0);
+      if (isCurTarget) targetWordStart = w.start;
+      if (w.end < tMin || w.start > tMax) continue;
+      const wx = xOf(w.start);
+      const ww = Math.max(14, xOf(w.end) - wx);
+      ctx.fillStyle = isCurTarget ? 'rgba(56,189,248,0.92)' : (w.validated ? 'rgba(16,185,129,0.62)' : 'rgba(148,163,184,0.28)');
+      ctx.fillRect(wx, 5, Math.min(ww, W - wx), 16);
+      if (isCurTarget) {
+        ctx.strokeStyle = '#bae6fd';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(wx, 5, Math.min(ww, W - wx), 16);
+      }
+      ctx.fillStyle = isCurTarget ? '#082f49' : '#e2e8f0';
+      ctx.fillText(w.text.slice(0, 12), wx + 3, 7, Math.max(10, ww - 4));
+    }
+  }
+
+  // Conductor approach cue when next target word nears playhead (<= 0.85s)
+  if (targetWordStart != null) {
+    const diff = targetWordStart - t;
+    if (diff >= -0.06 && diff <= 0.85) {
+      const inHitZone = Math.abs(diff) <= 0.055;
+      const rad = Math.max(4, Math.abs(diff) * 26);
+      ctx.strokeStyle = inHitZone ? '#34d399' : 'rgba(56,189,248,0.85)';
+      ctx.lineWidth = inHitZone ? 2 : 1.5;
+      ctx.beginPath();
+      ctx.moveTo(playX - rad, 24); ctx.lineTo(playX - rad, H - 14);
+      ctx.moveTo(playX + rad, 24); ctx.lineTo(playX + rad, H - 14);
+      ctx.stroke();
+      if (inHitZone) {
+        ctx.fillStyle = '#34d399';
+        ctx.font = '700 9px monospace';
+        ctx.fillText('TAP!', Math.max(4, playX - 28), H - 13);
+      }
+    }
+  }
+
+  // Center playhead cursor + recent hit flash
+  const hitAge = tap.stats && tap.stats.lastHitAt ? (performance.now() - tap.stats.lastHitAt) : 999;
+  const hitGlow = hitAge < 180;
+  ctx.strokeStyle = hitGlow ? '#34d399' : '#f43f5e';
+  ctx.lineWidth = hitGlow ? 3 : 2;
+  ctx.beginPath(); ctx.moveTo(playX, 0); ctx.lineTo(playX, H); ctx.stroke();
+  ctx.fillStyle = hitGlow ? '#34d399' : '#f43f5e';
+  ctx.font = '700 9px monospace';
+  ctx.fillText('ICI', Math.min(W - 22, playX + 4), H - 13);
+}
 function refineTapTime(rawT, minBound = 0) {
   const tap = S.tap;
-  const latSec = tap ? (tap.latencyMs || 0) / 1000 : 0;
+  const latSec = tap ? ((tap.latencyMode === 'auto' ? tap.learnedLatMs : tap.latencyMs) || 0) / 1000 : 0;
   const snapMode = tap ? tap.snapMode : 'free';
   const c = tapCopy();
   const base = Math.max(minBound, rawT - latSec);
+  const atk = J.estimateVocalAttackNear
+    ? J.estimateVocalAttackNear(S.audio, rawT, 0.22, minBound)
+    : { found: false, attackTime: +base.toFixed(3), driftMs: 0 };
+
+  // Record adaptive reaction EMA calibration whenever vocal attack exists
+  if (tap && tap.stats) {
+    const rawDrift = atk.found ? atk.driftMs : Math.round(latSec * 1000);
+    if (atk.found && tap.latencyMode === 'auto' && Math.abs(rawDrift) <= 185) {
+      tap.learnedLatMs = Math.round(J.clamp(0.68 * tap.learnedLatMs + 0.32 * rawDrift, -60, 180));
+      tap.latencyMs = tap.learnedLatMs;
+      try { localStorage.setItem('jizura.tapLearnedMs', String(tap.learnedLatMs)); } catch (e) {}
+    }
+    const residualErr = atk.found ? Math.round((base - atk.attackTime) * 1000) : 0;
+    tap.stats.count++;
+    tap.stats.absErrSum += Math.abs(residualErr);
+    if (Math.abs(residualErr) <= 45) tap.stats.proHits++;
+    tap.stats.lastDriftMs = residualErr;
+    tap.stats.lastHitAt = performance.now();
+    updateTapCoordBadge();
+  }
+
   if (snapMode === 'vocal' && S.audio && S.audio.wordAttack100 && S.audio.wordAttack100.length) {
     const fr = S.audio.fineRate || 100;
     const att = S.audio.wordAttack100;
@@ -3412,6 +4694,117 @@ function refineTapTime(rawT, minBound = 0) {
   const dm = Math.round((exact - rawT) * 1000);
   return { t: exact, deltaMs: dm, note: `${c.exactNote} (${dm >= 0 ? '+' : ''}${dm}ms)` };
 }
+function microAlignTapPhrase(targetLi = null) {
+  if (!S.project || !S.plan || !S.plan.lines) return false;
+  const L = S.plan.lines;
+  const li = targetLi != null ? targetLi : (S.tap ? J.clamp(S.tap.i | 0, 0, L.length - 1) : 0);
+  const ln = L[li];
+  if (!ln || ln.interlude || !S.audio || !(J.optimizeLineVocalCoordination || J.alignLineWordsAnchored)) return false;
+  ensureTimingMaps();
+  const words = getEditableWords(li);
+  if (!words.length) return false;
+  const LT = S.project.timing.lineTimes;
+  const LE = S.project.timing.lineEnds;
+  const startT = LT[li] != null ? LT[li] : ln.start;
+  const nextStart = li + 1 < L.length && LT[li + 1] != null ? LT[li + 1] - 0.03 : ln.end;
+  const endT = LE[li] != null ? LE[li] : Math.max(startT + 0.25, Math.min(ln.visEnd || ln.end, nextStart));
+  const spk = (ln.meta && ln.meta.speaker) || 'Lead';
+  const langCode = ln.language || (J.resolveLang ? J.resolveLang(S.project) : 'auto');
+  const aligned = J.optimizeLineVocalCoordination
+    ? J.optimizeLineVocalCoordination(S.audio, words, startT, endT, langCode, spk)
+    : J.alignLineWordsAnchored(S.audio, words, startT, endT, langCode, spk);
+  S.project.timing.wordTimes[li] = aligned;
+  replan();
+  if (S.tap) updateTap();
+  const c = tapCopy();
+  if ($('tapSnapNote')) $('tapSnapNote').textContent = `✨ ${c.vocalSnapNote} (${words.length} mots)`;
+  return true;
+}
+function shiftTapPhraseWords(deltaMs, targetLi = null) {
+  if (!S.project || !S.plan || !S.plan.lines) return false;
+  const L = S.plan.lines;
+  const li = targetLi != null ? targetLi : (S.tap ? J.clamp(S.tap.i | 0, 0, L.length - 1) : 0);
+  const ln = L[li];
+  if (!ln || ln.interlude) return false;
+  ensureTimingMaps();
+  const words = getEditableWords(li);
+  if (!words.length) return false;
+  const dSec = (Number(deltaMs) || 0) / 1000;
+  let shifted = 0;
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    if (w.validated) continue;
+    const minS = i > 0 ? words[i - 1].start + 0.035 : 0;
+    const nextW = i + 1 < words.length && words[i + 1].validated ? words[i + 1].start - 0.01 : Infinity;
+    const dur = Math.max(0.06, (w.end || 0) - (w.start || 0));
+    const ns = +J.clamp(w.start + dSec, minS, Math.max(minS, nextW - dur)).toFixed(3);
+    const ne = +Math.min(nextW, Math.max(ns + 0.04, ns + dur)).toFixed(3);
+    w.start = ns;
+    w.end = ne;
+    rescaleWordChars(w, ns, ne);
+    shifted++;
+  }
+  S.project.timing.wordTimes[li] = words;
+  replan();
+  if (S.tap) updateTap();
+  if ($('tapSnapNote')) $('tapSnapNote').textContent = `↔ ${deltaMs > 0 ? '+' : ''}${deltaMs}ms (${shifted})`;
+  return shifted > 0;
+}
+function toggleTapLoop(force = null) {
+  if (!S.tap) return false;
+  S.tap.loopLine = force != null ? !!force : !S.tap.loopLine;
+  const btn = $('tapLoopLine');
+  if (btn) btn.setAttribute('aria-pressed', String(S.tap.loopLine));
+  return S.tap.loopLine;
+}
+async function assistRemainingTapLines() {
+  if (!S.project || !S.plan || !Array.isArray(S.plan.lines)) return { linesUpdated: 0 };
+  const lang = (document.documentElement.lang || 'fr').toLowerCase();
+  if (!S.audio || !(S.audio.vocalEnv100 && S.audio.vocalEnv100.length)) {
+    toast(lang === 'fr' ? 'Chargez un fichier audio pour l’auto-calage IA.' : 'Load an audio file first.');
+    return { linesUpdated: 0 };
+  }
+  pushEdit();
+  ensureTimingMaps();
+  const L = S.plan.lines;
+  const startIdx = S.tap ? J.clamp(S.tap.i | 0, 0, Math.max(0, L.length - 1)) : 0;
+  const globalLang = J.resolveLang ? J.resolveLang(S.project) : 'auto';
+  const LT = S.project.timing.lineTimes;
+  const LE = S.project.timing.lineEnds;
+
+  if (J.aiAlignVocals) {
+    const aligned = await J.aiAlignVocals(S.audio, L, globalLang);
+    const times = (aligned && aligned.lineTimes) || aligned || {};
+    for (let i = startIdx; i < L.length; i++) {
+      if (LT[i] == null && times[i] != null) LT[i] = times[i];
+    }
+  }
+  let linesUpdated = 0;
+  for (let i = startIdx; i < L.length; i++) {
+    const ln = L[i];
+    if (!ln || ln.interlude || !ln.text) continue;
+    const words = getEditableWords(i);
+    if (!words.length) continue;
+    const s = LT[i] != null ? LT[i] : ln.start;
+    const nextS = i + 1 < L.length && LT[i + 1] != null ? LT[i + 1] - 0.03 : ln.end;
+    const e = LE[i] != null ? LE[i] : Math.max(s + 0.25, Math.min(ln.visEnd || ln.end, nextS));
+    const spk = (ln.meta && ln.meta.speaker) || 'Lead';
+    S.project.timing.wordTimes[i] = J.optimizeLineVocalCoordination
+      ? J.optimizeLineVocalCoordination(S.audio, words, s, e, ln.language || globalLang, spk)
+      : J.alignLineWordsAnchored(S.audio, words, s, e, ln.language || globalLang, spk);
+    linesUpdated++;
+  }
+  replan();
+  if (S.tap) updateTap();
+  syncLyricsEditor();
+  syncQualityControlPanel();
+  flushSave();
+  recordWork('tap_assist_rest', 'sync', `${linesUpdated} phrases alignées par IA vocale`);
+  toast(lang === 'fr'
+    ? `⚡ ${linesUpdated} phrase(s) restante(s) synchronisée(s) mot par mot sur la voix !`
+    : `⚡ ${linesUpdated} remaining line(s) synchronized word-by-word with vocals!`);
+  return { linesUpdated };
+}
 function tapTotalSteps(mode) {
   const L = (S.plan && S.plan.lines) || [];
   if (mode !== 'word') return L.length;
@@ -3432,7 +4825,19 @@ function tapDoneSteps(mode, curLi, curWi) {
 }
 function updateTapTelemetry(t) {
   if (!S.tap) return;
+  if (S.tap.loopLine && S.playing && S.plan && S.plan.lines) {
+    const ln = S.plan.lines[S.tap.i];
+    if (ln) {
+      const loopLo = Math.max(0, ln.start - 0.45);
+      const loopHi = Math.min(Math.max(loopLo + 0.5, ln.end + 0.28), Math.max(0.5, (S.plan.duration || 10) - 0.04));
+      if (t >= loopHi || t < loopLo - 0.65) {
+        seek(loopLo);
+        return;
+      }
+    }
+  }
   if ($('tapTimeNow')) $('tapTimeNow').textContent = J.fmtTime(t);
+  drawTapRadar(t);
   const fill = $('tapVocalFill');
   if (fill) {
     let pct = 0;
@@ -3485,14 +4890,19 @@ function startTap(from = 0, wordFrom = 0) {
     mode: opt.mode,
     rate: opt.rate,
     snapMode: opt.snapMode,
+    latencyMode: opt.latencyMode,
     latencyMs: opt.latencyMs,
+    learnedLatMs: opt.learnedLatMs,
+    autoMicro: opt.autoMicro,
     holdEnd: opt.holdEnd,
     count: opt.count,
     click: opt.click,
+    loopLine: false,
     done: [],
     holding: null,
     finishOnRelease: false,
     lastBeatIdx: -1,
+    stats: { count: 0, proHits: 0, absErrSum: 0, lastDriftMs: null, lastHitAt: 0 },
   };
   applyTapLabels();
   $('tapPanel').hidden = false;
@@ -3501,11 +4911,14 @@ function startTap(from = 0, wordFrom = 0) {
   if ($('tapMode')) $('tapMode').value = opt.mode;
   if ($('tapRate')) $('tapRate').value = String(opt.rate);
   if ($('tapSnapMode')) $('tapSnapMode').value = opt.snapMode;
-  if ($('tapLatency')) $('tapLatency').value = String(opt.latencyMs);
+  if ($('tapLatency')) $('tapLatency').value = String(opt.latencyMode);
+  if ($('tapAutoMicro')) $('tapAutoMicro').checked = opt.autoMicro;
   if ($('tapHoldEnd')) $('tapHoldEnd').checked = opt.holdEnd;
   if ($('tapCount')) $('tapCount').checked = opt.count;
   if ($('tapClick')) $('tapClick').checked = opt.click;
+  if ($('tapLoopLine')) $('tapLoopLine').setAttribute('aria-pressed', 'false');
   if ($('tapSnapNote')) $('tapSnapNote').textContent = '—';
+  updateTapCoordBadge();
   const prev = from > 0 ? S.plan.lines[from - 1] : null, cur = S.plan.lines[from];
   const targetStart = (opt.mode === 'word' && firstWords[wi0]) ? firstWords[wi0].start : cur.start;
   const t0 = (from === 0 && wi0 === 0) ? 0 : Math.max(0, prev ? prev.start + 0.01 : 0, targetStart - 2.2);
@@ -3579,7 +4992,7 @@ function tapNow() {
       words[wi].start = res.t;
       words[wi].end = +Math.max(res.t + 0.08, res.t + prevDur).toFixed(3);
       words[wi].validated = true;
-      words[wi].alignmentConfidence = 1;
+      words[wi].alignmentConfidence = 0.96;
       words[wi].flags = (words[wi].flags || []).filter(f => f !== 'uncertain_boundary');
       rescaleWordChars(words[wi], words[wi].start, words[wi].end);
       // Push later unvalidated words forward cleanly so words stay chronological
@@ -3618,6 +5031,19 @@ function tapNow() {
   tap.done.push({ kind: 'line', i: li, had: LT[li], hadEnd: LE[li] });
   LT[li] = res.t;
   for (const k of Object.keys(LT)) if (+k > li && LT[k] <= res.t + 0.15) delete LT[k];
+  // When user taps line li, previous phrase li-1 now has a known end boundary — micro-align its words acoustically!
+  if (tap.autoMicro && li > 0 && L[li - 1] && !L[li - 1].interlude && S.audio && J.alignLineWordsAnchored) {
+    const prevLn = L[li - 1];
+    const pStart = LT[li - 1] != null ? LT[li - 1] : prevLn.start;
+    const pEnd = LE[li - 1] != null ? LE[li - 1] : Math.max(pStart + 0.2, res.t - 0.025);
+    const prevWords = getEditableWords(li - 1);
+    if (prevWords.length) {
+      S.project.timing.wordTimes[li - 1] = J.alignLineWordsAnchored(
+        S.audio, prevWords, pStart, pEnd, prevLn.language || (J.resolveLang ? J.resolveLang(S.project) : 'auto'),
+        (prevLn.meta && prevLn.meta.speaker) || 'Lead'
+      );
+    }
+  }
   tap.holding = tap.holdEnd ? { kind: 'line', li, start: res.t, wallAt: performance.now() } : null;
   tap.i = li + 1;
   tap.wi = 0;
@@ -3661,10 +5087,10 @@ function tapEndHold(explicit = false) {
     const words = getEditableWords(target.li);
     const w = words[target.wi];
     if (w) {
-      const endT = +Math.max(w.start + 0.05, S.t).toFixed(3);
+      const endT = J.alignVocalTailEnd ? J.alignVocalTailEnd(S.audio, S.t, w.start) : +Math.max(w.start + 0.05, S.t).toFixed(3);
       w.end = endT;
       w.validated = true;
-      w.alignmentConfidence = 1;
+      w.alignmentConfidence = 0.96;
       rescaleWordChars(w, w.start, endT);
       if (target.wi + 1 < words.length && words[target.wi + 1].start < endT + 0.01 && !words[target.wi + 1].validated) {
         words[target.wi + 1].start = +(endT + 0.01).toFixed(3);
@@ -3678,11 +5104,21 @@ function tapEndHold(explicit = false) {
   } else if (target.kind === 'line') {
     const ln = L[target.li];
     if (ln) {
-      const endT = +Math.max(ln.start + 0.15, S.t).toFixed(3);
+      const minS = LT[target.li] != null ? LT[target.li] : ln.start;
+      const endT = J.alignVocalTailEnd ? J.alignVocalTailEnd(S.audio, S.t, minS + 0.1) : +Math.max(ln.start + 0.15, S.t).toFixed(3);
       if (target.li + 1 < L.length && LT[target.li + 1] == null) {
         LT[target.li + 1] = +Math.max(endT + 0.05, L[target.li + 1].start).toFixed(3);
       }
       LE[target.li] = endT;
+      if (tap.autoMicro && !ln.interlude && S.audio && J.alignLineWordsAnchored) {
+        const lineWords = getEditableWords(target.li);
+        if (lineWords.length) {
+          S.project.timing.wordTimes[target.li] = J.alignLineWordsAnchored(
+            S.audio, lineWords, minS, endT, ln.language || (J.resolveLang ? J.resolveLang(S.project) : 'auto'),
+            (ln.meta && ln.meta.speaker) || 'Lead'
+          );
+        }
+      }
       if ($('tapSnapNote')) $('tapSnapNote').textContent = `⏹ ${c.endSetNote} ${J.fmtTime(endT)}`;
     }
   }
@@ -3798,19 +5234,47 @@ function updateTap() {
   if ($('tapProg')) $('tapProg').textContent = `${doneSteps} / ${totalSteps}`;
 
   const qEl = $('tapWordQueue');
+  const cohEl = $('tapLineCoherence');
+  const words = (ln && !ln.interlude) ? getEditableWords(tap.i) : [];
+  const coh = (words.length && J.analyzeLineVocalCoordination)
+    ? J.analyzeLineVocalCoordination(S.audio, words, ln.start, ln.visEnd || ln.end)
+    : null;
+  if (cohEl) {
+    if (coh && coh.total > 0) {
+      cohEl.textContent = `${c.coherenceLbl} : ${coh.score}% · ${coh.syncedCount}/${coh.total} ${c.syncedWords}` + (coh.hasAudio ? ` (±${coh.avgAbsErrMs}ms)` : '');
+      cohEl.classList.toggle('is-high', coh.score >= 82);
+      cohEl.classList.toggle('is-mid', coh.score >= 58 && coh.score < 82);
+      cohEl.classList.toggle('is-low', coh.score < 58);
+    } else {
+      cohEl.textContent = `${c.coherenceLbl} : —`;
+      cohEl.classList.remove('is-high', 'is-mid', 'is-low');
+    }
+  }
   if (qEl) {
-    if (tap.mode === 'word' && ln && !ln.interlude) {
-      const words = getEditableWords(tap.i);
-      qEl.hidden = words.length === 0;
+    if (ln && !ln.interlude && words.length) {
+      qEl.hidden = false;
       qEl.innerHTML = '';
       words.forEach((w, wi) => {
+        const wCoh = coh && coh.words ? coh.words[wi] : null;
+        const stCls = wCoh
+          ? (wCoh.status === 'synced' ? ' is-synced'
+            : wCoh.status === 'early' ? ' is-drift-early'
+            : wCoh.status === 'late' ? ' is-drift-late'
+            : wCoh.status === 'silence' ? ' is-drift-silence' : '')
+          : '';
         const chip = document.createElement('button');
         chip.type = 'button';
-        chip.className = 'tap-w' + (wi < tap.wi ? ' is-done' : wi === tap.wi ? ' is-target' : '');
+        chip.className = 'tap-w' + (tap.mode === 'word' && wi < tap.wi ? ' is-done' : tap.mode === 'word' && wi === tap.wi ? ' is-target' : '') + stCls;
         chip.textContent = w.text;
-        chip.title = `${J.fmtTime(w.start)} → ${J.fmtTime(w.end)}`;
+        const errHint = wCoh && coh.hasAudio ? ` · ${wCoh.onsetErrorMs >= 0 ? '+' : ''}${wCoh.onsetErrorMs}ms (${wCoh.score}%)` : '';
+        chip.title = `${J.fmtTime(w.start)} → ${J.fmtTime(w.end)}${errHint}`;
         chip.addEventListener('click', () => {
+          if (tap.mode !== 'word') {
+            tap.mode = 'word';
+            if ($('tapMode')) $('tapMode').value = 'word';
+          }
           tap.wi = wi;
+          seek(Math.max(0, w.start - 0.85));
           updateTap();
           if ($('tapBtn')) $('tapBtn').focus();
         });
@@ -3849,7 +5313,7 @@ function syncUI() {
   document.querySelectorAll('.typeset-toggle').forEach(el => { el.checked = S.project.typeset === true; });
   $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   document.querySelectorAll('.themeSel').forEach(el => { el.value = J.THEMES[S.project.themeId] ? S.project.themeId : ''; });
-  renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid(); syncKaraokeBtn(); syncKaraokeControls(); syncAudioDetectPanel(); applyLeLabels(); syncLyricsEditor();
+  renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); applyExportLabels(); drawStyleGrid(); syncKaraokeBtn(); syncKaraokeControls(); syncTranslationControls(); syncAudioDetectPanel(); applyLeLabels(); syncLyricsEditor();
 }
 
 /* Reusable 7-stage Song Lyrics Detection + Forced Alignment + Validation */
@@ -3962,7 +5426,12 @@ async function runAiTranscription(opts = {}) {
         }
       });
 
-      if (result.language && result.language !== 'auto' && result.language !== 'instrumental') {
+      const detLangs = Array.isArray(result.detectedLanguages) ? result.detectedLanguages.filter(Boolean) : [];
+      if (detLangs.length > 1) {
+        const langSel = $('lyricLang');
+        if (langSel) langSel.value = 'multi';
+        S.project.lang = 'multi';
+      } else if (result.language && result.language !== 'auto' && result.language !== 'instrumental') {
         const langSel = $('lyricLang');
         if (langSel) {
           const opt = Array.from(langSel.options).find(o => o.value === result.language || (result.language.startsWith(o.value) && o.value !== 'auto'));
@@ -4231,11 +5700,45 @@ function bind() {
   if ($('kActiveColor')) $('kActiveColor').addEventListener('input', e => updateKc({ activeColor: e.target.value }, true));
   if ($('kActiveColorAuto')) $('kActiveColorAuto').addEventListener('click', () => updateKc({ activeColor: '' }, true));
   if ($('kAutoScroll')) $('kAutoScroll').addEventListener('change', e => updateKc({ autoScroll: !!e.target.checked }, false));
+  document.querySelectorAll('.kp-sync-nudges [data-sync-nudge]').forEach(btn => {
+    btn.addEventListener('click', () => nudgeGlobalSyncOffset(parseInt(btn.dataset.syncNudge, 10) || 0));
+  });
+  if ($('btnKpOffsetReset')) $('btnKpOffsetReset').addEventListener('click', () => nudgeGlobalSyncOffset(0, 0));
+  if ($('btnKpTapWord')) $('btnKpTapWord').addEventListener('click', () => kpQuickTapCurrentWord());
+  if ($('btnKpAutoAlign')) $('btnKpAutoAlign').addEventListener('click', () => alignAllWordsAcousticallyUI());
+  if ($('btnToggleTrans')) $('btnToggleTrans').addEventListener('click', () => toggleTranslationLayer());
+  if ($('btnTranslateLyrics')) $('btnTranslateLyrics').addEventListener('click', () => translateAllLyrics());
+  if ($('btnClearTrans')) $('btnClearTrans').addEventListener('click', () => clearTranslationLayer());
+  const btnTrCfg = $('btnTransCfgToggle'), trDrawer = $('trDisplayControls');
+  if (btnTrCfg && trDrawer) {
+    btnTrCfg.addEventListener('click', () => {
+      trDrawer.hidden = !trDrawer.hidden;
+      btnTrCfg.setAttribute('aria-expanded', String(!trDrawer.hidden));
+    });
+  }
+  if ($('trTargetLang')) $('trTargetLang').addEventListener('change', e => {
+    const tr = ensureTranslationState();
+    if (!tr) return;
+    tr.targetLang = e.target.value;
+    autosave();
+  });
+  if ($('trFontSize')) $('trFontSize').addEventListener('input', e => updateTransCfg({ fontSize: parseFloat(e.target.value) || 0.78 }, true));
+  if ($('trPosMode')) $('trPosMode').addEventListener('change', e => updateTransCfg({ position: e.target.value }, true));
+  if ($('trPosY')) $('trPosY').addEventListener('input', e => updateTransCfg({ position: 'custom', yPct: parseFloat(e.target.value) || 76 }, true));
+  if ($('trBgAlpha')) $('trBgAlpha').addEventListener('input', e => updateTransCfg({ bgAlpha: (parseFloat(e.target.value) || 0) / 100 }, true));
+  if ($('trColor')) $('trColor').addEventListener('input', e => updateTransCfg({ color: e.target.value }, true));
+  if ($('trColorAuto')) $('trColorAuto').addEventListener('click', () => updateTransCfg({ color: '' }, true));
+  if ($('trItalic')) $('trItalic').addEventListener('change', e => updateTransCfg({ italic: !!e.target.checked }, true));
+  if ($('trShowPrompter')) $('trShowPrompter').addEventListener('change', e => updateTransCfg({ showInPrompter: !!e.target.checked }, false));
+  if ($('trShowVideo')) $('trShowVideo').addEventListener('change', e => updateTransCfg({ showInVideo: !!e.target.checked }, true));
   $('lyricLang').addEventListener('change', e => {
     remember();
     S.project.lang = e.target.value; replan(); renderFontRoles(); commit(); flushSave();
-    const l = J.resolveLang(S.project);
-    toast((S.project.lang === 'auto' ? '歌詞の言語：自動判定 → ' : '歌詞の言語：') + J.LANG_LABEL[l]);
+    const info = J.resolveLangInfo ? J.resolveLangInfo(S.project) : { primary: J.resolveLang(S.project), detectedLanguages: [], isMixed: false };
+    const lbl = S.project.lang === 'auto'
+      ? ('自動判定 → ' + (info.isMixed ? info.detectedLanguages.map(c => J.LANG_LABEL[c] || c).join(' + ') : (J.LANG_LABEL[info.primary] || info.primary)))
+      : (J.LANG_LABEL[S.project.lang] || J.LANG_LABEL[info.primary]);
+    toast('Langue : ' + lbl);
   });
   $('songTitle').addEventListener('input', e => { S.project.title = e.target.value; replanSoon(300); });
   $('songArtist').addEventListener('input', e => { S.project.artist = e.target.value; replanSoon(300); });
@@ -4257,7 +5760,11 @@ function bind() {
         toast(isFr ? "Veuillez sélectionner un fichier audio pour l'analyse IA" : isEn ? "Please select an audio file for AI analysis" : "请选择需要分析的音乐音频文件");
         const fileInput = $('audioFile');
         if (fileInput) {
+          const onFocusCleanup = () => {
+            setTimeout(() => fileInput.removeEventListener('change', onNextAudio), 400);
+          };
           const onNextAudio = () => {
+            window.removeEventListener('focus', onFocusCleanup);
             fileInput.removeEventListener('change', onNextAudio);
             const checkReady = setInterval(() => {
               if (S.audio && S.audio.buffer) {
@@ -4268,6 +5775,7 @@ function bind() {
             setTimeout(() => clearInterval(checkReady), 15000);
           };
           fileInput.addEventListener('change', onNextAudio, { once: true });
+          window.addEventListener('focus', onFocusCleanup, { once: true });
           fileInput.click();
         }
         return;
@@ -4368,7 +5876,35 @@ function bind() {
   if ($('tapLatency')) $('tapLatency').addEventListener('change', () => {
     saveTapOpts();
     if (!S.tap) return;
-    S.tap.latencyMs = +$('tapLatency').value || 0;
+    const raw = String($('tapLatency').value || 'auto');
+    S.tap.latencyMode = raw;
+    S.tap.latencyMs = raw === 'auto' ? S.tap.learnedLatMs : (+raw || 0);
+    updateTapCoordBadge();
+    if ($('tapBtn')) $('tapBtn').focus();
+  });
+  if ($('tapAutoMicro')) $('tapAutoMicro').addEventListener('change', () => {
+    saveTapOpts();
+    if (S.tap) S.tap.autoMicro = !!$('tapAutoMicro').checked;
+    if ($('tapBtn')) $('tapBtn').focus();
+  });
+  if ($('tapMicroAlign')) $('tapMicroAlign').addEventListener('click', () => {
+    microAlignTapPhrase();
+    if ($('tapBtn')) $('tapBtn').focus();
+  });
+  if ($('tapShiftEarly')) $('tapShiftEarly').addEventListener('click', () => {
+    shiftTapPhraseWords(-25);
+    if ($('tapBtn')) $('tapBtn').focus();
+  });
+  if ($('tapShiftLate')) $('tapShiftLate').addEventListener('click', () => {
+    shiftTapPhraseWords(25);
+    if ($('tapBtn')) $('tapBtn').focus();
+  });
+  if ($('tapLoopLine')) $('tapLoopLine').addEventListener('click', () => {
+    toggleTapLoop();
+    if ($('tapBtn')) $('tapBtn').focus();
+  });
+  if ($('tapAssistRest')) $('tapAssistRest').addEventListener('click', () => {
+    assistRemainingTapLines();
     if ($('tapBtn')) $('tapBtn').focus();
   });
   if ($('tapHoldEnd')) $('tapHoldEnd').addEventListener('change', () => {
@@ -4437,8 +5973,10 @@ function bind() {
     }
   });
   const endDrag = () => {
+    const hadWordDrag = !!TL.wDrag;
     if (TL.drag >= 0 || TL.wDrag) {
       TL.drag = -1; TL.wDrag = null;
+      if (hadWordDrag) { refreshStage6Validation(); replan(); }
       flushSave(); renderLines(); syncLyricsEditor(); drawTimeline();
     }
     drag = false;
@@ -4463,6 +6001,9 @@ function bind() {
     const w = words[EDL.wordIdx];
     if (w) playRange(Math.max(0, w.start - 0.12), w.end + 0.12);
   });
+  if ($('tlReanalyzeBtn')) $('tlReanalyzeBtn').addEventListener('click', () => reanalyzeLowConfidenceUI(EDL.lineIdx));
+  if ($('btnReanalyzeLow')) $('btnReanalyzeLow').addEventListener('click', () => reanalyzeLowConfidenceUI(null));
+  if ($('btnNextLowConf')) $('btnNextLowConf').addEventListener('click', () => jumpToNextLowConfWord());
   const bindTlMsInput = (id, edge) => {
     const inp = $(id);
     if (!inp) return;
@@ -4496,6 +6037,7 @@ function bind() {
     if (b.dataset.tab === 'out') codecNote();
     if (b.dataset.tab === 'tech') kickPreviewLoop();
     loadThumbFonts();
+    syncSlidingMenus(true);
   }));
   $('fxFlash').addEventListener('change', e => { S.project.fx.flash = e.target.checked; replan(); });
   $('techFilter').addEventListener('input', () => renderTech());
@@ -4582,7 +6124,13 @@ function bind() {
   $('btnOmakaseTop').addEventListener('click', omakase);
   $('btnMenu').addEventListener('click', () => { const on = !$('app').classList.contains('menu-open'); $('app').classList.toggle('menu-open', on); $('btnMenu').setAttribute('aria-expanded', String(on)); mobileBar(); });
   document.querySelectorAll('.sec > .sec-h h2').forEach(h => h.addEventListener('click', () => { if (S.mode === 'mobile') h.closest('.sec').classList.toggle('fold'); }));
-  if (window.ResizeObserver) new ResizeObserver(mobileBar).observe(document.querySelector('.bar'));
+  if (window.ResizeObserver && document.querySelector('.bar')) {
+    let barRaf = 0;
+    new ResizeObserver(() => {
+      if (barRaf) return;
+      barRaf = requestAnimationFrame(() => { barRaf = 0; mobileBar(); });
+    }).observe(document.querySelector('.bar'));
+  }
   $('modePro').addEventListener('click', () => setMode('pro'));
   $('btnOmakase').addEventListener('click', omakase);
   $('btnOmakaseBig').addEventListener('click', omakase);
@@ -4612,10 +6160,17 @@ function bind() {
   document.querySelectorAll('.themeSel').forEach(el => el.addEventListener('change', () => {
     S.project.themeId = J.THEMES[el.value] ? el.value : null;
     document.querySelectorAll('.themeSel').forEach(x => { x.value = el.value; });
-    flushSave();
+    if (S.project.themeId && !S.exporting && !S.tap) omakase();
+    else flushSave();
   }));
   $('fileLrc').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; openLyricFile(f); });
-  ['btnLRC', 'eLRC'].forEach(id => $(id).addEventListener('click', saveLrc));
+  if ($('expIncludeTrans')) $('expIncludeTrans').addEventListener('change', e => { e.target.dataset.userTouched = '1'; });
+  ['btnLRC', 'eLRC'].forEach(id => { if ($(id)) $(id).addEventListener('click', () => saveSyncedLyrics('lrc')); });
+  ['btnExpSRT', 'eSRT'].forEach(id => { if ($(id)) $(id).addEventListener('click', () => saveSyncedLyrics('srt')); });
+  ['btnExpVTT', 'eVTT'].forEach(id => { if ($(id)) $(id).addEventListener('click', () => saveSyncedLyrics('vtt')); });
+  ['btnExpELRC', 'eELRC'].forEach(id => { if ($(id)) $(id).addEventListener('click', () => saveSyncedLyrics('elrc')); });
+  ['btnExpJSON', 'eJSON'].forEach(id => { if ($(id)) $(id).addEventListener('click', () => saveSyncedLyrics('json')); });
+  ['btnExpTXT', 'eTXT'].forEach(id => { if ($(id)) $(id).addEventListener('click', () => saveSyncedLyrics('txt')); });
   $('btnReset').addEventListener('click', () => {
     const dlg = $('resetDlg');
     if (!dlg || typeof dlg.showModal !== 'function') { if (window.confirm('歌詞・曲・設定・履歴をすべて消して、最初の状態に戻します。元に戻すことはできません。')) resetAll(); return; }
@@ -4651,7 +6206,13 @@ function bind() {
     }
   });
   window.addEventListener('resize', () => { sizeViewport(); drawTimeline(); });
-  if (window.ResizeObserver) new ResizeObserver(() => { sizeViewport(); drawTimeline(); }).observe($('viewport'));
+  if (window.ResizeObserver && $('viewport')) {
+    let vpRaf = 0;
+    new ResizeObserver(() => {
+      if (vpRaf) return;
+      vpRaf = requestAnimationFrame(() => { vpRaf = 0; sizeViewport(); drawTimeline(); });
+    }).observe($('viewport'));
+  }
   bindFollow();
   bindDrop();
 }
@@ -4676,6 +6237,9 @@ async function openProjectFile(f) {
     if (S.tap) stopTap();
     pause();
     S.project = np;
+    delete S.project.cloudSongId;
+    S.cloudSongId = null;
+    if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = '';
     // another project: undo and 前の案 / 次の案 belonged to the old one
     ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
     syncUI(); replan(); restoreFonts(); commit(); updateEditBtns(); flushSave();
@@ -4877,8 +6441,12 @@ function cloudCopy() {
       loadBtn: 'Ouvrir',
       dlAudio: '⬇ Audio',
       dlLrc: '⬇ LRC',
+      dlElrc: '⬇ LRC+',
       dlSrt: '⬇ SRT',
-      dlJson: '⬇ JSON',
+      dlVtt: '⬇ VTT',
+      dlLyricsJson: '⬇ JSON',
+      dlTxt: '⬇ TXT',
+      dlJson: '⬇ Projet',
       syncBtn: 'Vercel',
       delBtn: 'Supprimer',
       findSongBtn: 'Retrouver',
@@ -4898,7 +6466,7 @@ function cloudCopy() {
       loadedOk: '☁ Chanson chargée depuis votre compte Google !',
       deletedOk: '🗑 Chanson supprimée de Firebase.',
       dlOk: '⬇ Téléchargement lancé :',
-      dlNoAudio: 'Aucun fichier audio stocké sur le cloud pour cette entrée (téléchargez LRC, SRT ou JSON).',
+      dlNoAudio: 'Aucun fichier audio stocké sur le cloud pour cette entrée (téléchargez LRC, SRT, VTT, JSON ou TXT).',
       vSavedOk: '✓ Configuration Vercel enregistrée.',
       vTestOk: '✓ App Vercel joignable',
       vTestLocal: '✓ Endpoints /api/* prêts sur ce serveur (renseignez votre URL Vercel pour tester l’app distante).',
@@ -4915,9 +6483,13 @@ function cloudCopy() {
         lyrics_edit: '✏ Édition paroles',
         export_mp4: '🎬 Export MP4',
         export_png: '🖼 Export PNG ZIP',
-        export_lrc: '📝 Téléch. LRC',
-        export_srt: '💬 Téléch. SRT',
-        export_json: '📦 Export JSON',
+        export_lrc: '📝 Export LRC',
+        export_elrc: '📝 Export Enhanced LRC',
+        export_srt: '💬 Export SRT',
+        export_vtt: '💬 Export WebVTT',
+        export_lyrics_json: '📦 Export JSON (mots/car.)',
+        export_txt: '📄 Export TXT',
+        export_json: '📦 Export Projet JSON',
         export_ae: '🎞 Export AE',
         export_audio: '🎵 Téléch. Audio',
         vercel_sync: '▲ Sync Vercel',
@@ -4954,8 +6526,12 @@ function cloudCopy() {
       loadBtn: 'Open',
       dlAudio: '⬇ Audio',
       dlLrc: '⬇ LRC',
+      dlElrc: '⬇ LRC+',
       dlSrt: '⬇ SRT',
-      dlJson: '⬇ JSON',
+      dlVtt: '⬇ VTT',
+      dlLyricsJson: '⬇ JSON',
+      dlTxt: '⬇ TXT',
+      dlJson: '⬇ Project',
       syncBtn: 'Vercel',
       delBtn: 'Delete',
       findSongBtn: 'Open Song',
@@ -4975,7 +6551,7 @@ function cloudCopy() {
       loadedOk: '☁ Song loaded from your Google account!',
       deletedOk: '🗑 Song deleted from Firebase.',
       dlOk: '⬇ Download started:',
-      dlNoAudio: 'No cloud audio stored for this song (download LRC, SRT, or JSON instead).',
+      dlNoAudio: 'No cloud audio stored for this song (download LRC, SRT, VTT, JSON, or TXT instead).',
       vSavedOk: '✓ Vercel settings saved.',
       vTestOk: '✓ Vercel app reachable',
       vTestLocal: '✓ Local /api/* endpoints ready (enter your Vercel URL to ping your deployed app).',
@@ -4992,9 +6568,13 @@ function cloudCopy() {
         lyrics_edit: '✏ Lyrics Edit',
         export_mp4: '🎬 MP4 Export',
         export_png: '🖼 PNG ZIP Export',
-        export_lrc: '📝 LRC Download',
-        export_srt: '💬 SRT Download',
-        export_json: '📦 JSON Export',
+        export_lrc: '📝 LRC Export',
+        export_elrc: '📝 Enhanced LRC Export',
+        export_srt: '💬 SRT Export',
+        export_vtt: '💬 WebVTT Export',
+        export_lyrics_json: '📦 Lyrics JSON Export',
+        export_txt: '📄 TXT Export',
+        export_json: '📦 Project JSON Export',
         export_ae: '🎞 AE Export',
         export_audio: '🎵 Audio Download',
         vercel_sync: '▲ Vercel Sync',
@@ -5030,8 +6610,12 @@ function cloudCopy() {
     loadBtn: '開く',
     dlAudio: '⬇ Audio',
     dlLrc: '⬇ LRC',
+    dlElrc: '⬇ LRC+',
     dlSrt: '⬇ SRT',
-    dlJson: '⬇ JSON',
+    dlVtt: '⬇ VTT',
+    dlLyricsJson: '⬇ JSON',
+    dlTxt: '⬇ TXT',
+    dlJson: '⬇ Project',
     syncBtn: 'Vercel',
     delBtn: '削除',
     findSongBtn: '曲を開く',
@@ -5051,7 +6635,7 @@ function cloudCopy() {
     loadedOk: '☁ Googleアカウントから曲を読み込みました！',
     deletedOk: '🗑 Firebaseから削除しました。',
     dlOk: '⬇ ダウンロード開始:',
-    dlNoAudio: 'この曲にはクラウド音声が保存されていません（LRC / SRT / JSON はダウンロード可能）。',
+    dlNoAudio: 'この曲にはクラウド音声が保存されていません（LRC / SRT / VTT / JSON / TXT はダウンロード可能）。',
     vSavedOk: '✓ Vercel設定を保存しました。',
     vTestOk: '✓ Vercelアプリへ接続できました',
     vTestLocal: '✓ ローカル /api/* 準備完了（デプロイ先URLを入力すると疎通確認できます）。',
@@ -5069,8 +6653,12 @@ function cloudCopy() {
       export_mp4: '🎬 MP4書き出し',
       export_png: '🖼 PNG書き出し',
       export_lrc: '📝 LRC保存',
+      export_elrc: '📝 Enhanced LRC保存',
       export_srt: '💬 SRT保存',
-      export_json: '📦 JSON保存',
+      export_vtt: '💬 VTT保存',
+      export_lyrics_json: '📦 歌詞JSON保存',
+      export_txt: '📄 TXT保存',
+      export_json: '📦 プロジェクトJSON保存',
       export_ae: '🎞 AE書き出し',
       export_audio: '🎵 音声保存',
       vercel_sync: '▲ Vercel同期',
@@ -5138,6 +6726,7 @@ function setCloudTab(tab) {
     if (tb) { tb.classList.toggle('is-active', active); tb.setAttribute('aria-selected', String(active)); }
     if (pn) pn.hidden = !active;
   });
+  syncSlidingMenus(true);
 }
 function showCloudError(err) {
   const box = $('cloudErrorBox');
@@ -5201,27 +6790,7 @@ async function recordWork(action, category = 'save', details = '', songIdOverrid
   }
 }
 function srtTextFromProject(proj) {
-  const parsed = J.parseLyrics((proj && proj.lyrics) || '');
-  const tm = J.computeTiming(proj, parsed, null);
-  const stamp = t => {
-    const x = Math.max(0, Number(t) || 0);
-    const h = Math.floor(x / 3600);
-    const m = Math.floor((x % 3600) / 60);
-    const s = Math.floor(x % 60);
-    const ms = Math.round((x - Math.floor(x)) * 1000) % 1000;
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')},${String(ms).padStart(3, '0')}`;
-  };
-  const out = [];
-  let n = 1;
-  parsed.lines.forEach((ln, idx) => {
-    if (ln.interlude || !String(ln.text || '').trim()) return;
-    const st = tm.starts[idx] ?? 0;
-    const en = (proj.timing && proj.timing.lineEnds && proj.timing.lineEnds[idx] != null)
-      ? Number(proj.timing.lineEnds[idx])
-      : (idx < parsed.lines.length - 1 ? (tm.starts[idx + 1] ?? st + 3) : st + 3.5);
-    out.push(`${n++}\n${stamp(st)} --> ${stamp(Math.max(st + 0.25, en))}\n${ln.text}\n`);
-  });
-  return out.join('\n');
+  return J.srtText ? J.srtText(proj) : '';
 }
 async function downloadCloudSongArtifact(song, kind) {
   const c = cloudCopy();
@@ -5235,11 +6804,43 @@ async function downloadCloudSongArtifact(song, kind) {
     toast(`${c.dlOk} ${fname}`);
     return;
   }
+  if (kind === 'elrc') {
+    const txt = J.enhancedLrcText(proj);
+    const fname = `${slug}.elrc.lrc`;
+    await J.saveFile(fname, new Blob([txt], { type: 'text/plain;charset=utf-8' }));
+    recordWork('export_elrc', 'export', fname, song.songId || '');
+    toast(`${c.dlOk} ${fname}`);
+    return;
+  }
   if (kind === 'srt') {
     const txt = srtTextFromProject(proj);
     const fname = `${slug}.srt`;
     await J.saveFile(fname, new Blob([txt], { type: 'text/plain;charset=utf-8' }));
     recordWork('export_srt', 'export', fname, song.songId || '');
+    toast(`${c.dlOk} ${fname}`);
+    return;
+  }
+  if (kind === 'vtt') {
+    const txt = J.vttText(proj);
+    const fname = `${slug}.vtt`;
+    await J.saveFile(fname, new Blob([txt], { type: 'text/vtt;charset=utf-8' }));
+    recordWork('export_vtt', 'export', fname, song.songId || '');
+    toast(`${c.dlOk} ${fname}`);
+    return;
+  }
+  if (kind === 'txt') {
+    const txt = J.txtLyricsText(proj);
+    const fname = `${slug}.txt`;
+    await J.saveFile(fname, new Blob([txt], { type: 'text/plain;charset=utf-8' }));
+    recordWork('export_txt', 'export', fname, song.songId || '');
+    toast(`${c.dlOk} ${fname}`);
+    return;
+  }
+  if (kind === 'lyrics_json') {
+    const txt = J.lyricsJsonText(proj);
+    const fname = `${slug}.lyrics.json`;
+    await J.saveFile(fname, new Blob([txt], { type: 'application/json;charset=utf-8' }));
+    recordWork('export_lyrics_json', 'export', fname, song.songId || '');
     toast(`${c.dlOk} ${fname}`);
     return;
   }
@@ -5311,6 +6912,7 @@ function openCloudHub(tabName = null) {
   if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', '');
   if ($('btnCloudHub')) $('btnCloudHub').setAttribute('aria-expanded', 'true');
   refreshServerCapabilities();
+  requestAnimationFrame(() => syncSlidingMenus(false));
 }
 function closeCloudHub() {
   const dlg = $('cloudDlg');
@@ -5400,7 +7002,11 @@ function renderCloudSongs(songs) {
     acts.append(mkBtn('primary small', c.loadBtn, () => loadCloudSongIntoStudio(s.songId)));
     if (s.hasAudioChunks) acts.append(mkBtn('ghost small cloud-dl-btn', c.dlAudio, () => downloadCloudSongArtifact(s, 'audio')));
     acts.append(mkBtn('ghost small cloud-dl-btn', c.dlLrc, () => downloadCloudSongArtifact(s, 'lrc')));
+    acts.append(mkBtn('ghost small cloud-dl-btn', c.dlElrc, () => downloadCloudSongArtifact(s, 'elrc')));
     acts.append(mkBtn('ghost small cloud-dl-btn', c.dlSrt, () => downloadCloudSongArtifact(s, 'srt')));
+    acts.append(mkBtn('ghost small cloud-dl-btn', c.dlVtt, () => downloadCloudSongArtifact(s, 'vtt')));
+    acts.append(mkBtn('ghost small cloud-dl-btn', c.dlLyricsJson, () => downloadCloudSongArtifact(s, 'lyrics_json')));
+    acts.append(mkBtn('ghost small cloud-dl-btn', c.dlTxt, () => downloadCloudSongArtifact(s, 'txt')));
     acts.append(mkBtn('ghost small cloud-dl-btn', c.dlJson, () => downloadCloudSongArtifact(s, 'json')));
     acts.append(mkBtn('ghost small cloud-dl-btn', c.syncBtn, () => syncSongToVercel(s.songId, s)));
     acts.append(mkBtn('ghost small cloud-dl-btn', c.delBtn, async () => {
@@ -5408,8 +7014,12 @@ function renderCloudSongs(songs) {
       try {
         showCloudError(null);
         await window.AlexuraCloud.deleteSongFromCloud(s.songId);
-        if (S.cloudSongId === s.songId) S.cloudSongId = null;
-        if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = S.cloudSongId || '';
+        if (S.cloudSongId === s.songId) {
+          S.cloudSongId = null;
+          if (S.project) delete S.project.cloudSongId;
+          flushSave();
+        }
+        if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = S.cloudSongId ? `ID: ${S.cloudSongId}` : '';
         toast(c.deletedOk);
       } catch (err) {
         showCloudError(err);
@@ -5640,6 +7250,7 @@ async function syncSongToVercel(songIdOverride = null, songDoc = null, silent = 
     lang: (songDoc && songDoc.lang) || srcProj.lang || 'auto',
     timing: srcProj.timing || {},
     karaokeCfg: srcProj.karaokeCfg || {},
+    translation: srcProj.translation || null,
     timestamp: new Date().toISOString(),
   };
   try {
@@ -5763,7 +7374,15 @@ function bindCloudStudio() {
   if ($('btnVercelDeploy')) $('btnVercelDeploy').addEventListener('click', deployToVercel);
 
   if (window.AlexuraCloud && typeof window.AlexuraCloud.subscribeAuth === 'function') {
+    let lastAuthUid = null;
     window.AlexuraCloud.subscribeAuth(async (user) => {
+      const nextUid = user ? user.uid : null;
+      if ((lastAuthUid && nextUid !== lastAuthUid) || !nextUid) {
+        S.cloudSongId = null;
+        if (S.project) delete S.project.cloudSongId;
+        if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = '';
+      }
+      lastAuthUid = nextUid;
       S.cloudUser = user || null;
       if (cloudSongsUnsub) { cloudSongsUnsub(); cloudSongsUnsub = null; }
       if (cloudHistoryUnsub) { cloudHistoryUnsub(); cloudHistoryUnsub = null; }
@@ -5813,11 +7432,13 @@ function boot() {
   if (S.project && S.project.cloudSongId) S.cloudSongId = S.project.cloudSongId;
   bind(); initVolume(); syncUI(); syncLoopBtn(); replan();
   bindCloudStudio();
+  initSlidingMenus();
   restoreFonts();
   // first visit on a phone: スマホ mode
   let mode = window.matchMedia && window.matchMedia('(max-width: 760px)').matches ? 'mobile' : 'easy';
   try { mode = localStorage.getItem('jizura.mode') || mode; } catch (e) {}
   setMode(mode); commit();
+  syncSlidingMenus(false);
   bindTour();
   // Tour is accessible manually via the ? button (#btnTour), not auto-started
   let seen = false; try { seen = localStorage.getItem('jizura.tourDone') === '1'; } catch (e) {}
@@ -5831,5 +7452,5 @@ function boot() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 J.ui = S;
 // hooks for hosts that embed the app (the After Effects CEP panel)
-J.uiApi = { toast, replan, syncUI, pause, seek, playRange, selectLyricWord, saveCorrectedLyrics, tlWHandleAt, tlDragWordTo, tlFocusWord, tlWordBoxAt, syncTimelineInspector, startTap, tapNow, tapEndHold, tapSkip, tapBack, stopTap, openCloudHub, setCloudTab, saveCurrentSongToFirebase, loadCloudSongIntoStudio, downloadCloudSongArtifact, recordWork, testVercelBridge, syncSongToVercel, deployToVercel, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines };
+J.uiApi = { toast, replan, syncUI, pause, seek, playRange, selectLyricWord, saveCorrectedLyrics, tlWHandleAt, tlDragWordTo, tlFocusWord, tlWordBoxAt, syncTimelineInspector, syncQualityControlPanel, reanalyzeLowConfidenceUI, jumpToNextLowConfWord, translateAllLyrics, toggleTranslationLayer, clearTranslationLayer, syncTranslationControls, updateTransCfg, saveSyncedLyrics, syncSlidingMenus, nudgeGlobalSyncOffset, alignAllWordsAcousticallyUI, microAlignTapPhrase, shiftTapPhraseWords, toggleTapLoop, assistRemainingTapLines, kpQuickTapCurrentWord, startTap, tapNow, tapEndHold, tapSkip, tapBack, stopTap, openCloudHub, setCloudTab, saveCurrentSongToFirebase, loadCloudSongIntoStudio, downloadCloudSongArtifact, recordWork, testVercelBridge, syncSongToVercel, deployToVercel, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines };
 })();

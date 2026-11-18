@@ -37,6 +37,12 @@ STYLES = {
     'acid': ('酸性', '黑、酸性绿与洋红，做旧文字'),
     'sumi': ('墨与朱', '和纸、毛笔字与朱红印章'),
     'gold': ('金色之夜', '深黑、烫金、象牙色衬线体与闪光'),
+    'bladeCinema': ('电影银翼杀手', '电影暗部、琥珀与青色光束及流畅运镜'),
+    'stagePrism': ('音乐MV棱镜', '舞台聚光灯、节拍冲击与流畅动态文字'),
+    'kineticPop': ('艺术动态 3D', '波普艺术、等角3D方块、旋转与故障美学'),
+    'cyberAi': ('未来赛博 AI', '神经网络青紫全息、HUD雷达与霓虹扫描'),
+    'atelierLux': ('奢华纪实美学', '香槟象牙杂志排版、柔光扫过与纪录片质感'),
+    'animePrism': ('奇幻动画棱镜', '高彩赛璐璐光影、流体波纹与超现实粒子'),
 }
 
 BODY = {
@@ -50,7 +56,7 @@ BODY = {
     'title="LRC ファイル（タイムスタンプ付きの歌詞）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）">LRC を読み込む': 'title="读取 LRC 文件（带时间标记的歌词），替换当前歌词（可用“撤销”恢复）">读取 LRC',
     'aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"': 'aria-label="一键随机的主题" title="一键随机的主题（选择后，会在该方向内随机生成，并打开所需的部件开关）"',
     '<label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ">': '<label class="theme-row">主题<select class="themeSel" aria-label="一键随机的主题">',
-    '<option value="">テーマなし</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option>': '<option value="">不指定主题</option><option value="lyricpv">文字PV</option><option value="kinetic">动态文字</option><option value="wa">和风</option><option value="horror">恐怖</option><option value="pop">流行</option><option value="ballad">抒情</option>',
+    '<option value="">テーマなし</option><option value="cinematic">CINEMATIC — 映画・予告編・Blade Runner</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B</option><option value="artmotion">ART &amp; MOTION — Kinetic・Pop Art・3D・Glitch</option><option value="futuristic">FUTURISTIC — Cyberpunk・Sci-Fi・Neon・AI</option><option value="lifestyle">LIFESTYLE — Luxury・Fashion・Travel・Doc</option><option value="animation">ANIMATION — Anime・Cartoon・Fantasy・Surreal</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option>': '<option value="">不指定主题</option><option value="cinematic">CINEMATIC — 电影・预告片・银翼杀手</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B</option><option value="artmotion">ART &amp; MOTION — 动态设计・波普・3D・故障</option><option value="futuristic">FUTURISTIC — 赛博朋克・科幻・霓虹・AI</option><option value="lifestyle">LIFESTYLE — 奢华・时尚・旅行・纪录片</option><option value="animation">ANIMATION — 动画・卡通・奇幻・超现实</option><option value="lyricpv">文字PV</option><option value="kinetic">动态文字</option><option value="wa">和风</option><option value="horror">恐怖</option><option value="pop">流行</option><option value="ballad">抒情</option>',
     '<small class="muted">選ぶと、その方向の中でおまかせします</small>': '<small class="muted">选择后，会在该方向内随机生成</small>',
     'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">LRC を書き出す</button>': 'title="导出带有每行开始时间的歌词（.lrc）。选择了导出范围时，只导出那些行，时间从视频开头算起">导出 LRC</button>',
     'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">歌詞（LRC）</button>': 'title="导出带有每行开始时间的歌词（.lrc）。选择了导出范围时，只导出那些行，时间从视频开头算起">歌词（LRC）</button>',

@@ -11,7 +11,7 @@ BODY = {
     'title="LRC ファイル（タイムスタンプ付きの歌詞）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）">LRC を読み込む': 'title="LRC 파일(타임스탬프가 붙은 가사)을 불러와 지금 가사를 바꿉니다(‘되돌리기’로 되돌릴 수 있습니다)">LRC 불러오기',
     'aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"': 'aria-label="자동 생성 테마" title="자동 생성 테마(고르면 그 방향 안에서 자동 생성하고, 필요한 부품 스위치도 켭니다)"',
     '<label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ">': '<label class="theme-row">테마<select class="themeSel" aria-label="자동 생성 테마">',
-    '<option value="">テーマなし</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option>': '<option value="">테마 없음</option><option value="lyricpv">문자 PV</option><option value="kinetic">키네틱</option><option value="wa">일본풍</option><option value="horror">호러</option><option value="pop">팝</option><option value="ballad">발라드</option>',
+    '<option value="">テーマなし</option><option value="cinematic">CINEMATIC — 映画・予告編・Blade Runner</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B</option><option value="artmotion">ART &amp; MOTION — Kinetic・Pop Art・3D・Glitch</option><option value="futuristic">FUTURISTIC — Cyberpunk・Sci-Fi・Neon・AI</option><option value="lifestyle">LIFESTYLE — Luxury・Fashion・Travel・Doc</option><option value="animation">ANIMATION — Anime・Cartoon・Fantasy・Surreal</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option>': '<option value="">테마 없음</option><option value="cinematic">CINEMATIC — 영화·예고편·블레이드 러너</option><option value="musicvideo">MUSIC VIDEO — Pop·Hip-Hop·K-Pop·Trap·R&amp;B</option><option value="artmotion">ART &amp; MOTION — 키네틱·팝아트·3D·글리치</option><option value="futuristic">FUTURISTIC — 사이버펑크·SF·네온·AI</option><option value="lifestyle">LIFESTYLE — 럭셔리·패션·여행·다큐멘터리</option><option value="animation">ANIMATION — 애니메이션·카툰·판타지·초현실</option><option value="lyricpv">문자 PV</option><option value="kinetic">키네틱</option><option value="wa">일본풍</option><option value="horror">호러</option><option value="pop">팝</option><option value="ballad">발라드</option>',
     '<small class="muted">選ぶと、その方向の中でおまかせします</small>': '<small class="muted">고르면 그 방향 안에서 자동 생성합니다</small>',
     'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">LRC を書き出す</button>': 'title="각 줄의 시작 시각을 붙인 가사(.lrc)를 내보냅니다. 내보낼 범위를 골랐다면 그 줄만, 영상 처음부터의 시각으로 내보냅니다">LRC 내보내기</button>',
     'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">歌詞（LRC）</button>': 'title="각 줄의 시작 시각을 붙인 가사(.lrc)를 내보냅니다. 내보낼 범위를 골랐다면 그 줄만, 영상 처음부터의 시각으로 내보냅니다">가사(LRC)</button>',
@@ -382,6 +382,12 @@ STYLES = {
     'acid': ('애시드', '검정, 애시드 그린과 마젠타, 거친 서체'),
     'sumi': ('먹과 주홍', '화지, 붓글씨와 붉은 낙관'),
     'gold': ('골든 나이트', '깊은 검정, 금박, 아이보리 세리프와 반짝임'),
+    'bladeCinema': ('시네마 블레이드 러너', '영화적 암부와 앰버·시안 아나모픽 광선 및 유려한 카메라'),
+    'stagePrism': ('뮤직비디오 프리즘', 'K-Pop·트랩 무대 조명, 비트 펀치와 입체 키네틱 모션'),
+    'kineticPop': ('아트 & 모션 3D', '팝아트, 3D 아이소메트릭 큐브, 회전과 글리치 모션'),
+    'cyberAi': ('퓨처리스틱 AI', '사이버펑크 시안·퍼플 홀로그램, HUD 레이더와 네온 스캔'),
+    'atelierLux': ('아틀리에 라이프스타일', '샴페인 아이보리 에디토리얼, 부드러운 빛과 다큐멘터리 구도'),
+    'animePrism': ('애니메이션 프리즘', '셀 애니메이션 빛감, 유체 웨이브와 판타지 입자 모션'),
 }
 
 MOODS = {'glitch': '글리치', 'calm': '잔잔함', 'pop': '팝', 'graphic': '그래픽',

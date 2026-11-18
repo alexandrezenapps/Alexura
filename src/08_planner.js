@@ -32,7 +32,7 @@ J.defaultProject = () => ({
   aspect: '16:9', res: 1080, fps: 24,
   fx: { motion: 0.7, glitch: 0.55, chroma: 0.7, decor: 0.5, density: 0.55, texture: 0.6, flash: true, onTwos: true, koma: 12, hud: 'auto', bgSwitch: 0.35, hideNo: false, hideTime: false },
   enabled: Object.fromEntries(J.GROUP_KEYS.map(g => [g, Object.fromEntries(J.order(g).map(k => [k, true]))])),
-  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineEnds: {}, wordTimes: {}, lineMeta: {}, lineScale: 1 },
+  timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, globalOffsetMs: 0, lineTimes: {}, lineEnds: {}, wordTimes: {}, lineMeta: {}, lineScale: 1 },
   detection: null,                // song lyrics detection summary (audioType, detectedLanguages, structure, layers)
   karaoke: true,                  // real-time karaoke word/character highlight overlay
   karaokeCfg: {
@@ -43,6 +43,21 @@ J.defaultProject = () => ({
     baseColor: '',                // '' = auto from style palette, or #RRGGBB
     activeColor: '',              // '' = auto from style accent, or #RRGGBB
     bgAlpha: 0.78,                // 0 .. 1 background opacity (0 = transparent)
+  },
+  translation: {                  // FUNCTION 09: optional translation layer on shared timeline with independent display settings
+    enabled: false,
+    targetLang: 'fr',
+    lines: {},
+    cfg: {
+      fontSize: 0.78,             // 0.55 .. 1.45 independent scale
+      yPct: 76,                   // 8 .. 94 independent Y position (%)
+      position: 'below',          // 'below' | 'above' | 'custom'
+      color: '',                  // '' = auto contrast, or #RRGGBB
+      bgAlpha: 0.72,              // 0 .. 1 independent backdrop opacity
+      italic: false,
+      showInPrompter: true,
+      showInVideo: true,
+    },
   },
   overrides: {},
   locks: { tech: {}, params: {} },   // groups and values Randomize / Shuffle must not change (UI side only)
@@ -288,9 +303,16 @@ J.computeTiming = (project, parsed, audio) => {
     if (beat && !(L.interlude && L.secs > 0)) d = Math.max(2, Math.round(d / beat)) * beat;
     return s + d;
   });
+  const globalShift = J.clamp(Number(T.globalOffsetMs) || 0, -600, 600) / 1000;
+  if (globalShift !== 0) {
+    for (let k = 0; k < starts.length; k++) {
+      starts[k] = +Math.max(0, starts[k] + globalShift).toFixed(3);
+      ends[k] = +Math.max(starts[k] + 0.12, ends[k] + globalShift).toFixed(3);
+    }
+  }
   let duration = (ends.length ? ends[ends.length - 1] : 3) + (T.tail ?? 0.9);
   if (audio && audio.duration && T.useAudioLength !== false) duration = Math.max(audio.duration, ends.length ? ends[ends.length - 1] + 0.2 : 1);
-  return { starts, ends, duration };
+  return { starts, ends, duration, globalShift };
 };
 
 /* ---------------- planning ---------------- */
@@ -338,8 +360,18 @@ J.plan = (project, audio) => {
     karaokeCfg: Object.assign({
       mode: 'progressive', fontSize: 1.0, yPct: 86, autoScroll: true, baseColor: '', activeColor: '', bgAlpha: 0.78,
     }, project.karaokeCfg || {}),
+    translation: {
+      enabled: Boolean(project.translation && project.translation.enabled),
+      targetLang: (project.translation && project.translation.targetLang) || 'fr',
+      lines: (project.translation && project.translation.lines && typeof project.translation.lines === 'object') ? project.translation.lines : {},
+      cfg: Object.assign({
+        fontSize: 0.78, yPct: 76, position: 'below', color: '', bgAlpha: 0.72, italic: false, showInPrompter: true, showInVideo: true,
+      }, (project.translation && project.translation.cfg) || {}),
+    },
     lang: J.resolveLang ? J.resolveLang(project) : 'ja',   // 歌詞の言語 (auto → detected)
+    langInfo: J.resolveLangInfo ? J.resolveLangInfo(project) : null,
   };
+  plan.detectedLanguages = (plan.langInfo && plan.langInfo.detectedLanguages) || (plan.lang ? [plan.lang] : []);
   if (J.setLang) J.setLang(plan.lang);                     // chunking + measuring below use this language
   if (J.setTypeset) J.setTypeset(plan.typeset);
   const beats = plan.beats;
@@ -393,7 +425,7 @@ J.plan = (project, audio) => {
     const savedWords = project.timing && project.timing.wordTimes && project.timing.wordTimes[li];
     const lineMeta = (project.timing && project.timing.lineMeta && project.timing.lineMeta[li]) || null;
     const lineSpeaker = (lineMeta && lineMeta.speaker) || 'Lead';
-    const leadShift = project.typeset ? 0.2 : 0;
+    const leadShift = (project.typeset ? 0.2 : 0) - (tm.globalShift || 0);
     let wordsTimed = null;
     if (Array.isArray(savedWords) && savedWords.length) {
       const joinedSaved = savedWords.map(w => String(w.text || '')).join('').replace(/\s+/g, '');
@@ -433,11 +465,16 @@ J.plan = (project, audio) => {
         });
       }
     }
+    const lineLang = (lineMeta && lineMeta.language) || (J.detectLineLang && J.detectLineLang(ln.text)) || plan.lang;
+    const translatedText = (project.translation && project.translation.lines && project.translation.lines[li] != null)
+      ? String(project.translation.lines[li]).trim()
+      : '';
     if (!wordsTimed && J.alignWordsAcoustic) {
-      wordsTimed = J.alignWordsAcoustic(audio, ln.text, s, visEnd, plan.lang, lineSpeaker, lineMeta && lineMeta.recognitionConfidence != null ? lineMeta.recognitionConfidence : 0.88);
+      wordsTimed = J.alignWordsAcoustic(audio, ln.text, s, visEnd, lineLang, lineSpeaker, lineMeta && lineMeta.recognitionConfidence != null ? lineMeta.recognitionConfidence : 0.88);
     }
-    plan.lines.push({ index: li, src: ln.src, lrc: ln.lrc, text: ln.text, start: s, end: e, visEnd, note: ln.note, impact: ln.impact, emph: ln.emph, chunks: null, wordsTimed: wordsTimed || [], meta: lineMeta, seed: lineSeed });
-    const chunks = ln.manual || (plan.lang === 'en' ? J.phraseChunks(J.chunkText(ln.text)) : J.chunkText(ln.text));
+    plan.lines.push({ index: li, src: ln.src, lrc: ln.lrc, text: ln.text, language: lineLang, translatedText, start: s, end: e, visEnd, note: ln.note, impact: ln.impact, emph: ln.emph, chunks: null, wordsTimed: wordsTimed || [], meta: lineMeta, seed: lineSeed });
+    const isLatinPhrase = J.isLatinText && J.isLatinText(ln.text) && ['en', 'fr', 'es', 'de', 'it', 'pt', 'multi'].includes(lineLang);
+    const chunks = ln.manual || (isLatinPhrase ? J.phraseChunks(J.chunkText(ln.text)) : J.chunkText(ln.text));
     plan.lines[li].chunks = chunks;
     const L = J.lerp(1.3, 0.5, fx.density);
     let nC = Math.round(D / L);
@@ -497,7 +534,7 @@ J.plan = (project, audio) => {
       if (UU) layout = UU.layout(li, layout, { nn, dur, emph, kime, rng, portrait: LH > LW, recap: u.recap });
       let enter = ov.enter && J.ENTER[ov.enter] ? ov.enter : pickEnter(rng, st, en, layout, dur, history, emph, nn);
       let exit = ov.exit && J.EXIT[ov.exit] ? ov.exit : pickExit(rng, st, en, layout, dur, k === units.length - 1, history);
-      let hold = ov.hold && J.HOLD[ov.hold] ? ov.hold : pickHold(rng, en, fx, history);
+      let hold = ov.hold && J.HOLD[ov.hold] ? ov.hold : pickHold(rng, en, fx, history, st);
       let weightGrow = false;
       if (UU) {
         enter = UU.enter(li, enter, { layout, dur, emph, kime, rng, nn });
@@ -965,10 +1002,10 @@ function pickExit(rng, st, en, layout, dur, lastOfLine, history) {
   return cands.length ? rng.wpick(cands) : 'cut';
 }
 const HOLD_W = { still: 1, jitter: 1.2, drift: 1, breathe: 0.7, wave: 0.4, glitchtick: 0.9 };
-function pickHold(rng, en, fx, history) {
+function pickHold(rng, en, fx, history, st) {
   const cands = J.HOLD_ORDER.filter(k => en.hold[k] !== false && J.HOLD[k]).map(k => {
     const D = J.HOLD[k];
-    let w = HOLD_W[k] != null ? HOLD_W[k] : (D.w ?? 0.8);
+    let w = wkey(st && st.bias && st.bias.hold, k, HOLD_W[k] != null ? HOLD_W[k] : (D.w ?? 0.8));
     if (k === 'jitter' || (D.tags && D.tags.includes('glitch'))) w *= 0.4 + fx.motion;
     if (k === 'glitchtick') w *= fx.glitch;
     return [k, w * novelty(history, 'hold', k)];

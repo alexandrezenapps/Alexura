@@ -39,6 +39,12 @@ STYLES = {
     'acid': ('Acid', 'Đen, xanh acid và magenta với chữ thô ráp'),
     'sumi': ('Mực và đỏ', 'Giấy Nhật, thư pháp và con dấu đỏ'),
     'gold': ('Đêm vàng', 'Đen sâu, foil vàng, serif ngà và lấp lánh'),
+    'bladeCinema': ('Điện ảnh Blade Runner', 'Ánh sáng anamorphic hổ phách-lơ, hạt phim và máy quay mượt mà'),
+    'stagePrism': ('Lăng kính MV Âm nhạc', 'Đèn sân khấu Pop/Trap/K-Pop, nhịp đập bass và chuyển động uyển chuyển'),
+    'kineticPop': ('Nghệ thuật & Motion 3D', 'Pop Art hình học, khối 3D isometric, xoay động học và glitch'),
+    'cyberAi': ('Tương lai Cyberpunk AI', 'Hologram lơ-tím, ma trận HUD, radar AI và quét neon'),
+    'atelierLux': ('Phong cách sống Atelier', 'Tạp chí champagne và ngà voi, dải sáng lụa và khung hình tài liệu'),
+    'animePrism': ('Hoạt hình Giả tưởng', 'Ánh sáng cel rực rỡ, gợn sóng kỳ ảo và chuyển động siêu thực'),
 }
 
 BODY = {
@@ -52,7 +58,7 @@ BODY = {
     'title="LRC ファイル（タイムスタンプ付きの歌詞）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）">LRC を読み込む': 'title="Mở tệp LRC (lời có dấu thời gian) để thay lời hiện tại (Hoàn tác để lấy lại)">Mở LRC',
     'aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"': 'aria-label="Chủ đề ngẫu nhiên" title="Chủ đề ngẫu nhiên (khi chọn, Ngẫu nhiên chỉ tạo trong hướng đó và bật các bộ chi tiết cần thiết)"',
     '<label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ">': '<label class="theme-row">Chủ đề<select class="themeSel" aria-label="Chủ đề ngẫu nhiên">',
-    '<option value="">テーマなし</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option>': '<option value="">Không chủ đề</option><option value="lyricpv">Video lời</option><option value="kinetic">Kinetic</option><option value="wa">Phong cách Nhật</option><option value="horror">Kinh dị</option><option value="pop">Pop</option><option value="ballad">Ballad</option>',
+    '<option value="">テーマなし</option><option value="cinematic">CINEMATIC — 映画・予告編・Blade Runner</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B</option><option value="artmotion">ART &amp; MOTION — Kinetic・Pop Art・3D・Glitch</option><option value="futuristic">FUTURISTIC — Cyberpunk・Sci-Fi・Neon・AI</option><option value="lifestyle">LIFESTYLE — Luxury・Fashion・Travel・Doc</option><option value="animation">ANIMATION — Anime・Cartoon・Fantasy・Surreal</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option>': '<option value="">Không chủ đề</option><option value="cinematic">CINEMATIC — Phim, Trailer, Blade Runner</option><option value="musicvideo">MUSIC VIDEO — Pop, Hip-Hop, K-Pop, Trap, R&amp;B</option><option value="artmotion">ART &amp; MOTION — Kinetic, Pop Art, 3D, Glitch</option><option value="futuristic">FUTURISTIC — Cyberpunk, Sci-Fi, Neon, AI</option><option value="lifestyle">LIFESTYLE — Luxury, Thời trang, Du lịch, Tài liệu</option><option value="animation">ANIMATION — Anime, Hoạt hình, Giả tưởng, Siêu thực</option><option value="lyricpv">Video lời</option><option value="kinetic">Kinetic</option><option value="wa">Phong cách Nhật</option><option value="horror">Kinh dị</option><option value="pop">Pop</option><option value="ballad">Ballad</option>',
     '<small class="muted">選ぶと、その方向の中でおまかせします</small>': '<small class="muted">Ngẫu nhiên trong hướng đã chọn</small>',
     'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">LRC を書き出す</button>': 'title="Lưu lời với thời điểm bắt đầu của từng dòng (.lrc). Khi đã chọn phạm vi xuất, chỉ các dòng đó, tính từ đầu video">Lưu LRC</button>',
     'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">歌詞（LRC）</button>': 'title="Lưu lời với thời điểm bắt đầu của từng dòng (.lrc). Khi đã chọn phạm vi xuất, chỉ các dòng đó, tính từ đầu video">Lời (LRC)</button>',

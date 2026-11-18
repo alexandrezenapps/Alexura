@@ -96,24 +96,282 @@ J.exportSpan = (plan, range) => {
   return { t0, dur: Math.max(1 / plan.fps, t1 - t0) };
 };
 
+/* ---------- Synchronized Lyrics Export (SRT, VTT, LRC, Enhanced LRC, JSON, TXT) ----------
+   Builds canonical segment/word/character timing from the active plan (or computes from project + audio),
+   preserving word-level and character-level timestamps, confidence scores, multilingual metadata,
+   optional translation layer, and optional line range slicing. */
+const fmtSrtTs = t => {
+  const msTot = Math.max(0, Math.round((Number(t) || 0) * 1000));
+  const h = Math.floor(msTot / 3600000);
+  const m = Math.floor((msTot % 3600000) / 60000);
+  const s = Math.floor((msTot % 60000) / 1000);
+  const ms = msTot % 1000;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')},${String(ms).padStart(3, '0')}`;
+};
+const fmtVttTs = t => {
+  const msTot = Math.max(0, Math.round((Number(t) || 0) * 1000));
+  const h = Math.floor(msTot / 3600000);
+  const m = Math.floor((msTot % 3600000) / 60000);
+  const s = Math.floor((msTot % 60000) / 1000);
+  const ms = msTot % 1000;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+};
+const fmtLrcTs = (t, bracket = '[]') => {
+  const csTot = Math.max(0, Math.round((Number(t) || 0) * 100));
+  const m = Math.floor(csTot / 6000);
+  const s = Math.floor((csTot % 6000) / 100);
+  const cs = csTot % 100;
+  const core = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(cs).padStart(2, '0')}`;
+  return bracket[0] + core + bracket[1];
+};
+const round3 = v => +Number(v || 0).toFixed(3);
+const isCjkLikeWord = s => /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/.test(String(s || ''));
+
+J.buildLyricsExportData = (project, planOrAudio = null, range = null, opts = {}) => {
+  const proj = project || {};
+  const hasPlan = !!(planOrAudio && Array.isArray(planOrAudio.lines));
+  const plan = hasPlan ? planOrAudio : null;
+  const audio = opts.audio || (!hasPlan && planOrAudio && planOrAudio.duration ? planOrAudio : null);
+  const parsed = J.parseLyrics(proj.lyrics || '');
+  const tm = !plan ? J.computeTiming(proj, parsed, audio) : null;
+  const allLines = plan ? plan.lines : parsed.lines.map((l, idx) => ({
+    index: idx,
+    src: l.src,
+    text: l.text,
+    interlude: l.interlude,
+    start: tm.starts[idx] ?? 0,
+    end: tm.ends[idx] ?? ((tm.starts[idx] ?? 0) + 2.5),
+    visEnd: tm.ends[idx] ?? ((tm.starts[idx] ?? 0) + 2.5),
+    meta: (proj.timing && proj.timing.lineMeta && proj.timing.lineMeta[idx]) || null,
+    language: (proj.timing && proj.timing.lineMeta && proj.timing.lineMeta[idx] && proj.timing.lineMeta[idx].language) || (J.detectLineLang ? J.detectLineLang(l.text) : ''),
+    translatedText: (proj.translation && proj.translation.lines && proj.translation.lines[idx]) || '',
+  }));
+
+  const langInfo = J.resolveLangInfo ? J.resolveLangInfo(proj) : { primary: J.resolveLang ? J.resolveLang(proj) : 'en', detectedLanguages: [], isMixed: false };
+  const resolvedPrimary = langInfo.primary || 'en';
+  const from = range && Number.isInteger(range.from) ? Math.max(0, range.from) : 0;
+  const to = range && Number.isInteger(range.to) ? Math.min(allLines.length - 1, range.to) : allLines.length - 1;
+  const t0 = range && isFinite(Number(range.t0)) ? Number(range.t0) : 0;
+  const t1 = range && isFinite(Number(range.t1)) ? Number(range.t1) : null;
+
+  const trEnabled = !!(proj.translation && proj.translation.enabled);
+  const includeTrans = opts.includeTranslation !== undefined ? !!opts.includeTranslation : trEnabled;
+
+  const segments = [];
+  let maxEnd = 0;
+
+  for (let i = from; i <= to && i < allLines.length; i++) {
+    const ln = allLines[i];
+    if (!ln || ln.interlude || !String(ln.text || '').trim()) continue;
+    const rawStart = Math.max(0, (Number(ln.start) || 0) - t0);
+    const rawEnd = Math.max(rawStart + 0.05, (Number(ln.visEnd != null ? ln.visEnd : ln.end) || (rawStart + 2.0)) - t0);
+    const st = round3(rawStart);
+    const en = round3(rawEnd);
+    if (en > maxEnd) maxEnd = en;
+
+    const lineLang = ln.language || (ln.meta && ln.meta.language) || (J.detectLineLang ? J.detectLineLang(ln.text) : '') || resolvedPrimary;
+    const trMap = (proj.translation && proj.translation.lines) || {};
+    const trText = includeTrans ? String(ln.translatedText || trMap[ln.index != null ? ln.index : i] || '').trim() : '';
+
+    // Gather word timings from plan, project map, acoustic aligner, or proportional fallback
+    let srcWords = null;
+    if (Array.isArray(ln.wordsTimed) && ln.wordsTimed.length) {
+      srcWords = ln.wordsTimed;
+    } else if (proj.timing && proj.timing.wordTimes && Array.isArray(proj.timing.wordTimes[i]) && proj.timing.wordTimes[i].length) {
+      srcWords = proj.timing.wordTimes[i];
+    } else if (J.alignWordsAcoustic) {
+      srcWords = J.alignWordsAcoustic(audio, ln.text, Number(ln.start) || 0, Number(ln.visEnd != null ? ln.visEnd : ln.end) || (st + 2), lineLang);
+    } else {
+      const toks = J.tokenizeKaraokeWords ? J.tokenizeKaraokeWords(ln.text, lineLang) : String(ln.text).trim().split(/\s+/).filter(Boolean);
+      const safeToks = toks.length ? toks : [ln.text];
+      const dur = Math.max(0.05, (Number(ln.visEnd != null ? ln.visEnd : ln.end) || st + 2) - (Number(ln.start) || 0));
+      const totLen = safeToks.reduce((s, w) => s + Math.max(1, [...w].length), 0) || 1;
+      let cur = Number(ln.start) || 0;
+      srcWords = safeToks.map((tk, wi) => {
+        const wd = wi === safeToks.length - 1 ? ((Number(ln.start) || 0) + dur - cur) : dur * (Math.max(1, [...tk].length) / totLen);
+        const obj = { text: tk, start: cur, end: cur + wd, recognitionConfidence: 0.86, alignmentConfidence: 0.84 };
+        cur += wd;
+        return obj;
+      });
+    }
+
+    const words = (srcWords || []).map((w) => {
+      const ws = Math.max(st, round3((Number(w.start) || Number(ln.start) || 0) - t0));
+      const we = Math.max(ws + 0.01, round3((Number(w.end) || (ws + 0.15)) - t0));
+      const qm = J.evaluateWordQuality ? J.evaluateWordQuality(w, audio, ln.meta) : null;
+      const rawConf = qm ? qm.combinedConfidence
+        : (w.alignmentConfidence != null && w.recognitionConfidence != null)
+          ? (Number(w.alignmentConfidence) + Number(w.recognitionConfidence)) / 2
+          : (w.confidence ?? w.alignmentConfidence ?? w.recognitionConfidence ?? 0.85);
+      const confidence = round3(Math.min(0.99, Math.max(0.05, Number(rawConf) || 0.85)));
+
+      let srcChars = Array.isArray(w.chars) && w.chars.length ? w.chars : null;
+      if (!srcChars && J.buildCharTimings) {
+        srcChars = J.buildCharTimings(w.text, (Number(w.start) || 0), (Number(w.end) || (Number(w.start) + 0.15)), audio, lineLang);
+      }
+      if (!srcChars || !srcChars.length) {
+        const chs = [...String(w.text || '')];
+        const step = Math.max(0.005, (we - ws) / Math.max(1, chs.length));
+        srcChars = chs.map((ch, ci) => ({ ch, start: t0 + ws + ci * step, end: t0 + (ci === chs.length - 1 ? we : ws + (ci + 1) * step) }));
+      }
+      const chars = srcChars.map((c) => {
+        const cs = Math.max(ws, round3((Number(c.start) || (ws + t0)) - t0));
+        const ce = Math.max(cs + 0.005, round3((Number(c.end) || (cs + 0.02 + t0)) - t0));
+        return { char: String(c.ch != null ? c.ch : (c.char || '')), start: cs, end: ce };
+      });
+
+      const outW = { text: String(w.text || ''), start: ws, end: we, confidence };
+      if (w.validated) outW.validated = true;
+      if (qm) outW.qualityTier = qm.qualityTier;
+      outW.chars = chars;
+      return outW;
+    });
+
+    const seg = { text: String(ln.text || '').trim(), start: st, end: en, language: lineLang || resolvedPrimary };
+    if (trText) seg.translatedText = trText;
+    seg.words = words;
+    segments.push(seg);
+  }
+
+  let totalDur = maxEnd;
+  if (t1 != null && t1 > t0) totalDur = round3(t1 - t0);
+  else if (plan && isFinite(plan.duration)) totalDur = round3(plan.duration);
+  else if (tm && isFinite(tm.duration)) totalDur = round3(tm.duration);
+  else if (audio && isFinite(audio.duration)) totalDur = round3(audio.duration);
+
+  const exportLang = langInfo.isMixed && (proj.lang === 'multi' || langInfo.detectedLanguages.length > 1)
+    ? 'multi'
+    : (resolvedPrimary || 'en');
+
+  return {
+    title: proj.title || parsed.meta.ti || '',
+    artist: proj.artist || parsed.meta.ar || '',
+    album: parsed.meta.al || '',
+    language: exportLang,
+    detectedLanguages: langInfo.detectedLanguages || [],
+    duration: totalDur,
+    translationLanguage: includeTrans && proj.translation && proj.translation.targetLang ? proj.translation.targetLang : '',
+    segments,
+    allLines,
+    parsed,
+    tm,
+    from,
+    to,
+    t0,
+  };
+};
+
+J.lyricsJsonData = (project, planOrAudio = null, range = null, opts = {}) => {
+  const data = J.buildLyricsExportData(project, planOrAudio, range, opts);
+  const out = {};
+  if (data.title) out.title = data.title;
+  if (data.artist) out.artist = data.artist;
+  out.language = data.language;
+  if (data.detectedLanguages && data.detectedLanguages.length > 1) out.detectedLanguages = data.detectedLanguages;
+  out.duration = data.duration;
+  if (data.translationLanguage) out.translationLanguage = data.translationLanguage;
+  out.segments = data.segments;
+  return out;
+};
+
+J.lyricsJsonText = (project, planOrAudio = null, range = null, opts = {}) =>
+  JSON.stringify(J.lyricsJsonData(project, planOrAudio, range, opts), null, 2) + '\n';
+
+J.srtText = (project, planOrAudio = null, range = null, opts = {}) => {
+  const data = J.buildLyricsExportData(project, planOrAudio, range, opts);
+  const blocks = data.segments.map((seg, idx) => {
+    const lines = [seg.text];
+    if (seg.translatedText) lines.push(seg.translatedText);
+    return `${idx + 1}\n${fmtSrtTs(seg.start)} --> ${fmtSrtTs(Math.max(seg.start + 0.05, seg.end))}\n${lines.join('\n')}`;
+  });
+  return blocks.join('\n\n') + (blocks.length ? '\n' : '');
+};
+
+J.vttText = (project, planOrAudio = null, range = null, opts = {}) => {
+  const data = J.buildLyricsExportData(project, planOrAudio, range, opts);
+  const head = ['WEBVTT'];
+  if (data.title) head.push(`Kind: captions\nLanguage: ${data.language}`);
+  const blocks = data.segments.map((seg, idx) => {
+    const lines = [seg.text];
+    if (seg.translatedText) lines.push(seg.translatedText);
+    return `${idx + 1}\n${fmtVttTs(seg.start)} --> ${fmtVttTs(Math.max(seg.start + 0.05, seg.end))}\n${lines.join('\n')}`;
+  });
+  return head.join('\n') + '\n\n' + blocks.join('\n\n') + (blocks.length ? '\n' : '');
+};
+
 /* ---------- LRC (timed lyrics) ----------
    each line gets its start time (typed / tapped > LRC tag > estimate), the lyric row as written (/ * ! | and interlude rows kept).
    With a line range, only those lines, timed from the start of the exported video. */
-J.lrcText = (project, lines, range) => {
+J.lrcText = (project, lines, range, opts = {}) => {
   const parsed = J.parseLyrics(project.lyrics);
-  const tm = J.computeTiming(project, parsed, null);
+  const tm = J.computeTiming(project, parsed, opts.audio || null);
   const rows = String(project.lyrics || '').replace(/\r/g, '').split('\n');
-  const stamp = t => { t = Math.max(0, t); const m = Math.floor(t / 60), s = t - m * 60; return `[${String(m).padStart(2, '0')}:${s.toFixed(2).padStart(5, '0')}]`; };
   const clean = r => String(r || '').trim().replace(/^(\[\d+:\d+(?:[.:]\d+)?\])+/, '').trim();
   const out = [];
   const ti = project.title || parsed.meta.ti, ar = project.artist || parsed.meta.ar;
-  if (ti) out.push(`[ti:${ti}]`); if (ar) out.push(`[ar:${ar}]`); if (parsed.meta.al) out.push(`[al:${parsed.meta.al}]`);
+  const langInfo = J.resolveLangInfo ? J.resolveLangInfo(project) : null;
+  if (ti) out.push(`[ti:${ti}]`);
+  if (ar) out.push(`[ar:${ar}]`);
+  if (parsed.meta.al) out.push(`[al:${parsed.meta.al}]`);
+  if (langInfo && langInfo.primary) out.push(`[la:${langInfo.primary}]`);
+  const trEnabled = !!(project.translation && project.translation.enabled);
+  const includeTrans = opts.includeTranslation !== undefined ? !!opts.includeTranslation : false;
+  const trMap = (project.translation && project.translation.lines) || {};
   const from = range ? range.from : 0, to = range ? range.to : parsed.lines.length - 1, t0 = range ? range.t0 : 0;
   for (let i = from; i <= to && i < parsed.lines.length; i++) {
     const L = parsed.lines[i];
+    const startSec = Array.isArray(lines) && lines[i] && isFinite(lines[i].start) ? lines[i].start : tm.starts[i];
     let txt = clean(rows[L.src]);
     if (L.interlude && !/^\[/.test(txt)) txt = '[間奏]';
-    out.push(stamp(tm.starts[i] - t0) + txt);
+    const ts = fmtLrcTs(startSec - t0, '[]');
+    out.push(ts + txt);
+    if (!L.interlude && (includeTrans || (opts.includeTranslation === undefined && trEnabled && trMap[i]))) {
+      const trTxt = String(trMap[i] || '').trim();
+      if (trTxt && opts.includeTranslation) out.push(ts + trTxt);
+    }
+  }
+  return out.join('\n') + '\n';
+};
+
+/* ---------- Enhanced LRC (A2 word timestamps extension) ----------
+   Format: [mm:ss.xx] <mm:ss.xx> word1 <mm:ss.xx> word2 <end_mm:ss.xx> */
+J.enhancedLrcText = (project, planOrAudio = null, range = null, opts = {}) => {
+  const data = J.buildLyricsExportData(project, planOrAudio, range, opts);
+  const out = [];
+  if (data.title) out.push(`[ti:${data.title}]`);
+  if (data.artist) out.push(`[ar:${data.artist}]`);
+  if (data.album) out.push(`[al:${data.album}]`);
+  if (data.language) out.push(`[la:${data.language}]`);
+  for (const seg of data.segments) {
+    const lineTag = fmtLrcTs(seg.start, '[]');
+    let body = '';
+    if (seg.words && seg.words.length) {
+      const parts = seg.words.map((w, wi) => {
+        const wTag = fmtLrcTs(w.start, '<>');
+        const sep = wi > 0 && !isCjkLikeWord(w.text) && !isCjkLikeWord(seg.words[wi - 1].text) ? ' ' : '';
+        return `${sep}${wTag}${w.text}`;
+      });
+      body = parts.join('') + fmtLrcTs(seg.end, '<>');
+    } else {
+      body = seg.text;
+    }
+    out.push(`${lineTag}${body}`);
+    if (seg.translatedText) out.push(`${lineTag}${seg.translatedText}`);
+  }
+  return out.join('\n') + '\n';
+};
+
+/* ---------- Plain TXT (clean lyrics with optional title/artist & optional translation) ---------- */
+J.txtLyricsText = (project, planOrAudio = null, range = null, opts = {}) => {
+  const data = J.buildLyricsExportData(project, planOrAudio, range, opts);
+  const out = [];
+  if (data.title || data.artist) {
+    out.push([data.title, data.artist].filter(Boolean).join(' — '));
+    out.push('');
+  }
+  for (const seg of data.segments) {
+    out.push(seg.text);
+    if (seg.translatedText) out.push(seg.translatedText);
   }
   return out.join('\n') + '\n';
 };

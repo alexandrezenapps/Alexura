@@ -14,6 +14,7 @@ import {
   getDoc,
   getDocs,
   setDoc,
+  updateDoc,
   deleteDoc,
   collection,
   query,
@@ -191,18 +192,12 @@ async function ensureUserProfile(user: User): Promise<void> {
   try {
     const snap = await getDoc(ref);
     if (snap.exists()) {
-      await setDoc(
-        ref,
-        {
-          uid: user.uid,
-          displayName: clampStr(user.displayName || user.email || 'Creator', 160),
-          email: clampStr(user.email || '', 254),
-          photoURL: clampStr(user.photoURL || '', 500),
-          createdAt: snap.data().createdAt || serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
+      await updateDoc(ref, {
+        displayName: clampStr(user.displayName || user.email || 'Creator', 160),
+        email: clampStr(user.email || '', 254),
+        photoURL: clampStr(user.photoURL || '', 500),
+        updatedAt: serverTimestamp(),
+      });
     } else {
       await setDoc(ref, {
         uid: user.uid,
@@ -243,11 +238,11 @@ export async function saveSongToCloud(
     .replace(/[^a-zA-Z0-9-]+/g, '_')
     .replace(/^_+|_+$/g, '')
     .slice(0, 60) || 'track';
-  const songId = sanitizeId(
+  let songId = sanitizeId(
     input.songId || `song_${rawSlug}_${Date.now().toString(36)}`
   );
-  const path = `songs/${songId}`;
-  const songRef = doc(db, 'songs', songId);
+  let path = `songs/${songId}`;
+  let songRef = doc(db, 'songs', songId);
 
   let audioChunks: string[] = [];
   let audioTooLarge = false;
@@ -281,11 +276,20 @@ export async function saveSongToCloud(
       const existingSnap = await getDoc(songRef);
       if (existingSnap.exists()) {
         const ed = existingSnap.data();
-        existingCreatedAt = ed.createdAt || null;
-        prevChunkCount = Number(ed.chunkCount || 0);
+        if (ed.ownerId && ed.ownerId !== user.uid) {
+          songId = sanitizeId(`song_${rawSlug}_${Date.now().toString(36)}`);
+          path = `songs/${songId}`;
+          songRef = doc(db, 'songs', songId);
+        } else {
+          existingCreatedAt = ed.createdAt || null;
+          prevChunkCount = Number(ed.chunkCount || 0);
+        }
       }
-    } catch (error) {
-      handleFirestoreError(error, OperationType.GET, path);
+    } catch {
+      // Stale ID owned by another account: fork cleanly into a fresh song document for the signed-in user
+      songId = sanitizeId(`song_${rawSlug}_${Date.now().toString(36)}`);
+      path = `songs/${songId}`;
+      songRef = doc(db, 'songs', songId);
     }
   }
 

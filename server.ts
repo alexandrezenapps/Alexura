@@ -77,7 +77,7 @@ app.get('/api/health', (_req, res) => {
     vercelConnected: Boolean(process.env.VERCEL || process.env.VERCEL_URL || process.env.EXTERNAL_APP_URL || process.env.VERCEL_DEPLOY_HOOK_URL),
     vercelUrl: process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : process.env.EXTERNAL_APP_URL || '',
     bridgeConfigured: Boolean(process.env.EXTERNAL_APP_URL || process.env.VERCEL_DEPLOY_HOOK_URL),
-    endpoints: ['/api/health', '/api/transcribe-lyrics', '/api/align-vocals', '/api/bridge'],
+    endpoints: ['/api/health', '/api/transcribe-lyrics', '/api/align-vocals', '/api/reanalyze-segment', '/api/translate-lyrics', '/api/bridge'],
   });
 });
 
@@ -134,10 +134,28 @@ app.post('/api/bridge', async (req, res) => {
   }
 });
 
-function clampConf(val: any, fallback = 0.88) {
+function clampConf(val: any, fallback = 0.84) {
   const n = Number(val);
   if (!Number.isFinite(n)) return fallback;
-  return +Math.max(0, Math.min(1, n)).toFixed(3);
+  // Never falsely claim 100% automated accuracy: honest upper bound 0.98
+  return +Math.max(0.05, Math.min(0.98, n)).toFixed(3);
+}
+
+function classifyWordTierServer(recConf: number, alignConf: number, clarity: number, overlap: number, flags: string[]) {
+  const f = new Set(flags || []);
+  const hasUnc = f.has('uncertain_word') || f.has('misrecognized_word') || f.has('missing_word');
+  const hasBnd = f.has('uncertain_boundary');
+  const overlapPenalty = overlap > 0.45 ? 0.14 : overlap > 0.25 ? 0.06 : 0;
+  const clarityPenalty = clarity < 0.45 ? 0.16 : clarity < 0.65 ? 0.06 : 0;
+  const overall = Math.max(0.05, Math.min(0.97, +(0.42 * recConf + 0.36 * alignConf + 0.22 * clarity - overlapPenalty - clarityPenalty).toFixed(3)));
+  const uncertainty = +Math.max(0.02, Math.min(0.95, 1 - overall)).toFixed(3);
+  let tier: 'HIGH' | 'MEDIUM' | 'LOW' = 'MEDIUM';
+  if (!hasUnc && !hasBnd && overlap <= 0.35 && clarity >= 0.65 && recConf >= 0.78 && alignConf >= 0.78 && overall >= 0.78) {
+    tier = 'HIGH';
+  } else if (hasUnc || recConf < 0.65 || alignConf < 0.62 || clarity < 0.45 || overall < 0.58) {
+    tier = 'LOW';
+  }
+  return { overall, uncertainty, tier };
 }
 
 function buildCharTimingsServer(wordText: string, start: number, end: number, rawChars?: any[]) {
@@ -290,7 +308,10 @@ function normalizeKaraokeLines(rawLines: any[], chunkOffsetSec = 0) {
         const wAlign = clampConf(w?.alignmentConfidence, lineAlignConf);
         const wSpk = String(w?.speaker || lineSpeaker).trim();
         const wUnclear = isUnclear || /\[unclear/i.test(wText);
+        const wClarity = clampConf(w?.audioClarity, wUnclear ? 0.32 : 0.78);
+        const wOverlap = +Math.max(0, Math.min(1, Number(w?.vocalOverlap ?? (vocalTypeRaw === 'overlapping' || vocalTypeRaw === 'harmony' || vocalTypeRaw === 'backing' ? 0.68 : 0.08)))).toFixed(3);
         const wFlags = normalizeFlagsList(w?.flags, wRec, wAlign, vocalTypeRaw, wUnclear);
+        const qMeta = classifyWordTierServer(wRec, wAlign, wClarity, wOverlap, wFlags);
         words.push({
           text: wText,
           start: ws,
@@ -299,6 +320,10 @@ function normalizeKaraokeLines(rawLines: any[], chunkOffsetSec = 0) {
           phonemes: shiftedPhonemes && shiftedPhonemes.length ? shiftedPhonemes : undefined,
           recognitionConfidence: wRec,
           alignmentConfidence: wAlign,
+          audioClarity: wClarity,
+          vocalOverlap: wOverlap,
+          recognitionUncertainty: qMeta.uncertainty,
+          qualityTier: qMeta.tier,
           speaker: wSpk,
           flags: wFlags,
         });
@@ -315,7 +340,11 @@ function normalizeKaraokeLines(rawLines: any[], chunkOffsetSec = 0) {
         const ws = +cur.toFixed(3);
         cur += dur;
         const we = wi === tokens.length - 1 ? end : +Math.max(ws + 0.015, cur).toFixed(3);
-        const wAlign = +(Math.max(0.45, lineAlignConf * 0.78)).toFixed(3);
+        const wAlign = +(Math.max(0.45, Math.min(0.92, lineAlignConf * 0.78))).toFixed(3);
+        const wClarity = isUnclear ? 0.35 : 0.74;
+        const wOverlap = (vocalTypeRaw === 'overlapping' || vocalTypeRaw === 'harmony' || vocalTypeRaw === 'backing') ? 0.65 : 0.1;
+        const wFlags = normalizeFlagsList(lineFlags, lineRecConf, wAlign, vocalTypeRaw, isUnclear);
+        const qMeta = classifyWordTierServer(lineRecConf, wAlign, wClarity, wOverlap, wFlags);
         words.push({
           text: tk,
           start: ws,
@@ -323,8 +352,12 @@ function normalizeKaraokeLines(rawLines: any[], chunkOffsetSec = 0) {
           chars: buildCharTimingsServer(tk, ws, we),
           recognitionConfidence: lineRecConf,
           alignmentConfidence: wAlign,
+          audioClarity: wClarity,
+          vocalOverlap: wOverlap,
+          recognitionUncertainty: qMeta.uncertainty,
+          qualityTier: qMeta.tier,
           speaker: lineSpeaker,
-          flags: normalizeFlagsList(lineFlags, lineRecConf, wAlign, vocalTypeRaw, isUnclear),
+          flags: wFlags,
         });
       });
     }
@@ -355,6 +388,9 @@ function summarizeValidation(lines: any[], missingGaps: any[] = []) {
   let misrecognizedWords = 0;
   let overlappingWords = 0;
   let uncertainBoundaries = 0;
+  let highConfidenceWords = 0;
+  let mediumConfidenceWords = 0;
+  let lowConfidenceWords = 0;
   let totalWords = 0;
   for (const ln of lines) {
     for (const w of (ln.words || [])) {
@@ -364,10 +400,23 @@ function summarizeValidation(lines: any[], missingGaps: any[] = []) {
       if (f.has('misrecognized_word')) misrecognizedWords++;
       if (f.has('overlapping_vocals')) overlappingWords++;
       if (f.has('uncertain_boundary')) uncertainBoundaries++;
+      const tier = w.qualityTier || classifyWordTierServer(
+        Number(w.recognitionConfidence ?? 0.8),
+        Number(w.alignmentConfidence ?? 0.78),
+        Number(w.audioClarity ?? 0.75),
+        Number(w.vocalOverlap ?? 0.1),
+        w.flags || [],
+      ).tier;
+      if (tier === 'HIGH') highConfidenceWords++;
+      else if (tier === 'LOW') lowConfidenceWords++;
+      else mediumConfidenceWords++;
     }
   }
   return {
     totalWords,
+    highConfidenceWords,
+    mediumConfidenceWords,
+    lowConfidenceWords,
     uncertainWords,
     missingWords: Array.isArray(missingGaps) ? missingGaps.length : 0,
     misrecognizedWords,
@@ -571,8 +620,8 @@ app.post('/api/transcribe-lyrics', async (req, res) => {
         {
           text: `Listen carefully to this audio recording as a specialized multilingual SINGING & SPEECH recognition model (format: ${audioFormat || 'audio'}, original sample rate: ${sampleRate || 'unknown'}Hz, window duration: ${chunkDurationSec || duration || 'unknown'}s${separatedVocalBase64 ? ', vocal-enhanced stem provided' : ''}).
 1. Process actual SINGING voices (sustained notes, vibrato, melisma, high belting, rap, spoken intros/outros), NOT just ordinary speech cadence.
-2. Identify every language and distinct singer/speaker heard (hint: ${lang && lang !== 'auto' ? lang : 'auto-detect multilingual: French, English, Chinese, Japanese, Korean, Vietnamese, Indonesian, Spanish, etc.'}).
-3. Transcribe EVERY sung and spoken word VERBATIM in its native script, preserving spelling, punctuation, contractions, slurs, and ALL repeated choruses (never abbreviate or skip repetitions).
+2. Identify EVERY language and distinct singer/speaker heard (minimum core languages: English "en", French "fr", Chinese Mandarin "zh-Hans"/"zh-Hant", Spanish "es", German "de", Japanese "ja", Korean "ko", Italian "it", Portuguese "pt"; hint: ${lang && lang !== 'auto' && lang !== 'multi' ? lang : 'auto-detect multilingual & code-switching'}).
+3. MIXED-LANGUAGE SONGS: Songs often switch languages between verses, choruses, or even within a single phrase. Transcribe EVERY sung/spoken word VERBATIM in its own original language & native script—NEVER translate lyrics during recognition. Keep spelling, accents, punctuation, contractions, and ALL repeated choruses intact.
 4. Separate Lead vocals from Background vocals / harmonies / overlapping vocal performances: mark overlapping or harmony lines explicitly with timestamps and speaker labels (Lead, Singer 1, Singer 2, Backing, Harmony).
 5. Explicitly mark non-vocal instrumental breaks with timestamps as [INSTRUMENTAL].
 6. ANTI-HALLUCINATION RULE: Whenever a sung section or word is masked, obscured, or unintelligible, mark it as [UNCLEAR] or add a [?uncertain] flag—NEVER fabricate or hallucinate lyrics to fill silent or ambiguous gaps!`,
@@ -599,18 +648,18 @@ app.post('/api/transcribe-lyrics', async (req, res) => {
 You have the original reference mix${separatedVocalBase64 ? ' AND a center-vocal-isolated analysis track (Stage 2)' : ''}.${vocalTranscript ? `\n\nStage 3 verbatim singing transcript:\n${vocalTranscript}\n` : ''}${stage1Hint}
 Preserve the exact original timeline starting at 0.000s of this audio window. Output strict structured JSON:
 1. "audioType": "singing" | "speech" | "instrumental" | "combination".
-2. "language": primary BCP-47 language code ("fr", "en", "zh-Hans", "zh-Hant", "ja", "ko", "vi", "id", "es", etc., or "instrumental"). Hint: ${lang || 'auto'}.
-3. "detectedLanguages": array of ALL language codes sung/spoken in this audio.
+2. "language": primary BCP-47 language code ("en", "fr", "zh-Hans", "zh-Hant", "es", "de", "ja", "ko", "it", "pt", "multi", or "instrumental"). Hint: ${lang || 'auto'}.
+3. "detectedLanguages": ordered array of ALL distinct language codes sung/spoken in this audio (e.g. ["es", "en"] for bilingual songs).
 4. "detectedSpeakers": array of distinct performers/speakers (e.g. ["Lead"], ["Lead", "Backing"], ["Singer 1", "Singer 2"]).
 5. "hasBackingVocals", "hasUnclearSections", "hasInstrumentalSections", "hasRepeatedChorus": accurate booleans.
 6. "sections": ordered array of song sections { "type": "intro"|"verse"|"pre_chorus"|"chorus"|"bridge"|"outro"|"instrumental"|"speech"|"other", "label": string, "start": float, "end": float, "isRepeat": boolean }.
 7. "missingVocalGaps": array of { "start": float, "end": float, "reason": string } for any vocal passage where singing was clearly heard in audio but lyrics could NOT be confidently recognized (NEVER invent lyrics to fill gaps).
 8. "lines": chronological array covering EVERY sung line, spoken phrase, unclear vocal, and distinct instrumental section:
-   - "text": Exact verbatim sung text, "[INSTRUMENTAL]", or "[Unclear vocal]".
+   - "text": Exact verbatim sung text in its original language & script (never translated), "[INSTRUMENTAL]", or "[Unclear vocal]".
    - "start" & "end": Exact vocal onset & release timestamps in seconds (3 decimals). Never snap blindly to music beats!
    - "section": "verse"|"chorus"|"pre_chorus"|"bridge"|"intro"|"outro"|"instrumental"|"speech".
    - "vocalType": "singing"|"speech"|"harmony"|"backing"|"overlapping"|"instrumental"|"unclear".
-   - "language": BCP-47 code.
+   - "language": exact BCP-47 code for THIS specific line (supports mixed-language songs seamlessly: e.g. line 1 "en", line 2 "fr", line 3 "es", line 4 "zh-Hans", etc.).
    - "speaker": active singer/speaker ID.
    - "recognitionConfidence" & "alignmentConfidence": 0..1 floats calibrated honestly to audio clarity.
    - "flags": subset of ["uncertain_word", "missing_word", "misrecognized_word", "overlapping_vocals", "uncertain_boundary"] when any Stage 6 issue applies.
@@ -815,6 +864,247 @@ Preserve the exact original timeline starting at 0.000s of this audio window. Ou
     return res.status(200).json({
       success: false,
       reason: isBilling ? 'billing_required' : 'transcription_error',
+      requiresBilling: isBilling,
+      message: msg.slice(0, 300),
+    });
+  }
+});
+
+// FUNCTION 08: Accuracy-First Automatic Re-Analysis of Low-Confidence Segments
+app.post('/api/reanalyze-segment', async (req, res) => {
+  try {
+    const {
+      audioBase64,
+      separatedVocalBase64,
+      startSec,
+      endSec,
+      existingWords,
+      qualityConditions,
+      lang,
+    } = req.body || {};
+    if (!ai || !audioBase64) {
+      return res.status(200).json({ success: false, reason: 'ai_not_configured' });
+    }
+    const offsetSec = Math.max(0, Number(startSec) || 0);
+    const segDur = Math.max(0.2, (Number(endSec) || offsetSec + 2) - offsetSec);
+    const condDesc = qualityConditions
+      ? `noise=${qualityConditions.isNoisy ? 'YES' : 'no'}, distortion=${qualityConditions.isDistorted ? 'YES' : 'no'}, reverb=${qualityConditions.isReverberated ? 'YES' : 'no'}, overlappingVocals=${qualityConditions.hasOverlappingSingers ? 'YES' : 'no'}`
+      : 'standard';
+
+    // Focused high-accuracy pass 1: gemini-3.5-transcribe on separated vocal slice
+    let focusTranscript = '';
+    try {
+      const tResp = await ai.models.generateContent({
+        model: 'gemini-3.5-transcribe',
+        contents: [
+          {
+            inlineData: {
+              mimeType: 'audio/wav',
+              data: separatedVocalBase64 || audioBase64,
+            },
+          },
+          {
+            text: `Re-listen with extreme care to this ${segDur.toFixed(2)}s singing excerpt flagged as low-confidence (${condDesc}). Language hint: ${lang || 'auto'}.
+Previous candidate words (may contain errors or timing drift): ${JSON.stringify((existingWords || []).map((w: any) => w.text || '')).slice(0, 800)}.
+Transcribe ONLY what is genuinely audible in the singing voice. Mark ambiguous syllables honestly as [UNCLEAR]—never invent words and never exaggerate certainty.`,
+          },
+        ],
+      });
+      focusTranscript = String(tResp.text || '').trim();
+    } catch (tErr: any) {
+      const tMsg = tErr?.message || String(tErr || '');
+      if (tMsg.includes('billing') || tMsg.includes('free tier') || tErr?.status === 'PERMISSION_DENIED' || tErr?.code === 403) {
+        throw tErr;
+      }
+    }
+
+    // Pass 2: Focused phonetic forced alignment (gemini-4-hydrogen) with honest confidence calibration
+    const alignResp = await ai.models.generateContent({
+      model: 'gemini-4-hydrogen',
+      contents: [
+        { inlineData: { mimeType: 'audio/wav', data: audioBase64 } },
+        ...(separatedVocalBase64 ? [{ inlineData: { mimeType: 'audio/wav', data: separatedVocalBase64 } }] : []),
+        {
+          text: `Perform accuracy-first phonetic re-alignment of this short ${segDur.toFixed(2)}s excerpt (timeline starts at 0.000s inside this clip).
+Acoustic conditions: ${condDesc}.
+${focusTranscript ? `Focused vocal transcript:\n${focusTranscript}\n` : ''}Existing low-confidence tokens with relative hints:
+${JSON.stringify((existingWords || []).map((w: any) => ({ text: w.text, start: +Math.max(0, (Number(w.start) || 0) - offsetSec).toFixed(3), end: +Math.max(0, (Number(w.end) || 0) - offsetSec).toFixed(3) })), null, 2)}
+
+Rules:
+- Accuracy is strictly more important than speed.
+- Re-anchor word & phoneme boundaries directly to true sung vocal energy & consonant attacks.
+- Never claim 1.0 (100%) confidence automatically; cap honest scores <= 0.96, and reduce scores whenever noise, reverb, distortion, or overlapping vocals obscure the articulation.
+- Output JSON with "lines": [{ "text", "start", "end", "vocalType", "speaker", "recognitionConfidence", "alignmentConfidence", "flags", "words": [{ "text", "start", "end", "recognitionConfidence", "alignmentConfidence", "audioClarity", "vocalOverlap", "flags", "phonemes": [{"unit","start","end"}], "chars": [{"ch","start","end"}] }] }].`,
+        },
+      ],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            lines: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  text: { type: Type.STRING },
+                  start: { type: Type.NUMBER },
+                  end: { type: Type.NUMBER },
+                  vocalType: { type: Type.STRING },
+                  speaker: { type: Type.STRING },
+                  recognitionConfidence: { type: Type.NUMBER },
+                  alignmentConfidence: { type: Type.NUMBER },
+                  flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  words: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        text: { type: Type.STRING },
+                        start: { type: Type.NUMBER },
+                        end: { type: Type.NUMBER },
+                        recognitionConfidence: { type: Type.NUMBER },
+                        alignmentConfidence: { type: Type.NUMBER },
+                        audioClarity: { type: Type.NUMBER },
+                        vocalOverlap: { type: Type.NUMBER },
+                        flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                      },
+                      required: ['text', 'start', 'end'],
+                    },
+                  },
+                },
+                required: ['text', 'start', 'end', 'words'],
+              },
+            },
+          },
+          required: ['lines'],
+        },
+      },
+    });
+
+    const parsed = JSON.parse(alignResp.text || '{}');
+    const lines = normalizeKaraokeLines(Array.isArray(parsed.lines) ? parsed.lines : [], offsetSec);
+    return res.json({ success: true, lines, focusTranscript });
+  } catch (err: any) {
+    const msg = err?.message || String(err || '');
+    const isBilling = msg.includes('billing') || msg.includes('free tier') || err?.status === 'PERMISSION_DENIED' || err?.code === 403;
+    return res.status(200).json({
+      success: false,
+      reason: isBilling ? 'billing_required' : 'reanalysis_error',
+      requiresBilling: isBilling,
+      message: msg.slice(0, 300),
+    });
+  }
+});
+
+// FUNCTION 09: Optional Multilingual Lyrics Translation Layer (preserves original detected lyrics & timeline indices)
+app.post('/api/translate-lyrics', async (req, res) => {
+  try {
+    const { lines, targetLang } = req.body || {};
+    const target = String(targetLang || 'en').trim();
+    const inputLines = Array.isArray(lines) ? lines : [];
+    if (!inputLines.length) {
+      return res.json({ success: true, targetLang: target, detectedSourceLanguages: [], translations: [] });
+    }
+    if (!ai) {
+      return res.status(200).json({ success: false, reason: 'ai_not_configured' });
+    }
+
+    const langNames: Record<string, string> = {
+      en: 'English',
+      fr: 'French (Français)',
+      'zh-Hans': 'Simplified Chinese Mandarin (简体中文)',
+      'zh-Hant': 'Traditional Chinese Mandarin (繁體中文)',
+      es: 'Spanish (Español)',
+      de: 'German (Deutsch)',
+      ja: 'Japanese (日本語)',
+      ko: 'Korean (한국어)',
+      it: 'Italian (Italiano)',
+      pt: 'Portuguese (Português)',
+    };
+    const targetLabel = langNames[target] || target;
+    const payloadLines = inputLines.map((l: any, i: number) => ({
+      index: Number.isInteger(Number(l?.index)) ? Number(l.index) : i,
+      text: String(l?.text || ''),
+      language: String(l?.language || ''),
+      interlude: Boolean(l?.interlude),
+    }));
+
+    const resp = await ai.models.generateContent({
+      model: 'gemini-4-hydrogen',
+      contents: [
+        {
+          text: `Translate these synchronized song lyric lines accurately into ${targetLabel} (target code: "${target}").
+Requirements:
+- Keep the EXACT array indices provided; NEVER add, remove, merge, or split lines.
+- Songs may mix multiple languages across lines or within a line (code-switching); detect each line's actual source language ("sourceLanguage") accurately.
+- Preserve lyrical meaning, emotion, and natural singable subtitle conciseness so it fits cleanly on the shared timeline.
+- If a line is marked "interlude": true or starts with "[interlude" / "[INSTRUMENTAL]" / "[Unclear", return an empty string "" for "translatedText".
+- If a line is already in ${targetLabel}, refine or keep it naturally without adding notes or explanations.
+
+Lines JSON:
+${JSON.stringify(payloadLines)}`,
+        },
+      ],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            detectedSourceLanguages: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+            },
+            translations: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  index: { type: Type.INTEGER },
+                  sourceLanguage: { type: Type.STRING },
+                  translatedText: { type: Type.STRING },
+                },
+                required: ['index', 'sourceLanguage', 'translatedText'],
+              },
+            },
+          },
+          required: ['detectedSourceLanguages', 'translations'],
+        },
+      },
+    });
+
+    const parsed = JSON.parse(resp.text || '{}');
+    const trList = Array.isArray(parsed.translations) ? parsed.translations : [];
+    const byIdx = new Map<number, any>();
+    for (const t of trList) {
+      if (t && Number.isInteger(Number(t.index))) {
+        byIdx.set(Number(t.index), t);
+      }
+    }
+    const normalized = payloadLines.map(src => {
+      if (src.interlude || !src.text.trim() || /^\[(?:interlude|instrumental|間奏|间奏|간주)/i.test(src.text.trim())) {
+        return { index: src.index, sourceLanguage: src.language || '', translatedText: '' };
+      }
+      const hit = byIdx.get(src.index);
+      return {
+        index: src.index,
+        sourceLanguage: String(hit?.sourceLanguage || src.language || '').trim(),
+        translatedText: String(hit?.translatedText || '').trim(),
+      };
+    });
+
+    return res.json({
+      success: true,
+      targetLang: target,
+      detectedSourceLanguages: Array.isArray(parsed.detectedSourceLanguages) ? parsed.detectedSourceLanguages : [],
+      translations: normalized,
+    });
+  } catch (err: any) {
+    const msg = err?.message || String(err || '');
+    const isBilling = msg.includes('billing') || msg.includes('free tier') || err?.status === 'PERMISSION_DENIED' || err?.code === 403;
+    return res.status(200).json({
+      success: false,
+      reason: isBilling ? 'billing_required' : 'translation_error',
       requiresBilling: isBilling,
       message: msg.slice(0, 300),
     });

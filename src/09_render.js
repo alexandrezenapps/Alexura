@@ -27,7 +27,40 @@ class Renderer {
     const sl = mk(1, 4), sx = sl.getContext('2d'); sx.fillStyle = '#fff'; sx.fillRect(0, 0, 1, 4); sx.fillStyle = '#000'; sx.fillRect(0, 3, 1, 1);
     this.scan = sl;
     this.paperCache = new Map();
+    this._rgbaCache = new Map();
+    this._measureCache = new Map();
     this.filterOK = (() => { try { const c = mk(4, 4).getContext('2d'); c.filter = 'blur(2px)'; return c.filter === 'blur(2px)'; } catch (e) { return false; } })();
+  }
+
+  _parseRgba(c, fallback) {
+    const s = String(c || '').trim();
+    if (this._rgbaCache.has(s)) return this._rgbaCache.get(s);
+    let res = fallback;
+    if (/^#[0-9a-f]{6}$/i.test(s)) {
+      res = [parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), parseInt(s.slice(5, 7), 16), 1];
+    } else if (/^#[0-9a-f]{3}$/i.test(s)) {
+      res = [parseInt(s[1] + s[1], 16), parseInt(s[2] + s[2], 16), parseInt(s[3] + s[3], 16), 1];
+    } else {
+      const m = s.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)/i);
+      if (m) res = [+m[1], +m[2], +m[3], m[4] != null ? +m[4] : 1];
+    }
+    if (res !== fallback) {
+      this._rgbaCache.set(s, res);
+      if (this._rgbaCache.size > 128) this._rgbaCache.delete(this._rgbaCache.keys().next().value);
+    }
+    return res;
+  }
+
+  _measureText(ctx, fontCss, txt) {
+    const key = fontCss + '\0' + txt;
+    const hit = this._measureCache.get(key);
+    if (hit !== undefined) return hit;
+    const w = ctx.measureText(txt).width;
+    if (Number.isFinite(w) && w > 0) {
+      this._measureCache.set(key, w);
+      if (this._measureCache.size > 600) this._measureCache.delete(this._measureCache.keys().next().value);
+    }
+    return w;
   }
 
   paper(W, H) {
@@ -216,9 +249,13 @@ class Renderer {
       const env = this.makeEnv(ctx, plan, mainCut, sc, { pass: 'main', t: tq, lt: 0, ltb: 0, step, scale, allowFilter, energy, beat: beatInfo });
       J.drawHUD(env, plan);
     }
-    // ---------- Real-Time Karaoke Bar (raw unquantized t for smooth 60fps word/char sweep) ----------
+    // ---------- Real-Time Karaoke Bar & Optional Translation Layer (raw unquantized t) ----------
+    let karaokeRect = null;
     if (plan.karaoke && !opt.noHud && !opt.noKaraoke && layer !== 'back' && !opt.glyphLog) {
-      this.drawKaraokeBar(ctx, plan, t, sc);
+      karaokeRect = this.drawKaraokeBar(ctx, plan, t, sc);
+    }
+    if (plan.translation && plan.translation.enabled && (!plan.translation.cfg || plan.translation.cfg.showInVideo !== false) && !opt.noHud && !opt.noKaraoke && layer !== 'back' && !opt.glyphLog) {
+      this.drawTranslationBar(ctx, plan, t, sc, karaokeRect);
     }
     ctx.restore();
     // ---------- post ----------
@@ -260,22 +297,22 @@ class Renderer {
     const maxTextW = W * 0.88;
     let fontCss = J.fontCSS ? J.fontCSS(fontKey, px, 700) : `700 ${px}px sans-serif`;
     ctx.font = fontCss;
-    const sepW = sep ? (ctx.measureText(sep).width || px * 0.28) : 0;
-    const measureTotal = () => {
+    const sepW = sep ? (this._measureText(ctx, fontCss, sep) || px * 0.28) : 0;
+    const measureTotal = (fCss) => {
       let tot = 0;
       for (let i = 0; i < words.length; i++) {
-        tot += (ctx.measureText(words[i].text).width || words[i].text.length * px * 0.6);
+        tot += (this._measureText(ctx, fCss, words[i].text) || words[i].text.length * px * 0.6);
         if (i < words.length - 1) tot += sepW;
       }
       return tot;
     };
-    let totalW = measureTotal();
+    let totalW = measureTotal(fontCss);
     if (totalW > maxTextW && totalW > 0) {
       const shrink = Math.max(0.45, maxTextW / totalW);
       px = Math.round(px * shrink);
       fontCss = J.fontCSS ? J.fontCSS(fontKey, px, 700) : `700 ${px}px sans-serif`;
       ctx.font = fontCss;
-      totalW = measureTotal();
+      totalW = measureTotal(fontCss);
     }
 
     const padX = Math.round(px * 0.85), padY = Math.round(px * 0.48);
@@ -310,18 +347,6 @@ class Renderer {
       }
     }
 
-    const parseRgba = (c, fallback) => {
-      const s = String(c || '').trim();
-      if (/^#[0-9a-f]{6}$/i.test(s)) {
-        return [parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), parseInt(s.slice(5, 7), 16), 1];
-      }
-      if (/^#[0-9a-f]{3}$/i.test(s)) {
-        return [parseInt(s[1] + s[1], 16), parseInt(s[2] + s[2], 16), parseInt(s[3] + s[3], 16), 1];
-      }
-      const m = s.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)/i);
-      if (m) return [+m[1], +m[2], +m[3], m[4] != null ? +m[4] : 1];
-      return fallback;
-    };
     const mixColor = (a, b, k) => {
       const tK = J.clamp(k, 0, 1);
       const r = Math.round(a[0] + (b[0] - a[0]) * tK);
@@ -336,9 +361,9 @@ class Renderer {
     const sungFill = (cfg.activeColor && /^#[0-9a-f]{3,6}$/i.test(cfg.activeColor))
       ? cfg.activeColor
       : (plan.keyBg ? '#ffffff' : (sc.accent || '#0071e3'));
-    const baseRgba = parseRgba(baseFill, [255, 255, 255, 0.48]);
-    const sungRgba = parseRgba(sungFill, [0, 113, 227, 1]);
-    const sp = sep ? (ctx.measureText(sep).width || px * 0.28) : 0;
+    const baseRgba = this._parseRgba(baseFill, [255, 255, 255, 0.48]);
+    const sungRgba = this._parseRgba(sungFill, [0, 113, 227, 1]);
+    const sp = sep ? (this._measureText(ctx, fontCss, sep) || px * 0.28) : 0;
 
     let x = Math.round((W - totalW) / 2);
     const cy = Math.round(by + boxH / 2);
@@ -346,7 +371,7 @@ class Renderer {
 
     for (let i = 0; i < words.length; i++) {
       const w = words[i];
-      const wWidth = ctx.measureText(w.text).width || Math.max(px * 0.5, w.text.length * px * 0.58);
+      const wWidth = this._measureText(ctx, fontCss, w.text) || Math.max(px * 0.5, w.text.length * px * 0.58);
       const isActive = t >= w.start && t <= w.end;
 
       // Mode C — Character-by-character highlighting
@@ -357,7 +382,7 @@ class Renderer {
         let cx = x;
         for (let ci = 0; ci < charList.length; ci++) {
           const chObj = charList[ci];
-          const cw = ctx.measureText(chObj.ch).width || (wWidth / charList.length);
+          const cw = this._measureText(ctx, fontCss, chObj.ch) || (wWidth / charList.length);
           const dur = Math.max(0.015, (chObj.end || w.end) - (chObj.start || w.start));
           let cf = 0;
           if (t >= chObj.end) cf = 1;
@@ -419,7 +444,7 @@ class Renderer {
           let matched = false;
           for (let ci = 0; ci < w.chars.length; ci++) {
             const chObj = w.chars[ci];
-            const cw = ctx.measureText(chObj.ch).width || (wWidth / w.chars.length);
+            const cw = this._measureText(ctx, fontCss, chObj.ch) || (wWidth / w.chars.length);
             if (t >= chObj.end) {
               charWAcc += cw;
             } else if (t > chObj.start) {
@@ -464,6 +489,98 @@ class Renderer {
       }
       x += wWidth + sp;
     }
+    ctx.restore();
+    return { bx, by, boxW, boxH };
+  }
+
+  drawTranslationBar(ctx, plan, t, sc, karaokeRect) {
+    if (!plan.lines || !plan.lines.length) return;
+    let ln = J.lineAt ? J.lineAt(plan, t) : null;
+    if (!ln || ln.interlude) {
+      const upcoming = plan.lines.find(l => !l.interlude && l.translatedText && l.start > t && l.start - t <= 0.7);
+      if (!upcoming) return;
+      ln = upcoming;
+    }
+    const trText = String(ln.translatedText || '').trim();
+    if (!trText) return;
+
+    const W = plan.W, H = plan.H;
+    const isPortrait = H > W * 1.1;
+    const tCfg = (plan.translation && plan.translation.cfg) || {};
+    const fontScale = J.clamp(Number(tCfg.fontSize) || 0.78, 0.5, 1.5);
+    const yPct = J.clamp(tCfg.yPct != null ? Number(tCfg.yPct) : 76, 8, 94);
+    const bgAlpha = J.clamp(tCfg.bgAlpha != null ? Number(tCfg.bgAlpha) : 0.72, 0, 1);
+    const posMode = tCfg.position === 'above' || tCfg.position === 'custom' ? tCfg.position : 'below';
+
+    let px = Math.round(Math.min(W, H) * (isPortrait ? 0.028 : 0.024) * fontScale);
+    const italicPrefix = tCfg.italic ? 'italic ' : '';
+    const trFamily = '"Plus Jakarta Sans","Noto Sans TC","Noto Sans SC","Noto Sans KR","Noto Sans JP",sans-serif';
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+    ctx.filter = 'none';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    const maxTextW = W * 0.88;
+    let trFont = `${italicPrefix}600 ${px}px ${trFamily}`;
+    ctx.font = trFont;
+    let tw = this._measureText(ctx, trFont, trText) || trText.length * px * 0.56;
+    if (tw > maxTextW && tw > 0) {
+      px = Math.max(12, Math.round(px * Math.max(0.45, maxTextW / tw)));
+      trFont = `${italicPrefix}600 ${px}px ${trFamily}`;
+      ctx.font = trFont;
+      tw = this._measureText(ctx, trFont, trText) || maxTextW;
+    }
+
+    const padX = Math.round(px * 0.8), padY = Math.round(px * 0.38);
+    const boxW = Math.min(W * 0.92, tw + padX * 2);
+    const boxH = Math.round(px * 1.55 + padY * 0.5);
+    const bx = Math.round((W - boxW) / 2);
+
+    let by;
+    if (posMode === 'below' && karaokeRect) {
+      const belowY = karaokeRect.by + karaokeRect.boxH + Math.round(H * 0.01);
+      // If below overflows bottom edge cleanly place above karaoke bar unless user chose custom
+      by = (belowY + boxH <= H * 0.97) ? belowY : Math.max(H * 0.03, karaokeRect.by - boxH - Math.round(H * 0.01));
+    } else if (posMode === 'above' && karaokeRect) {
+      const aboveY = karaokeRect.by - boxH - Math.round(H * 0.01);
+      by = (aboveY >= H * 0.03) ? aboveY : Math.min(H - boxH - H * 0.03, karaokeRect.by + karaokeRect.boxH + Math.round(H * 0.01));
+    } else {
+      by = Math.round(J.clamp(H * (yPct / 100) - boxH / 2, H * 0.03, H - boxH - H * 0.03));
+    }
+
+    const rr = Math.min(16, boxH * 0.42);
+    const darkBg = J.lum(sc.bg) < 0.5;
+    if (bgAlpha > 0.015) {
+      ctx.beginPath();
+      ctx.moveTo(bx + rr, by);
+      ctx.arcTo(bx + boxW, by, bx + boxW, by + boxH, rr);
+      ctx.arcTo(bx + boxW, by + boxH, bx, by + boxH, rr);
+      ctx.arcTo(bx, by + boxH, bx, by, rr);
+      ctx.arcTo(bx, by, bx + boxW, by, rr);
+      ctx.closePath();
+      ctx.fillStyle = plan.keyBg
+        ? `rgba(0,0,0,${(bgAlpha * 0.84).toFixed(3)})`
+        : darkBg
+          ? `rgba(12,15,24,${(bgAlpha * 0.86).toFixed(3)})`
+          : `rgba(248,250,252,${bgAlpha.toFixed(3)})`;
+      ctx.fill();
+      if (bgAlpha > 0.12) {
+        ctx.lineWidth = Math.max(1, px * 0.04);
+        ctx.strokeStyle = darkBg ? `rgba(255,255,255,${(bgAlpha * 0.16).toFixed(3)})` : `rgba(0,0,0,${(bgAlpha * 0.1).toFixed(3)})`;
+        ctx.stroke();
+      }
+    }
+
+    const autoText = (plan.keyBg || darkBg || bgAlpha < 0.25) ? 'rgba(241,245,249,0.92)' : 'rgba(15,23,42,0.88)';
+    ctx.fillStyle = (tCfg.color && /^#[0-9a-f]{3,8}$/i.test(tCfg.color)) ? tCfg.color : autoText;
+    if (bgAlpha < 0.25) {
+      ctx.shadowColor = 'rgba(0,0,0,0.75)';
+      ctx.shadowBlur = Math.round(px * 0.22);
+    }
+    ctx.fillText(trText, Math.round(W / 2), Math.round(by + boxH / 2), W * 0.88);
     ctx.restore();
   }
 

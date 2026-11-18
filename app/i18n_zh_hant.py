@@ -11,7 +11,7 @@ BODY = {
     'title="LRC ファイル（タイムスタンプ付きの歌詞）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）">LRC を読み込む': 'title="讀取 LRC 檔（附時間標記的歌詞），取代目前的歌詞（可用「復原」還原）">讀取 LRC',
     'aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"': 'aria-label="隨機生成的主題" title="隨機生成的主題（選擇後，會在該方向內隨機生成，並開啟所需的部件開關）"',
     '<label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ">': '<label class="theme-row">主題<select class="themeSel" aria-label="隨機生成的主題">',
-    '<option value="">テーマなし</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option>': '<option value="">不指定主題</option><option value="lyricpv">文字PV</option><option value="kinetic">動態文字</option><option value="wa">和風</option><option value="horror">恐怖</option><option value="pop">流行</option><option value="ballad">抒情</option>',
+    '<option value="">テーマなし</option><option value="cinematic">CINEMATIC — 映画・予告編・Blade Runner</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B</option><option value="artmotion">ART &amp; MOTION — Kinetic・Pop Art・3D・Glitch</option><option value="futuristic">FUTURISTIC — Cyberpunk・Sci-Fi・Neon・AI</option><option value="lifestyle">LIFESTYLE — Luxury・Fashion・Travel・Doc</option><option value="animation">ANIMATION — Anime・Cartoon・Fantasy・Surreal</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option>': '<option value="">不指定主題</option><option value="cinematic">CINEMATIC — 電影・預告片・銀翼殺手</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B</option><option value="artmotion">ART &amp; MOTION — 動態設計・普普風・3D・故障</option><option value="futuristic">FUTURISTIC — 賽博龐克・科幻・霓虹・AI</option><option value="lifestyle">LIFESTYLE — 奢華・時尚・旅行・紀錄片</option><option value="animation">ANIMATION — 動畫・卡通・奇幻・超現實</option><option value="lyricpv">文字PV</option><option value="kinetic">動態文字</option><option value="wa">和風</option><option value="horror">恐怖</option><option value="pop">流行</option><option value="ballad">抒情</option>',
     '<small class="muted">選ぶと、その方向の中でおまかせします</small>': '<small class="muted">選擇後，會在該方向內隨機生成</small>',
     'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">LRC を書き出す</button>': 'title="匯出附有每行開始時間的歌詞（.lrc）。選擇了匯出範圍時，只匯出那些行，時間從影片開頭算起">匯出 LRC</button>',
     'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">歌詞（LRC）</button>': 'title="匯出附有每行開始時間的歌詞（.lrc）。選擇了匯出範圍時，只匯出那些行，時間從影片開頭算起">歌詞（LRC）</button>',
@@ -391,6 +391,12 @@ STYLES = {
     'acid': ('酸性', '黑、螢光綠與洋紅，搭配破損字體'),
     'sumi': ('墨與朱', '和紙、毛筆字與朱紅印章'),
     'gold': ('金色夜晚', '深黑、燙金、象牙色襯線與閃光'),
+    'bladeCinema': ('電影銀翼殺手', '電影暗部、琥珀與青色光束及流暢運鏡'),
+    'stagePrism': ('音樂MV稜鏡', '舞台聚光燈、節拍衝擊與流暢動態文字'),
+    'kineticPop': ('藝術動態 3D', '普普藝術、等角3D方塊、旋轉與故障美學'),
+    'cyberAi': ('未來賽博 AI', '神經網路青紫全息、HUD雷達與霓虹掃描'),
+    'atelierLux': ('奢華紀實美學', '香檳象牙雜誌排版、柔光掃過與紀錄片質感'),
+    'animePrism': ('奇幻動畫稜鏡', '高彩賽璐璐光影、流體波紋與超現實粒子'),
 }
 
 MOODS = {

@@ -279,6 +279,156 @@ const S = {
     },
     decor: { twinkle: 1.4, bokeh: 1.2, lightLeak: 1, constellation: 1, concentricSquares: 0.8, cropMarks: 0.5, glitchRects: 0.1, qrBlock: 0.1 }, hud: false, glow: 1.7, useGrad: true,
   },
+
+  /* ---------------------------------------------------------------- CINEMATIC (Blade Cinema) */
+  bladeCinema: {
+    name: 'シネマティック', desc: '映画の暗部・アンバーとシアンの光学光条・アナモルフィック描写', moods: ['emotional', 'editorial'],
+    schemes: [
+      { bg: '#070B12', fg: '#F4EFE6', sub: '#9AB0C4', accent: '#FF7B2E', accent2: '#2BE0E8', ink: '#FF7B2E', dim: '#111927', ghostA: '#2BE0E8', ghostB: '#FF5E2B', grad: ['#FFB36B', '#2BE0E8'] },
+      { bg: '#0A1318', fg: '#EBF4F6', sub: '#7CA3B2', accent: '#FFB038', accent2: '#32D2E2', ink: '#FFB038', dim: '#14232B', ghostA: '#32D2E2', ghostB: '#FF8A2B' },
+      { bg: '#0D0D10', fg: '#F5F2EA', sub: '#99958C', accent: '#E63B2E', accent2: '#C8B288', ink: '#E63B2E', dim: '#19191E', ghostA: '#4BB8D8', ghostB: '#E65B3A' },
+      { bg: '#1D120C', fg: '#FFF0D6', sub: '#C79B74', accent: '#FF8828', accent2: '#46CBD8', ink: '#FF8828', dim: '#2B1B12', ghostA: '#46CBD8', ghostB: '#FF6A1A' },
+    ],
+    fonts: { display: ['mincho_black', 'gothic_bold', 'tokumin'], serif: ['shippori', 'mincho'], body: ['gothic_med'], mono: ['mono'] },
+    texture: { grain: 0.65, paper: 0, scan: 0.15 }, ghost: 0.72,
+    bias: {
+      layout: { credits: 2.0, curtain: 1.9, lowerThird: 1.8, frameBox: 1.7, depthStack: 1.6, perspective: 1.5, filmstrip: 1.5, vcols: 1.4, center: 1.4, huge: 1.3, rain: 1.2 },
+      enter: { trackIn: 2.0, blurStagger: 1.8, blur: 1.7, iris: 1.6, shutter: 1.6, backlight: 1.6, lightLeak: 1.5, fadeStagger: 1.5, riseMask: 1.4, zoom: 1.3, glint: 1.3 },
+      exit: { trackOutWide: 2.0, dissolve: 1.8, zoomThrough: 1.6, zoomFar: 1.6, blurOutStagger: 1.6, irisClose: 1.5, drift: 1.5, lampOff: 1.3, xjFocusPull: 1.5 },
+      hold: { focusRack: 2.0, xkFocusBreath: 1.8, xkParallax: 1.8, xkDepthRock: 1.6, drift: 1.6, breathe: 1.5, glintSweep: 1.4, zoomSlow: 1.4, jitter: 0.2, glitchtick: 0.2 },
+      treat: { softShadow: 1.7, glow: 1.6, gradientV: 1.5, wide: 1.4, tall: 1.3, focusPull: 1.5, fadeChars: 1.3 },
+      bg: { letterbox: 2.0, rainWindow: 1.8, skyline: 1.7, horizonGlow: 1.6, godRays: 1.7, spotlight: 1.6, filmStrip: 1.5, bokehBg: 1.4, vignettePulse: 1.4, noiseField: 1.1 },
+      cam: { dollyIn: 1.9, pullOut: 1.8, rackFocus: 1.9, orbitDrift: 1.7, panL: 1.5, panR: 1.5, tiltUp: 1.5, xqArcSweep: 1.7, xqCraneUp: 1.7, xqLongLens: 1.6, xqPushPull: 1.6 },
+      fx: { anamorphic: 2.0, lightRays: 1.9, filmAdvance: 1.7, dustScratches: 1.6, lightSweep: 1.7, filmBurn: 1.5, defocus: 1.5, bloomFlash: 1.4, chroma: 1.4 },
+      trans: { irisOpen: 1.9, xqBladeRun: 2.0, xqLightLeak: 1.8, xqSoftSweep: 1.7, zoomThrough: 1.6, doorsOpen: 1.4, wipe: 1.2 },
+    },
+    decor: { timecodeBar: 1.7, lightLeak: 1.6, bokeh: 1.5, cropMarks: 1.3, crosshair: 1.1, reticle: 1.1, starField: 0.8, confetti: 0.1 }, hud: false, glow: 1.55, useGrad: true,
+  },
+
+  /* ---------------------------------------------------------------- MUSIC VIDEO (Stage Prism) */
+  stagePrism: {
+    name: 'ミュージックMV', desc: 'ステージの照明・重低音パンチ・高速キネティック・ネオンの残像', moods: ['pop', 'emotional', 'glitch'],
+    schemes: [
+      { bg: '#090614', fg: '#FFFFFF', sub: '#C6B4E8', accent: '#FF2D8F', accent2: '#2CF2FF', ink: '#FF2D8F', dim: '#160F2E', ghostA: '#2CF2FF', ghostB: '#FF2D8F', grad: ['#FF4AA8', '#3BE8FF'] },
+      { bg: '#0C0C0E', fg: '#F7F7F7', sub: '#9C9CA8', accent: '#FFCC29', accent2: '#9E6BFF', ink: '#FFCC29', dim: '#1A1A20', ghostA: '#9E6BFF', ghostB: '#FFCC29', grad: ['#FFE36E', '#FF8E2B'] },
+      { bg: '#1B0B2E', fg: '#FFF2FA', sub: '#CFA8E8', accent: '#FF6B9D', accent2: '#75F0FF', ink: '#FF6B9D', dim: '#281242', ghostA: '#75F0FF', ghostB: '#FF4B82', grad: ['#FF80B5', '#7F5CFF'] },
+      { bg: '#0D26D4', fg: '#FFFFFF', sub: '#B8C6FF', accent: '#E8FF3B', accent2: '#FF4FC3', ink: '#E8FF3B', dim: '#1532F0', ghostA: '#FF4FC3', ghostB: '#3BFFEA' },
+    ],
+    fonts: { display: ['dela', 'gothic_black', 'zenkaku'], serif: ['tokumin', 'mincho_black'], body: ['gothic_bold'], mono: ['mono'] },
+    texture: { grain: 0.35, paper: 0, scan: 0.1 }, ghost: 0.85,
+    bias: {
+      layout: { equalizer: 2.0, marquee: 1.9, huge: 1.8, neon: 1.8, mirror: 1.7, splitScreen: 1.6, ring: 1.5, pill: 1.5, zoomRepeat: 1.6, xdKaraoke: 1.8, xdFourUp: 1.6, xdSkyline: 1.5 },
+      enter: { whip: 2.0, zoom: 1.9, pop: 1.8, bounceBig: 1.7, rubber: 1.6, neonOn: 1.8, echoIn: 1.7, knWordSlam: 1.9, knPushIn: 1.8, knDiveIn: 1.7, xgPumpUp: 1.8, xfEqualizer: 1.8 },
+      exit: { whipOut: 1.9, zoomThrough: 1.9, popOut: 1.7, echoOut: 1.7, scatter: 1.6, knWordKick: 1.8, knPushOut: 1.7, xjPuckHit: 1.6, spinOut: 1.5 },
+      hold: { beatHop: 2.0, heartbeat: 1.9, eqBounce: 1.9, pulse: 1.8, stretchPulse: 1.7, xkBeatBump: 2.0, xkLoudWeight: 1.8, xkKaraoke: 1.9, knWordPulse: 1.8, knBeatLean: 1.7 },
+      treat: { glow: 1.9, neonOutline: 1.8, chrome: 1.7, gradientSweep: 1.7, extrude: 1.5, knWordScale: 1.8, knWordPlate: 1.6, karaoke: 1.7 },
+      bg: { eqBars: 2.0, spotlight: 1.9, auroraRibbons: 1.7, sunburst: 1.6, gradientSweep: 1.6, duotoneSweep: 1.6, particlesBg: 1.5, xpPlexus: 1.5 },
+      cam: { beatPunch: 2.0, whipIn: 1.9, crashZoom: 1.8, stepZoom: 1.7, bounce: 1.7, xqBeatBreath: 1.9, xqHeartbeat: 1.8, xqWhipSpring: 1.9, xqLoudZoom: 1.8, knRushIn: 1.7 },
+      fx: { zoomPunch: 2.0, bloomFlash: 1.8, rgbSplit: 1.7, flash: 1.7, strobe: 1.6, heartbeat: 1.7, speedLines: 1.6, xrSpotlight: 1.8, xrColorStrobe: 1.7, xrBandZoom: 1.7 },
+      trans: { whipPan: 2.0, flashCross: 1.9, zoomThrough: 1.8, cubeTurn: 1.7, xqChevronPush: 1.8, xqRingRipple: 1.7, pushSlide: 1.6, knStripSlam: 1.7 },
+    },
+    decor: { beatRing: 1.9, sparks: 1.7, lineBurst: 1.6, knSpeedTrail: 1.6, waveform: 1.6, bars: 1.5, spectrumRing: 1.6, twinkle: 1.2 }, hud: true, glow: 1.65, glitchBoost: 1.15, useGrad: true,
+  },
+
+  /* ---------------------------------------------------------------- ART & MOTION (Kinetic Pop 3D) */
+  kineticPop: {
+    name: 'アート＆モーション', desc: 'キネティック・ポップアート・3D立体タイル・鮮やかなグリッチ演出', moods: ['graphic', 'glitch', 'pop'],
+    schemes: [
+      { bg: '#F4F1EA', fg: '#121318', sub: '#565965', accent: '#FF3621', accent2: '#1D4ED8', ink: '#121318', dim: '#E5E0D5', ghostA: '#1D4ED8', ghostB: '#FF3621', paper: true },
+      { bg: '#111216', fg: '#F7F5EE', sub: '#9FA3B0', accent: '#FFCF24', accent2: '#FF3D7F', ink: '#FFCF24', dim: '#1E2028', ghostA: '#2CE0FF', ghostB: '#FF3D7F' },
+      { bg: '#1238B8', fg: '#FFFDF5', sub: '#B8CAFF', accent: '#FFE628', accent2: '#FF3B7F', ink: '#121318', dim: '#1A44CC', ghostA: '#FFE628', ghostB: '#FF3B7F' },
+      { bg: '#ECEAE4', fg: '#0E0F12', sub: '#585A62', accent: '#6B21FF', accent2: '#00C2A8', ink: '#0E0F12', dim: '#DFDCD4', ghostA: '#00C2A8', ghostB: '#6B21FF', paper: true },
+    ],
+    fonts: { display: ['dela', 'rampart', 'gothic_black'], serif: ['mincho_black'], body: ['gothic_bold'], mono: ['mono', 'dot'] },
+    texture: { grain: 0.4, paper: 0.35, scan: 0 }, ghost: 0.78,
+    bias: {
+      layout: { xbIsoStack: 2.0, perspective: 1.9, diag: 1.8, stickerBomb: 1.8, flipBoard: 1.7, crossBands: 1.7, tunnel: 1.6, xbTwistFrames: 1.8, xbDonut: 1.7, xbHoneycomb: 1.7, xbCompGrid: 1.7, xdHelix: 1.8, xdPivotFan: 1.7, cube: 1.7 },
+      enter: { knWordSpin: 2.0, knStretchOut: 1.9, knHingeDrop: 1.8, flipX: 1.8, flipY: 1.8, domino: 1.8, fold: 1.7, squashDrop: 1.7, glitchIn: 1.7, slice: 1.6, vSlice: 1.6, xePieceVortex: 1.8, xeGearTick: 1.8 },
+      exit: { flipOutX: 1.8, flipOutY: 1.8, foldOut: 1.8, shatterLite: 1.8, vSliceDrop: 1.7, glitchDissolve: 1.7, explode: 1.6, dominoOut: 1.7, xjQuarterTurn: 1.8, xhConcertina: 1.7 },
+      hold: { skewWobble: 1.9, rotateSlow: 1.8, orbitSmall: 1.7, xkZigzagFlip: 1.9, xkSpinOne: 1.8, xkParallax: 1.7, kzSquashWave: 1.8, kzSlinky: 1.8, flipSwap: 1.7, glitchtick: 1.5 },
+      treat: { extrude: 1.9, longShadow: 1.8, hardShadow: 1.8, outlineFill: 1.7, doubleOutline: 1.7, halftone: 1.6, stripes: 1.6, splitColor: 1.6, xoBandExtrude: 1.7 },
+      bg: { isoCubes: 2.0, triTess: 1.9, moire: 1.8, checker: 1.7, polka: 1.6, halftoneFade: 1.6, xpFoldPlanes: 1.8, xpLissajous: 1.8, kzBigGears: 1.8, xpShiftRows: 1.7 },
+      cam: { barrelRoll: 1.9, roll: 1.8, dutch: 1.7, knTiltKick: 1.9, knCardFlip: 1.8, knShearKick: 1.8, xqTickRoll: 1.8, xqDriftTurn: 1.7, kzRecoil: 1.7 },
+      fx: { perspectiveTilt: 2.0, kaleido: 1.8, halftone: 1.7, duotone: 1.7, pixelSort: 1.7, shatter: 1.7, xrQuadCycle: 1.9, xrFlipTiles: 1.8, xrAccordion: 1.8, xrRibbonTwist: 1.8, kzCardSlam: 1.7 },
+      trans: { cubeTurn: 2.0, shatterTiles: 1.9, sliceShift: 1.8, diagonalWipe: 1.7, spinOut: 1.7, knCornerSwing: 1.8, xqAccordion: 1.9, xqFlipOver: 1.9, xqPropeller: 1.8 },
+    },
+    decor: { xmMoire: 1.8, xmSpiro: 1.8, xmIsoCubes: 1.8, xmGears: 1.7, xmPendulum: 1.6, glitchRects: 1.5, shapes: 1.6, triangleSpin: 1.5, memphis: 1.5 }, hud: false, glow: 0.85, glitchBoost: 1.25,
+  },
+
+  /* ---------------------------------------------------------------- FUTURISTIC (Cyber AI) */
+  cyberAi: {
+    name: 'フューチャリスティック', desc: 'サイバーパンク・SF・ホログラフィックAI・高精度HUDとスキャン演出', moods: ['glitch', 'graphic', 'pop'],
+    schemes: [
+      { bg: '#040812', fg: '#E6FAFF', sub: '#6BA7C4', accent: '#00F0FF', accent2: '#9D4EDD', ink: '#00F0FF', dim: '#0B1426', ghostA: '#00F0FF', ghostB: '#FF2A9D', grad: ['#00F0FF', '#9D4EDD'] },
+      { bg: '#080510', fg: '#F4FFE8', sub: '#92A89C', accent: '#39FF88', accent2: '#FF2496', ink: '#39FF88', dim: '#120C22', ghostA: '#39FF88', ghostB: '#FF2496' },
+      { bg: '#07111C', fg: '#FFFFFF', sub: '#7EAAC7', accent: '#3B9EFF', accent2: '#42FFE0', ink: '#42FFE0', dim: '#0E1E30', ghostA: '#42FFE0', ghostB: '#5B6EFF' },
+      { bg: '#0A061A', fg: '#F3EEFF', sub: '#9B89CE', accent: '#B86BFF', accent2: '#00F5D4', ink: '#00F5D4', dim: '#140E30', ghostA: '#00F5D4', ghostB: '#B86BFF' },
+    ],
+    fonts: { display: ['dot', 'gothic_bold', 'zenkaku'], serif: ['mincho_bold'], body: ['sansui'], mono: ['mono', 'dot'] },
+    texture: { grain: 0.45, paper: 0, scan: 0.65 }, ghost: 1.0,
+    bias: {
+      layout: { neon: 2.0, tunnel: 1.9, dotMatrix: 1.9, labels: 1.7, xcBrowser: 1.7, xcGauge: 1.8, xcLoading: 1.8, xbCrosshair: 1.9, xbDial: 1.8, xdConstellation: 1.8, ledScroll: 1.7 },
+      enter: { neonOn: 2.0, scramble: 1.9, resolve: 1.9, matrixRain: 1.9, crtOn: 1.8, interlace: 1.7, loadingBar: 1.8, odometer: 1.7, dither: 1.6, flicker: 1.6, xfScanner: 1.9, xfPrintHead: 1.7 },
+      exit: { matrixOut: 1.9, scanOut: 1.9, glitch: 1.8, glitchDissolve: 1.8, scrambleOut: 1.8, rgbSplitOut: 1.8, xhBarcode: 1.7, xiInverseBand: 1.7 },
+      hold: { scanBand: 2.0, glowFlicker: 1.8, echoTrail: 1.8, glitchtick: 1.7, colorRun: 1.7, xkMagnifier: 1.8, tyReadCursor: 1.7, xkDoubleVision: 1.8, tyOutlineBlink: 1.6 },
+      treat: { neonOutline: 2.0, glow: 1.9, glitchSplit: 1.8, monoGrid: 1.8, chrome: 1.7, echoOutline: 1.6, inline: 1.5 },
+      bg: { retroGrid: 2.0, hexGrid: 1.9, squareTunnel: 1.9, xpDepthGrid: 1.9, xpRadar: 1.9, xpScanner: 1.9, xpPlexus: 1.8, xpLoadBars: 1.8, xpSevenSeg: 1.7, starfield: 1.6, scanBars: 1.6 },
+      cam: { vertigo: 1.8, spiralIn: 1.8, focusIn: 1.8, snapPan: 1.7, push: 1.4, xqArcSweep: 1.8, xqFocusHunt: 1.9, stepZoom: 1.7, xqTripodNudge: 1.6 },
+      fx: { chroma: 2.0, radialChroma: 1.9, rgbSplit: 1.9, crtOff: 1.8, vhsRoll: 1.7, trackingNoise: 1.6, edgeDetect: 1.7, macroBlock: 1.7, scanBar: 1.8, ditherBit: 1.6, xrScanBurst: 1.9, xrCrosshair: 1.8, xrMoire: 1.7 },
+      trans: { irisOpen: 1.8, xqBladeRun: 2.0, xqPolyIris: 1.9, pixelate: 1.8, blockDissolve: 1.8, flashCross: 1.7, knStripSlam: 1.7 },
+    },
+    decor: { reticle: 1.9, crosshair: 1.8, barcode: 1.7, qrBlock: 1.6, xmGauge: 1.8, xnLevelMeter: 1.8, xnTimeline: 1.7, xnAsciiGauge: 1.7, radar: 1.8, circuit: 1.8, spinner: 1.6, dataColumns: 1.6 }, hud: true, glow: 1.85, glitchBoost: 1.3, useGrad: true,
+  },
+
+  /* ---------------------------------------------------------------- LIFESTYLE (Atelier Lux) */
+  atelierLux: {
+    name: 'ライフスタイル', desc: 'ラグジュアリー・ファッション・旅とドキュメンタリーのための洗練された余白と光', moods: ['editorial', 'calm', 'emotional'],
+    schemes: [
+      { bg: '#0E0D0B', fg: '#F7F1E3', sub: '#B8AA90', accent: '#D8B467', accent2: '#F7F1E3', ink: '#D8B467', dim: '#1A1814', ghostA: '#D8B467', ghostB: '#9E8564', grad: ['#F2D99A', '#B89146'] },
+      { bg: '#F6F2EA', fg: '#1B1917', sub: '#787166', accent: '#9E7340', accent2: '#2E4C4A', ink: '#1B1917', dim: '#EAE4D8', ghostA: '#C29B6B', ghostB: '#5B7C79', paper: true },
+      { bg: '#EAE3D6', fg: '#1F2A26', sub: '#5E6D66', accent: '#B66038', accent2: '#2C5C68', ink: '#1F2A26', dim: '#DFD7C8', ghostA: '#B66038', ghostB: '#2C5C68', paper: true },
+      { bg: '#101420', fg: '#F5EFE6', sub: '#9AA3B5', accent: '#E2C088', accent2: '#7CA5B8', ink: '#E2C088', dim: '#192032', ghostA: '#E2C088', ghostB: '#7CA5B8' },
+    ],
+    fonts: { display: ['shippori', 'mincho_light', 'gothic_light'], serif: ['shippori', 'mincho'], body: ['mincho_light'], mono: ['mono'] },
+    texture: { grain: 0.4, paper: 0.4, scan: 0 }, ghost: 0.38,
+    bias: {
+      layout: { gloss: 2.0, columnsBig: 1.9, justified: 1.8, quote: 1.8, dropCap: 1.7, lowerThird: 1.7, vcols: 1.6, frameBox: 1.7, center: 1.5, arcTop: 1.4, typeSpecimen: 1.6, filmstrip: 1.4, magazine: 1.7 },
+      enter: { trackIn: 2.0, fadeStagger: 1.9, blurStagger: 1.8, wipe: 1.7, unroll: 1.6, lightLeak: 1.6, glint: 1.6, riseMask: 1.5, cursorSweep: 1.5, strokeDraw: 1.4, tyLineWipe: 1.6 },
+      exit: { trackOutWide: 2.0, dissolve: 1.9, drift: 1.8, blurOutStagger: 1.7, sweepCover: 1.6, sinkMask: 1.5, wipe: 1.5, undraw: 1.4 },
+      hold: { breathe: 2.0, drift: 1.9, shimmer: 1.8, glintSweep: 1.8, shadowSway: 1.6, focusRack: 1.7, xkFocusBreath: 1.9, xkTallBreath: 1.7, still: 1.3, jitter: 0.1, glitchtick: 0.1 },
+      treat: { softShadow: 1.9, gradientV: 1.8, wide: 1.7, emphasisDots: 1.5, underline: 1.5, fadeChars: 1.4, kerningWide: 1.6, toneShadow: 1.5 },
+      bg: { marble: 1.9, oceanWaves: 1.7, mountains: 1.6, horizonGlow: 1.8, bokehBg: 1.8, particlesBg: 1.5, gradientSweep: 1.7, spotlight: 1.6, borderFrame: 1.5 },
+      cam: { dollyIn: 1.9, pullOut: 1.8, driftDiag: 1.8, panL: 1.6, panR: 1.6, tiltUp: 1.6, handheld: 1.5, xqWalkCam: 1.7, xqLongLens: 1.7, xqLevelOut: 1.6 },
+      fx: { lightSweep: 2.0, filmBurn: 1.6, whiteFrame: 1.7, defocus: 1.6, lightRays: 1.6, dustScratches: 1.3 },
+      trans: { xqSoftSweep: 2.0, xqLightLeak: 1.9, xqPagePeel: 1.8, wipe: 1.6, cover: 1.5, uncover: 1.5, irisOpen: 1.4 },
+    },
+    decor: { leaders: 1.8, cropMarks: 1.7, rulerEdge: 1.5, lightLeak: 1.7, bokeh: 1.6, twinkle: 1.3, constellation: 1.3, dateStamp: 1.4, swatches: 1.5 }, hud: false, glow: 1.25, useGrad: true,
+  },
+
+  /* ---------------------------------------------------------------- ANIMATION (Anime Prism) */
+  animePrism: {
+    name: 'アニメーション', desc: 'アニメ・カートゥーン・ファンタジー・シュールレアリスムの流麗なモーション', moods: ['pop', 'emotional', 'calm'],
+    schemes: [
+      { bg: '#161436', fg: '#FFF9FF', sub: '#C4BAF0', accent: '#FF70A6', accent2: '#4CE8E0', ink: '#FF70A6', dim: '#221F4E', ghostA: '#4CE8E0', ghostB: '#FF70A6', grad: ['#FF92C2', '#5EEAD4'] },
+      { bg: '#FDF4F8', fg: '#2F1D52', sub: '#79609E', accent: '#E84388', accent2: '#2BB3D6', ink: '#2F1D52', dim: '#F5E6EE', ghostA: '#FF74AD', ghostB: '#48C9E8', paper: true },
+      { bg: '#2068C8', fg: '#FFFFFF', sub: '#C8E2FF', accent: '#FFE047', accent2: '#FF5B6E', ink: '#1B2850', dim: '#2874D6', ghostA: '#FFE047', ghostB: '#FF5B6E' },
+      { bg: '#0D1E2B', fg: '#F2FFF9', sub: '#8EC4B8', accent: '#7DFF9E', accent2: '#FF8CE0', ink: '#7DFF9E', dim: '#152C3D', ghostA: '#7DFF9E', ghostB: '#FF8CE0', grad: ['#7DFF9E', '#FF8CE0'] },
+    ],
+    fonts: { display: ['kiwi', 'potta', 'pop'], serif: ['shippori'], body: ['round'], mono: ['mono'] },
+    texture: { grain: 0.25, paper: 0.15, scan: 0 }, ghost: 0.65,
+    bias: {
+      layout: { bubbles: 2.0, bounceLine: 1.9, elastic: 1.9, wave: 1.8, orbit: 1.8, arcTop: 1.7, rain: 1.6, stickerBomb: 1.6, xdWindSway: 1.9, xdSpiralEcho: 1.8, xdRipple: 1.8, xdHelix: 1.7, balloons: 1.7 },
+      enter: { squashDrop: 2.0, rubber: 1.9, bounceBig: 1.9, waveIn: 1.9, spiralIn: 1.8, inkBleed: 1.7, strokeDraw: 1.7, fanOpen: 1.6, windBlown: 1.8, bubbles: 1.8, xgJelly: 1.9, xeLeapfrog: 1.8, xeArcToss: 1.8 },
+      exit: { popOut: 1.9, melt: 1.8, balloonOff: 1.8, deflateOut: 1.7, flutterOut: 1.8, tornadoOut: 1.7, fanClose: 1.6, xjRubberSnap: 1.9, xjSpringHop: 1.8, riseOut: 1.7 },
+      hold: { jelly: 2.0, float: 1.9, sway: 1.9, wave: 1.9, hWave: 1.8, windGust: 1.8, dangle: 1.7, xkBuoy: 1.9, xkCradle: 1.8, xkDoubleVision: 1.7, kzSquashWave: 1.8 },
+      treat: { rainbow: 1.9, outlineFill: 1.8, doubleOutline: 1.8, sticker: 1.7, circled: 1.7, waterline: 1.6, sizeWave: 1.7, glow: 1.6 },
+      bg: { auroraRibbons: 2.0, meshBlobs: 1.9, starfield: 1.8, cloudLayers: 1.8, fireworks: 1.7, snowLayers: 1.6, kaleidoscope: 1.7, spiralArms: 1.7, sunburst: 1.6, oceanWaves: 1.6 },
+      cam: { bounce: 1.9, floatNoise: 1.9, jelly: 1.9, spiralIn: 1.8, orbitDrift: 1.8, pendulumSway: 1.8, xqLeafFall: 1.9, xqSquashRelax: 1.9, xqWhipSpring: 1.8 },
+      fx: { kaleido: 1.9, waveWarp: 1.9, ripple: 1.9, starGlint: 1.8, focusLines: 1.8, speedLines: 1.8, hueShift: 1.7, bloomFlash: 1.7, xrWaterMirror: 1.8, xrSwingEcho: 1.8, kzShockArcs: 1.7 },
+      trans: { inkBlob: 1.9, xqWaveWipe: 2.0, xqRingRipple: 1.9, xqStretchSmear: 1.9, spinOut: 1.7, clockWipe: 1.6 },
+    },
+    decor: { petals: 1.8, twinkle: 1.9, sparks: 1.7, confetti: 1.6, heartsStars: 1.7, risingParticles: 1.7, bokeh: 1.6, lineBurst: 1.6, constellation: 1.5, fireflies: 1.8, cloudPuffs: 1.6 }, hud: false, glow: 1.5, useGrad: true,
+  },
 };
 
 for (const [k, v] of Object.entries(S)) {

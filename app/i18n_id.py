@@ -38,6 +38,12 @@ STYLES = {
     'acid': ('Acid', 'Hitam, hijau acid, dan magenta dengan font kasar'),
     'sumi': ('Tinta dan Shu', 'Kertas Jepang, kaligrafi kuas, dan cap merah'),
     'gold': ('Malam Emas', 'Hitam pekat, foil emas, serif gading, dan kilau'),
+    'bladeCinema': ('Sinema Blade Runner', 'Cahaya anamorfik amber-sian, butiran film, dan gerak kamera mulus'),
+    'stagePrism': ('Prisma Video Musik', 'Sorotan panggung Pop/Trap/K-Pop, hentakan ritme, dan kinetik halus'),
+    'kineticPop': ('Art & Motion 3D', 'Pop Art geometris, kubus isometrik 3D, putaran kinetik, dan glitch'),
+    'cyberAi': ('Futuristik Siber AI', 'Hologram sian-ungu, matriks HUD, radar AI, dan pindai neon'),
+    'atelierLux': ('Atelier Lifestyle', 'Editorial sampanye dan gading dengan sapuan cahaya elegan'),
+    'animePrism': ('Prisma Animasi', 'Lapisan sel bercahaya, gelombang fantasi, kelopak, dan gerak surealis'),
 }
 
 BODY = {
@@ -51,7 +57,7 @@ BODY = {
     'title="LRC ファイル（タイムスタンプ付きの歌詞）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）">LRC を読み込む': 'title="Muat file LRC (lirik dengan cap waktu) untuk mengganti lirik sekarang (Urungkan mengembalikannya)">Muat LRC',
     'aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"': 'aria-label="Tema variasi" title="Tema variasi (jika dipilih, Buat variasi tetap di arah itu dan menyalakan set bagian yang diperlukan)"',
     '<label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ">': '<label class="theme-row">Tema<select class="themeSel" aria-label="Tema variasi">',
-    '<option value="">テーマなし</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option>': '<option value="">Tanpa tema</option><option value="lyricpv">Video lirik</option><option value="kinetic">Kinetik</option><option value="wa">Gaya Jepang</option><option value="horror">Horor</option><option value="pop">Pop</option><option value="ballad">Balada</option>',
+    '<option value="">テーマなし</option><option value="cinematic">CINEMATIC — 映画・予告編・Blade Runner</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B</option><option value="artmotion">ART &amp; MOTION — Kinetic・Pop Art・3D・Glitch</option><option value="futuristic">FUTURISTIC — Cyberpunk・Sci-Fi・Neon・AI</option><option value="lifestyle">LIFESTYLE — Luxury・Fashion・Travel・Doc</option><option value="animation">ANIMATION — Anime・Cartoon・Fantasy・Surreal</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option>': '<option value="">Tanpa tema</option><option value="cinematic">CINEMATIC — Film, Trailer, Blade Runner</option><option value="musicvideo">MUSIC VIDEO — Pop, Hip-Hop, K-Pop, Trap, R&amp;B</option><option value="artmotion">ART &amp; MOTION — Kinetik, Pop Art, 3D, Glitch</option><option value="futuristic">FUTURISTIC — Cyberpunk, Sci-Fi, Neon, AI</option><option value="lifestyle">LIFESTYLE — Luxury, Fashion, Travel, Dokumenter</option><option value="animation">ANIMATION — Anime, Kartun, Fantasi, Surealis</option><option value="lyricpv">Video lirik</option><option value="kinetic">Kinetik</option><option value="wa">Gaya Jepang</option><option value="horror">Horor</option><option value="pop">Pop</option><option value="ballad">Balada</option>',
     '<small class="muted">選ぶと、その方向の中でおまかせします</small>': '<small class="muted">Variasi dibuat dalam arah yang dipilih</small>',
     'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">LRC を書き出す</button>': 'title="Simpan lirik dengan waktu mulai tiap baris (.lrc). Jika rentang ekspor dipilih, hanya baris itu, dengan waktu dari awal video">Simpan LRC</button>',
     'title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">歌詞（LRC）</button>': 'title="Simpan lirik dengan waktu mulai tiap baris (.lrc). Jika rentang ekspor dipilih, hanya baris itu, dengan waktu dari awal video">Lirik (LRC)</button>',

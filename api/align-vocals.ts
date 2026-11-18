@@ -9,7 +9,7 @@ interface InputLine {
 
 interface ApiReq extends IncomingMessage {
   method?: string;
-  body?: { audioBase64?: string; lines?: InputLine[]; lang?: string };
+  body?: { audioBase64?: string; separatedVocalBase64?: string; lines?: InputLine[]; lang?: string };
 }
 
 interface ApiRes extends ServerResponse {
@@ -23,20 +23,83 @@ interface RawChar {
   end?: number;
 }
 
+interface RawPhoneme {
+  unit?: string;
+  start?: number;
+  end?: number;
+}
+
 interface RawWord {
   text?: string;
   start?: number;
   end?: number;
   recognitionConfidence?: number;
   alignmentConfidence?: number;
+  audioClarity?: number;
+  vocalOverlap?: number;
   speaker?: string;
+  flags?: string[];
+  phonemes?: RawPhoneme[];
   chars?: RawChar[];
 }
 
-function clampConf(val: unknown, fallback = 0.88) {
+interface AlignmentItem {
+  index?: number;
+  start?: number;
+  end?: number;
+  speaker?: string;
+  recognitionConfidence?: number;
+  alignmentConfidence?: number;
+  flags?: string[];
+  validationNote?: string;
+  words?: RawWord[];
+}
+
+function clampConf(val: unknown, fallback = 0.84) {
   const n = Number(val);
   if (!Number.isFinite(n)) return fallback;
-  return +Math.max(0, Math.min(1, n)).toFixed(3);
+  // Never falsely claim 100% automated accuracy: honest upper bound 0.98
+  return +Math.max(0.05, Math.min(0.98, n)).toFixed(3);
+}
+
+function classifyWordTierServer(recConf: number, alignConf: number, clarity: number, overlap: number, flags: string[]) {
+  const f = new Set(flags || []);
+  const hasUnc = f.has('uncertain_word') || f.has('misrecognized_word') || f.has('missing_word');
+  const hasBnd = f.has('uncertain_boundary');
+  const overlapPenalty = overlap > 0.45 ? 0.14 : overlap > 0.25 ? 0.06 : 0;
+  const clarityPenalty = clarity < 0.45 ? 0.16 : clarity < 0.65 ? 0.06 : 0;
+  const overall = Math.max(0.05, Math.min(0.97, +(0.42 * recConf + 0.36 * alignConf + 0.22 * clarity - overlapPenalty - clarityPenalty).toFixed(3)));
+  const uncertainty = +Math.max(0.02, Math.min(0.95, 1 - overall)).toFixed(3);
+  let tier: 'HIGH' | 'MEDIUM' | 'LOW' = 'MEDIUM';
+  if (!hasUnc && !hasBnd && overlap <= 0.35 && clarity >= 0.65 && recConf >= 0.78 && alignConf >= 0.78 && overall >= 0.78) {
+    tier = 'HIGH';
+  } else if (hasUnc || recConf < 0.65 || alignConf < 0.62 || clarity < 0.45 || overall < 0.58) {
+    tier = 'LOW';
+  }
+  return { overall, uncertainty, tier };
+}
+
+const VALID_WORD_FLAGS = new Set([
+  'uncertain_word',
+  'missing_word',
+  'misrecognized_word',
+  'overlapping_vocals',
+  'uncertain_boundary',
+]);
+
+function normalizeFlagsList(rawFlags: unknown, recConf: number, alignConf: number, vocalType: string, isUnclear: boolean) {
+  const set = new Set<string>();
+  if (Array.isArray(rawFlags)) {
+    for (const f of rawFlags) {
+      const s = String(f || '').trim().toLowerCase();
+      if (VALID_WORD_FLAGS.has(s)) set.add(s);
+    }
+  }
+  if (isUnclear || recConf < 0.72) set.add('uncertain_word');
+  if (recConf < 0.52 && !isUnclear) set.add('misrecognized_word');
+  if (alignConf < 0.70) set.add('uncertain_boundary');
+  if (vocalType === 'overlapping' || vocalType === 'harmony' || vocalType === 'backing') set.add('overlapping_vocals');
+  return Array.from(set);
 }
 
 function buildCharTimingsServer(wordText: string, start: number, end: number, rawChars?: RawChar[]) {
@@ -86,15 +149,22 @@ function normalizeWords(
   lineSpeaker = 'Lead',
   lineRecConf = 0.92,
   lineAlignConf = 0.9,
+  lineFlags: string[] = [],
 ) {
   const words: Array<{
     text: string;
     start: number;
     end: number;
     chars: Array<{ ch: string; start: number; end: number }>;
+    phonemes?: Array<{ unit: string; start: number; end: number }>;
     recognitionConfidence: number;
     alignmentConfidence: number;
+    audioClarity: number;
+    vocalOverlap: number;
+    recognitionUncertainty: number;
+    qualityTier: 'HIGH' | 'MEDIUM' | 'LOW';
     speaker: string;
+    flags: string[];
   }> = [];
   if (rawWords && rawWords.length > 0) {
     let wPrev = start;
@@ -111,14 +181,34 @@ function normalizeWords(
       ws = +ws.toFixed(3);
       we = +Math.max(ws + 0.015, we).toFixed(3);
       wPrev = we;
+      const phonemes = Array.isArray(w?.phonemes)
+        ? w.phonemes.map(ph => ({
+            unit: String(ph?.unit || '').trim(),
+            start: +(Math.max(ws, Math.min(we, Number(ph?.start) || 0))).toFixed(3),
+            end: +(Math.max(ws + 0.005, Math.min(we, Number(ph?.end) || 0))).toFixed(3),
+          })).filter(ph => ph.unit)
+        : undefined;
+      const wRec = clampConf(w?.recognitionConfidence, lineRecConf);
+      const wAlign = clampConf(w?.alignmentConfidence, lineAlignConf);
+      const wUnclear = /\[unclear/i.test(wText);
+      const wClarity = clampConf(w?.audioClarity, wUnclear ? 0.32 : 0.78);
+      const wOverlap = +Math.max(0, Math.min(1, Number(w?.vocalOverlap ?? 0.08))).toFixed(3);
+      const wFlags = normalizeFlagsList(w?.flags, wRec, wAlign, 'singing', wUnclear);
+      const qMeta = classifyWordTierServer(wRec, wAlign, wClarity, wOverlap, wFlags);
       words.push({
         text: wText,
         start: ws,
         end: we,
         chars: buildCharTimingsServer(wText, ws, we, w?.chars),
-        recognitionConfidence: clampConf(w?.recognitionConfidence, lineRecConf),
-        alignmentConfidence: clampConf(w?.alignmentConfidence, lineAlignConf),
+        phonemes: phonemes && phonemes.length ? phonemes : undefined,
+        recognitionConfidence: wRec,
+        alignmentConfidence: wAlign,
+        audioClarity: wClarity,
+        vocalOverlap: wOverlap,
+        recognitionUncertainty: qMeta.uncertainty,
+        qualityTier: qMeta.tier,
         speaker: String(w?.speaker || lineSpeaker).trim(),
+        flags: wFlags,
       });
     }
   }
@@ -132,14 +222,24 @@ function normalizeWords(
       const ws = +cur.toFixed(3);
       cur += dur;
       const we = wi === tokens.length - 1 ? end : +Math.max(ws + 0.015, cur).toFixed(3);
+      const wAlign = +(Math.max(0.45, Math.min(0.92, lineAlignConf * 0.78))).toFixed(3);
+      const wClarity = 0.74;
+      const wOverlap = 0.1;
+      const wFlags = normalizeFlagsList(lineFlags, lineRecConf, wAlign, 'singing', false);
+      const qMeta = classifyWordTierServer(lineRecConf, wAlign, wClarity, wOverlap, wFlags);
       words.push({
         text: tk,
         start: ws,
         end: we,
         chars: buildCharTimingsServer(tk, ws, we),
         recognitionConfidence: lineRecConf,
-        alignmentConfidence: +(Math.max(0.45, lineAlignConf * 0.78)).toFixed(3),
+        alignmentConfidence: wAlign,
+        audioClarity: wClarity,
+        vocalOverlap: wOverlap,
+        recognitionUncertainty: qMeta.uncertainty,
+        qualityTier: qMeta.tier,
         speaker: lineSpeaker,
+        flags: wFlags,
       });
     });
   }
@@ -161,7 +261,7 @@ export default async function handler(req: ApiReq, res: ApiRes) {
 
   try {
     const apiKey = process.env.GEMINI_API_KEY;
-    const { audioBase64, lines, lang } = req.body || {};
+    const { audioBase64, separatedVocalBase64, lines, lang } = req.body || {};
     if (!apiKey || !audioBase64 || !lines || !lines.length) {
       res.status(200).json({ success: false, reason: 'ai_not_configured' });
       return;
@@ -172,29 +272,35 @@ export default async function handler(req: ApiReq, res: ApiRes) {
       httpOptions: { headers: { 'User-Agent': 'aistudio-build' } },
     });
 
-    const prompt = `You are a world-class singing forced-alignment & acoustic phonetics engineer.
-Listen closely to the actual vocal performance in this audio recording. Language hint: ${lang || 'auto'}.
+    const prompt = `You are a singing-aware forced-alignment & acoustic phonetics engine (Stages 4-6).
+Analyze BOTH the original mix reference${separatedVocalBase64 ? ' AND the center-isolated vocal stem provided' : ''}. Language hint: ${lang || 'auto'}.
 Ordered list of lyric lines to align:
 ${JSON.stringify(lines, null, 2)}
 
-CRITICAL PRECISION RULES:
-- Do NOT divide sentence duration equally among words, do NOT estimate from character count, and do NOT align blindly to instrumental beats.
-- Detect the exact millisecond when the singer actually begins pronouncing each word (consonant/vowel onset) and finishes sustaining it.
-- Preserve silent pauses or breaths between words cleanly (ws > previous word's end when a pause exists).
-- For Chinese lyrics, emit EVERY single Chinese character as its own token in "words" with exact start/end timestamps. For Japanese/Korean/no-space scripts, emit each natural character/syllable cluster.
-- For each line AND each word provide:
-  * "text", "start", "end" (3-decimal floats)
-  * "chars": [{ "ch": string, "start": number, "end": number }] when acoustically distinguishable
-  * "recognitionConfidence": 0..1 float
-  * "alignmentConfidence": 0..1 float
-  * "speaker": singer/speaker identifier (e.g. "Lead", "Singer 1", "Singer 2", "Backing", "Harmony", "Speaker")`;
+CRITICAL SINGING-AWARE ALIGNMENT & VALIDATION RULES:
+- Distinguish actual SINGING performance (sustained vowels, vibrato, melisma, vocal onsets) from ordinary speech or musical beats.
+- NEVER divide line duration equally among words, NEVER estimate from text length, and NEVER replace vocal alignment with music beat timing.
+- Use phonetic/phoneme-level analysis ("phonemes": [{ "unit": string, "start": number, "end": number }]) to derive exact word and character start/end boundaries when sung words are sustained or legato.
+- For Chinese, Japanese, and Korean, output individual Chinese character / kana mora / Hangul syllable boundaries accurately.
+- Preserve silent pauses and breath gaps cleanly between words.
+- Stage 6 Validation: Compare provided lyrics honestly against the actual singing audio. In "flags", include any of:
+  * "uncertain_word" (unclear pronunciation / masking)
+  * "missing_word" (singer clearly sings additional audible words not present in provided text, or expected words absent)
+  * "misrecognized_word" (provided lyric clearly contradicts sung audio)
+  * "overlapping_vocals" (duet / harmony / backing vocals overlap during this token)
+  * "uncertain_boundary" (ambiguous legato/reverb boundary)`;
+
+    const contentParts: Array<{ inlineData?: { mimeType: string; data: string }; text?: string }> = [
+      { inlineData: { mimeType: 'audio/wav', data: audioBase64 } },
+    ];
+    if (separatedVocalBase64) {
+      contentParts.push({ inlineData: { mimeType: 'audio/wav', data: separatedVocalBase64 } });
+    }
+    contentParts.push({ text: prompt });
 
     const response = await ai.models.generateContent({
       model: 'gemini-4-hydrogen',
-      contents: [
-        { inlineData: { mimeType: 'audio/wav', data: audioBase64 } },
-        { text: prompt },
-      ],
+      contents: contentParts,
       config: {
         responseMimeType: 'application/json',
         responseSchema: {
@@ -211,6 +317,8 @@ CRITICAL PRECISION RULES:
                   speaker: { type: Type.STRING },
                   recognitionConfidence: { type: Type.NUMBER },
                   alignmentConfidence: { type: Type.NUMBER },
+                  flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  validationNote: { type: Type.STRING },
                   words: {
                     type: Type.ARRAY,
                     items: {
@@ -222,6 +330,19 @@ CRITICAL PRECISION RULES:
                         recognitionConfidence: { type: Type.NUMBER },
                         alignmentConfidence: { type: Type.NUMBER },
                         speaker: { type: Type.STRING },
+                        flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        phonemes: {
+                          type: Type.ARRAY,
+                          items: {
+                            type: Type.OBJECT,
+                            properties: {
+                              unit: { type: Type.STRING },
+                              start: { type: Type.NUMBER },
+                              end: { type: Type.NUMBER },
+                            },
+                            required: ['unit', 'start', 'end'],
+                          },
+                        },
                         chars: {
                           type: Type.ARRAY,
                           items: {
@@ -251,9 +372,15 @@ CRITICAL PRECISION RULES:
     const parsed = JSON.parse(response.text || '{}');
     const lineTimes: Record<number, number> = {};
     const wordTimes: Record<number, unknown[]> = {};
-    const lineMeta: Record<number, { speaker: string; recognitionConfidence: number; alignmentConfidence: number }> = {};
+    const lineMeta: Record<number, {
+      speaker: string;
+      recognitionConfidence: number;
+      alignmentConfidence: number;
+      flags: string[];
+      validationNote: string;
+    }> = {};
     if (parsed.alignments && Array.isArray(parsed.alignments)) {
-      const sorted = parsed.alignments.slice().sort((a: { index?: number }, b: { index?: number }) => (a.index ?? 0) - (b.index ?? 0));
+      const sorted = (parsed.alignments as AlignmentItem[]).slice().sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
       let prevEnd = 0;
       for (const item of sorted) {
         if (typeof item.index === 'number' && typeof item.start === 'number') {
@@ -263,10 +390,18 @@ CRITICAL PRECISION RULES:
           const spk = String(item.speaker || 'Lead').trim();
           const recC = clampConf(item.recognitionConfidence, 0.92);
           const alignC = clampConf(item.alignmentConfidence, 0.9);
+          const lFlags = normalizeFlagsList(item.flags, recC, alignC, 'singing', false);
           lineTimes[item.index] = s;
-          lineMeta[item.index] = { speaker: spk, recognitionConfidence: recC, alignmentConfidence: alignC };
+          lineMeta[item.index] = {
+            speaker: spk,
+            recognitionConfidence: recC,
+            alignmentConfidence: alignC,
+            flags: lFlags,
+            validationNote: item.validationNote ? String(item.validationNote).trim() : '',
+          };
           const srcLine = lines.find(l => l.i === item.index || l.index === item.index);
-          wordTimes[item.index] = normalizeWords(srcLine?.text || '', s, e, item.words || [], spk, recC, alignC);
+          const srcText = srcLine?.text || (item.words || []).map(w => w.text || '').join(' ');
+          wordTimes[item.index] = normalizeWords(srcText, s, e, item.words || [], spk, recC, alignC, lFlags);
         }
       }
     }
