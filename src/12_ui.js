@@ -167,7 +167,8 @@ function mergeProject(p) {
   o.colors = { enabled: !!(p && p.colors && p.colors.enabled) };
   for (const [k, v] of Object.entries((p && p.colors) || {})) {
     if (k === 'enabled') continue;
-    if (typeof v === 'boolean') o.colors[k] = v;
+    if (k === 'schemeShift' && Number.isInteger(v)) o.colors.schemeShift = v;
+    else if (typeof v === 'boolean') o.colors[k] = v;
     else if (typeof v === 'string' && /^#[0-9a-f]{3,8}$/i.test(v)) o.colors[k] = v;
   }
   o.userFonts = (Array.isArray(p && p.userFonts) ? p.userFonts : []).filter(uf => uf && J.SAFE_FONT_KEY.test(uf.key))
@@ -176,7 +177,13 @@ function mergeProject(p) {
   migrateOrder(o, p);
   o.themeId = p && typeof p.themeId === 'string' && J.THEMES && J.THEMES[p.themeId] ? p.themeId : null;
   o.fonts = {};
-  for (const [role, k] of Object.entries((p && p.fonts) || {})) if (typeof k === 'string' && J.FONTS[k] && /^[\w-]+$/.test(role)) o.fonts[role] = k;
+  for (const [role, k] of Object.entries((p && p.fonts) || {})) {
+    if (!/^[\w-]+$/.test(role)) continue;
+    if (Array.isArray(k)) {
+      const valid = k.filter(x => typeof x === 'string' && J.FONTS[x]);
+      if (valid.length) o.fonts[role] = valid;
+    } else if (typeof k === 'string' && J.FONTS[k]) o.fonts[role] = k;
+  }
   return o;
 }
 /* v0.10: untagged lines of an LRC text now stay where they are written — move per-line settings of older projects along */
@@ -3431,46 +3438,199 @@ function setCutTech(i, k, group, key) {
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
 /* ---------------- style tab ---------------- */
+let styleCatFilter = 'all';
+const STYLE_CAT_META = [
+  ['all', { fr: 'Tous', en: 'All', ja: 'すべて', 'zh-Hans': '全部', 'zh-Hant': '全部', ko: '전체', id: 'Semua', vi: 'Tất cả' }],
+  ['guofeng', { fr: 'Chinois Classique', en: 'Classical Chinese', ja: '中国風・国風', 'zh-Hans': '国风古典', 'zh-Hant': '國風古典', ko: '중국 고풍', id: 'Tiongkok Klasik', vi: 'Cổ Phong' }],
+  ['bauhaus', { fr: 'Bauhaus', en: 'Bauhaus', ja: 'Bauhaus' }],
+  ['popart', { fr: 'Pop Art', en: 'Pop Art', ja: 'Pop Art' }],
+  ['iso3d', { fr: '3D Iso', en: '3D Iso', ja: '3D Iso' }],
+  ['compositing', { fr: 'Compositing', en: 'Compositing', ja: 'Compositing' }],
+  ['cinematic', { fr: 'Cinéma', en: 'Cinematic', ja: 'Cinematic' }],
+  ['musicvideo', { fr: 'Music Video', en: 'Music Video', ja: 'Music Video' }],
+  ['artmotion', { fr: 'Art & Motion', en: 'Art & Motion', ja: 'Art & Motion' }],
+  ['futuristic', { fr: 'Futuristic', en: 'Futuristic', ja: 'Futuristic' }],
+  ['lifestyle', { fr: 'Lifestyle', en: 'Lifestyle', ja: 'Lifestyle' }],
+  ['animation', { fr: 'Animation', en: 'Animation', ja: 'Animation' }],
+];
+function styleMatchesCat(k, cat) {
+  if (!cat || cat === 'all') return true;
+  if (J.THEMES[cat] && Array.isArray(J.THEMES[cat].styles) && J.THEMES[cat].styles.includes(k)) return true;
+  return !!(J.STYLES[k] && J.STYLES[k].cat === cat);
+}
+function drawStyleThumbAccent(x, st, sc) {
+  const cat = st.cat || '';
+  x.save();
+  if (cat === 'bauhaus') {
+    x.fillStyle = sc.accent;
+    x.beginPath(); x.arc(28, 28, 13, 0, Math.PI * 2); x.fill();
+    x.fillStyle = sc.accent2 || sc.fg;
+    x.fillRect(18, 50, 14, 14);
+    x.strokeStyle = sc.accent2 || sc.fg; x.lineWidth = 1.6;
+    for (let d = -12; d <= 16; d += 4) { x.beginPath(); x.moveTo(156 + d, 22); x.lineTo(148 + d, 38); x.stroke(); }
+    x.fillStyle = sc.accent;
+    x.beginPath(); x.moveTo(146, 86); x.lineTo(174, 86); x.lineTo(160, 62); x.closePath(); x.fill();
+  } else if (cat === 'popart') {
+    x.fillStyle = sc.accent; x.globalAlpha = 0.28;
+    for (let px = 14; px < 72; px += 9) for (let py = 14; py < 46; py += 9) { x.beginPath(); x.arc(px, py, 2.2, 0, Math.PI * 2); x.fill(); }
+    x.globalAlpha = 1; x.strokeStyle = sc.fg; x.lineWidth = 2;
+    x.beginPath(); x.moveTo(142, 0); x.lineTo(126, 108); x.stroke();
+    x.fillStyle = sc.accent;
+    x.beginPath();
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2, r = i % 2 ? 7 : 15;
+      x[i ? 'lineTo' : 'moveTo'](164 + Math.cos(a) * r, 32 + Math.sin(a) * r);
+    }
+    x.closePath(); x.fill();
+  } else if (cat === 'iso3d') {
+    const c1 = sc.accent, c2 = sc.accent2 || sc.fg;
+    x.strokeStyle = c1; x.lineWidth = 1.4;
+    const drawMiniIso = (cx, cy, r) => {
+      const dx = r * 0.866, dy = r * 0.5;
+      x.beginPath();
+      x.moveTo(cx, cy - r); x.lineTo(cx + dx, cy - dy); x.lineTo(cx, cy); x.lineTo(cx - dx, cy - dy); x.closePath();
+      x.moveTo(cx - dx, cy - dy); x.lineTo(cx - dx, cy + dy); x.lineTo(cx, cy + r); x.lineTo(cx, cy);
+      x.moveTo(cx + dx, cy - dy); x.lineTo(cx + dx, cy + dy); x.lineTo(cx, cy + r);
+      x.stroke();
+    };
+    drawMiniIso(28, 30, 14);
+    x.strokeStyle = c2; drawMiniIso(164, 72, 13);
+  } else if (cat === 'compositing') {
+    x.strokeStyle = sc.accent; x.globalAlpha = 0.65; x.setLineDash([4, 3]); x.lineWidth = 1.4;
+    x.strokeRect(58, 12, 76, 84);
+    x.setLineDash([]);
+    x.fillStyle = sc.accent; x.globalAlpha = 0.22;
+    x.beginPath(); x.arc(96, 40, 14, 0, Math.PI * 2); x.fill();
+    x.beginPath(); x.ellipse(96, 84, 24, 20, 0, Math.PI, Math.PI * 2); x.fill();
+  } else if (cat === 'cinematic') {
+    x.fillStyle = '#000000'; x.globalAlpha = 0.72;
+    x.fillRect(0, 0, 192, 11); x.fillRect(0, 97, 192, 11);
+    x.globalAlpha = 0.55; x.fillStyle = sc.accent2 || sc.accent;
+    x.fillRect(16, 78, 160, 2);
+  } else if (cat === 'futuristic') {
+    x.strokeStyle = sc.accent; x.lineWidth = 1.4; x.globalAlpha = 0.8;
+    x.strokeRect(10, 12, 14, 14); x.strokeRect(168, 76, 14, 14);
+  } else if (cat === 'guofeng') {
+    const c1 = sc.accent, c2 = sc.accent2 || sc.fg;
+    // Delicate hanging scroll inner frame corner lines
+    x.strokeStyle = c1; x.globalAlpha = 0.42; x.lineWidth = 1.2;
+    x.strokeRect(7, 7, 178, 94);
+    // Miniature distant mountain silhouette sweep
+    x.fillStyle = c2; x.globalAlpha = 0.18;
+    x.beginPath();
+    x.moveTo(0, 108); x.lineTo(0, 82);
+    x.quadraticCurveTo(38, 66, 76, 78);
+    x.quadraticCurveTo(120, 56, 166, 76);
+    x.lineTo(192, 70); x.lineTo(192, 108); x.closePath();
+    x.fill();
+    // Miniature cinnabar chop seal stamp top-left
+    x.globalAlpha = 0.88;
+    x.strokeStyle = c1; x.lineWidth = 1.6;
+    x.strokeRect(14, 14, 16, 16);
+    x.lineWidth = 1;
+    x.beginPath();
+    x.moveTo(18, 18); x.lineTo(26, 18);
+    x.moveTo(22, 18); x.lineTo(22, 26);
+    x.moveTo(18, 26); x.lineTo(26, 26);
+    x.stroke();
+  } else if (cat === 'animation' || cat === 'musicvideo') {
+    x.fillStyle = sc.accent; x.globalAlpha = 0.75;
+    x.beginPath(); x.arc(24, 24, 4, 0, Math.PI * 2); x.arc(166, 28, 3, 0, Math.PI * 2); x.fill();
+    x.fillStyle = sc.accent2 || sc.accent;
+    x.beginPath(); x.arc(154, 78, 5, 0, Math.PI * 2); x.fill();
+  }
+  x.restore();
+}
+function renderStyleCatBar() {
+  const bar = $('styleCatBar'); if (!bar) return;
+  const rawLang = document.documentElement.lang || 'ja';
+  const lang = ['fr', 'en', 'zh-Hans', 'zh-Hant', 'ko', 'id', 'vi', 'ja'].includes(rawLang) ? rawLang : 'ja';
+  if (!bar.children.length) {
+    STYLE_CAT_META.forEach(([cid, labels]) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'style-cat-btn';
+      btn.dataset.cat = cid;
+      const cnt = cid === 'all' ? J.STYLE_ORDER.length : J.STYLE_ORDER.filter(k => styleMatchesCat(k, cid)).length;
+      const lbl = labels[lang] || labels.en;
+      btn.textContent = `${lbl} (${cnt})`;
+      btn.addEventListener('click', () => {
+        styleCatFilter = cid;
+        drawStyleGrid();
+      });
+      bar.appendChild(btn);
+    });
+  }
+  [...bar.children].forEach(btn => {
+    btn.setAttribute('aria-pressed', btn.dataset.cat === styleCatFilter ? 'true' : 'false');
+  });
+}
 function drawStyleGrid() {
-  const g = $('styleGrid');
+  const g = $('styleGrid'); if (!g) return;
+  renderStyleCatBar();
   if (!g.children.length) {
     J.STYLE_ORDER.forEach(k => {
       const b = document.createElement('button'); b.className = 'stile'; b.dataset.k = k;
       b.title = J.STYLES[k].desc;
-      b.innerHTML = `<canvas width="192" height="108"></canvas><span>${J.STYLES[k].name}</span><span class="badges">${setBadges(J.STYLES[k])}</span>`;
+      b.innerHTML = `<canvas width="192" height="108"></canvas><span>${escapeHtml(J.STYLES[k].name)}</span><span class="badges">${setBadges(J.STYLES[k])}</span>`;
       b.addEventListener('click', () => { remember(); S.project.style = k; S.project.colors.enabled = false; syncUI(); replan(); commit(); });
       g.appendChild(b);
     });
   }
   [...g.children].forEach(b => {
-    const k = b.dataset.k, st = J.STYLES[k], sc = st.schemes[0], cv = b.querySelector('canvas'), x = cv.getContext('2d');
+    const k = b.dataset.k, st = J.STYLES[k], sc = st.schemes[0], cv = b.querySelector('canvas');
+    b.hidden = !styleMatchesCat(k, styleCatFilter);
     b.setAttribute('aria-pressed', S.project.style === k ? 'true' : 'false');
     const off = !J.randomOk(S.project, 'style', k);
     b.classList.toggle('set-off', off);
     b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? '（追加分がオフのため、おまかせでは選ばれません）' : st.set && !J.setOn(S.project, st.set) ? '（このセットがオフのため、おまかせでは選ばれません）' : '（和風の演出がオフのため、おまかせでは選ばれません）') : '');
+    if (cv.dataset.drawn === k) return;
+    cv.dataset.drawn = k;
+    const x = cv.getContext('2d');
     x.fillStyle = sc.bg; x.fillRect(0, 0, 192, 108);
+    drawStyleThumbAccent(x, st, sc);
     st.schemes.slice(1, 4).forEach((s2, i) => { x.fillStyle = s2.bg; x.fillRect(192 - 14 * (i + 1), 0, 14, 10); });
-    const f = st.fonts.display[0];
-    x.font = J.fontCSS(f, 46); x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.fillStyle = sc.ghostB; x.fillText('字面', 96 - 3, 54 - 1);
-    x.fillStyle = sc.ghostA; x.fillText('字面', 96 + 3, 54 + 2);
-    x.fillStyle = sc.fg; x.fillText('字面', 96, 54);
+    const f = (st.fonts && st.fonts.display && st.fonts.display[0]) || 'gothic_black';
+    const glyph = st.cat === 'compositing' ? 'Aa' : st.cat === 'guofeng' ? '古風' : '字面';
+    x.font = J.fontCSS(f, 44); x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.fillStyle = sc.ghostB; x.fillText(glyph, 96 - 3, 52 - 1);
+    x.fillStyle = sc.ghostA; x.fillText(glyph, 96 + 3, 52 + 2);
+    x.fillStyle = sc.fg; x.fillText(glyph, 96, 52);
     x.fillStyle = sc.accent; x.fillRect(12, 90, 30, 4);
-    x.font = J.fontCSS('mono', 9); x.textAlign = 'left'; x.fillStyle = sc.sub; x.fillText(k.toUpperCase(), 48, 93);
+    x.font = J.fontCSS('mono', 9); x.textAlign = 'left'; x.fillStyle = sc.sub; x.fillText(k.toUpperCase().slice(0, 16), 48, 93);
   });
 }
 function fontSelectOptions(sel) {
-  return '<option value="">スタイルの既定</option>' + Object.entries(J.FONTS).map(([k, f]) => {
-    const g = J.faceOf ? J.faceOf(k) : f, alt = g.label && g.label !== f.label ? ' → ' + g.label : '';   // the face actually used for the lyric language
-    return `<option value="${escapeHtml(k)}" ${sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
-  }).join('');
+  const isMix = Array.isArray(sel);
+  let html = '<option value="">スタイルの既定</option>';
+  if (isMix) html += `<option value="__mix__" selected>Mix (${sel.length})</option>`;
+  const groups = new Map();
+  for (const [k, f] of Object.entries(J.FONTS)) {
+    const gName = f.group || '';
+    if (!groups.has(gName)) groups.set(gName, []);
+    groups.get(gName).push([k, f]);
+  }
+  const opt = ([k, f]) => {
+    const g = J.faceOf ? J.faceOf(k) : f, alt = g.label && g.label !== f.label ? ' → ' + g.label : '';
+    return `<option value="${escapeHtml(k)}" ${!isMix && sel === k ? 'selected' : ''}>${escapeHtml(f.label + alt)}</option>`;
+  };
+  for (const [gName, items] of groups) {
+    if (!gName) html += items.map(opt).join('');
+    else if (gName === 'Classical Chinese') html += `<optgroup label="${escapeHtml('国风古典 · Classical Chinese')}">${items.map(opt).join('')}</optgroup>`;
+    else html += `<optgroup label="${escapeHtml('Art & Motion · ' + gName)}">${items.map(opt).join('')}</optgroup>`;
+  }
+  return html;
 }
 function renderFontRoles() {
   const box = $('fontRoles'); box.innerHTML = '';
   [['display', '見出し'], ['serif', '明朝枠'], ['body', '小さな文字']].forEach(([role, label]) => {
     const row = document.createElement('div'); row.className = 'font-row';
     row.innerHTML = `<span class="muted">${label}</span><select aria-label="${label}のフォント">${fontSelectOptions(S.project.fonts[role])}</select>`;
-    row.querySelector('select').addEventListener('change', e => { if (e.target.value) S.project.fonts[role] = e.target.value; else delete S.project.fonts[role]; fontKey = ''; replan(); });
+    row.querySelector('select').addEventListener('change', e => {
+      if (e.target.value === '__mix__') return;
+      if (e.target.value) S.project.fonts[role] = e.target.value; else delete S.project.fonts[role];
+      fontKey = ''; replan();
+    });
     box.appendChild(row);
   });
 }
@@ -3648,7 +3808,11 @@ function rerollPart(part) {
   const P = S.project;
   let msg = '';
   if (part === 'style') {
-    let pool = J.STYLE_ORDER.filter(k => k !== P.style && J.randomOk(P, 'style', k));
+    const th = P.themeId && J.THEMES[P.themeId];
+    let pool = th && Array.isArray(th.styles) && th.styles.length
+      ? th.styles.filter(k => k !== P.style && J.STYLES[k] && J.randomOk(P, 'style', k))
+      : J.STYLE_ORDER.filter(k => k !== P.style && J.randomOk(P, 'style', k));
+    if (!pool.length && th && Array.isArray(th.styles)) pool = th.styles.filter(k => k !== P.style && J.STYLES[k]);
     if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== P.style);
     P.style = pool[Math.floor(Math.random() * pool.length)];
     P.colors.enabled = false;
@@ -3673,8 +3837,10 @@ function showNow() {
   const el = $('easyNow'); if (!el || !S.plan || el.closest('[hidden]')) return;
   const P = S.project, sc = S.plan.style.schemes[0];
   const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : 'カスタム';
-  const fk = S.plan.style.fonts.display[0];
-  const fontName = J.FONTS[fk] ? (J.faceOf ? J.faceOf(fk) : J.FONTS[fk]).label : fk;   // the face actually drawn for the lyric language
+  const dList = (S.plan.style.fonts && S.plan.style.fonts.display) || [];
+  const fk = dList[0];
+  const fontBase = J.FONTS[fk] ? (J.faceOf ? J.faceOf(fk) : J.FONTS[fk]).label : fk;   // the face actually drawn for the lyric language
+  const fontName = fontBase + (dList.length > 1 ? ` (+${dList.length - 1})` : '');
   const cuts = S.plan.cuts.filter(c => c.line >= 0 && c.layout !== 'interlude');
   const kinds = new Set(cuts.map(c => c.layout)).size;
   const row = (k, v) => `<div class="now-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
@@ -5313,7 +5479,40 @@ function syncUI() {
   document.querySelectorAll('.typeset-toggle').forEach(el => { el.checked = S.project.typeset === true; });
   $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   document.querySelectorAll('.themeSel').forEach(el => { el.value = J.THEMES[S.project.themeId] ? S.project.themeId : ''; });
+  syncThemeMeta();
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); applyExportLabels(); drawStyleGrid(); syncKaraokeBtn(); syncKaraokeControls(); syncTranslationControls(); syncAudioDetectPanel(); applyLeLabels(); syncLyricsEditor();
+}
+function syncThemeMeta() {
+  const note = $('themeMetaNote'); if (!note) return;
+  const thId = J.THEMES[S.project.themeId] ? S.project.themeId : '';
+  const lang = document.documentElement.lang || 'ja';
+  if (!thId) {
+    note.textContent = lang === 'fr'
+      ? 'Choisissez un thème pour explorer ses styles fluides et animations dédiées'
+      : lang === 'en'
+        ? 'Pick a theme to explore its curated fluid styles and dedicated motions'
+        : lang === 'zh-Hans'
+          ? '选择主题后，将在专属流畅国风/艺术风格库中生成演出'
+          : lang === 'zh-Hant'
+            ? '選擇主題後，將在專屬流暢國風/藝術風格庫中生成演出'
+            : lang === 'ko'
+              ? '테마를 선택하면 전용 유려한 스타일과 모션으로 자동 생성합니다'
+              : '選ぶと、その方向の中でおまかせします';
+    return;
+  }
+  const T = J.THEMES[thId], cnt = (T.styles && T.styles.length) || 20, cur = J.STYLES[S.project.style];
+  const sName = cur ? cur.name : '';
+  note.textContent = lang === 'fr'
+    ? `${T.name} · ${cnt} styles exclusifs · Actif : ${sName}`
+    : lang === 'en'
+      ? `${T.name} · ${cnt} bespoke styles · Active: ${sName}`
+      : lang === 'zh-Hans'
+        ? `${T.name} · 共${cnt}款专属风格 · 当前：${sName}`
+        : lang === 'zh-Hant'
+          ? `${T.name} · 共${cnt}款專屬風格 · 目前：${sName}`
+          : lang === 'ko'
+            ? `${T.name} · 전용 ${cnt}종 스타일 · 현재: ${sName}`
+            : `${T.name} · 全${cnt}スタイル · 現在：${sName}`;
 }
 
 /* Reusable 7-stage Song Lyrics Detection + Forced Alignment + Validation */
@@ -6159,9 +6358,11 @@ function bind() {
   $('btnClearLyrics').addEventListener('click', clearLyrics);
   document.querySelectorAll('.themeSel').forEach(el => el.addEventListener('change', () => {
     S.project.themeId = J.THEMES[el.value] ? el.value : null;
+    if (S.project.themeId && STYLE_CAT_META.some(([c]) => c === S.project.themeId)) styleCatFilter = S.project.themeId;
+    else if (!S.project.themeId) styleCatFilter = 'all';
     document.querySelectorAll('.themeSel').forEach(x => { x.value = el.value; });
     if (S.project.themeId && !S.exporting && !S.tap) omakase();
-    else flushSave();
+    else { syncThemeMeta(); drawStyleGrid(); flushSave(); }
   }));
   $('fileLrc').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; openLyricFile(f); });
   if ($('expIncludeTrans')) $('expIncludeTrans').addEventListener('change', e => { e.target.dataset.userTouched = '1'; });
@@ -6192,7 +6393,7 @@ function bind() {
     if (S.tap && e.code === 'Tab' && !typing) { e.preventDefault(); tapCut(); return; }
     if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ' && !typing && !S.tap) { e.preventDefault(); edGo(e.shiftKey ? 1 : -1); return; }
     if ((e.ctrlKey || e.metaKey) && e.code === 'KeyY' && !typing && !S.tap) { e.preventDefault(); edGo(1); return; }
-    if (typing || $('termsDlg').open || $('resetDlg').open || ($('cloudDlg') && $('cloudDlg').open)) return;
+    if (typing || $('termsDlg').open || $('resetDlg').open || ($('cloudDlg') && $('cloudDlg').open) || ($('noticeDlg') && $('noticeDlg').open)) return;
     if (e.code === 'Space') { e.preventDefault(); S.playing ? pause() : play(); }
     else if (e.code === 'ArrowRight') seek(S.t + (e.shiftKey ? 1 : 1 / S.plan.fps));
     else if (e.code === 'ArrowLeft') seek(S.t - (e.shiftKey ? 1 : 1 / S.plan.fps));
@@ -7426,12 +7627,1069 @@ function bindCloudStudio() {
   }
 }
 
+/* ---------------- Notice (User Manual & Button Guide) ---------------- */
+let noticePhotoList = [];
+let noticeLightboxIdx = 0;
+
+function openNoticeLightbox(idx) {
+  const lb = $('noticeLightbox');
+  const img = $('noticeLbImg');
+  const title = $('noticeLbTitle');
+  const cap = $('noticeLbCaption');
+  const counter = $('noticeLbCounter');
+  const prev = $('btnNoticeLbPrev');
+  const next = $('btnNoticeLbNext');
+  if (!lb || !img || !noticePhotoList.length) return;
+  const total = noticePhotoList.length;
+  noticeLightboxIdx = ((idx % total) + total) % total;
+  const entry = noticePhotoList[noticeLightboxIdx];
+  img.src = entry.src;
+  img.alt = entry.alt || entry.title || '';
+  if (title) title.textContent = entry.title || '';
+  if (cap) cap.textContent = entry.caption || '';
+  if (counter) counter.textContent = (noticeLightboxIdx + 1) + ' / ' + total;
+  if (prev) prev.disabled = total <= 1;
+  if (next) next.disabled = total <= 1;
+  lb.hidden = false;
+}
+
+function closeNoticeLightbox() {
+  const lb = $('noticeLightbox');
+  if (lb) lb.hidden = true;
+}
+
+function getNoticeContent() {
+  const en = isEn();
+  const imgs = {
+    overview: '/src/assets/images/notice_studio_overview_1795104247958.jpg',
+    header: '/src/assets/images/notice_header_controls_1795104770790.jpg',
+    lyrics: '/src/assets/images/notice_lyrics_markup_1795104772435.jpg',
+    sync: '/src/assets/images/notice_vocal_sync_1795104248129.jpg',
+    tap: '/src/assets/images/notice_tap_studio_1795104774243.jpg',
+    stage: '/src/assets/images/notice_stage_timeline_1795104773140.jpg',
+    themes: '/src/assets/images/notice_themes_showcase_1795104249830.jpg',
+    artfx: '/src/assets/images/notice_art_motion_fx_1795104773745.jpg',
+    exportImg: '/src/assets/images/notice_export_pipeline_1795104251232.jpg',
+  };
+  if (en) {
+    return {
+      title: 'Notice',
+      subtitle: 'Simple & visual Alexura guide · Click any photo to enlarge and understand every button in seconds',
+      searchPh: 'Search any button (e.g. Tap, MP4, /, Google, 60fps)…',
+      tourBtn: 'Interactive tour',
+      tourTitle: 'Close Notice and launch the step-by-step screen spotlight',
+      closeLabel: 'Close Notice',
+      zoomHint: 'Click to enlarge photo',
+      prevPhoto: '← Previous',
+      nextPhoto: 'Next →',
+      closePhoto: '✕ Close',
+      emptyTitle: 'No matching button or guide entry found',
+      emptyHint: 'Try searching "MP4", "Tap", "LRC", "Art & Motion", "Google" or "Shortcut".',
+      clearSearch: 'Show all chapters',
+      matchesFmt: n => n + ' match' + (n > 1 ? 'es' : ''),
+      sections: [
+        {
+          id: 'overview',
+          num: '01',
+          nav: 'Overview & Top Bar',
+          title: '01. Understand the Screen & Every Top Bar Button',
+          lead: 'Think of Alexura as a simple 3-step studio from left to right: 1) Prepare your song and lyrics on the left, 2) Watch and adjust timing in the center, 3) Choose a visual style and export your video on the right.',
+          gallery: [
+            {
+              src: imgs.overview,
+              title: 'Photo 1 — The 3 columns of your workspace',
+              alt: 'Alexura Motion Studio three-column workspace diagram',
+              caption: 'Left column = Audio & Lyrics. Center = Live 16:9 video, Karaoke bar & Timeline. Right column = Themes, Visual Styles & Video Export.',
+            },
+            {
+              src: imgs.header,
+              title: 'Photo 2 — Close-up of every button in the top bar',
+              alt: 'Top navigation bar visual guide with labeled zones',
+              caption: 'Project title & artist on the left, golden Randomize trigger, Simple/Advanced mode switch, Cloud & JSON save buttons, and Notice on the right.',
+            },
+          ],
+          steps: [
+            { num: 'Step 01', title: 'Add audio & words', desc: 'Drop your MP3/WAV song and paste your lyrics—or let AI listen to the singer and write the lyrics for you.' },
+            { num: 'Step 02', title: 'Lock words to voice', desc: 'Press Voice Sync for automatic timing, or open Tap Studio and tap Space as the singer starts each phrase.' },
+            { num: 'Step 03', title: 'Pick style & save video', desc: 'Choose a Theme (like Cinema or Art & Motion), tap Randomize until you love the look, then click Export MP4.' },
+          ],
+          subh: 'Top bar buttons explained simply',
+          items: [
+            {
+              label: 'Song title & Artist',
+              zone: 'Top Bar · Left',
+              desc: 'Type the name of your song and artist. Alexura displays them cleanly on the opening title card and uses them to name your exported video file.',
+              example: '<strong>Example:</strong> Type <code>Midnight Echo</code> and <code>Alexura</code> → your video starts with that title card and exports as <code>Midnight Echo.mp4</code>.',
+            },
+            {
+              label: 'Randomize (Golden top button & R key)',
+              zone: 'Top Bar · Instant Styling',
+              desc: 'Your magic creative button. One click invents a fresh combination of fonts, colors, background art and text animation matching your active Theme.',
+              example: '<strong>Tip:</strong> Don’t like a result? Press <code>R</code> again, or use <strong>◀ / ▶</strong> under the video to go back to a look you liked earlier.',
+              photo: { src: imgs.header, title: 'Visual example: Top Bar & Randomize', caption: 'Spot the golden Randomize trigger and mode buttons in the top bar.' },
+            },
+            {
+              label: 'Mobile / Simple / Advanced + ?',
+              zone: 'Top Bar · View Mode',
+              desc: '<strong>Simple</strong> keeps only the easiest controls (Theme + Randomize + Export). <strong>Advanced</strong> shows all fine-tuning tabs, color pickers and word timeline. <strong>Mobile</strong> stacks everything for phones. <strong>?</strong> launches the live guided tour.',
+              example: '<strong>Recommended:</strong> Start in <strong>Simple</strong> to get a great video in 1 minute, then switch to <strong>Advanced</strong> if you want custom fonts or 60 fps.',
+            },
+            {
+              label: 'Google / ☁ Save / 📚 Projects & History',
+              zone: 'Top Bar · Cloud Backup',
+              desc: 'Sign in with Google so you never lose work. <strong>☁ Save</strong> stores your song audio, lyrics and timing online in Firebase; <strong>Projects & History</strong> lets you reopen older songs or push updates to Vercel.',
+              example: '<strong>Example:</strong> Start a project at work, click <strong>☁ Save</strong>, then sign in at home and open <strong>📚 Projects & History</strong> to continue right where you left off.',
+            },
+            {
+              label: 'Open / Save (.json) · Export for AE · Reset',
+              zone: 'Top Bar · Files',
+              desc: '<strong>Save</strong> downloads a tiny <code>.json</code> project file to your computer; <strong>Open</strong> reloads it anytime. <strong>Export for AE</strong> prepares animation data for Adobe After Effects. <strong>Reset</strong> clears the screen for a brand-new song.',
+            },
+            {
+              label: 'Notice & About / Terms',
+              zone: 'Top Bar · Help',
+              desc: '<strong>Notice</strong> opens this illustrated handbook anytime. <strong>About</strong> confirms that exported videos belong to you and lists open-source licenses.',
+            },
+          ],
+        },
+        {
+          id: 'lyrics',
+          num: '02',
+          nav: 'Lyrics, Symbols & Translation',
+          title: '02. Writing Lyrics, Simple Visual Symbols & Translation',
+          lead: 'Write or paste one sung sentence per line in the Lyrics box. Want extra drama or an instrumental break? Just add one tiny symbol directly in your text—no complex menus needed.',
+          gallery: [
+            {
+              src: imgs.lyrics,
+              title: 'Photo 3 — Before / After: What each lyric symbol draws on screen',
+              alt: 'Visual split-screen example showing slash cut, asterisk impact word, exclamation flash, bar note, interlude and translation',
+              caption: 'Left: plain text with simple symbols (/, *, !, |, [interlude]). Right: the exact animated video cuts, bold words, flashes and bilingual subtitles generated automatically.',
+            },
+            {
+              src: imgs.overview,
+              title: 'Photo 4 — Where the Lyrics & Translation boxes sit',
+              alt: 'Left column showing lyrics box and optional translation panel',
+              caption: 'Drop any .lrc / .srt / .txt file directly over the window, or activate the Translation panel right under the language selector.',
+            },
+          ],
+          subh: 'Lyrics buttons & visual examples',
+          items: [
+            {
+              label: 'Load LRC / SRT & Clear lyrics',
+              zone: 'Top of Lyrics Box',
+              desc: 'Imports existing timed lyrics (<code>.lrc</code>, <code>.srt</code>, <code>.vtt</code>) or plain text (<code>.txt</code>) in one click. You can also drag and drop a file directly from your desktop onto Alexura.',
+              example: '<strong>Example:</strong> Drop <code>song.lrc</code> → lines like <code>[00:18.50]Under the city lights</code> already arrive synced at 18.5 seconds!',
+            },
+            {
+              label: 'Smart Symbols: / · *word* · ! · |note · [interlude]',
+              zone: 'Inside Lyrics Textarea (Syntax Guide)',
+              desc: 'Add simple punctuation directly inside any line to direct the camera and typography:',
+              example: '<code>I remember / the color</code> → cuts the screen cleanly into 2 separate shots.<br><code>Shine *bright* tonight</code> → makes the word <strong>bright</strong> huge and impactful.<br><code>Wake up!</code> → adds a subtle camera punch/flash.<br><code>light|lumière</code> → shows a small floating note above/below the word.<br><code>[interlude 8]</code> → pauses text for an 8-second guitar/piano solo.<br><code># chorus note</code> → hidden personal memo (never shown in video).',
+              photo: { src: imgs.lyrics, title: 'See this transformation in Photo 3', caption: 'Visual comparison of /, *word*, !, |note and bilingual subtitles on stage.' },
+            },
+            {
+              label: 'Lyrics language & 🌐 Translation Layer',
+              zone: 'Below Lyrics Box',
+              desc: 'Leave language on <strong>Auto-detect</strong> (or pick <strong>Multilingual Mix</strong> for bilingual songs). Click <strong>🌐 Translate</strong> to add a second language underneath—using the exact same vocal timing without touching your original lyrics.',
+              example: '<strong>Example:</strong> Keep English lyrics on top and display French translation in soft grey just beneath both on the Karaoke bar and in the exported MP4 (toggle <strong>⚙ Style</strong> to move it above, below, or change color).',
+            },
+          ],
+        },
+        {
+          id: 'sync',
+          num: '03',
+          nav: 'Audio, AI & Tap Sync',
+          title: '03. Syncing Words Perfectly to the Singer’s Voice',
+          lead: 'You have 3 easy ways to match text to singing: 1) Let AI transcribe and time the whole song, 2) Click Voice Sync if you already pasted lyrics, or 3) Open Tap Studio and tap along with the singer like a rhythm game.',
+          gallery: [
+            {
+              src: imgs.sync,
+              title: 'Photo 5 — How AI & Voice Sync read the singer’s voice',
+              alt: 'Vocal waveform peak analysis and 10 millisecond word boundaries',
+              caption: 'Alexura isolates the center vocal energy (emerald) from music beats and snaps every word start/end within 10 ms.',
+            },
+            {
+              src: imgs.tap,
+              title: 'Photo 6 — Inside Tap Studio (Spacebar, 0.75× Speed & Loop)',
+              alt: 'Tap Sync Studio showing live radar waveform, glowing Spacebar tap key, 0.75x speed selector, ±25ms nudges and loop toggle',
+              caption: 'Tap Space as the singer starts each phrase. Slow fast verses to 0.75×, loop tricky lines, or fine-tune by ±25 ms.',
+            },
+          ],
+          subh: 'Audio & Synchronization buttons explained',
+          items: [
+            {
+              label: 'Import audio',
+              zone: 'Audio & Timing Section',
+              desc: 'Choose an MP3, WAV, M4A, AAC, FLAC, OGG or MP4 file from your device. Everything loads privately inside your browser in seconds and detects tempo (BPM) automatically.',
+            },
+            {
+              label: '✨ AI Transcribe Lyrics',
+              zone: 'Audio & Timing Section',
+              desc: 'Don’t have the written lyrics? Click this button and AI listens to the isolated vocals, writes out every sung line (even mixed languages) and timestamps every word.',
+              photo: { src: imgs.sync, title: 'Visual example: Acoustic AI word locks', caption: 'Every word receives exact timestamps and a green/amber confidence score.' },
+            },
+            {
+              label: '⚡ Voice Sync',
+              zone: 'Audio & Timing Section',
+              desc: 'Already pasted your lyrics? Click <strong>Voice Sync</strong> once. Alexura listens to your song and automatically lines up every phrase and word with the singer’s voice.',
+              example: '<strong>When to use it:</strong> Right after pasting plain lyrics—90% of songs lock cleanly in seconds before you even touch a slider.',
+            },
+            {
+              label: '⏱ Tap to sync (Tap Studio)',
+              zone: 'Audio & Timing Section',
+              desc: 'Opens the interactive rhythm recorder shown in Photo 6. Watch the moving line, hear the singer, and press <span class="notice-kbd">Space</span> (or click <strong>TAP</strong>) whenever a word or phrase begins.',
+              example: '<strong>3 pro helpers inside Tap Studio:</strong><br>• Set <strong>Speed 0.75×</strong> for fast rap verses.<br>• Keep <strong>Vocal Onset Snap (±90ms)</strong> ON so even if your finger is slightly early/late, it magnet-locks onto the singer’s real syllable.<br>• Press <strong>🔁 Loop</strong> to replay one tough sentence until it feels 100% natural, then click <strong>⚡ Finish with AI Voice</strong>.',
+              photo: { src: imgs.tap, title: 'Visual example: Tap Studio live radar', caption: 'Follow the emerald vocal peaks and tap Space right on each word entry.' },
+            },
+            {
+              label: '🔬 Quality Control & Word Editor',
+              zone: 'Below Audio Section',
+              desc: 'Color-codes words by certainty (Green = locked on vocal peak, Amber = check by ear). Click any word chip to hear just that word (<strong>▶ Word</strong>), shift it <strong>-25ms / +25ms</strong>, lock it with a checkmark so nothing moves it again, or insert a forgotten word (<strong>+ Before / + After</strong>).',
+            },
+          ],
+        },
+        {
+          id: 'stage',
+          num: '04',
+          nav: 'Stage, Karaoke & Timeline',
+          title: '04. Video Stage, Live Karaoke & Pro Timeline',
+          lead: 'Check your video like a director: scrub frame by frame, adjust ear-to-screen sync with one click while listening, or drag any word block along the sound wave.',
+          figure: {
+            src: imgs.stage,
+            title: 'Photo 7 — Live 16:9 Stage, Karaoke Prompter & Multi-Track Word Timeline',
+            fallbackTitle: 'Stage, Karaoke Bar & Draggable Word Blocks',
+            alt: 'Live 16:9 lyric stage above Karaoke prompter highlight bar and draggable colored timeline word blocks',
+            caption: 'Top: real-time video stage. Middle: glowing karaoke preview + ±10 ms Singing↔Display sync bar. Bottom: draggable blue/green word blocks directly over the vocal wave.',
+          },
+          subh: 'Every control under the video explained simply',
+          items: [
+            {
+              label: '▶ Play · Loop · ◀ / ▶ · Shuffle · Randomize',
+              zone: 'Transport Bar (Center)',
+              desc: '<strong>Play/Pause</strong> previews with sound (<span class="notice-kbd">Space</span>). <strong>Loop</strong> repeats the whole song, current line, or single cut while you polish. <strong>Shuffle</strong> keeps your colors/fonts and tries fresh animations; <strong>Randomize</strong> invents a totally new direction.',
+            },
+            {
+              label: 'Word / Progressive / Character',
+              zone: 'Karaoke Prompter Header',
+              desc: 'Controls how words light up as you sing:<br>• <strong>Word:</strong> snaps cleanly from word to word.<br>• <strong>Progressive:</strong> paints color smoothly across each syllable like studio karaoke.<br>• <strong>Character:</strong> lights one character at a time (best for Japanese, Chinese, Korean or long sustained notes).',
+            },
+            {
+              label: 'Synchro Singing↔Display (-50 / -10 / +10 / +50ms)',
+              zone: 'Karaoke Coordination Strip',
+              desc: 'Do the words highlight a hair before or after the singer’s voice? Press <strong>-10ms</strong> or <strong>+10ms</strong> live while listening until your eyes and ears agree 100%. You can also click <strong>⏱ Sync word here</strong> right on the beat.',
+              example: '<strong>Example:</strong> Bluetooth headphones add ~80 ms audio delay—press <strong>+50ms</strong> once and the screen lines up with your headphones immediately.',
+              photo: { src: imgs.stage, title: 'See this bar in Photo 7', caption: 'Find the ±10 ms coordination buttons and draggable word blocks under the stage.' },
+            },
+            {
+              label: '⚙ Settings / ⛶ Fullscreen / Karaoke ON',
+              zone: 'Karaoke Prompter Header',
+              desc: '<strong>⚙ Settings</strong> adjusts prompter font size, screen height (Top / Center / Bottom), box transparency and active glow color. <strong>⛶ Fullscreen</strong> turns your whole monitor into a live stage. <strong>Karaoke ON</strong> includes or hides the karaoke subtitle strip inside exported MP4s.',
+            },
+            {
+              label: 'Timeline & Millisecond Inspector (HH:MM:SS.mmm)',
+              zone: 'Bottom of Center Column',
+              desc: 'Toggle Audio and Vocal waves, click <strong>🔍 Word</strong> to zoom straight into one word, and drag the left or right edge of any colored word block to shorten or stretch how long it stays lit.',
+            },
+          ],
+        },
+        {
+          id: 'themes',
+          num: '05',
+          nav: 'Themes, Styles & Art',
+          title: '05. Choosing Themes, Art & Motion Fonts & Custom Effects',
+          lead: 'Not sure where to start? Pick one Theme first—each Theme comes with matching fonts, backgrounds, camera moves and transitions. Then fine-tune individual details anytime.',
+          gallery: [
+            {
+              src: imgs.themes,
+              title: 'Photo 8 — Visual showcase of the 6 Signature Themes',
+              alt: 'Six creative themes: Cinematic, Music Video, Art & Motion, Futuristic, Lifestyle, Animation',
+              caption: 'Cinematic (film) · Music Video (Pop/Trap/K-Pop) · Art & Motion (Bauhaus/Pop Art/3D/Glitch) · Futuristic (AI/Neon) · Lifestyle (Luxury) · Animation (Anime).',
+            },
+            {
+              src: imgs.artfx,
+              title: 'Photo 9 — Visual specimens: Art & Motion Styles + Keep Centre Free & Chroma Key',
+              alt: 'Four panels comparing Bauhaus Kinetic, Pop Art Ben-Day halftone, 3D Wireframe depth, Keep Centre Free and Chroma Green',
+              caption: 'See Bauhaus geometry, Pop Art halftone dots, 3D wireframe cubes, and how Keep Centre Free frames a singer in the middle.',
+            },
+          ],
+          subh: 'Theme & Style controls made simple',
+          items: [
+            {
+              label: 'Theme Selector (17 Universes · Up to 30 Styles each)',
+              zone: 'Right Panel (Simple & Transport)',
+              desc: 'Pick your overall mood before pressing Randomize:<br>• <strong>GUOFENG (Classical Chinese · 30 bespoke elements):</strong> Shan-Shui ink landscapes, Forbidden City vermilion, Blue-and-White Porcelain, Dunhuang flying silk ribbons, Lantern Festival, Bamboo, Jade & Wuxia calligraphy.<br>• <strong>CINEMATIC / MUSIC VIDEO / ART &amp; MOTION / FUTURISTIC / LIFESTYLE / ANIMATION:</strong> full studio aesthetics (20 fluid styles each).<br>• <strong>BAUHAUS · POP ART · 3D ISOMETRIC · COMPOSITING:</strong> dedicated geometry, Ben-Day comic halftones, 3D wireframe cubes &amp; Keep-Centre-Free / Chroma framing.',
+              photo: { src: imgs.themes, title: 'Compare visual themes in Photo 8', caption: 'Every theme shifts colors, lighting, camera speed and curated visual styles together.' },
+            },
+            {
+              label: 'Change just this: Style / Colors / Mood / Cuts',
+              zone: 'Right Panel (Simple Mode)',
+              desc: 'Love your color palette but want calmer backgrounds or bolder typography? These 4 buttons re-roll ONLY that one ingredient while keeping everything else untouched.',
+            },
+            {
+              label: 'Style · FX · Techniques Tabs (Advanced)',
+              zone: 'Right Panel (Advanced Mode)',
+              desc: 'Full director control:<br>• <strong>Style:</strong> pick exact presets, assign fonts per role (Display, Serif, Body, Mono), or upload your own <code>.ttf / .otf</code> font files.<br>• <strong>FX:</strong> slide Motion Intensity, Glitch amount, Flash pulses, or switch <em>Koma</em> frame rate (Smooth / 12 fps / 8 fps hand-drawn anime feel).<br>• <strong>Techniques:</strong> check or uncheck exact layouts, camera sweeps, backgrounds and transitions.',
+              photo: { src: imgs.artfx, title: 'See Bauhaus, Pop Art & 3D styles in Photo 9', caption: 'Each Art & Motion style activates dedicated typography, halftones or 3D geometry.' },
+            },
+            {
+              label: 'Lock 🔒 & Dice 🎲 on each lyric line',
+              zone: 'Left Line List',
+              desc: 'Really love how your chorus looks? Click its <strong>Lock 🔒</strong> icon so Randomize and Shuffle skip that line forever. Click any single cut chip at the bottom to swap just that phrase’s font or animation.',
+            },
+          ],
+        },
+        {
+          id: 'export',
+          num: '06',
+          nav: 'Export, Layers & Cloud',
+          title: '06. Exporting 4K Video, Transparent Layers & Subtitles',
+          lead: 'All rendering happens straight inside your browser—your video never waits in a cloud queue. Choose ready-to-post MP4s, green/transparent overlays for external editing, or timed lyric files.',
+          gallery: [
+            {
+              src: imgs.exportImg,
+              title: 'Photo 10 — Complete Export Pipeline (MP4 4K, Chroma Key, PNG Layers, LRC/SRT)',
+              alt: 'Multi-format export pipeline diagram showing MP4 4K 60fps, Chroma Green/Black, PNG front/back layers and subtitle formats',
+              caption: 'Pick screen shape (16:9 or 9:16), quality up to 4K 60 fps, or export clean transparent layers and word-timed subtitles.',
+            },
+            {
+              src: imgs.artfx,
+              title: 'Photo 11 — Keep Centre Free & Pure Green Chroma Example (bottom-right panel)',
+              alt: 'Side-by-side comparison of Keep Centre Free around a singer silhouette and Green Screen Chroma Key export',
+              caption: 'Keep Centre Free pushes words to the left/right edges so a filmed singer stays unobstructed; Chroma Green isolates pure lyrics for Premiere/CapCut.',
+            },
+          ],
+          subh: 'Every export button explained clearly',
+          items: [
+            {
+              label: 'Aspect Ratio · Resolution · FPS · Range',
+              zone: 'Export Settings',
+              desc: '<strong>16:9</strong> fits YouTube & widescreen TVs; <strong>9:16</strong> fits TikTok, Instagram Reels & YouTube Shorts; <strong>1:1 / 4:5</strong> fit social feeds; <strong>21:9</strong> gives ultra-wide cinema. Export from 720p up to <strong>4K (2160p)</strong> at 24, 30 or 60 fps—or pick line numbers (e.g. lines 12–24) to export just your chorus for a teaser!',
+            },
+            {
+              label: 'Keep Centre Free & Background Key (Green / Black)',
+              zone: 'Export Settings (Compositing)',
+              desc: 'Filming yourself singing or layering lyrics over concert footage? Check <strong>Keep Centre Free</strong> so words alternate left/right around your face. Or choose <strong>Green Screen</strong> / <strong>Pure Black</strong> to remove the background cleanly in Premiere, Final Cut, DaVinci or CapCut.',
+            },
+            {
+              label: 'Export MP4 / Large Video (Direct to File)',
+              zone: 'Export Buttons',
+              desc: '<strong>Export MP4</strong> builds the finished video with full sound right in Chrome/Edge. Exporting a full 4-minute song in 1080p or 4K? Use <strong>Large Video (Direct to File)</strong>—it streams frames straight onto your hard drive so your browser never runs out of memory.',
+            },
+            {
+              label: 'PNG Sequence / Transparent PNG / Front-Back Layers',
+              zone: 'Export Buttons (ZIP)',
+              desc: 'Downloads a ZIP archive of crystal-clear individual frames. Choose <strong>Transparent PNG</strong> for true alpha transparency (no green fringe), or <strong>Front/Back Layers</strong> to receive separate <code>back/</code> background and <code>front/</code> lyric folders.',
+            },
+            {
+              label: 'LRC / SRT / VTT / Enhanced LRC / JSON / TXT',
+              zone: 'Synced Lyrics Export',
+              desc: 'One-click download of subtitle files for YouTube/Spotify/Premiere. Turn ON <strong>Include translation</strong> if you generated a bilingual translation layer.',
+            },
+          ],
+        },
+        {
+          id: 'shortcuts',
+          num: '07',
+          nav: 'Shortcuts & Visual Recipes',
+          title: '07. Fast Keyboard Shortcuts & 3 Visual Step-by-Step Recipes',
+          lead: 'Learn 5 keyboard keys to save half your time, or follow one of these 3 ready-made workflows from start to finish.',
+          gallery: [
+            {
+              src: imgs.overview,
+              title: '1. Prepare Audio & Lyrics',
+              alt: 'Overview of workspace step 1',
+              caption: 'Drop MP3 + paste lyrics or click AI Transcribe.',
+            },
+            {
+              src: imgs.tap,
+              title: '2. Lock Timing with Voice or Tap',
+              alt: 'Tap Studio timing radar step 2',
+              caption: 'Voice Sync or Tap Studio [Space] + ±10ms fine check.',
+            },
+            {
+              src: imgs.exportImg,
+              title: '3. Style with Theme & Export 4K',
+              alt: 'Export pipeline step 3',
+              caption: 'Press R for fresh visuals, then export MP4 or Layers.',
+            },
+          ],
+          subh: 'Essential keyboard shortcuts',
+          items: [
+            { label: 'Space · ← / → · Shift + ← / →', zone: 'Stage Playback', desc: '<span class="notice-kbd">Space</span> plays or pauses video. <span class="notice-kbd">←</span> / <span class="notice-kbd">→</span> step 1 frame at a time; hold <span class="notice-kbd">Shift</span> to jump 1 second.' },
+            { label: 'R · D · L', zone: 'Instant Styling', desc: '<span class="notice-kbd">R</span> runs Randomize (within active Theme). <span class="notice-kbd">D</span> redesigns only the current cut under the playhead. <span class="notice-kbd">L</span> locks or unlocks the active line.' },
+            { label: 'Ctrl+Z / Cmd+Z · Ctrl+Y', zone: 'Undo / Redo', desc: 'Safely undo or redo lyric edits and timing tweaks anytime.' },
+            { label: 'Space · E · P · S · Backspace · Tab · Esc', zone: 'Inside Tap Sync Studio', desc: '<span class="notice-kbd">Space</span> = Tap word/line · <span class="notice-kbd">E</span> = Mark end · <span class="notice-kbd">P</span> = Pause · <span class="notice-kbd">S</span> = Skip · <span class="notice-kbd">Backspace</span> = Step back 1 tap · <span class="notice-kbd">Tab</span> = Split cut · <span class="notice-kbd">Esc</span> = Save & exit.' },
+          ],
+          steps: [
+            { num: 'Recipe A', title: 'Complete Music Video in 2 Min', desc: '1. Import MP3 → 2. Paste lyrics → 3. Click Voice Sync → 4. Pick Music Video or Art & Motion → 5. Press R until it clicks → 6. Export 1080p MP4.' },
+            { num: 'Recipe B', title: 'Pinpoint Singing Karaoke', desc: '1. Import audio → 2. Click AI Transcribe Lyrics → 3. Check amber words in Quality Control → 4. Fine-tune Singing↔Display (±10ms) → 5. Export MP4 + Enhanced LRC.' },
+            { num: 'Recipe C', title: 'TikTok / Reel / Vocal Overlay', desc: '1. Set Format 9:16 → 2. Tick Keep Centre Free or Chroma Green → 3. Set 60 fps → 4. Export Transparent PNG ZIP or Large MP4 and drop over your footage.' },
+          ],
+        },
+      ],
+    };
+  }
+
+  // Comprehensive French Notice (Simple explanations + Rich visual photo examples)
+  return {
+    title: 'Notice',
+    subtitle: 'Guide illustré en images d’Alexura Motion Studio · Touches expliquées simplement avec photos à cliquer pour agrandir',
+    searchPh: 'Chercher un bouton ou mot-clé (ex: Tap, MP4, /, Google, 60 fps)…',
+    tourBtn: 'Visite guidée',
+    tourTitle: 'Fermer la Notice et montrer les boutons directement à l’écran',
+    closeLabel: 'Fermer la Notice',
+    zoomHint: 'Cliquer pour agrandir la photo',
+    prevPhoto: '← Photo précédente',
+    nextPhoto: 'Photo suivante →',
+    closePhoto: '✕ Fermer l’aperçu',
+    emptyTitle: 'Aucun bouton ou exemple trouvé pour cette recherche',
+    emptyHint: 'Essayez par exemple « MP4 », « Tap », « LRC », « Art & Motion », « Karaoké » ou « Google ».',
+    clearSearch: 'Afficher tous les chapitres',
+    matchesFmt: n => n + ' résultat' + (n > 1 ? 's' : ''),
+    sections: [
+      {
+        id: 'overview',
+        num: '01',
+        nav: 'Vue d’ensemble & Barre du haut',
+        title: '01. Comprendre l’écran et chaque bouton du haut en un coup d’œil',
+        lead: 'Voyez Alexura comme un atelier très simple de gauche à droite : 1) À gauche vous mettez la musique et les paroles, 2) Au centre vous regardez la vidéo et réglez le timing, 3) À droite vous choisissez le style visuel et téléchargez votre vidéo.',
+        gallery: [
+          {
+            src: imgs.overview,
+            title: 'Photo 1 — Les 3 zones de votre écran',
+            alt: 'Illustration de l’espace de travail Alexura Motion Studio en trois colonnes',
+            caption: 'Gauche : Paroles & Audio · Centre : Écran vidéo 16:9, Prompteur Karaoké & Frise · Droite : Thèmes, Effets & Export MP4.',
+          },
+          {
+            src: imgs.header,
+            title: 'Photo 2 — Zoom sur tous les boutons de la barre du haut',
+            alt: 'Gros plan schématique de la barre supérieure d’Alexura : Titre, Aléatoire, Modes, Google Cloud, JSON, After Effects et Notice',
+            caption: 'Repérez facilement le bouton doré Aléatoire, les modes Facile/Avancé, la sauvegarde Google Cloud, les fichiers .json et le bouton Notice.',
+          },
+        ],
+        steps: [
+          { num: 'Étape 01', title: 'Mettre le son et le texte', desc: 'Importez votre MP3/WAV puis collez vos paroles — ou laissez l’IA écouter la voix et écrire les paroles toute seule.' },
+          { num: 'Étape 02', title: 'Caler sur le chanteur', desc: 'Cliquez sur « Synchro Voix » pour un calage automatique, ou tapez au rythme du chant dans « Synchro au tap ».' },
+          { num: 'Étape 03', title: 'Choisir le look et exporter', desc: 'Choisissez un Thème (Cinematic, Art & Motion…), appuyez sur Aléatoire (touche R) puis cliquez sur « Exporter en MP4 ».' },
+        ],
+        subh: 'À quoi sert chaque bouton de la barre du haut ?',
+        items: [
+          {
+            label: 'Titre du morceau & Artiste',
+            zone: 'Barre du haut · Tout à gauche',
+            desc: 'Écrivez ici le nom de la chanson et celui du chanteur. Alexura les affiche automatiquement sur la première image d’intro et s’en sert pour nommer votre vidéo finale.',
+            example: '<strong>Exemple concret :</strong> Tapez <code>Nuit Électrique</code> et <code>Alexura</code> → votre clip démarre avec un joli carton titre et se télécharge sous le nom <code>Nuit Électrique.mp4</code>.',
+          },
+          {
+            label: 'Aléatoire (bouton du haut & touche R)',
+            zone: 'Barre du haut · Création magique',
+            desc: 'C’est votre bouton baguette magique : en 1 clic, il invente une mise en scène complète (polices, couleurs, fond animé et effets) accordée au thème choisi.',
+            example: '<strong>Astuce simple :</strong> Si l’essai précédent vous plaisait plus, cliquez sur <strong>◀ / ▶</strong> juste sous la vidéo pour revenir en arrière à tout moment.',
+            photo: { src: imgs.header, title: 'Voir l’emplacement exact sur la Photo 2', caption: 'Gros plan sur Aléatoire, Facile/Avancé, Google Cloud et Ouvrir/Enregistrer.' },
+          },
+          {
+            label: 'Mobile / Facile / Avancé + ?',
+            zone: 'Barre du haut · Confort d’affichage',
+            desc: '<strong>Facile</strong> n’affiche que l’essentiel pour créer vite sans se perdre. <strong>Avancé</strong> ouvre tous les réglages pro (polices, couleurs, timeline au millième, techniques). <strong>Mobile</strong> adapte l’écran au téléphone. <strong>?</strong> allume la visite guidée pas à pas.',
+            example: '<strong>Conseil :</strong> Démarrez en <strong>Facile</strong> pour obtenir un superbe résultat en 1 minute, puis passez en <strong>Avancé</strong> si vous voulez retoucher un détail précis.',
+          },
+          {
+            label: 'Google / ☁ Sauvegarder / 📚 Projets & Historique',
+            zone: 'Barre du haut · Sauvegarde en ligne',
+            desc: 'Connectez votre compte Google pour sauvegarder votre chanson, son audio et vos réglages sur votre espace Cloud Firebase, retrouver vos anciens projets ou envoyer vers Vercel.',
+            example: '<strong>Exemple concret :</strong> Vous commencez un clip aujourd’hui → cliquez sur <strong>☁ Sauvegarder</strong> → demain, ouvrez <strong>📚 Projets & Historique</strong> pour tout recharger à l’identique.',
+          },
+          {
+            label: 'Ouvrir / Enregistrer (.json) · Exporter pour AE · Réinitialiser',
+            zone: 'Barre du haut · Fichiers ordinateur',
+            desc: '<strong>Enregistrer</strong> télécharge un petit fichier <code>.json</code> sur votre ordinateur pour garder une copie hors-ligne ; <strong>Ouvrir</strong> le recharge. <strong>Exporter pour AE</strong> sert aux monteurs Adobe After Effects. <strong>Réinitialiser</strong> vide l’écran pour repartir sur un nouveau morceau.',
+          },
+          {
+            label: 'Notice & À propos',
+            zone: 'Barre du haut · Guide & Droits',
+            desc: '<strong>Notice</strong> ouvre ce manuel illustré quand vous en avez besoin. <strong>À propos</strong> confirme que toutes vos vidéos exportées vous appartiennent à 100 %.',
+          },
+        ],
+      },
+      {
+        id: 'lyrics',
+        num: '02',
+        nav: 'Paroles, Symboles & Traduction',
+        title: '02. Écrire vos paroles, ajouter des effets simples et traduire',
+        lead: 'Écrivez simplement une phrase par ligne dans la grande boîte « Paroles ». En ajoutant un tout petit symbole dans votre texte, vous donnez des ordres précis à la caméra — sans aucun réglage compliqué !',
+        gallery: [
+          {
+            src: imgs.lyrics,
+            title: 'Photo 3 — Avant / Après : ce que chaque symbole dessine à l’écran',
+            alt: 'Exemple visuel comparant le texte simple avec symboles (/, *, !, |, [interlude]) et le rendu vidéo animé obtenu avec traduction bilingue',
+            caption: 'À gauche : votre texte avec /, *, !, | et [interlude]. À droite : les 2 plans coupés, le mot géant percutant, l’éclair de flash, la petite note et la traduction sous-titrée.',
+          },
+          {
+            src: imgs.overview,
+            title: 'Photo 4 — Où coller vos paroles et activer la traduction',
+            alt: 'Colonne gauche montrant l’éditeur de paroles et le panneau de traduction',
+            caption: 'Glissez un fichier .lrc / .srt / .txt directement sur la fenêtre, puis utilisez le panneau Traduction juste dessous si vous voulez une 2e langue.',
+          },
+        ],
+        subh: 'Toutes les touches Paroles expliquées simplement',
+        items: [
+          {
+            label: 'Importer LRC / SRT & Effacer les paroles',
+            zone: 'Haut du bloc Paroles',
+            desc: 'Charge un fichier déjà horodaté (<code>.lrc</code>, <code>.srt</code>, <code>.vtt</code>) ou un simple fichier texte (<code>.txt</code>). Vous pouvez aussi glisser-déposer le fichier depuis votre bureau directement dans l’écran. <strong>Effacer</strong> vide la boîte (annulable avec <span class="notice-kbd">Ctrl+Z</span>).',
+            example: '<strong>Exemple concret :</strong> Glissez <code>chanson.lrc</code> → une ligne comme <code>[00:42.15]Une voix lointaine résonne</code> se place automatiquement à 42,15 secondes.',
+          },
+          {
+            label: 'Les 5 symboles magiques : / · *mot* · ! · |note · [interlude]',
+            zone: 'Dans votre texte (bouton Syntaxe)',
+            desc: 'Tapez ces petits signes directement dans vos phrases pour mettre en scène votre clip automatiquement :',
+            example: '<code>Je me souviens de/la couleur</code> → coupe la phrase en <strong>2 plans différents</strong> au moment du <code>/</code>.<br><code>Reste *fort* ce soir</code> → affiche le mot <strong>fort</strong> en très grand pour un effet choc.<br><code>Réveille-toi !</code> → le point <code>!</code> ajoute un flash lumineux et une secousse caméra.<br><code>lumière|éclat doux</code> → écrit « éclat doux » en petit au-dessus/dessous du mot.<br><code>[interlude 8]</code> → garde 8 secondes sans texte pour un solo de guitare ou de piano.<br><code># refrain 2</code> → ligne de mémo personnelle jamais montrée dans la vidéo.',
+            photo: { src: imgs.lyrics, title: 'Voir le résultat en image sur la Photo 3', caption: 'Comparatif visuel direct entre les symboles tapés à gauche et le rendu animé à droite.' },
+          },
+          {
+            label: 'Langue des paroles & 🌐 Couche de traduction',
+            zone: 'Juste sous la zone Paroles',
+            desc: 'Laissez <strong>Détection auto</strong> (ou <strong>Multilingue Mix</strong> si le chanteur mélange français et anglais). Pour afficher une traduction en plus de l’original, choisissez la langue et cliquez sur <strong>🌐 Traduire</strong> : elle suit exactement le même timing sans modifier votre texte de base.',
+            example: '<strong>Exemple concret :</strong> Une chanson en anglais avec sa traduction française discrète en gris doux juste en dessous. Cliquez sur <strong>⚙ Style</strong> pour régler sa taille, sa couleur ou la cacher du prompteur.',
+          },
+        ],
+      },
+      {
+        id: 'sync',
+        num: '03',
+        nav: 'Audio, IA & Synchro au Tap',
+        title: '03. Synchroniser parfaitement chaque mot sur la voix du chanteur',
+        lead: 'Pour que les paroles s’allument exactement quand le chanteur chante, Alexura vous donne 3 outils simples : l’IA qui écrit et cale tout, la « Synchro Voix » en 1 clic, ou le studio « Synchro au Tap » très ludique.',
+        gallery: [
+          {
+            src: imgs.sync,
+            title: 'Photo 5 — Comment l’IA et « Synchro Voix » repèrent le chant',
+            alt: 'Illustration de l’onde sonore vocale avec détection d’attaques à 10 ms et barres d’alignement de chaque mot',
+            caption: 'Alexura isole la voix (en vert émeraude) du reste des instruments et aligne chaque mot au millième de seconde près.',
+          },
+          {
+            src: imgs.tap,
+            title: 'Photo 6 — Le studio « Synchro au Tap » avec radar vocal en direct',
+            alt: 'Écran du studio Synchro au Tap : onde radar bleu/vert, touche Espace lumineuse, molette Vitesse 0.75x, boutons -25ms/+25ms et Boucle',
+            caption: 'Appuyez sur Espace quand le chanteur démarre la phrase. Ralentissez à 0.75× si ça va vite, bouclez une phrase ou décalez de ±25 ms.',
+          },
+        ],
+        subh: 'Les boutons Audio & Synchronisation automatique',
+        items: [
+          {
+            label: 'Importer un morceau',
+            zone: 'Colonne gauche · Audio',
+            desc: 'Ouvre votre musique (MP3, WAV, M4A, AAC, FLAC, OGG ou MP4) directement dans le navigateur. Alexura calcule tout de suite le tempo (BPM) et repère où le chanteur chante.',
+          },
+          {
+            label: '✨ Détecter les paroles par IA',
+            zone: 'Colonne gauche · Audio',
+            desc: 'Vous n’avez pas le texte de la chanson ? Cliquez ici : l’IA écoute le chanteur, sépare sa voix de la musique, écrit toutes les paroles (même en plusieurs langues) et cale chaque mot toute seule.',
+            photo: { src: imgs.sync, title: 'Voir l’alignement acoustique sur la Photo 5', caption: 'Chaque mot est calé sur le vrai pic d’énergie de la voix humaine.' },
+          },
+          {
+            label: '⚡ Synchro Voix',
+            zone: 'Colonne gauche · Audio',
+            desc: 'Vous avez déjà collé vos paroles dans la boîte ? Cliquez simplement sur <strong>⚡ Synchro Voix</strong> : Alexura écoute le morceau et place automatiquement chaque phrase et chaque mot pile sur la voix.',
+            example: '<strong>Quand l’utiliser ?</strong> Juste après avoir importé le MP3 et collé le texte. C’est la méthode la plus rapide pour démarrer proprement en 5 secondes.',
+          },
+          {
+            label: '🔬 Contrôle Qualité & Éditeur mot à mot',
+            zone: 'Sous les boutons Audio',
+            desc: 'Affiche chaque mot en vert (sûr) ou en orange (à vérifier à l’oreille). Cliquez sur un mot pour écouter uniquement ce mot (<strong>▶ Mot</strong>), l’avancer ou le reculer de <strong>25 ms</strong>, le verrouiller avec ✓ ou insérer un mot oublié (<strong>+ Avant / + Après</strong>).',
+            example: '<strong>Exemple concret :</strong> Un mot apparaît un peu tôt ? Cliquez dessus → appuyez deux fois sur <strong>+25ms</strong> → réécoutez avec <strong>▶ Phrase</strong> → cochez <strong>Validé</strong> pour le figer.',
+          },
+        ],
+        subh2: 'Toutes les touches du Studio « ⏱ Synchro au tap » expliquées simplement',
+        items2: [
+          {
+            label: 'TAP [Espace] & Mode (Phrase / Mot par mot / Coupes [Tab])',
+            zone: 'Synchro au Tap Studio',
+            desc: 'Lancez l’écoute et appuyez sur la barre <span class="notice-kbd">Espace</span> dès que le chanteur attaque le mot ou la phrase affichée au milieu.<br>• <strong>Phrase / Ligne :</strong> un appui par phrase (super rapide).<br>• <strong>Mot par mot (Précis) :</strong> un appui sur chaque mot pour un karaoké de niveau studio.<br>• <strong>Phrases + Coupes [Tab] :</strong> tapez <span class="notice-kbd">Tab</span> pour forcer un changement de plan visuel.',
+            photo: { src: imgs.tap, title: 'Voir le Studio Tap en action sur la Photo 6', caption: 'La barre Espace sert de déclencheur principal avec le radar vocal juste au-dessus.' },
+          },
+          {
+            label: 'Radar Vocal & Calage (Attaque vocale ±90ms / BPM / Libre)',
+            zone: 'Synchro au Tap Studio',
+            desc: 'Le graphique noir affiche l’onde du chanteur en direct pour vous aider à viser juste. Avec <strong>Attaque vocale (±90ms)</strong> activé, même si votre doigt appuie un peu trop tôt ou trop tard, Alexura réaligne votre tap pile sur le vrai son de la voix ! Et la <strong>Latence Auto-calibrée</strong> corrige automatiquement votre temps de réaction.',
+          },
+          {
+            label: 'Vitesse (1× / 0.85× / 0.75× / 0.5×) & -25ms / +25ms',
+            zone: 'Synchro au Tap Studio',
+            desc: 'Le refrain ou le couplet rap est trop rapide ? Passez sur <strong>0.75×</strong> ou <strong>0.5×</strong> pour taper tranquillement au ralenti sans déformer la justesse, puis décalez les mots de la phrase de <strong>-25ms</strong> (plus tôt) ou <strong>+25ms</strong> (plus tard).',
+          },
+          {
+            label: '✨ Micro-caler · 🔁 Boucler · ⚡ Finir IA Voix',
+            zone: 'Synchro au Tap Studio',
+            desc: '• <strong>✨ Micro-caler phrase :</strong> réajuste automatiquement tous les mots de la phrase en cours à 10 ms près sur la voix.<br>• <strong>🔁 Boucler :</strong> rejoue la même phrase en boucle jusqu’à ce que le calage soit irréprochable.<br>• <strong>⚡ Finir IA Voix :</strong> vous avez tapé les 3 premières phrases ? Cliquez ici pour qu’Alexura cale toute la fin du morceau en suivant votre rythme exact.',
+          },
+          {
+            label: 'Fin [E] · Pause [P] · -2s · 1 retour · Passer [S] · ✓ Terminer',
+            zone: 'Commandes rapides Tap',
+            desc: 'Tapez <span class="notice-kbd">E</span> pour couper la fin d’une note longue, <span class="notice-kbd">P</span> pour faire une pause, <strong>↶ 1 retour</strong> pour refaire le dernier mot raté, <span class="notice-kbd">S</span> pour sauter une phrase déjà bonne, et <strong>✓ Terminer</strong> (<span class="notice-kbd">Échap</span>) pour tout enregistrer.',
+          },
+        ],
+      },
+      {
+        id: 'stage',
+        num: '04',
+        nav: 'Scène, Karaoké & Timeline',
+        title: '04. Écran vidéo, Prompteur Karaoké et Timeline au millième',
+        lead: 'Regardez votre clip comme dans un studio de montage : testez l’accord parfait entre le chant et l’affichage à l’oreille, ou déplacez directement les petits blocs de mots à la souris sur la bande son.',
+        figure: {
+          src: imgs.stage,
+          title: 'Photo 7 — Lecteur 16:9 + Prompteur Karaoké + Blocs de mots sur la Timeline',
+          fallbackTitle: 'Scène Vidéo, Prompteur & Timeline Multi-pistes',
+          alt: 'Aperçu annoté de la scène vidéo 16:9, du prompteur karaoké progressif, des boutons -10ms/+10ms et des blocs de mots déplaçables sur la timeline',
+          caption: 'En haut : votre clip en direct. Au milieu : prompteur karaoké + barre Chant↔Affichage (±10 ms). En bas : chaque mot est un bloc déplaçable à la souris sur la forme d’onde.',
+        },
+        subh: 'À quoi sert chaque bouton sous la vidéo ?',
+        items: [
+          {
+            label: '▶ Lecture · Boucle · ◀ / ▶ · Mélanger · Aléatoire',
+            zone: 'Barre de contrôle centrale',
+            desc: '<strong>▶ / ⏸</strong> lance la lecture (<span class="notice-kbd">Espace</span>). <strong>Boucle</strong> répète au choix Tout le morceau, la Ligne active, ou juste le Plan en cours. <strong>◀ / ▶</strong> permet de revoir vos anciens essais de style. <strong>Mélanger</strong> garde vos couleurs/polices et change seulement les animations.',
+          },
+          {
+            label: 'Mot / Progressif / Caractère',
+            zone: 'Entête du Prompteur Karaoké',
+            desc: 'Choisit comment les mots s’allument quand le chanteur chante :<br>• <strong>Mot :</strong> chaque mot s’allume d’un seul bloc.<br>• <strong>Progressif :</strong> une couleur glisse en douceur de gauche à droite pendant le mot (effet karaoké pro).<br>• <strong>Caractère :</strong> s’allume lettre par lettre / caractère par caractère (idéal pour japonais, chinois, coréen ou notes tenues).',
+          },
+          {
+            label: 'Synchro Chant↔Affichage (-50 / -10 / +10 / +50ms)',
+            zone: 'Barre de coordination Karaoké',
+            desc: 'Pendant l’écoute, si vous sentez que tout s’affiche juste un rien trop tôt ou trop tard, cliquez sur <strong>-10ms</strong> ou <strong>+10ms</strong> : l’ensemble se recale immédiatement en direct sans rien casser. Vous pouvez aussi cliquer sur <strong>⏱ Caler mot ici</strong> sur le temps fort ou sur <strong>⚡ Auto-Calage Voix</strong>.',
+            example: '<strong>Exemple concret :</strong> Sur un casque Bluetooth qui a un léger retard, cliquez deux fois sur <strong>+50ms</strong> et votre œil retrouve immédiatement le rythme exact de vos oreilles.',
+            photo: { src: imgs.stage, title: 'Repérer la barre et les blocs sur la Photo 7', caption: 'Les flèches -10ms/+10ms se trouvent juste au-dessus des blocs de mots bleus et verts.' },
+          },
+          {
+            label: '⚙ Réglages · ⛶ Plein écran · Karaoké ON',
+            zone: 'Entête du Prompteur Karaoké',
+            desc: '<strong>⚙ Réglages</strong> change la taille du texte karaoké, sa position (Haut / Centre / Bas), la transparence du fond et la couleur chantée. <strong>⛶ Plein écran</strong> passe la scène sur tout votre écran. <strong>Karaoké ON</strong> décide si cette barre de karaoké est gravée ou non dans la vidéo MP4 exportée.',
+          },
+          {
+            label: 'Timeline Audio/Voix & Inspecteur HH:MM:SS.mmm',
+            zone: 'Tout en bas de la colonne centrale',
+            desc: 'Affiche la courbe sonore sous forme de vagues. Cliquez sur <strong>🔍 Mot</strong> pour zoomer sur un mot précis, puis étirez ou déplacez son bloc coloré à la souris. L’inspecteur en dessous permet même d’ajuster le début ou la fin à <strong>±1 ms</strong> ou <strong>±10 ms</strong> près.',
+          },
+        ],
+      },
+      {
+        id: 'themes',
+        num: '05',
+        nav: 'Thèmes, Styles & Art & Motion',
+        title: '05. Choisir parmi 12 Thèmes, 116+ polices Art & Motion et réglages visuels',
+        lead: 'En un clic sur un Thème, tout le clip change d’univers (polices, couleurs, décors animés et mouvements de caméra). Ensuite, vous pouvez ne changer qu’un seul élément ou bloquer vos lignes préférées.',
+        gallery: [
+          {
+            src: imgs.themes,
+            title: 'Photo 8 — Aperçu visuel des 6 grands Thèmes studio',
+            alt: 'Galerie des 6 thèmes signatures : Cinematic, Pop Art Ben-Day, Bauhaus Cinétique, Cyberpunk, Atelier Luxe et Animation',
+            caption: 'Cinematic (cinéma) · Music Video (Pop/Trap/K-Pop) · Art & Motion (Bauhaus/Pop Art/3D/Glitch) · Futuristic · Lifestyle · Animation.',
+          },
+          {
+            src: imgs.artfx,
+            title: 'Photo 9 — Exemples en images : Bauhaus, Pop Art, 3D Isométrique & Cadrage',
+            alt: 'Planche comparative montrant les styles Bauhaus Kinetic, Pop Art Ben-Day, 3D Isométrique et les modes Libérer le centre / Fond Vert',
+            caption: 'Visualisez concrètement la différence entre le style Bauhaus géométrique, Pop Art bande dessinée, 3D filaire et le cadrage autour du chanteur.',
+          },
+        ],
+        subh: 'Les boutons de style expliqués simplement',
+        items: [
+          {
+            label: 'Sélecteur de Thème (17 univers visuels · jusqu’à 30 styles)',
+            zone: 'Mode Facile & Barre de Transport',
+            desc: 'Choisissez l’atmosphère qui colle à votre chanson :<br>• <strong>GUOFENG (Chinois Classique · 30 éléments uniques) :</strong> lavis Shan-Shui, Cité Interdite, Porcelaine Bleu & Blanc, rubans de Dunhuang, lanternes, bambou, jade & calligraphie Wuxia.<br>• <strong>CINEMATIC · MUSIC VIDEO · FUTURISTIC · LIFESTYLE · ANIMATION :</strong> 20 styles fluides et animations cinéma par univers.<br>• <strong>ART & MOTION (Bauhaus, Pop Art Ben-Day, 3D Isométrique, Compositing) :</strong> géométrie, trames comic, cubes 3D et cadrage Libre au Centre.',
+            photo: { src: imgs.themes, title: 'Comparer les thèmes en image (Photo 8)', caption: 'Chaque univers possède ses propres palettes, textures et caméras.' },
+          },
+          {
+            label: 'Modifier uniquement : Style / Palette / Ambiance / Plans',
+            zone: 'Colonne droite (Mode Facile)',
+            desc: 'Vous aimez vos couleurs actuelles mais voulez tester une autre police ou d’autres transitions ? Cliquez uniquement sur le bouton de ce que vous voulez changer sans perdre le reste !',
+            example: '<strong>Exemple concret :</strong> La mise en scène vous plaît mais pas les couleurs ? Cliquez 2 ou 3 fois sur <strong>Palette</strong> jusqu’à trouver le bon accord.',
+          },
+          {
+            label: 'Onglets Avancés : Style · Effets · Techniques',
+            zone: 'Colonne droite (Mode Avancé)',
+            desc: '• <strong>Style :</strong> choisissez un préréglage exact, réglez chaque police ou importez votre propre police (<code>.ttf / .otf</code>).<br>• <strong>Effets :</strong> dosez l’intensité des mouvements, l’effet Glitch, ou la cadence <em>Koma</em> (fluide, 12 images/s, ou 8 images/s style dessin animé).<br>• <strong>Techniques :</strong> cochez/décochez précisément les entrées, sorties, décors et mouvements de caméra autorisés.',
+            photo: { src: imgs.artfx, title: 'Voir les rendus Art & Motion sur la Photo 9', caption: 'Bauhaus, trames Pop Art, cubes 3D isométriques et prisme.' },
+          },
+          {
+            label: 'Cadenas 🔒 & Dé 🎲 sur chaque ligne',
+            zone: 'Liste des lignes (Colonne gauche)',
+            desc: 'Un refrain est parfait et vous ne voulez surtout plus qu’il change quand vous appuyez sur Aléatoire ? Cliquez sur son <strong>cadenas 🔒</strong> pour le protéger. Ou cliquez sur le <strong>dé 🎲</strong> pour ne changer qu’une seule ligne précise.',
+          },
+        ],
+      },
+      {
+        id: 'export',
+        num: '06',
+        nav: 'Export MP4, Calques & Cloud',
+        title: '06. Exporter votre vidéo jusqu’en 4K, sur Fond Vert ou en Sous-titres',
+        lead: 'Tout est calculé directement sur votre appareil (zéro file d’attente). Vous pouvez exporter une vidéo prête pour YouTube/TikTok, des calques transparents pour votre logiciel de montage, ou vos fichiers de paroles.',
+        gallery: [
+          {
+            src: imgs.exportImg,
+            title: 'Photo 10 — Toutes les sorties disponibles : MP4 4K, PNG, LRC, SRT',
+            alt: 'Illustration du pipeline d’exportation : MP4 4K 60fps, Fond vert, Calques PNG transparents et cartes LRC SRT VTT',
+            caption: 'Formats 16:9 ou 9:16, vidéo jusqu’en 4K 60 images/s, écriture directe sur disque pour longs clips et paquets PNG transparents.',
+          },
+          {
+            src: imgs.artfx,
+            title: 'Photo 11 — Exemple visuel « Libérer le centre » & « Fond Vert » (en bas à droite)',
+            alt: 'Comparaison côte à côte montrant Libérer le centre autour d’une silhouette de chanteur et l’exportation sur Fond Vert',
+            caption: 'Libérer le centre place les mots sur les bords pour ne jamais cacher votre visage ; Fond Vert isole uniquement les lettres animées.',
+          },
+        ],
+        subh: 'Comprendre chaque option d’exportation',
+        items: [
+          {
+            label: 'Format · Résolution · FPS · Plage de lignes',
+            zone: 'Paramètres d’export (Droite)',
+            desc: '<strong>16:9</strong> pour YouTube et écrans larges · <strong>9:16</strong> pour TikTok, Instagram Reels et Shorts · <strong>1:1 / 4:5</strong> pour les publications carrées/verticales · <strong>21:9</strong> pour le cinéma. Choisissez de 720p à <strong>4K (2160p)</strong> en 24, 30 ou 60 fps, ou exportez seulement un extrait (ex : lignes 12 à 24).',
+          },
+          {
+            label: 'Libérer le centre & Fond (Vert / Noir)',
+            zone: 'Paramètres d’export (Incrustation)',
+            desc: 'Vous filmez le chanteur au centre de la vidéo ? Cochez <strong>Libérer le centre</strong> pour que les paroles se placent à gauche et à droite sans cacher son visage. Ou activez <strong>Fond vert / noir</strong> pour récupérer uniquement les paroles sur fond uni à poser dans CapCut, Premiere ou Final Cut.',
+            photo: { src: imgs.artfx, title: 'Voir l’exemple en image (Photo 11, panneau bas droite)', caption: 'À gauche : texte autour du chanteur. À droite : texte isolé sur fond vert pur.' },
+          },
+          {
+            label: 'Exporter en MP4 / Pour grandes vidéos',
+            zone: 'Boutons principaux d’export',
+            desc: '<strong>Exporter en MP4</strong> crée votre clip vidéo avec le son (recommandé sur Chrome et Edge). Pour les chansons longues de plus de 2 minutes en 1080p/4K, cliquez plutôt sur <strong>Pour grandes vidéos (enregistrement direct)</strong> afin d’écrire la vidéo en direct sur votre disque dur sans remplir la mémoire.',
+          },
+          {
+            label: 'Séquence PNG · PNG transparent · Calques (back / front)',
+            zone: 'Export images ZIP',
+            desc: 'Télécharge un dossier ZIP image par image. L’option <strong>PNG transparent</strong> conserve la vraie transparence (sans contour vert), et <strong>Calques PNG</strong> sépare le fond (<code>back/</code>) et les paroles (<code>front/</code>) pour vos logiciels pro.',
+          },
+          {
+            label: 'LRC · SRT · VTT · Enhanced LRC · JSON · TXT',
+            zone: 'Paroles synchronisées',
+            desc: 'Exporte vos sous-titres horodatés par ligne (LRC, SRT, VTT) ou mot par mot (Enhanced LRC, JSON). Cochez <strong>Inclure traduction</strong> si vous avez activé la couche bilingue.',
+          },
+        ],
+      },
+      {
+        id: 'shortcuts',
+        num: '07',
+        nav: 'Raccourcis & Recettes en images',
+        title: '07. Raccourcis clavier et 3 recettes faciles étape par étape',
+        lead: 'Apprenez ces quelques touches clavier pour aller deux fois plus vite, ou suivez l’un des 3 parcours ci-dessous selon votre besoin.',
+        gallery: [
+          {
+            src: imgs.overview,
+            title: 'Étape 1 — Importer audio et paroles',
+            alt: 'Vue d’ensemble étape 1',
+            caption: 'Glissez votre MP3 et collez le texte (ou lancez Détecter par IA).',
+          },
+          {
+            src: imgs.tap,
+            title: 'Étape 2 — Caler au millimètre',
+            alt: 'Radar Tap Studio étape 2',
+            caption: 'Synchro Voix ou Tap Studio [Espace], puis ±10 ms à l’oreille.',
+          },
+          {
+            src: imgs.exportImg,
+            title: 'Étape 3 — Styliser et exporter',
+            alt: 'Pipeline export 4K étape 3',
+            caption: 'Choisissez un Thème, appuyez sur R et exportez votre MP4.',
+          },
+        ],
+        subh: 'Les raccourcis clavier les plus utiles',
+        items: [
+          { label: 'Espace · ← / → · Maj + ← / →', zone: 'Lecture vidéo', desc: '<span class="notice-kbd">Espace</span> met lecture ou pause. <span class="notice-kbd">←</span> et <span class="notice-kbd">→</span> avancent image par image (ajoutez <span class="notice-kbd">Maj</span> pour sauter d’1 seconde).' },
+          { label: 'R · D · L', zone: 'Création rapide', desc: '<span class="notice-kbd">R</span> lance Aléatoire dans le thème actif · <span class="notice-kbd">D</span> change uniquement le plan affiché · <span class="notice-kbd">L</span> verrouille ou déverrouille la ligne courante.' },
+          { label: 'Ctrl+Z / Cmd+Z · Ctrl+Y', zone: 'Annuler / Rétablir', desc: 'Revient en arrière ou rétablit vos dernières modifications de texte et de minutage.' },
+          { label: 'Espace · E · P · S · Retour · Tab · Échap', zone: 'Dans Synchro au Tap', desc: '<span class="notice-kbd">Espace</span> = Tapper · <span class="notice-kbd">E</span> = Marquer la fin · <span class="notice-kbd">P</span> = Pause · <span class="notice-kbd">S</span> = Passer · <span class="notice-kbd">Retour</span> = Annuler le dernier tap · <span class="notice-kbd">Tab</span> = Couper un plan · <span class="notice-kbd">Échap</span> = Enregistrer et quitter.' },
+        ],
+        steps: [
+          { num: 'Parcours 1', title: 'Clip express en 2 minutes', desc: '1. Importez le MP3 → 2. Collez les paroles → 3. Cliquez « Synchro Voix » → 4. Choisissez « Music Video » ou « Art & Motion » → 5. Touche R jusqu’au coup de cœur → 6. Exporter en MP4 1080p.' },
+          { num: 'Parcours 2', title: 'Karaoké ultra précis', desc: '1. Importez l’audio → 2. Cliquez « Détecter les paroles par IA » → 3. Vérifiez les rares mots orange → 4. Ajustez Chant↔Affichage (±10 ms) → 5. Exporter MP4 + Enhanced LRC.' },
+          { num: 'Parcours 3', title: 'Montage Reel / TikTok / Chanteur', desc: '1. Format 9:16 → 2. Cochez « Libérer le centre » ou « Fond vert » (ou PNG transparent) → 3. Passez à 60 fps → 4. Posez directement sur votre vidéo dans CapCut ou Premiere.' },
+        ],
+      },
+    ],
+  };
+}
+
+function renderNotice(filterQuery = '') {
+  const dlg = $('noticeDlg');
+  const nav = $('noticeNav');
+  const body = $('noticeBody');
+  const titleEl = $('noticeTitle');
+  const subEl = $('noticeSubtitle');
+  const searchEl = $('noticeSearch');
+  const countEl = $('noticeSearchCount');
+  const tourBtn = $('btnNoticeTour');
+  const closeBtn = $('btnNoticeClose');
+  const prevLb = $('btnNoticeLbPrev');
+  const nextLb = $('btnNoticeLbNext');
+  const closeLb = $('btnNoticeLbClose');
+  if (!dlg || !nav || !body) return;
+
+  const data = getNoticeContent();
+  if (titleEl) titleEl.textContent = data.title;
+  if (subEl) subEl.textContent = data.subtitle;
+  if (searchEl) searchEl.placeholder = data.searchPh;
+  if (tourBtn) { tourBtn.textContent = data.tourBtn; tourBtn.title = data.tourTitle; }
+  if (closeBtn) closeBtn.setAttribute('aria-label', data.closeLabel);
+  if (prevLb) prevLb.textContent = data.prevPhoto;
+  if (nextLb) nextLb.textContent = data.nextPhoto;
+  if (closeLb) closeLb.textContent = data.closePhoto;
+
+  const q = String(filterQuery || '').trim().toLowerCase();
+  const matchesText = txt => !q || String(txt || '').toLowerCase().includes(q);
+  const esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  noticePhotoList = [];
+  const registerPhoto = (photoObj) => {
+    if (!photoObj || !photoObj.src) return -1;
+    const idx = noticePhotoList.length;
+    noticePhotoList.push({
+      src: photoObj.src,
+      alt: photoObj.alt || photoObj.title || '',
+      title: photoObj.title || photoObj.fallbackTitle || '',
+      caption: photoObj.caption || '',
+    });
+    return idx;
+  };
+
+  const renderFigureCard = (fig) => {
+    const idx = registerPhoto(fig);
+    const titleStr = fig.title || fig.fallbackTitle || '';
+    return (
+      '<figure class="notice-figure">' +
+        '<button type="button" class="notice-photo-btn" data-notice-photo="' + idx + '">' +
+          '<div class="notice-figure-media">' +
+            '<img src="' + esc(fig.src) + '" alt="' + esc(fig.alt || titleStr) + '" referrerpolicy="no-referrer" loading="lazy" onerror="this.parentElement.classList.add(\'is-fallback\')">' +
+            '<div class="notice-fig-fallback"><strong>' + esc(titleStr) + '</strong><span>' + esc(fig.caption) + '</span></div>' +
+            '<span class="notice-zoom-hint">' + esc(data.zoomHint) + '</span>' +
+          '</div>' +
+        '</button>' +
+        '<figcaption>' +
+          (titleStr ? '<strong>' + esc(titleStr) + '</strong>' : '') +
+          '<span>' + esc(fig.caption) + '</span>' +
+        '</figcaption>' +
+      '</figure>'
+    );
+  };
+
+  const renderItem = it => {
+    let photoHtml = '';
+    if (it.photo && it.photo.src) {
+      const pIdx = registerPhoto(it.photo);
+      photoHtml =
+        '<button type="button" class="notice-item-photo" data-notice-photo="' + pIdx + '">' +
+          '<div class="notice-item-photo-thumb">' +
+            '<img src="' + esc(it.photo.src) + '" alt="' + esc(it.photo.title || it.label) + '" referrerpolicy="no-referrer" loading="lazy">' +
+          '</div>' +
+          '<div class="notice-item-photo-text">' +
+            '<span class="notice-item-photo-title">' + esc(it.photo.title) + '</span>' +
+            '<span class="notice-item-photo-cap">' + esc(it.photo.caption) + '</span>' +
+            '<span class="notice-item-photo-action">↗ ' + esc(data.zoomHint) + '</span>' +
+          '</div>' +
+        '</button>';
+    }
+    return (
+      '<div class="notice-item">' +
+        '<div class="notice-key">' +
+          '<span class="notice-btn-label">' + esc(it.label) + '</span>' +
+          '<span class="notice-key-zone">' + esc(it.zone) + '</span>' +
+        '</div>' +
+        '<div class="notice-desc">' +
+          '<div>' + it.desc + '</div>' +
+          (it.example ? '<div class="notice-ex">' + it.example + '</div>' : '') +
+          photoHtml +
+        '</div>' +
+      '</div>'
+    );
+  };
+
+  let navHtml = '';
+  let bodyHtml = '';
+  let totalMatches = 0;
+
+  data.sections.forEach((sec, idx) => {
+    const itemMatches = it =>
+      matchesText(sec.title) || matchesText(sec.lead) ||
+      matchesText(it.label) || matchesText(it.zone) || matchesText(it.desc) || matchesText(it.example) ||
+      (it.photo && (matchesText(it.photo.title) || matchesText(it.photo.caption)));
+    const items1 = (sec.items || []).filter(itemMatches);
+    const items2 = (sec.items2 || []).filter(itemMatches);
+    const steps = (sec.steps || []).filter(st => matchesText(sec.title) || matchesText(sec.lead) || matchesText(st.title) || matchesText(st.desc));
+    const galleryMatches = (sec.gallery || []).some(g => matchesText(g.title) || matchesText(g.caption));
+    const secMatches = items1.length + items2.length + steps.length + (galleryMatches && q ? 1 : 0);
+    if (q && secMatches === 0) return;
+    totalMatches += secMatches;
+
+    navHtml += '<button type="button" class="notice-nav-btn' + (idx === 0 || (q && totalMatches === secMatches) ? ' is-active' : '') + '" data-notice-target="notice-sec-' + sec.id + '">' +
+      '<span class="notice-nav-num">' + esc(sec.num) + '</span>' +
+      '<span class="notice-nav-title">' + esc(sec.nav) + '</span>' +
+    '</button>';
+
+    bodyHtml += '<section class="notice-sec" id="notice-sec-' + sec.id + '">' +
+      '<div class="notice-sec-kicker">' + (isEn() ? 'Chapter ' : 'Chapitre ') + esc(sec.num) + ' · Alexura Motion Studio</div>' +
+      '<h3>' + esc(sec.title) + '</h3>' +
+      '<p class="notice-lead">' + esc(sec.lead) + '</p>';
+
+    if (sec.gallery && sec.gallery.length && (!q || galleryMatches)) {
+      const cls3 = sec.gallery.length >= 3 ? ' is-3' : '';
+      bodyHtml += '<div class="notice-gallery' + cls3 + '">' + sec.gallery.map(renderFigureCard).join('') + '</div>';
+    } else if (sec.figure && !q) {
+      bodyHtml += renderFigureCard(sec.figure);
+    }
+
+    if (steps.length) {
+      bodyHtml += '<div class="notice-steps">' + steps.map(st =>
+        '<div class="notice-step-card">' +
+          '<div class="notice-step-num">' + esc(st.num) + '</div>' +
+          '<h4>' + esc(st.title) + '</h4>' +
+          '<p>' + esc(st.desc) + '</p>' +
+        '</div>'
+      ).join('') + '</div>';
+    }
+
+    if (items1.length) {
+      if (sec.subh) bodyHtml += '<h4 class="notice-subh">' + esc(sec.subh) + '</h4>';
+      bodyHtml += '<div class="notice-list">' + items1.map(renderItem).join('') + '</div>';
+    }
+
+    if (items2.length) {
+      if (sec.subh2) bodyHtml += '<h4 class="notice-subh">' + esc(sec.subh2) + '</h4>';
+      bodyHtml += '<div class="notice-list">' + items2.map(renderItem).join('') + '</div>';
+    }
+
+    bodyHtml += '</section>';
+  });
+
+  if (!bodyHtml) {
+    bodyHtml = '<div class="notice-empty"><p><strong>' + esc(data.emptyTitle) + '</strong></p><p>' + esc(data.emptyHint) + '</p><button type="button" id="btnNoticeResetSearch" class="ghost small" style="margin-top:10px">' + esc(data.clearSearch) + '</button></div>';
+  }
+
+  nav.innerHTML = navHtml;
+  body.innerHTML = bodyHtml;
+
+  if (countEl) {
+    if (q) {
+      countEl.textContent = data.matchesFmt(totalMatches);
+      countEl.hidden = false;
+    } else {
+      countEl.hidden = true;
+    }
+  }
+
+  nav.querySelectorAll('.notice-nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.dataset.noticeTarget);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      nav.querySelectorAll('.notice-nav-btn').forEach(b => b.classList.toggle('is-active', b === btn));
+    });
+  });
+
+  body.querySelectorAll('[data-notice-photo]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.getAttribute('data-notice-photo'), 10);
+      if (!isNaN(idx) && idx >= 0) openNoticeLightbox(idx);
+    });
+  });
+
+  const resetBtn = $('btnNoticeResetSearch');
+  if (resetBtn && searchEl) {
+    resetBtn.addEventListener('click', () => {
+      searchEl.value = '';
+      renderNotice('');
+      searchEl.focus();
+    });
+  }
+}
+
+function openNotice(sectionId = null) {
+  const dlg = $('noticeDlg');
+  if (!dlg) return;
+  closeNoticeLightbox();
+  if ($('app') && $('app').classList.contains('menu-open')) {
+    $('app').classList.remove('menu-open');
+    if ($('btnMenu')) $('btnMenu').setAttribute('aria-expanded', 'false');
+  }
+  const searchEl = $('noticeSearch');
+  renderNotice(searchEl ? searchEl.value : '');
+  if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', '');
+  if (sectionId) {
+    const target = document.getElementById('notice-sec-' + sectionId);
+    if (target) requestAnimationFrame(() => target.scrollIntoView({ block: 'start' }));
+  } else if ($('noticeBody')) {
+    $('noticeBody').scrollTop = 0;
+  }
+}
+
+function closeNotice() {
+  closeNoticeLightbox();
+  const dlg = $('noticeDlg');
+  if (!dlg) return;
+  if (dlg.close) dlg.close(); else dlg.removeAttribute('open');
+}
+
+function initNotice() {
+  const dlg = $('noticeDlg');
+  if (!dlg) return;
+  document.querySelectorAll('.notice-open').forEach(b => b.addEventListener('click', () => openNotice()));
+  if ($('btnNoticeClose')) $('btnNoticeClose').addEventListener('click', closeNotice);
+  dlg.addEventListener('click', e => { if (e.target === dlg) closeNotice(); });
+  dlg.addEventListener('cancel', e => {
+    const lb = $('noticeLightbox');
+    if (lb && !lb.hidden) {
+      e.preventDefault();
+      closeNoticeLightbox();
+    }
+  });
+  dlg.addEventListener('keydown', e => {
+    const lb = $('noticeLightbox');
+    if (!lb || lb.hidden) return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); openNoticeLightbox(noticeLightboxIdx - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); openNoticeLightbox(noticeLightboxIdx + 1); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeNoticeLightbox(); }
+  });
+  if ($('btnNoticeLbPrev')) $('btnNoticeLbPrev').addEventListener('click', () => openNoticeLightbox(noticeLightboxIdx - 1));
+  if ($('btnNoticeLbNext')) $('btnNoticeLbNext').addEventListener('click', () => openNoticeLightbox(noticeLightboxIdx + 1));
+  if ($('btnNoticeLbClose')) $('btnNoticeLbClose').addEventListener('click', closeNoticeLightbox);
+  const lbEl = $('noticeLightbox');
+  if (lbEl) lbEl.addEventListener('click', e => { if (e.target === lbEl || e.target.classList.contains('notice-lb-stage')) closeNoticeLightbox(); });
+
+  if ($('btnNoticeTour')) {
+    $('btnNoticeTour').addEventListener('click', () => {
+      closeNotice();
+      setTimeout(() => tourStart(), 80);
+    });
+  }
+  const searchEl = $('noticeSearch');
+  if (searchEl) {
+    searchEl.addEventListener('input', () => renderNotice(searchEl.value));
+  }
+  const body = $('noticeBody');
+  const nav = $('noticeNav');
+  if (body && nav) {
+    body.addEventListener('scroll', () => {
+      const secs = body.querySelectorAll('.notice-sec');
+      if (!secs.length) return;
+      const top = body.scrollTop + 48;
+      let activeId = secs[0].id;
+      secs.forEach(sec => { if (sec.offsetTop <= top) activeId = sec.id; });
+      nav.querySelectorAll('.notice-nav-btn').forEach(b => {
+        b.classList.toggle('is-active', b.dataset.noticeTarget === activeId);
+      });
+    }, { passive: true });
+  }
+}
+
 /* ---------------- boot ---------------- */
 function boot() {
   S.project = loadLocal();
   if (S.project && S.project.cloudSongId) S.cloudSongId = S.project.cloudSongId;
   bind(); initVolume(); syncUI(); syncLoopBtn(); replan();
   bindCloudStudio();
+  initNotice();
   initSlidingMenus();
   restoreFonts();
   // first visit on a phone: スマホ mode
@@ -7452,5 +8710,5 @@ function boot() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 J.ui = S;
 // hooks for hosts that embed the app (the After Effects CEP panel)
-J.uiApi = { toast, replan, syncUI, pause, seek, playRange, selectLyricWord, saveCorrectedLyrics, tlWHandleAt, tlDragWordTo, tlFocusWord, tlWordBoxAt, syncTimelineInspector, syncQualityControlPanel, reanalyzeLowConfidenceUI, jumpToNextLowConfWord, translateAllLyrics, toggleTranslationLayer, clearTranslationLayer, syncTranslationControls, updateTransCfg, saveSyncedLyrics, syncSlidingMenus, nudgeGlobalSyncOffset, alignAllWordsAcousticallyUI, microAlignTapPhrase, shiftTapPhraseWords, toggleTapLoop, assistRemainingTapLines, kpQuickTapCurrentWord, startTap, tapNow, tapEndHold, tapSkip, tapBack, stopTap, openCloudHub, setCloudTab, saveCurrentSongToFirebase, loadCloudSongIntoStudio, downloadCloudSongArtifact, recordWork, testVercelBridge, syncSongToVercel, deployToVercel, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines };
+J.uiApi = { toast, replan, syncUI, pause, seek, playRange, selectLyricWord, saveCorrectedLyrics, tlWHandleAt, tlDragWordTo, tlFocusWord, tlWordBoxAt, syncTimelineInspector, syncQualityControlPanel, reanalyzeLowConfidenceUI, jumpToNextLowConfWord, translateAllLyrics, toggleTranslationLayer, clearTranslationLayer, syncTranslationControls, updateTransCfg, saveSyncedLyrics, syncSlidingMenus, nudgeGlobalSyncOffset, alignAllWordsAcousticallyUI, microAlignTapPhrase, shiftTapPhraseWords, toggleTapLoop, assistRemainingTapLines, kpQuickTapCurrentWord, startTap, tapNow, tapEndHold, tapSkip, tapBack, stopTap, openCloudHub, setCloudTab, saveCurrentSongToFirebase, loadCloudSongIntoStudio, downloadCloudSongArtifact, recordWork, testVercelBridge, syncSongToVercel, deployToVercel, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines, openNotice, closeNotice };
 })();

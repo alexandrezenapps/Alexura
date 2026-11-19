@@ -34,6 +34,7 @@
       <button id="btnSave" title="プロジェクトを .json で保存">保存</button>
       <button id="btnAE" title="After Effects パネル用の構成データを書き出す">AE用に書き出し</button>
       <button id="btnReset" class="ghost" title="歌詞・曲・設定・履歴をすべて消して、最初の状態に戻します">初期化</button>
+      <button id="btnNotice" type="button" class="ghost small notice-open" title="Ouvrir la Notice complète d’Alexura Motion Studio — guide illustré de chaque touche et fonctionnement">Notice</button>
       <button id="btnTerms" class="ghost terms-open" title="出力物の権利とライセンス">利用について</button>
     </div>
   </header>
@@ -341,7 +342,7 @@
           <button id="btnNext" class="ghost small icon-txt" title="次の案へ進む" aria-label="次の案">▶</button>
         </span>
         <button id="btnShuffle" class="accent" title="設定はそのままで構成だけ再抽選（ロックした行は維持）">シャッフル</button>
-        <select class="themeSel" aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"><option value="">テーマなし</option><option value="cinematic">CINEMATIC — 映画・予告編・Blade Runner</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B</option><option value="artmotion">ART &amp; MOTION — Kinetic・Pop Art・3D・Glitch</option><option value="futuristic">FUTURISTIC — Cyberpunk・Sci-Fi・Neon・AI</option><option value="lifestyle">LIFESTYLE — Luxury・Fashion・Travel・Doc</option><option value="animation">ANIMATION — Anime・Cartoon・Fantasy・Surreal</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option></select>
+        <select class="themeSel" aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"><option value="">テーマなし</option><option value="cinematic">CINEMATIC — 映画・予告編・Blade Runner (20)</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B (20)</option><option value="artmotion">ART &amp; MOTION — Kinetic・Pop Art・3D・Glitch (20)</option><option value="futuristic">FUTURISTIC — Cyberpunk・Sci-Fi・Neon・AI (20)</option><option value="lifestyle">LIFESTYLE — Luxury・Fashion・Travel・Doc (20)</option><option value="animation">ANIMATION — Anime・Cartoon・Fantasy・Surreal (20)</option><option value="guofeng">GUOFENG — 中国風・水墨山水・宮廷古典 (30)</option><option value="bauhaus">BAUHAUS — Kinetic Geometry・Swiss Modular (20)</option><option value="popart">POP ART — Comic Halftone・Ben-Day・CMYK (20)</option><option value="iso3d">3D ISOMETRIC — Wireframe Depth・Stereo (20)</option><option value="compositing">COMPOSITING — Keep Centre Free・Chroma Key (20)</option><option value="lyricpv">文字PV (20)</option><option value="kinetic">キネティック (20)</option><option value="wa">和風 (20)</option><option value="horror">ホラー (20)</option><option value="pop">ポップ (20)</option><option value="ballad">バラード (20)</option></select>
         <button id="btnOmakase" class="primary" title="スタイル・雰囲気・演出・配色をまるごとランダムに（キー R）">おまかせ</button>
       </div>
       <div class="tl-bar">
@@ -420,7 +421,7 @@
       <div id="easyPanel" class="easy" hidden>
         <div class="easy-hero">
           <button id="btnOmakaseBig" class="omakase">おまかせで作る</button>
-          <label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ"><option value="">テーマなし</option><option value="cinematic">CINEMATIC — 映画・予告編・Blade Runner</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B</option><option value="artmotion">ART &amp; MOTION — Kinetic・Pop Art・3D・Glitch</option><option value="futuristic">FUTURISTIC — Cyberpunk・Sci-Fi・Neon・AI</option><option value="lifestyle">LIFESTYLE — Luxury・Fashion・Travel・Doc</option><option value="animation">ANIMATION — Anime・Cartoon・Fantasy・Surreal</option><option value="lyricpv">文字PV</option><option value="kinetic">キネティック</option><option value="wa">和風</option><option value="horror">ホラー</option><option value="pop">ポップ</option><option value="ballad">バラード</option></select><small class="muted">選ぶと、その方向の中でおまかせします</small></label>
+          <label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ"><option value="">テーマなし</option><option value="cinematic">CINEMATIC — 映画・予告編・Blade Runner (20)</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B (20)</option><option value="artmotion">ART &amp; MOTION — Kinetic・Pop Art・3D・Glitch (20)</option><option value="futuristic">FUTURISTIC — Cyberpunk・Sci-Fi・Neon・AI (20)</option><option value="lifestyle">LIFESTYLE — Luxury・Fashion・Travel・Doc (20)</option><option value="animation">ANIMATION — Anime・Cartoon・Fantasy・Surreal (20)</option><option value="guofeng">GUOFENG — 中国風・水墨山水・宮廷古典 (30)</option><option value="bauhaus">BAUHAUS — Kinetic Geometry・Swiss Modular (20)</option><option value="popart">POP ART — Comic Halftone・Ben-Day・CMYK (20)</option><option value="iso3d">3D ISOMETRIC — Wireframe Depth・Stereo (20)</option><option value="compositing">COMPOSITING — Keep Centre Free・Chroma Key (20)</option><option value="lyricpv">文字PV (20)</option><option value="kinetic">キネティック (20)</option><option value="wa">和風 (20)</option><option value="horror">ホラー (20)</option><option value="pop">ポップ (20)</option><option value="ballad">バラード (20)</option></select><small class="muted" id="themeMetaNote">選ぶと、その方向の中でおまかせします</small></label>
           <p class="hint">押すたびに、スタイル・雰囲気・動き・配色・構成がまるごと変わります。キーボードの <span class="kbd">R</span> でも実行できます。</p>
           <div class="hist-row">
             <button id="btnPrev2" class="ghost">◀ 前の案</button>
@@ -487,6 +488,7 @@
       </nav>
 
       <div class="tabpane" data-pane="style">
+        <div id="styleCatBar" class="style-cat-bar" role="toolbar" aria-label="カテゴリー"></div>
         <div id="styleGrid" class="style-grid"></div>
         <h3>フォントの役割</h3>
         <div id="fontRoles"></div>
@@ -717,5 +719,42 @@
     </div>
     <div id="vercelStatusNote" class="cloud-note muted mono">Endpoints Vercel actifs : /api/health, /api/transcribe-lyrics, /api/align-vocals, /api/reanalyze-segment, /api/translate-lyrics, /api/bridge</div>
   </section>
+</dialog>
+<dialog id="noticeDlg" class="terms notice-dlg" aria-labelledby="noticeTitle">
+  <div class="notice-head">
+    <div class="notice-title-wrap">
+      <h2 id="noticeTitle">Notice</h2>
+      <span id="noticeSubtitle" class="notice-sub">Guide complet d’Alexura Motion Studio · Touches, exemples et méthodes pas à pas</span>
+    </div>
+    <div class="notice-head-actions">
+      <div class="notice-search-wrap">
+        <input id="noticeSearch" type="search" placeholder="Rechercher une touche, fonction ou raccourci…" aria-label="Rechercher dans la Notice">
+        <span id="noticeSearchCount" class="notice-search-count mono" hidden></span>
+      </div>
+      <button type="button" id="btnNoticeTour" class="ghost small" title="Lancer la visite guidée interactive sur l'interface">Visite guidée</button>
+      <button type="button" id="btnNoticeClose" class="ghost small" aria-label="Fermer la Notice">✕</button>
+    </div>
+  </div>
+  <div class="notice-shell">
+    <nav id="noticeNav" class="notice-nav" aria-label="Chapitres de la Notice"></nav>
+    <div id="noticeBody" class="notice-body" tabindex="0"></div>
+  </div>
+  <div id="noticeLightbox" class="notice-lightbox" hidden role="region" aria-label="Aperçu photo agrandi">
+    <div class="notice-lb-bar">
+      <div class="notice-lb-meta">
+        <span id="noticeLbCounter" class="notice-lb-counter"></span>
+        <strong id="noticeLbTitle"></strong>
+      </div>
+      <div class="notice-lb-acts">
+        <button type="button" id="btnNoticeLbPrev" class="ghost small" aria-label="Photo précédente">← Précédent</button>
+        <button type="button" id="btnNoticeLbNext" class="ghost small" aria-label="Photo suivante">Suivant →</button>
+        <button type="button" id="btnNoticeLbClose" class="ghost small" aria-label="Fermer l’aperçu photo">✕ Fermer</button>
+      </div>
+    </div>
+    <div class="notice-lb-stage">
+      <img id="noticeLbImg" src="" alt="" referrerpolicy="no-referrer">
+    </div>
+    <p id="noticeLbCaption" class="notice-lb-caption"></p>
+  </div>
 </dialog>
 <div id="dropHint" class="drop-hint" hidden><div><strong>ここにドロップして読み込み</strong><span>曲（mp3 / wav など）・歌詞（LRC / SRT / テキスト）・プロジェクト（.json）</span></div></div>

@@ -170,8 +170,16 @@ J.resolveStyle = (project) => {
       return o;
     });
   }
+  const shift = ov && Number.isInteger(ov.schemeShift) && st.schemes.length > 1
+    ? ((ov.schemeShift % st.schemes.length) + st.schemes.length) % st.schemes.length : 0;
+  if (shift) st.schemes = st.schemes.slice(shift).concat(st.schemes.slice(0, shift));
   const fo = project.fonts || {};
-  for (const role of ['display', 'serif', 'body']) if (fo[role] && J.FONTS[fo[role]]) st.fonts[role] = [fo[role]];
+  for (const role of ['display', 'serif', 'body', 'mono']) {
+    if (Array.isArray(fo[role])) {
+      const valid = fo[role].filter(k => typeof k === 'string' && J.FONTS[k]);
+      if (valid.length) st.fonts[role] = valid;
+    } else if (fo[role] && J.FONTS[fo[role]]) st.fonts[role] = [fo[role]];
+  }
   if (J.keyMode(project)) keyStyle(st);
   return st;
 };

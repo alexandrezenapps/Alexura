@@ -9,6 +9,8 @@ import {
 } from 'firebase/auth';
 import {
   getFirestore,
+  initializeFirestore,
+  enableNetwork,
   doc,
   getDocFromServer,
   getDoc,
@@ -21,6 +23,8 @@ import {
   where,
   onSnapshot,
   serverTimestamp,
+  type Firestore,
+  type FirestoreSettings,
   type Unsubscribe,
 } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
@@ -53,8 +57,26 @@ export interface FirestoreErrorInfo {
 }
 
 // Initialize Firebase App & Named Firestore Database
+// Force XHR long-polling in browsers to avoid WebChannel fetch-stream stalls behind proxies/iframes
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+function createFirestoreClient(): Firestore {
+  if (typeof window !== 'undefined') {
+    try {
+      const settings = Object.assign(
+        {
+          experimentalForceLongPolling: true,
+          ignoreUndefinedProperties: true,
+        } as FirestoreSettings,
+        { useFetchStreams: false }
+      );
+      return initializeFirestore(app, settings, firebaseConfig.firestoreDatabaseId);
+    } catch {
+      // Fallback if Firestore was already initialized on this app instance
+    }
+  }
+  return getFirestore(app, firebaseConfig.firestoreDatabaseId);
+}
+export const db = createFirestoreClient();
 export const auth = getAuth(app);
 
 export function handleFirestoreError(
@@ -92,8 +114,18 @@ export async function testConnection(): Promise<{ ok: boolean; offline?: boolean
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     if (msg.includes('the client is offline')) {
-      console.error('Please check your Firebase configuration.');
-      return { ok: false, offline: true };
+      try {
+        await enableNetwork(db);
+        await getDocFromServer(doc(db, 'test', 'connection'));
+        return { ok: true };
+      } catch (retryErr) {
+        const retryMsg = retryErr instanceof Error ? retryErr.message : String(retryErr);
+        if (retryMsg.includes('the client is offline')) {
+          console.error('Please check your Firebase configuration.');
+          return { ok: false, offline: true };
+        }
+        return { ok: true };
+      }
     }
     // Permission denied before sign-in still confirms network reachability
     return { ok: true };

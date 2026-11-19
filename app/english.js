@@ -226,6 +226,10 @@
     bladeCinema: ['Cinema Blade Runner', 'Anamorphic amber & cyan optical glow, film grain and fluid tracking'],
     stagePrism: ['Music Video Prism', 'Pop/Trap/K-Pop stage spotlights, beat punch and choreographed kinetics'],
     kineticPop: ['Art & Motion 3D', 'Geometric Pop Art, isometric 3D cubes, kinetic spin and glitch'],
+    bauhausKinetic: ['Bauhaus Kinetic', 'Primary geometry, Swiss kinetic typography and architectural motion'],
+    popArtBenDay: ['Pop Art Ben-Day', 'Halftone Ben-Day comic matrix, CMYK offset plates and kinetic punch'],
+    stereo3D: ['Stereo 3D Prism', 'Anaglyph cyan & red 3D depth, isometric cubes and dimensional perspective'],
+    glitchPrism: ['Glitch Prism', 'Radical RGB slice-tears, brutalist typography and acid chromatic aberration'],
     cyberAi: ['Futuristic Cyber AI', 'Cyan and UV holograms, HUD telemetry matrix, radar and neon glitch'],
     atelierLux: ['Atelier Lifestyle', 'Editorial champagne and ivory, silk light sweeps and documentary framing'],
     animePrism: ['Anime Fantasy Prism', 'Luminous cel layers, fluid wave warps, petals and surreal motion']

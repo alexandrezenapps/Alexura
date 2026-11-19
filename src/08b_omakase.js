@@ -46,7 +46,13 @@ J.THEMES = {
   cinematic: {
     name: 'CINEMATIC',
     moods: ['emotional', 'editorial'],
-    styles: ['bladeCinema', 'noir', 'gold', 'hud', 'crimson', 'mono'],
+    styles: [
+      'bladeCinema', 'noir', 'gold', 'hud', 'crimson', 'mono',
+      'cinAnamorphic', 'cinSilverHalide', 'cinAmberNocturne', 'cinImaxTitle',
+      'cinNordicMist', 'cinVelvetNoir', 'cinTealOrange', 'cinCriterionInk',
+      'cinEclipseChrome', 'cinDuneOchre', 'cinRainySeoul', 'cinGrandPrix',
+      'cinSaffronLens', 'cinMonolith',
+    ],
     koma: [0],
     extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
     fxPatch: { motion: [0.64, 0.88], glitch: [0.14, 0.38], chroma: [0.55, 0.85], decor: [0.42, 0.72], density: [0.38, 0.62], texture: [0.6, 0.9], bgSwitch: [0.35, 0.65] },
@@ -67,7 +73,13 @@ J.THEMES = {
   musicvideo: {
     name: 'MUSIC VIDEO',
     moods: ['pop', 'emotional', 'glitch'],
-    styles: ['stagePrism', 'synth80', 'magenta', 'crimson', 'transit', 'ocean'],
+    styles: [
+      'stagePrism', 'synth80', 'magenta', 'crimson', 'transit', 'ocean',
+      'mvTrapGold', 'mvKpopNeon', 'mvRnbVelvet', 'mvHipHopRaw',
+      'mvClubStrobe', 'mvChromeDrip', 'mvHyperPop', 'mvVinylGroove',
+      'mvDancefloor', 'mvDrillDark', 'mvFestivalSky', 'mvLatinHeat',
+      'mvIndieStage', 'mvDiamondTour',
+    ],
     koma: [0],
     extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
     fxPatch: { motion: [0.76, 0.96], glitch: [0.22, 0.55], chroma: [0.55, 0.88], decor: [0.55, 0.88], density: [0.5, 0.78], texture: [0.3, 0.6], bgSwitch: [0.45, 0.8] },
@@ -88,28 +100,39 @@ J.THEMES = {
   artmotion: {
     name: 'ART & MOTION',
     moods: ['graphic', 'glitch', 'pop'],
-    styles: ['kineticPop', 'caution', 'acid', 'blueprint', 'candy', 'rouge'],
-    koma: [0, 0, 12],
+    styles: [
+      'kineticPop', 'bauhausKinetic', 'popArtBenDay', 'stereo3D', 'glitchPrism', 'caution', 'acid', 'blueprint', 'candy', 'rouge',
+      'amSwissKinetic', 'amBrutalistType', 'amOpArtWave', 'amMemphisGroove', 'amRisographInk',
+      'amGalleryPoster', 'amNeonKinetic', 'amCollageCut', 'amFoldOrigami', 'amKineticBrass',
+    ],
+    koma: [0],
     extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
-    fxPatch: { motion: [0.76, 0.98], glitch: [0.38, 0.78], chroma: [0.55, 0.88], decor: [0.62, 0.95], density: [0.55, 0.85], texture: [0.35, 0.65], bgSwitch: [0.45, 0.8] },
+    fontTheme: 'artmotion', fontSwap: 0.92,
+    fxPatch: { motion: [0.78, 0.98], glitch: [0.38, 0.78], chroma: [0.58, 0.92], decor: [0.64, 0.96], density: [0.55, 0.85], texture: [0.35, 0.65], bgSwitch: [0.5, 0.85] },
     prefers: {
       layout: ['xbIsoStack', 'perspective', 'diag', 'stickerBomb', 'flipBoard', 'crossBands', 'tunnel', 'xbTwistFrames', 'xbDonut', 'xbHoneycomb', 'xbCompGrid', 'xdHelix', 'xdPivotFan', 'cube', 'accordion'],
       enter: ['knWordSpin', 'knStretchOut', 'knHingeDrop', 'flipX', 'flipY', 'domino', 'fold', 'squashDrop', 'glitchIn', 'slice', 'vSlice', 'xePieceVortex', 'xeGearTick'],
       hold: ['skewWobble', 'rotateSlow', 'orbitSmall', 'xkZigzagFlip', 'xkSpinOne', 'xkParallax', 'kzSquashWave', 'kzSlinky', 'glitchtick', 'flipSwap'],
       exit: ['flipOutX', 'flipOutY', 'foldOut', 'shatterLite', 'vSliceDrop', 'glitchDissolve', 'explode', 'dominoOut', 'xjQuarterTurn', 'xhConcertina'],
       cam: ['barrelRoll', 'roll', 'dutch', 'knTiltKick', 'knCardFlip', 'knShearKick', 'xqTickRoll', 'xqDriftTurn', 'kzRecoil', 'knJumpCut'],
-      fx: ['perspectiveTilt', 'kaleido', 'halftone', 'duotone', 'pixelSort', 'shatter', 'xrQuadCycle', 'xrFlipTiles', 'xrAccordion', 'xrRibbonTwist', 'kzCardSlam', 'slice', 'chroma'],
-      trans: ['cubeTurn', 'shatterTiles', 'sliceShift', 'diagonalWipe', 'spinOut', 'knCornerSwing', 'xqAccordion', 'xqFlipOver', 'xqPropeller'],
-      treat: ['extrude', 'longShadow', 'hardShadow', 'outlineFill', 'doubleOutline', 'halftone', 'stripes', 'splitColor', 'xoBandExtrude'],
-      bg: ['isoCubes', 'triTess', 'moire', 'checker', 'polka', 'halftoneFade', 'xpFoldPlanes', 'xpLissajous', 'kzBigGears', 'xpShiftRows'],
-      decor: ['xmMoire', 'xmSpiro', 'xmIsoCubes', 'xmGears', 'xmPendulum', 'glitchRects', 'shapes', 'stripes', 'triangleSpin', 'memphis'],
+      fx: ['amFx3DFlipCube', 'amFxGlitchTear', 'amFxPopBenDayFlash', 'amFxKineticPrism', 'amFxIsoPulse', 'perspectiveTilt', 'kaleido', 'halftone', 'duotone', 'pixelSort', 'shatter', 'xrQuadCycle', 'xrFlipTiles', 'xrAccordion', 'xrRibbonTwist', 'kzCardSlam', 'slice', 'chroma'],
+      trans: ['amTransPrismFold', 'amTransBauhausSlide', 'amTransComicWipe', 'cubeTurn', 'shatterTiles', 'sliceShift', 'diagonalWipe', 'spinOut', 'knCornerSwing', 'xqAccordion', 'xqFlipOver', 'xqPropeller'],
+      treat: ['amTreat3DAnaglyph', 'amTreatIsoDepth', 'amTreatPopCMYK', 'amTreatPopStarburst', 'amTreatKineticSlice', 'amTreatBauhausBlock', 'amTreatGlitchPrism', 'extrude', 'longShadow', 'hardShadow', 'outlineFill', 'doubleOutline', 'halftone', 'stripes', 'splitColor', 'xoBandExtrude'],
+      bg: ['amBgIsoPrism', 'amBgIsoLattice', 'amBgPopBenDay', 'amBgComicPanels', 'amBgBauhausGeo', 'amBgBauhausGrid', 'amBgOpMoire', 'isoCubes', 'triTess', 'moire', 'checker', 'polka', 'halftoneFade', 'xpFoldPlanes', 'xpLissajous', 'kzBigGears', 'xpShiftRows'],
+      decor: ['amDecoBauhaus', 'amDecoComicBurst', 'amDecoIsoCube', 'xmMoire', 'xmSpiro', 'xmIsoCubes', 'xmGears', 'xmPendulum', 'glitchRects', 'shapes', 'stripes', 'triangleSpin', 'memphis'],
     },
   },
   futuristic: {
     name: 'FUTURISTIC',
     moods: ['glitch', 'graphic', 'pop'],
-    styles: ['cyberAi', 'mint', 'synth80', 'hud', 'vapor', 'acid'],
-    koma: [0, 0, 12],
+    styles: [
+      'cyberAi', 'mint', 'synth80', 'hud', 'vapor', 'acid',
+      'futNeuroHolo', 'futOrbitalHud', 'futQuantumGrid', 'futTokyoCyber',
+      'futBiometric', 'futSolarisAi', 'futDeepSpace', 'futIonMatrix',
+      'futHyperlink', 'futZeroGravity', 'futPlasmaArc', 'futMechaSpec',
+      'futSynthWaveAI', 'futChronoGlass',
+    ],
+    koma: [0],
     extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
     fxPatch: { motion: [0.7, 0.92], glitch: [0.45, 0.85], chroma: [0.68, 0.96], decor: [0.58, 0.88], density: [0.52, 0.8], texture: [0.55, 0.85], bgSwitch: [0.4, 0.72] },
     prefers: {
@@ -118,18 +141,24 @@ J.THEMES = {
       hold: ['scanBand', 'glowFlicker', 'echoTrail', 'glitchtick', 'colorRun', 'xkMagnifier', 'tyReadCursor', 'xkDoubleVision', 'tyOutlineBlink'],
       exit: ['matrixOut', 'scanOut', 'glitch', 'glitchDissolve', 'scrambleOut', 'rgbSplitOut', 'xhBarcode', 'xiInverseBand'],
       cam: ['vertigo', 'spiralIn', 'focusIn', 'snapPan', 'push', 'xqArcSweep', 'xqFocusHunt', 'stepZoom', 'xqTripodNudge'],
-      fx: ['chroma', 'radialChroma', 'rgbSplit', 'crtOff', 'vhsRoll', 'trackingNoise', 'edgeDetect', 'macroBlock', 'scanBar', 'ditherBit', 'xrScanBurst', 'xrCrosshair', 'xrMoire'],
+      fx: ['chroma', 'radialChroma', 'rgbSplit', 'crtOff', 'vhsRoll', 'trackingNoise', 'edgeDetect', 'macroBlock', 'scanBar', 'ditherBit', 'xrScanBurst', 'xrCrosshair', 'xrMoire', 'amFxGlitchTear'],
       trans: ['irisOpen', 'xqBladeRun', 'xqPolyIris', 'pixelate', 'blockDissolve', 'flashCross', 'knStripSlam'],
-      treat: ['neonOutline', 'glow', 'glitchSplit', 'monoGrid', 'chrome', 'echoOutline', 'inline'],
-      bg: ['retroGrid', 'hexGrid', 'squareTunnel', 'xpDepthGrid', 'xpRadar', 'xpScanner', 'xpPlexus', 'xpLoadBars', 'xpSevenSeg', 'starfield', 'scanBars'],
-      decor: ['reticle', 'crosshair', 'barcode', 'qrBlock', 'xmGauge', 'xnLevelMeter', 'xnTimeline', 'xnAsciiGauge', 'radar', 'circuit', 'spinner', 'dataColumns'],
+      treat: ['neonOutline', 'glow', 'glitchSplit', 'monoGrid', 'chrome', 'echoOutline', 'inline', 'amTreatGlitchPrism', 'amTreatIsoDepth'],
+      bg: ['retroGrid', 'hexGrid', 'squareTunnel', 'xpDepthGrid', 'xpRadar', 'xpScanner', 'xpPlexus', 'xpLoadBars', 'xpSevenSeg', 'starfield', 'scanBars', 'amBgIsoLattice'],
+      decor: ['reticle', 'crosshair', 'barcode', 'qrBlock', 'xmGauge', 'xnLevelMeter', 'xnTimeline', 'xnAsciiGauge', 'radar', 'circuit', 'spinner', 'dataColumns', 'amDecoIsoCube'],
     },
     avoid: { decor: ['petals', 'tapePieces', 'paperClip', 'scribbleCircle'], bg: ['tornPaper', 'seigaiha', 'asanoha'] },
   },
   lifestyle: {
     name: 'LIFESTYLE',
     moods: ['editorial', 'calm', 'emotional'],
-    styles: ['atelierLux', 'gold', 'specimen', 'paper', 'forest', 'newsprint'],
+    styles: [
+      'atelierLux', 'gold', 'specimen', 'paper', 'forest', 'newsprint',
+      'luxMaisonIvory', 'luxNoirCashmere', 'luxRiviera', 'luxKyotoTea',
+      'luxParisRunway', 'luxMilanTravel', 'luxMarbleGallery', 'luxEspressoDoc',
+      'luxChampagneSilk', 'luxNordicLinen', 'luxTerracotta', 'luxSatinMidnight',
+      'luxBotanicalVogue', 'luxMonochromeMag',
+    ],
     koma: [0],
     extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
     fxPatch: { motion: [0.46, 0.72], glitch: [0.02, 0.16], chroma: [0.15, 0.42], decor: [0.35, 0.65], density: [0.28, 0.5], texture: [0.5, 0.8], bgSwitch: [0.22, 0.45] },
@@ -150,8 +179,14 @@ J.THEMES = {
   animation: {
     name: 'ANIMATION',
     moods: ['pop', 'emotional', 'calm'],
-    styles: ['animePrism', 'sakura', 'candy', 'sunset', 'ocean', 'vapor'],
-    koma: [0, 0, 12],
+    styles: [
+      'animePrism', 'sakura', 'candy', 'sunset', 'ocean', 'vapor',
+      'aniCelStudio', 'aniMagicalGirl', 'aniCartoonBounce', 'aniFantasyForest',
+      'aniSurrealDream', 'aniMechaAnime', 'aniGhibliMeadow', 'aniShonenFlame',
+      'aniDreamyLofi', 'aniToonStudio', 'aniCrystalFairy', 'aniComicKawaii',
+      'aniSunsetSakura', 'aniSurrealMirror',
+    ],
+    koma: [0],
     extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
     fxPatch: { motion: [0.72, 0.95], glitch: [0.06, 0.28], chroma: [0.4, 0.72], decor: [0.62, 0.92], density: [0.45, 0.72], texture: [0.25, 0.55], bgSwitch: [0.45, 0.8] },
     prefers: {
@@ -167,12 +202,175 @@ J.THEMES = {
       decor: ['petals', 'twinkle', 'sparks', 'confetti', 'heartsStars', 'risingParticles', 'bokeh', 'lineBurst', 'constellation', 'fireflies', 'cloudPuffs'],
     },
   },
-  lyricpv: { name: '文字PV', moods: ['editorial', 'graphic', 'emotional'], set: 'typo' },
-  kinetic: { name: 'キネティック', moods: ['pop', 'graphic', 'glitch'], set: 'kinetic' },
-  wa:      { name: '和風', moods: ['calm', 'emotional', 'editorial'], wa: true },
-  horror:  { name: 'ホラー', moods: ['horror'], set: 'horror' },
-  pop:     { name: 'ポップ', moods: ['pop'] },
-  ballad:  { name: 'バラード', moods: ['calm', 'emotional'], koma: [0, 0, 12] },
+  guofeng: {
+    name: 'GUOFENG · 国风古典',
+    moods: ['emotional', 'calm', 'editorial', 'pop', 'graphic'],
+    styles: [
+      'gfQianliShanShui', 'gfShuiMoJiangNan', 'gfZhuQiangZiJin', 'gfQingHuaCi', 'gfDunHuangFeiTian',
+      'gfFeiCuiYu', 'gfJingTaiLan', 'gfShangYuanDeng', 'gfTangFengShengShi', 'gfSongCiWanYue',
+      'gfHanFuJianXia', 'gfZhuLinQiXian', 'gfHanMeiAoXue', 'gfXiQuLianPu', 'gfSuXiuJinDuan',
+      'gfChaDaoChanYi', 'gfShanHaiShenHua', 'gfDaQiJinBo', 'gfGuQinYaYun', 'gfMuDanGuoSe',
+      'gfTaotieQingTong', 'gfPiYingJianZhi', 'gfHongLouMeng', 'gfMoKeSaiWai', 'gfRuYaoTianQing',
+      'gfSiChouZhiLu', 'gfTaiChiYinYang', 'gfHuPoLiuLi', 'gfZiTengYunHai', 'gfChiBiFengHuo',
+    ],
+    koma: [0],
+    extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
+    fontTheme: 'guofeng', fontSwap: 0.72,
+    fxPatch: { motion: [0.58, 0.86], glitch: [0.02, 0.14], chroma: [0.14, 0.38], decor: [0.55, 0.88], density: [0.38, 0.65], texture: [0.45, 0.78], bgSwitch: [0.35, 0.68] },
+    prefers: {
+      layout: ['vcols', 'kanjiFocus', 'columnsBig', 'frameBox', 'center', 'huge', 'quote', 'dropCap', 'lowerThird', 'depthStack', 'perspective', 'splitScreen'],
+      enter: ['strokeDraw', 'inkBleed', 'unroll', 'fadeStagger', 'blurStagger', 'trackIn', 'riseMask', 'glint', 'fanOpen', 'windBlown', 'wipe'],
+      hold: ['breathe', 'drift', 'focusRack', 'shimmer', 'glintSweep', 'xkParallax', 'xkFocusBreath', 'float', 'sway', 'windGust'],
+      exit: ['trackOutWide', 'dissolve', 'drift', 'blurOutStagger', 'flutterOut', 'fanClose', 'undraw', 'wipe', 'sweepCover', 'sinkMask'],
+      cam: ['dollyIn', 'pullOut', 'orbitDrift', 'panL', 'panR', 'tiltUp', 'xqLongLens', 'xqArcSweep', 'pendulumSway', 'xqLeafFall'],
+      fx: ['gfFxInkMist', 'gfFxGoldLeafFloat', 'gfFxScrollEdge', 'gfFxCalligraphyFlick', 'lightSweep', 'lightRays', 'defocus', 'bloomFlash', 'starGlint', 'ripple'],
+      trans: ['gfTransScrollUnroll', 'gfTransFoldingFan', 'gfTransInkWashDissolve', 'inkBlob', 'xqSoftSweep', 'xqPagePeel', 'xqLightLeak', 'irisOpen', 'wipe', 'xqWaveWipe'],
+      treat: ['gfTreatCinnabarSeal', 'gfTreatGoldLacquer', 'gfTreatInkSplash', 'gfTreatPorcelainRim', 'gfTreatJadeCarving', 'softShadow', 'glow', 'gradientV', 'wide', 'emphasisDots', 'fadeChars', 'outline', 'kerningWide'],
+      bg: ['gfBgShanShui', 'gfBgPalaceLattice', 'gfBgDunhuangRibbons', 'gfBgPorcelainWave', 'gfBgLanternNight', 'gfBgBambooInk', 'mountains', 'oceanWaves', 'horizonGlow', 'bokehBg', 'particlesBg', 'cloudLayers', 'borderFrame', 'spotlight'],
+      decor: ['gfDecoSealStamp', 'gfDecoCloudMotif', 'gfDecoPlumInk', 'gfDecoLanternTag', 'seal', 'watermarkKanji', 'brushStroke', 'petals', 'twinkle', 'bokeh', 'lightLeak', 'leaders', 'cloudPuffs', 'fireflies', 'rings'],
+    },
+    avoid: {
+      layout: ['xcBrowser', 'dotMatrix', 'stickerBomb'],
+      hold: ['jitter', 'glitchtick'],
+      fx: ['crtOff', 'vhsRoll', 'trackingNoise', 'macroBlock', 'invert', 'amFxGlitchTear'],
+      treat: ['amTreatPopCMYK', 'amTreatGlitchPrism', 'amTreat3DAnaglyph'],
+      bg: ['retroGrid', 'amBgPopBenDay', 'amBgComicPanels', 'seigaiha', 'asanoha', 'wzBgShippo', 'polka', 'checker'],
+      decor: ['glitchRects', 'barcode', 'qrBlock', 'confetti'],
+    },
+  },
+  bauhaus: {
+    name: 'BAUHAUS',
+    moods: ['graphic', 'editorial', 'pop'],
+    styles: [
+      'bauhausKinetic', 'bhDessauCream', 'bhWeimarObsidian', 'bhCobaltAxis', 'bhVermilionRule',
+      'bhKandinskyArc', 'bhMoholyPrism', 'bhSwissIntl', 'bhGropiusSlate', 'bhAlbersNest',
+      'bhBayerDiagonal', 'bhStijlPrimary', 'bhOchreBrass', 'bhConcreteHatch', 'bhMonoRotunda',
+      'bhUlmModular', 'bhTschichold', 'bhVignelliJet', 'bhConstructRed', 'bhArchivalGold',
+    ],
+    koma: [0],
+    extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
+    fontTheme: 'artmotion', fontSwap: 0.9,
+    fxPatch: { motion: [0.74, 0.96], glitch: [0.06, 0.25], chroma: [0.35, 0.65], decor: [0.68, 0.96], density: [0.5, 0.8], texture: [0.3, 0.6], bgSwitch: [0.5, 0.85] },
+    prefers: {
+      layout: ['diag', 'xbCompGrid', 'flipBoard', 'crossBands', 'perspective', 'splitScreen', 'frameBox', 'typeSpecimen', 'huge', 'vcols', 'xdPivotFan', 'accordion'],
+      enter: ['knWordSpin', 'knHingeDrop', 'fold', 'domino', 'wipe', 'slice', 'trackIn', 'stretch', 'xeGearTick'],
+      hold: ['rotateSlow', 'xkParallax', 'skewWobble', 'kzSlinky', 'drift', 'breathe'],
+      exit: ['foldOut', 'xjQuarterTurn', 'xhConcertina', 'vSliceDrop', 'wipe', 'trackOutWide'],
+      cam: ['dutch', 'xqTickRoll', 'knTiltKick', 'roll', 'orbitDrift', 'panL', 'panR'],
+      fx: ['amFxKineticPrism', 'amFx3DFlipCube', 'xrQuadCycle', 'xrFlipTiles', 'xrAccordion', 'lightSweep'],
+      trans: ['amTransBauhausSlide', 'amTransPrismFold', 'xqAccordion', 'diagonalWipe', 'sliceShift', 'wipe'],
+      treat: ['amTreatBauhausBlock', 'amTreatKineticSlice', 'hardShadow', 'longShadow', 'outlineFill', 'stripes', 'xoFoldHalf'],
+      bg: ['amBgBauhausGeo', 'amBgBauhausGrid', 'xpShiftRows', 'xpFoldPlanes', 'checker', 'moire', 'triTess'],
+      decor: ['amDecoBauhaus', 'shapes', 'stripes', 'grid', 'xmGears', 'triangleSpin', 'cropMarks'],
+    },
+    avoid: { bg: ['seigaiha', 'asanoha'], fx: ['vhsRoll', 'crtOff', 'trackingNoise'], decor: ['petals', 'heartsStars'] },
+  },
+  popart: {
+    name: 'POP ART',
+    moods: ['pop', 'graphic', 'glitch'],
+    styles: [
+      'popArtBenDay', 'popRoyComic', 'popWarholSilk', 'popCyanMagenta', 'popSupernova',
+      'popElectricLime', 'popStudioCandy', 'popCobaltZap', 'popNoirInk', 'popSunsetPunch',
+      'popBubblegum', 'popBananaVelvet', 'popMintCherry', 'popNewsZine', 'popArcadePow',
+      'popCoralJazz', 'popLaserBerry', 'popGoldenBoom', 'popSkyAction', 'popCrimsonInk',
+    ],
+    koma: [0],
+    extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
+    fontTheme: 'artmotion', fontSwap: 0.92,
+    fxPatch: { motion: [0.8, 0.98], glitch: [0.18, 0.52], chroma: [0.55, 0.88], decor: [0.72, 1.0], density: [0.55, 0.85], texture: [0.22, 0.5], bgSwitch: [0.55, 0.88] },
+    prefers: {
+      layout: ['stickerBomb', 'splitScreen', 'diag', 'huge', 'wave', 'pill', 'scatter', 'mixed', 'xdFourUp', 'ring'],
+      enter: ['squashDrop', 'pop', 'bounceBig', 'rubber', 'knWordSpin', 'knWordSlam', 'drop', 'spin'],
+      exit: ['popOut', 'scatter', 'shatterLite', 'dominoOut', 'whipOut', 'shrink'],
+      hold: ['kzSquashWave', 'beatHop', 'xkZigzagFlip', 'jelly', 'xkBeatBump', 'pulse'],
+      treat: ['amTreatPopStarburst', 'amTreatPopCMYK', 'halftone', 'outlineFill', 'doubleOutline', 'hardShadow', 'sticker'],
+      bg: ['amBgComicPanels', 'amBgPopBenDay', 'polka', 'halftoneFade', 'sunburst', 'checker'],
+      cam: ['bounce', 'knCardFlip', 'xqWhipSpring', 'barrelRoll', 'beatPunch', 'crashZoom'],
+      fx: ['amFxPopBenDayFlash', 'halftone', 'bloomFlash', 'kzCardSlam', 'zoomPunch', 'rgbSplit', 'flash'],
+      trans: ['amTransComicWipe', 'xqHalftone', 'amTransPrismFold', 'cubeTurn', 'spinOut', 'whipPan'],
+      decor: ['amDecoComicBurst', 'memphis', 'sparks', 'confetti', 'shapes', 'dots', 'lineBurst'],
+    },
+    avoid: { bg: ['seigaiha', 'asanoha', 'mountains'], decor: ['petals'] },
+  },
+  iso3d: {
+    name: '3D ISOMETRIC',
+    moods: ['graphic', 'glitch', 'pop'],
+    styles: [
+      'stereo3D', 'isoDeepCobalt', 'isoObsidianGlass', 'isoEmeraldDepth', 'isoAnaglyphRed',
+      'isoPlatinumCad', 'isoRoyalAmethyst', 'isoAmberPrism', 'isoChalkArch', 'isoTitanium',
+      'isoHoloMatrix', 'isoBronzeLat', 'isoFrostIce', 'isoRubinCut', 'isoMidnightAxis',
+      'isoPaperRelief', 'isoJadeTower', 'isoNeonWire', 'isoIndigoParallax', 'isoSolarGold',
+    ],
+    koma: [0],
+    extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
+    fontTheme: 'artmotion', fontSwap: 0.88,
+    fxPatch: { motion: [0.72, 0.95], glitch: [0.22, 0.58], chroma: [0.62, 0.92], decor: [0.58, 0.88], density: [0.5, 0.8], texture: [0.25, 0.55], bgSwitch: [0.48, 0.82] },
+    prefers: {
+      layout: ['xbIsoStack', 'perspective', 'cube', 'tunnel', 'depthStack', 'xbTwistFrames', 'xdHelix', 'xbDonut', 'xbHoneycomb'],
+      enter: ['flipX', 'flipY', 'fold', 'knWordSpin', 'assemble', 'zoom', 'xePieceVortex'],
+      hold: ['xkParallax', 'xkDepthRock', 'xkZigzagFlip', 'rotateSlow', 'focusRack', 'xkDoubleVision'],
+      exit: ['flipOutX', 'flipOutY', 'foldOut', 'zoomThrough', 'shatterLite', 'zoomFar'],
+      cam: ['barrelRoll', 'knCardFlip', 'orbitDrift', 'xqArcSweep', 'dollyIn', 'xqTruckAround', 'vertigo'],
+      fx: ['amFxIsoPulse', 'amFx3DFlipCube', 'amFxKineticPrism', 'perspectiveTilt', 'xrFlipTiles', 'chroma', 'radialChroma'],
+      trans: ['amTransPrismFold', 'cubeTurn', 'xqFlipOver', 'shatterTiles', 'zoomThrough', 'xqPolyIris'],
+      treat: ['amTreatIsoDepth', 'amTreat3DAnaglyph', 'extrude', 'longShadow', 'doubleOutline', 'xoBandExtrude'],
+      bg: ['amBgIsoLattice', 'amBgIsoPrism', 'isoCubes', 'xpFoldPlanes', 'squareTunnel', 'triTess', 'xpDepthGrid'],
+      decor: ['amDecoIsoCube', 'xmIsoCubes', 'xmMoire', 'reticle', 'grid', 'concentricSquares'],
+    },
+    avoid: { bg: ['polka', 'seigaiha'], decor: ['confetti', 'petals', 'heartsStars'] },
+  },
+  compositing: {
+    name: 'COMPOSITING',
+    moods: ['editorial', 'emotional', 'graphic'],
+    styles: [
+      'compCentreSilk', 'compCentreObsidian', 'compChromaPure', 'compSideBySide', 'compBroadcastHUD',
+      'compChampagneEdge', 'compStudioAlpha', 'compDuetSplit', 'compSpotlightCentre', 'compLowerEdgePro',
+      'compPearlMatte', 'compCobaltKey', 'compLiveConcert', 'compPortraitMargin', 'compEditorialFrame',
+      'compKeyPlateNeon', 'compCineOverlay', 'compVogueMargins', 'compCleanChromaPro', 'compStageMonitor',
+    ],
+    koma: [0],
+    centerFree: true,
+    extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
+    fontTheme: 'artmotion', fontSwap: 0.72,
+    fxPatch: { motion: [0.56, 0.82], glitch: [0.04, 0.22], chroma: [0.22, 0.52], decor: [0.42, 0.74], density: [0.35, 0.58], texture: [0.08, 0.3], bgSwitch: [0.3, 0.6] },
+    prefers: {
+      layout: ['splitScreen', 'vcols', 'splitHalves', 'halfVertical', 'lowerThird', 'frameBox', 'columnsBig', 'depthStack', 'edgeFrame', 'corners'],
+      enter: ['trackIn', 'fadeStagger', 'blurStagger', 'wipe', 'riseMask', 'shutter', 'glint'],
+      hold: ['breathe', 'drift', 'xkParallax', 'xkFocusBreath', 'shimmer', 'glintSweep', 'still'],
+      exit: ['trackOutWide', 'dissolve', 'drift', 'wipe', 'sweepCover', 'sinkMask'],
+      cam: ['dollyIn', 'panL', 'panR', 'tiltUp', 'xqLongLens', 'xqLevelOut', 'pullOut'],
+      fx: ['amFxCompositingFrame', 'lightSweep', 'whiteFrame', 'defocus', 'bloomFlash', 'anamorphic'],
+      trans: ['amTransBauhausSlide', 'xqSoftSweep', 'wipe', 'irisOpen', 'cover', 'uncover'],
+      treat: ['amTreatCompositingEdge', 'softShadow', 'outlineFill', 'glow', 'gradientV', 'wide'],
+      bg: ['amBgCompositingStudio', 'letterbox', 'borderFrame', 'vignettePulse', 'spotlight'],
+      decor: ['amDecoSafeFrame', 'cropMarks', 'reticle', 'crosshair', 'timecodeBar', 'leaders'],
+    },
+    avoid: { layout: ['huge', 'center', 'stickerBomb'], fx: ['vhsRoll', 'trackingNoise', 'macroBlock', 'invert'] },
+  },
+  lyricpv: {
+    name: '文字PV', moods: ['editorial', 'graphic', 'emotional'], set: 'typo', koma: [0],
+    styles: ['noir', 'specimen', 'paper', 'newsprint', 'hud', 'crimson', 'mint', 'blueprint', 'mono', 'rouge', 'bhDessauCream', 'bhSwissIntl', 'amSwissKinetic', 'amGalleryPoster', 'cinSilverHalide', 'cinCriterionInk', 'luxMaisonIvory', 'luxParisRunway', 'compStudioAlpha', 'compEditorialFrame'],
+  },
+  kinetic: {
+    name: 'キネティック', moods: ['pop', 'graphic', 'glitch'], set: 'kinetic', koma: [0],
+    styles: ['kineticPop', 'bauhausKinetic', 'caution', 'transit', 'blueprint', 'acid', 'rouge', 'magenta', 'bhBayerDiagonal', 'bhConstructRed', 'popRoyComic', 'popSupernova', 'isoNeonWire', 'mvHipHopRaw', 'mvClubStrobe', 'amSwissKinetic', 'amBrutalistType', 'amOpArtWave', 'stagePrism', 'glitchPrism'],
+  },
+  wa: {
+    name: '和風', moods: ['calm', 'emotional', 'editorial'], wa: true, koma: [0],
+    styles: ['sakura', 'sumi', 'gold', 'paper', 'forest', 'luxKyotoTea', 'aniSunsetSakura', 'aniGhibliMeadow', 'aniDreamyLofi', 'noir', 'crimson', 'cinSilverHalide', 'cinCriterionInk', 'amFoldOrigami', 'amRisographInk', 'luxMaisonIvory', 'luxMarbleGallery', 'atelierLux', 'specimen', 'newsprint'],
+  },
+  horror: {
+    name: 'ホラー', moods: ['horror'], set: 'horror',
+    styles: ['hrRuin', 'hrNightRec', 'hrCurse', 'noir', 'crimson', 'mono', 'hud', 'sumi', 'acid', 'glitchPrism', 'cinVelvetNoir', 'cinMonolith', 'cinAmberNocturne', 'mvDrillDark', 'isoMidnightAxis', 'isoObsidianGlass', 'amBrutalistType', 'futTokyoCyber', 'futPlasmaArc', 'aniShonenFlame'],
+  },
+  pop: {
+    name: 'ポップ', moods: ['pop'], koma: [0],
+    styles: ['magenta', 'candy', 'popArtBenDay', 'caution', 'transit', 'synth80', 'sunset', 'popRoyComic', 'popWarholSilk', 'popSupernova', 'popBubblegum', 'popSkyAction', 'mvKpopNeon', 'mvHyperPop', 'mvDancefloor', 'aniCelStudio', 'aniCartoonBounce', 'aniComicKawaii', 'amMemphisGroove', 'animePrism'],
+  },
+  ballad: {
+    name: 'バラード', moods: ['calm', 'emotional'], koma: [0],
+    styles: ['gold', 'sakura', 'ocean', 'sunset', 'forest', 'paper', 'specimen', 'atelierLux', 'noir', 'luxMaisonIvory', 'luxNoirCashmere', 'luxChampagneSilk', 'luxRiviera', 'cinAmberNocturne', 'cinNordicMist', 'mvRnbVelvet', 'aniDreamyLofi', 'aniSunsetSakura', 'aniCrystalFairy', 'compCentreSilk'],
+  },
 };
 J.THEME_ORDER = Object.keys(J.THEMES);
 
@@ -183,6 +381,7 @@ J.omakase = (project, rnd = Math.random, themeId = null) => {
   if (T && Array.isArray(T.sets)) for (const s of T.sets) switches[s] = true;
   if (T && T.extra) switches.extra = true;
   if (T && T.extra2) switches.extra2 = true;
+  if (T && T.centerFree) switches.centerFree = true;
   if (T && T.wa) { switches.wa = true; switches.extra = true; }     // most 和風 parts belong to 追加分
   if (T) project = Object.assign({}, project, switches);
   const themePart = d => !!(T && d && ((T.set && d.set === T.set) || (Array.isArray(T.sets) && T.sets.includes(d.set)) || (T.wa && d.wa)));
@@ -203,7 +402,8 @@ J.omakase = (project, rnd = Math.random, themeId = null) => {
     const hero = T.styles[0];
     const tStyles = T.styles.filter(okStyle);
     const nonRepeat = tStyles.filter(k => k !== project.style);
-    if (hero && okStyle(hero) && project.style !== hero && rnd() < 0.65) pool = [hero];
+    const heroProb = tStyles.length >= 15 ? 0.14 : 0.65;
+    if (hero && okStyle(hero) && project.style !== hero && rnd() < heroProb) pool = [hero];
     else if (nonRepeat.length) pool = nonRepeat;
     else if (tStyles.length) pool = tStyles;
   } else if (T) {
@@ -249,18 +449,39 @@ J.omakase = (project, rnd = Math.random, themeId = null) => {
   for (const k of (M.noHold || [])) if (enabled.hold[k] !== undefined) enabled.hold[k] = false;
   if (T && T.avoid && Array.isArray(T.avoid.hold)) for (const k of T.avoid.hold) if (enabled.hold[k] !== undefined) enabled.hold[k] = false;
   enabled.hold.still = true;
-  // fonts: prefer the style's own curated role fonts (keep them most of the time on themed looks)
+  // fonts: prefer the style's own curated role fonts, or rich multi-font packs for theme-driven aesthetics (e.g. artmotion)
   const fonts = {};
-  const faces = Object.entries(J.FONTS).filter(([k, f]) => !f.user && !['mono', 'pixel'].includes(f.kind) && (!J.randomOk || J.randomOk(project, 'font', k)));
-  const swapP = T && T.styles ? 0.25 : 0.4;
-  if (rnd() < swapP) fonts.display = pick(faces.filter(([k, f]) => f.weight >= 700 || f.kind === 'display' || f.kind === 'round'))[0];
-  if (rnd() < 0.25) fonts.serif = pick(faces.filter(([k, f]) => f.kind === 'mincho' || f.kind === 'brush'))[0];
-  if (mood === 'chaos' && rnd() < 0.2) fonts.display = 'dot';
-  // colours: style palette most of the time, a fresh accent / ghost pair otherwise
+  const sampleN = (list, n) => {
+    if (!list.length) return [];
+    const copy = list.slice(), out = [];
+    while (copy.length && out.length < n) out.push(copy.splice(Math.floor(rnd() * copy.length), 1)[0]);
+    return out;
+  };
+  if (T && T.fontTheme) {
+    const tf = Object.entries(J.FONTS).filter(([k, f]) => !f.user && f.theme === T.fontTheme && (!J.randomOk || J.randomOk(project, 'font', k)));
+    const dispPool = tf.filter(([, f]) => f.kind === 'display' || f.kind === 'round' || f.kind === 'pixel' || f.kind === 'brush').map(([k]) => k);
+    const serifPool = tf.filter(([, f]) => f.kind === 'mincho' || f.kind === 'brush').map(([k]) => k);
+    const bodyPool = tf.filter(([, f]) => f.kind === 'gothic' || f.kind === 'round' || f.kind === 'display' || f.kind === 'mincho').map(([k]) => k);
+    const monoPool = tf.filter(([, f]) => f.kind === 'mono' || f.kind === 'pixel').map(([k]) => k);
+    if (rnd() < (T.fontSwap ?? 0.9) && dispPool.length) fonts.display = sampleN(dispPool, Math.min(6, dispPool.length));
+    if (rnd() < 0.85 && serifPool.length) fonts.serif = sampleN(serifPool, Math.min(3, serifPool.length));
+    if (rnd() < 0.85 && bodyPool.length) fonts.body = sampleN(bodyPool, Math.min(4, bodyPool.length));
+    if (rnd() < 0.85 && monoPool.length) fonts.mono = sampleN(monoPool, Math.min(3, monoPool.length));
+  } else {
+    const faces = Object.entries(J.FONTS).filter(([k, f]) => !f.user && !['mono', 'pixel'].includes(f.kind) && (!J.randomOk || J.randomOk(project, 'font', k)));
+    const swapP = T && T.styles ? 0.25 : 0.4;
+    if (rnd() < swapP) fonts.display = pick(faces.filter(([k, f]) => f.weight >= 700 || f.kind === 'display' || f.kind === 'round'))[0];
+    if (rnd() < 0.25) fonts.serif = pick(faces.filter(([k, f]) => f.kind === 'mincho' || f.kind === 'brush'))[0];
+    if (mood === 'chaos' && rnd() < 0.2) fonts.display = 'dot';
+  }
+  // colours: style palette most of the time (with scheme rotation for rich styles), fresh accent / ghost pair otherwise
   const colors = Object.assign({}, project.colors, { enabled: false, accentOn: false });
-  if (rnd() < (T && T.styles ? 0.24 : 0.38)) {
-    const bg = J.STYLES[style].schemes[0].bg;
-    Object.assign(colors, J.randomPalette(bg, rnd), { accentOn: true });
+  const scLen = (J.STYLES[style] && J.STYLES[style].schemes && J.STYLES[style].schemes.length) || 1;
+  if (T && T.fontTheme && scLen > 1) colors.schemeShift = Math.floor(rnd() * scLen);
+  else delete colors.schemeShift;
+  if (rnd() < (T && T.styles ? (T.fontTheme ? 0.34 : 0.24) : 0.38)) {
+    const baseScheme = J.STYLES[style].schemes[(colors.schemeShift || 0) % scLen];
+    Object.assign(colors, J.randomPalette(baseScheme.bg, rnd), { accentOn: true });
     delete colors.mode;
   }
   // keep locked lines, drop other per-line picks
