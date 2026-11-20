@@ -9085,6 +9085,610 @@ function initNotice() {
   }
 }
 
+/* ============================================================
+   Real-Time GPS Weather Studio Strip (~1cm / 38px) & 6s Drawer
+   ============================================================ */
+const WX = {
+  data: null,
+  coords: null,
+  accuracyM: null,
+  isOpen: false,
+  hideTimer: null,
+  tickTimer: null,
+  closeAt: 0,
+  pausedForInput: false,
+  loading: false,
+  DURATION_MS: 6000,
+};
+
+function wxClassifyUvRisk(uv) {
+  const n = Number(uv);
+  const en = isEn();
+  if (!Number.isFinite(n)) {
+    return { cls: 'is-low', label: en ? '—' : '—', explain: '' };
+  }
+  const rounded = Math.round(n);
+  if (rounded <= 2) {
+    return {
+      cls: 'is-low',
+      label: en ? 'No risk' : 'Pas de risque',
+      explain: en
+        ? `UV ${rounded} (Low): Minimal solar intensity today — no special protection needed.`
+        : `UV ${rounded} (Pas de risque) : intensité du soleil faible aujourd’hui, aucune protection particulière requise.`,
+    };
+  }
+  if (rounded <= 5) {
+    return {
+      cls: 'is-med',
+      label: en ? 'Medium risk' : 'Moyen risque',
+      explain: en
+        ? `UV ${rounded} (Moderate): Moderate sun intensity — sunglasses and SPF 30+ sunscreen advised.`
+        : `UV ${rounded} (Moyen risque) : intensité du soleil modérée, lunettes de soleil et protection solaire conseillées.`,
+    };
+  }
+  return {
+    cls: 'is-high',
+    label: en ? 'Very risky' : 'Très risqué',
+    explain: en
+      ? `UV ${rounded} (Very risky): Strong sun intensity — wear SPF 50+, hat and seek shade around midday.`
+      : `UV ${rounded} (Très risqué) : forte intensité du soleil aujourd’hui — crème FPS 50+, chapeau et ombre recommandés.`,
+  };
+}
+
+function wxConditionLabel(cond, isDaytime = true) {
+  const type = String(cond?.type || '').toUpperCase();
+  const raw = String(cond?.description?.text || '').trim();
+  const en = isEn();
+  const frMap = {
+    CLEAR: isDaytime ? 'Ensoleillé' : 'Ciel dégagé',
+    MOSTLY_CLEAR: isDaytime ? 'Majoritairement ensoleillé' : 'Ciel peu nuageux',
+    PARTLY_CLOUDY: 'Partiellement nuageux',
+    MOSTLY_CLOUDY: 'Très nuageux',
+    CLOUDY: 'Nuageux',
+    OVERCAST: 'Couvert',
+    WINDY: 'Venteux',
+    WIND_AND_RAIN: 'Vent et pluie',
+    LIGHT_RAIN_SHOWERS: 'Averses légères',
+    CHANCE_OF_SHOWERS: 'Risque d’averses',
+    SCATTERED_SHOWERS: 'Averses éparses',
+    RAIN_SHOWERS: 'Averses de pluie',
+    HEAVY_RAIN_SHOWERS: 'Fortes averses',
+    LIGHT_TO_MODERATE_RAIN: 'Pluie légère à modérée',
+    MODERATE_TO_HEAVY_RAIN: 'Pluie modérée à forte',
+    RAIN: 'Pluie',
+    LIGHT_RAIN: 'Pluie légère',
+    HEAVY_RAIN: 'Forte pluie',
+    RAIN_PERIODICALLY_HEAVY: 'Pluie parfois forte',
+    LIGHT_SNOW_SHOWERS: 'Averses de neige légères',
+    CHANCE_OF_SNOW_SHOWERS: 'Risque de neige',
+    SCATTERED_SNOW_SHOWERS: 'Averses de neige éparses',
+    SNOW_SHOWERS: 'Averses de neige',
+    HEAVY_SNOW_SHOWERS: 'Fortes averses de neige',
+    LIGHT_TO_MODERATE_SNOW: 'Neige légère à modérée',
+    MODERATE_TO_HEAVY_SNOW: 'Neige modérée à forte',
+    SNOW: 'Neige',
+    LIGHT_SNOW: 'Neige légère',
+    HEAVY_SNOW: 'Forte neige',
+    SNOWSTORM: 'Tempête de neige',
+    SNOW_PERIODICALLY_HEAVY: 'Neige parfois forte',
+    HEAVY_SNOW_STORM: 'Forte tempête de neige',
+    BLOWING_SNOW: 'Poudrerie / Neige soufflée',
+    RAIN_AND_SNOW: 'Pluie et neige mêlées',
+    HAIL: 'Grêle',
+    HAIL_SHOWERS: 'Averses de grêle',
+    THUNDERSTORM: 'Orage',
+    THUNDERSHOWER: 'Averse orageuse',
+    LIGHT_THUNDERSTORM_RAIN: 'Orage avec pluie légère',
+    SCATTERED_THUNDERSTORMS: 'Orages épars',
+    HEAVY_THUNDERSTORM: 'Orage violent',
+    FOG: 'Brouillard',
+    MIST: 'Brume',
+    HAZE: 'Brume sèche',
+  };
+  const enMap = {
+    CLEAR: isDaytime ? 'Sunny' : 'Clear night',
+    MOSTLY_CLEAR: isDaytime ? 'Mostly sunny' : 'Mostly clear',
+    PARTLY_CLOUDY: 'Partly cloudy',
+    MOSTLY_CLOUDY: 'Mostly cloudy',
+    CLOUDY: 'Cloudy',
+    OVERCAST: 'Overcast',
+    RAIN: 'Rain',
+    LIGHT_RAIN: 'Light rain',
+    HEAVY_RAIN: 'Heavy rain',
+    RAIN_SHOWERS: 'Rain showers',
+    SNOW: 'Snow',
+    LIGHT_SNOW: 'Light snow',
+    HEAVY_SNOW: 'Heavy snow',
+    THUNDERSTORM: 'Thunderstorm',
+    FOG: 'Fog',
+  };
+  if (en) return enMap[type] || raw || 'Weather';
+  return frMap[type] || raw || 'Temps variable';
+}
+
+function wxConditionSvg(cond, isDaytime = true) {
+  const type = String(cond?.type || '').toUpperCase();
+  if (/THUNDER/.test(type)) {
+    return '<svg viewBox="0 0 24 24" fill="none"><path d="M6 15.5h11.2a3.8 3.8 0 0 0 .5-7.5A5.5 5.5 0 0 0 7.2 6.8 4 4 0 0 0 6 15.5z" fill="#94a3b8" fill-opacity=".35" stroke="#cbd5e1" stroke-width="1.6" stroke-linejoin="round"/><path d="M13 11.5l-2.8 4.6h2.6l-1.4 4.4 4.4-5.4h-2.7l1.3-3.6z" fill="#fbbf24"/></svg>';
+  }
+  if (/SNOW|SLEET|HAIL|BLOWING/.test(type)) {
+    return '<svg viewBox="0 0 24 24" fill="none"><path d="M6 14.5h11.2a3.8 3.8 0 0 0 .5-7.5A5.5 5.5 0 0 0 7.2 5.8 4 4 0 0 0 6 14.5z" fill="#cbd5e1" fill-opacity=".28" stroke="#e2e8f0" stroke-width="1.6"/><circle cx="8.5" cy="18.2" r="1.2" fill="#e0f2fe"/><circle cx="12.5" cy="19.8" r="1.2" fill="#e0f2fe"/><circle cx="16.2" cy="18.2" r="1.2" fill="#e0f2fe"/></svg>';
+  }
+  if (/RAIN|SHOWER|DRIZZLE/.test(type)) {
+    return '<svg viewBox="0 0 24 24" fill="none"><path d="M6 14.5h11.2a3.8 3.8 0 0 0 .5-7.5A5.5 5.5 0 0 0 7.2 5.8 4 4 0 0 0 6 14.5z" fill="#60a5fa" fill-opacity=".24" stroke="#bae6fd" stroke-width="1.6"/><path d="M8.5 17.5l-1 3M12.5 17.5l-1 3M16.5 17.5l-1 3" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round"/></svg>';
+  }
+  if (/PARTLY_CLOUDY|MOSTLY_CLEAR/.test(type)) {
+    return '<svg viewBox="0 0 24 24" fill="none"><circle cx="9.2" cy="8.8" r="3.4" fill="#fbbf24"/><path d="M8.2 18h9.2a3.3 3.3 0 0 0 .4-6.5A4.7 4.7 0 0 0 9 10.6a3.4 3.4 0 0 0-.8 7.4z" fill="#e2e8f0" fill-opacity=".28" stroke="#f8fafc" stroke-width="1.55"/></svg>';
+  }
+  if (/CLOUDY|OVERCAST|FOG|MIST|HAZE/.test(type)) {
+    return '<svg viewBox="0 0 24 24" fill="none"><path d="M6.2 16.5h11.4a3.9 3.9 0 0 0 .5-7.7A5.6 5.6 0 0 0 7.3 7.4a4.1 4.1 0 0 0-1.1 9.1z" fill="#94a3b8" fill-opacity=".30" stroke="#cbd5e1" stroke-width="1.6"/></svg>';
+  }
+  if (!isDaytime) {
+    return '<svg viewBox="0 0 24 24" fill="none"><path d="M16.5 14.5A6.5 6.5 0 0 1 9.5 5.2a6.6 6.6 0 1 0 9.3 9.3c-.7.1-1.5 0-2.3 0z" fill="#fde68a" fill-opacity=".85" stroke="#fde68a" stroke-width="1.3"/></svg>';
+  }
+  return '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.4" fill="#fbbf24"/><path d="M12 2.8v2.1M12 19.1v2.1M4.8 4.8l1.5 1.5M17.7 17.7l1.5 1.5M2.8 12h2.1M19.1 12h2.1M4.8 19.2l1.5-1.5M17.7 6.3l1.5-1.5" stroke="#fbbf24" stroke-width="1.7" stroke-linecap="round"/></svg>';
+}
+
+function wxWindDirLabel(cardinal) {
+  const c = String(cardinal || '').toUpperCase();
+  const en = isEn();
+  const map = {
+    NORTH: en ? 'N' : 'N',
+    NORTH_NORTHEAST: en ? 'NNE' : 'NNE',
+    NORTHEAST: en ? 'NE' : 'NE',
+    EAST_NORTHEAST: en ? 'ENE' : 'ENE',
+    EAST: en ? 'E' : 'E',
+    EAST_SOUTHEAST: en ? 'ESE' : 'ESE',
+    SOUTHEAST: en ? 'SE' : 'SE',
+    SOUTH_SOUTHEAST: en ? 'SSE' : 'SSE',
+    SOUTH: en ? 'S' : 'S',
+    SOUTH_SOUTHWEST: en ? 'SSW' : 'SSO',
+    SOUTHWEST: en ? 'SW' : 'SO',
+    WEST_SOUTHWEST: en ? 'WSW' : 'OSO',
+    WEST: en ? 'W' : 'O',
+    WEST_NORTHWEST: en ? 'WNW' : 'ONO',
+    NORTHWEST: en ? 'NW' : 'NO',
+    NORTH_NORTHWEST: en ? 'NNW' : 'NNO',
+  };
+  return map[c] || '';
+}
+
+function wxFormatDateParts(dObj, idx) {
+  const en = isEn();
+  if (!dObj || !dObj.year) return { name: en ? `Day ${idx + 1}` : `Jour ${idx + 1}`, date: '' };
+  const dt = new Date(dObj.year, (dObj.month || 1) - 1, dObj.day || 1);
+  if (idx === 0) return { name: en ? 'Today' : 'Auj.', date: dt.toLocaleDateString(en ? 'en-US' : 'fr-FR', { day: '2-digit', month: '2-digit' }) };
+  if (idx === 1) return { name: en ? 'Tomorrow' : 'Demain', date: dt.toLocaleDateString(en ? 'en-US' : 'fr-FR', { day: '2-digit', month: '2-digit' }) };
+  const name = dt.toLocaleDateString(en ? 'en-US' : 'fr-FR', { weekday: 'short' }).replace(/\.$/, '');
+  const cap = name.charAt(0).toUpperCase() + name.slice(1);
+  const date = dt.toLocaleDateString(en ? 'en-US' : 'fr-FR', { day: '2-digit', month: '2-digit' });
+  return { name: cap, date };
+}
+
+function wxClearTimers() {
+  if (WX.hideTimer) { clearTimeout(WX.hideTimer); WX.hideTimer = null; }
+  if (WX.tickTimer) { clearInterval(WX.tickTimer); WX.tickTimer = null; }
+}
+
+function wxRestartAutoCloseTimer() {
+  wxClearTimers();
+  if (!WX.isOpen || WX.pausedForInput) return;
+  const fill = $('wxAutoTimerFill');
+  if (fill) {
+    fill.classList.remove('is-running');
+    void fill.offsetWidth;
+    fill.classList.add('is-running');
+  }
+  WX.closeAt = Date.now() + WX.DURATION_MS;
+  const updateCount = () => {
+    const rem = Math.max(0, Math.ceil((WX.closeAt - Date.now()) / 1000));
+    const chip = $('wxTimerChip');
+    const badge = $('wxCountdownBadge');
+    const en = isEn();
+    if (chip) {
+      chip.textContent = `${rem}s`;
+      chip.hidden = !WX.isOpen;
+    }
+    if (badge) {
+      badge.textContent = en ? `Auto-hide ${rem}s` : `Fermeture auto ${rem}s`;
+    }
+  };
+  updateCount();
+  WX.tickTimer = setInterval(updateCount, 250);
+  WX.hideTimer = setTimeout(() => {
+    closeWeatherDrawer();
+  }, WX.DURATION_MS);
+}
+
+function openWeatherDrawer() {
+  const drawer = $('weatherDetailDrawer');
+  const bar = $('weatherTopBar');
+  if (!drawer || !bar) return;
+  WX.isOpen = true;
+  drawer.hidden = false;
+  bar.setAttribute('aria-expanded', 'true');
+  setT('wxExpandHint', isEn() ? 'Hide ▴' : 'Masquer ▴');
+  wxRestartAutoCloseTimer();
+}
+
+function closeWeatherDrawer() {
+  wxClearTimers();
+  const drawer = $('weatherDetailDrawer');
+  const bar = $('weatherTopBar');
+  const fill = $('wxAutoTimerFill');
+  const chip = $('wxTimerChip');
+  WX.isOpen = false;
+  WX.pausedForInput = false;
+  if (drawer) drawer.hidden = true;
+  if (bar) bar.setAttribute('aria-expanded', 'false');
+  if (fill) fill.classList.remove('is-running');
+  if (chip) chip.hidden = true;
+  setT('wxExpandHint', isEn() ? '7 days ▾' : '7 jours ▾');
+}
+
+function toggleWeatherDrawer() {
+  if (WX.isOpen) closeWeatherDrawer();
+  else openWeatherDrawer();
+}
+
+function renderWeatherData(payload) {
+  WX.data = payload;
+  const en = isEn();
+  const cur = payload?.current || null;
+  const loc = payload?.location || {};
+  const aqiData = payload?.airQuality || null;
+  const pollenData = payload?.pollen || null;
+  const days = Array.isArray(payload?.forecastDays) ? payload.forecastDays : [];
+
+  const placeLabel = loc.shortName || (en ? 'Current GPS location' : 'Position GPS actuelle');
+  setT('wxLocLabel', placeLabel);
+  setT('wxFullPlace', placeLabel);
+  setT('wxFullAddr', loc.formattedAddress || `${payload?.coordinates?.lat ?? ''}, ${payload?.coordinates?.lng ?? ''}`);
+  if (WX.accuracyM != null) {
+    setT('wxGpsAccuracy', en ? `GPS ±${Math.round(WX.accuracyM)}m` : `GPS temps réel ±${Math.round(WX.accuracyM)}m`);
+  } else {
+    setT('wxGpsAccuracy', en ? 'Verified coordinates' : 'Position géolocalisée');
+  }
+
+  const notice = $('wxPermissionNotice');
+  if (notice) notice.hidden = true;
+
+  // Current weather
+  const isDay = cur?.isDaytime !== false;
+  const tempNum = Number(cur?.temperature?.degrees);
+  const feelsNum = Number(cur?.feelsLikeTemperature?.degrees);
+  const condLabel = cur?.weatherCondition ? wxConditionLabel(cur.weatherCondition, isDay) : (en ? 'Unavailable' : 'Indisponible');
+  const condSvg = wxConditionSvg(cur?.weatherCondition, isDay);
+  const windKm = Number(cur?.wind?.speed?.value);
+  const gustKm = Number(cur?.wind?.gust?.value);
+  const windDir = wxWindDirLabel(cur?.wind?.direction?.cardinal);
+  const humPct = Number(cur?.relativeHumidity);
+  const rainPct = Number(cur?.precipitation?.probability?.percent);
+  const cloudPct = Number(cur?.cloudCover);
+  const dewNum = Number(cur?.dewPoint?.degrees);
+  const uvNum = Number(cur?.uvIndex);
+  const uvInfo = wxClassifyUvRisk(uvNum);
+
+  const icoEl = $('wxCondIcon');
+  const heroIcoEl = $('wxHeroIcon');
+  if (icoEl) icoEl.innerHTML = condSvg;
+  if (heroIcoEl) heroIcoEl.innerHTML = condSvg;
+
+  const tempStr = Number.isFinite(tempNum) ? `${Math.round(tempNum)}°C` : '--°C';
+  const windStr = Number.isFinite(windKm) ? `${Math.round(windKm)} km/h` : '-- km/h';
+  const humStr = Number.isFinite(humPct) ? `${Math.round(humPct)}%` : '--%';
+  const uvBarStr = Number.isFinite(uvNum) ? `UV ${Math.round(uvNum)} · ${uvInfo.label}` : 'UV --';
+
+  setT('wxTempNow', tempStr);
+  setT('wxCondText', condLabel);
+  setT('wxWindShort', `${en ? 'Wind' : 'Vent'} ${windStr}`);
+  setT('wxHumShort', `${en ? 'Hum.' : 'Humidité'} ${humStr}`);
+  setT('wxUvShort', uvBarStr);
+  const uvShortEl = $('wxUvShort');
+  if (uvShortEl) uvShortEl.className = `wx-metric wx-uv-tag mono ${uvInfo.cls}`;
+
+  setT('wxHeroTemp', tempStr);
+  setT('wxHeroCond', condLabel);
+  const feelsStr = Number.isFinite(feelsNum) ? `${Math.round(feelsNum)}°C` : '--°C';
+  const cloudStr = Number.isFinite(cloudPct) ? `${Math.round(cloudPct)}%` : '--%';
+  setT('wxHeroFeels', en ? `Feels like ${feelsStr} · Cloud ${cloudStr}` : `Ressentie ${feelsStr} · Nuages ${cloudStr}`);
+
+  setT('wxUvVal', Number.isFinite(uvNum) ? `UV ${Math.round(uvNum)}` : 'UV --');
+  const uvBadge = $('wxUvRiskBadge');
+  if (uvBadge) {
+    uvBadge.textContent = uvInfo.label;
+    uvBadge.className = `wx-risk-label ${uvInfo.cls}`;
+  }
+  setT('wxUvExplain', uvInfo.explain || (en ? 'Solar intensity unavailable.' : 'Intensité solaire indisponible.'));
+
+  setT('wxWindVal', windStr);
+  const gustStr = Number.isFinite(gustKm) ? `${Math.round(gustKm)} km/h` : '-- km/h';
+  setT('wxWindSub', (en ? `Gusts ${gustStr}` : `Rafales ${gustStr}`) + (windDir ? ` · ${windDir}` : ''));
+
+  setT('wxHumVal', humStr);
+  const rainStr = Number.isFinite(rainPct) ? `${Math.round(rainPct)}%` : '--%';
+  const dewStr = Number.isFinite(dewNum) ? `${Math.round(dewNum)}°C` : '--°C';
+  setT('wxHumSub', en ? `Rain ${rainStr} · Dew ${dewStr}` : `Pluie ${rainStr} · Rosée ${dewStr}`);
+
+  // Air quality
+  const indexes = Array.isArray(aqiData?.indexes) ? aqiData.indexes : [];
+  const mainAqi = indexes.find(x => x.code === 'uaqi') || indexes[0] || null;
+  if (mainAqi) {
+    const score = mainAqi.aqiDisplay || mainAqi.aqi || '--';
+    const cat = mainAqi.category || '—';
+    const dom = mainAqi.dominantPollutant ? String(mainAqi.dominantPollutant).toUpperCase() : '';
+    const advice = aqiData?.healthRecommendations?.generalPopulation || '';
+    setT('wxAqiShort', `${en ? 'Air' : 'Air'} ${score}`);
+    setT('wxAqiVal', `${score} AQI`);
+    setT('wxAqiCat', cat);
+    setT('wxAqiExplain', (dom ? `${en ? 'Dominant' : 'Polluant dominant'} : ${dom}. ` : '') + (advice || ''));
+  } else {
+    setT('wxAqiShort', en ? 'Air N/A' : 'Air N/D');
+    setT('wxAqiVal', '--');
+    setT('wxAqiCat', en ? 'Unavailable' : 'Indisponible');
+    setT('wxAqiExplain', en ? 'Air quality telemetry unavailable for this zone.' : 'Qualité de l’air non couverte sur cette zone.');
+  }
+
+  // Pollen & Allergy
+  const pollenDays = Array.isArray(pollenData?.dailyInfo) ? pollenData.dailyInfo : [];
+  const pollenByDate = new Map();
+  pollenDays.forEach(pd => {
+    const d = pd?.date;
+    if (!d) return;
+    const key = `${d.year}-${String(d.month).padStart(2, '0')}-${String(d.day).padStart(2, '0')}`;
+    const types = Array.isArray(pd.pollenTypeInfo) ? pd.pollenTypeInfo : [];
+    let maxVal = -1;
+    let maxCat = '';
+    const breakdown = [];
+    types.forEach(pt => {
+      const val = pt?.indexInfo?.value;
+      const cat = pt?.indexInfo?.category;
+      if (Number.isFinite(Number(val))) {
+        if (Number(val) > maxVal) {
+          maxVal = Number(val);
+          maxCat = cat || '';
+        }
+        breakdown.push(`${pt.displayName || pt.code}: ${val}/5`);
+      }
+    });
+    pollenByDate.set(key, { maxVal, maxCat, breakdown, pd });
+  });
+
+  const todayPollen = pollenDays[0] || null;
+  if (todayPollen) {
+    const todayKey = todayPollen.date
+      ? `${todayPollen.date.year}-${String(todayPollen.date.month).padStart(2, '0')}-${String(todayPollen.date.day).padStart(2, '0')}`
+      : '';
+    const pEntry = pollenByDate.get(todayKey);
+    const maxV = pEntry && pEntry.maxVal >= 0 ? pEntry.maxVal : 0;
+    const cat = (pEntry && pEntry.maxCat) || (maxV <= 1 ? (en ? 'Low' : 'Faible') : maxV <= 3 ? (en ? 'Moderate' : 'Modéré') : (en ? 'High' : 'Élevé'));
+    const rec = todayPollen.pollenTypeInfo?.find(pt => pt?.healthRecommendations?.length)?.healthRecommendations?.[0] || '';
+    const activePlants = (Array.isArray(todayPollen.plantInfo) ? todayPollen.plantInfo : [])
+      .filter(pl => pl?.inSeason && pl?.indexInfo)
+      .slice(0, 3)
+      .map(pl => pl.displayName || pl.code);
+    setT('wxPollenShort', `Pollen ${maxV}/5`);
+    setT('wxPollenVal', `${maxV} / 5`);
+    setT('wxPollenCat', cat);
+    const parts = [];
+    if (pEntry?.breakdown?.length) parts.push(pEntry.breakdown.join(' · '));
+    if (activePlants.length) parts.push(`${en ? 'Plants' : 'Plantes'} : ${activePlants.join(', ')}`);
+    if (rec) parts.push(rec);
+    setT('wxPollenExplain', parts.join(' — ') || (en ? 'Low allergen risk.' : 'Risque allergène faible.'));
+  } else {
+    setT('wxPollenShort', en ? 'Pollen N/A' : 'Pollen N/D');
+    setT('wxPollenVal', '-- / 5');
+    setT('wxPollenCat', en ? 'Out of coverage' : 'Hors couverture');
+    setT('wxPollenExplain', en ? 'Pollen telemetry unavailable for these coordinates.' : 'Données pollen non disponibles pour cette zone.');
+  }
+
+  // 7-day (1-week) forecast
+  const weekGrid = $('wxWeekGrid');
+  if (weekGrid) {
+    if (!days.length) {
+      weekGrid.innerHTML = `<div class="muted" style="font-size:11.5px">${en ? '7-day forecast unavailable.' : 'Prévisions sur 7 jours indisponibles.'}</div>`;
+    } else {
+      weekGrid.innerHTML = days.slice(0, 7).map((fd, idx) => {
+        const dtParts = wxFormatDateParts(fd.displayDate, idx);
+        const dayF = fd.daytimeForecast || {};
+        const dCond = wxConditionLabel(dayF.weatherCondition, true);
+        const dSvg = wxConditionSvg(dayF.weatherCondition, true);
+        const tMax = Number.isFinite(Number(fd.maxTemperature?.degrees)) ? `${Math.round(fd.maxTemperature.degrees)}°` : '--°';
+        const tMin = Number.isFinite(Number(fd.minTemperature?.degrees)) ? `${Math.round(fd.minTemperature.degrees)}°` : '--°';
+        const dWind = Number.isFinite(Number(dayF.wind?.speed?.value)) ? `${Math.round(dayF.wind.speed.value)} km/h` : '-- km/h';
+        const dHum = Number.isFinite(Number(dayF.relativeHumidity)) ? `${Math.round(dayF.relativeHumidity)}%` : '--%';
+        const dRain = Number.isFinite(Number(dayF.precipitation?.probability?.percent)) ? `${Math.round(dayF.precipitation.probability.percent)}%` : '0%';
+        const dUv = wxClassifyUvRisk(dayF.uvIndex);
+        const uvDisp = Number.isFinite(Number(dayF.uvIndex)) ? `UV ${Math.round(dayF.uvIndex)} · ${dUv.label}` : 'UV --';
+        const dKey = fd.displayDate
+          ? `${fd.displayDate.year}-${String(fd.displayDate.month).padStart(2, '0')}-${String(fd.displayDate.day).padStart(2, '0')}`
+          : '';
+        const pInfo = dKey ? pollenByDate.get(dKey) : null;
+        const pTxt = pInfo && pInfo.maxVal >= 0 ? `Pollen ${pInfo.maxVal}/5` : '';
+        return (
+          `<article class="wx-day-card${idx === 0 ? ' is-today' : ''}">` +
+            `<div class="wx-day-top">` +
+              `<span class="wx-day-name">${escapeHtml(dtParts.name)}</span>` +
+              `<span class="wx-day-date mono">${escapeHtml(dtParts.date)}</span>` +
+            `</div>` +
+            `<div class="wx-day-mid">` +
+              `<span class="wx-day-ico" aria-hidden="true">${dSvg}</span>` +
+              `<div class="wx-day-temps mono">${tMax} <span>/ ${tMin}</span></div>` +
+            `</div>` +
+            `<div class="wx-day-cond" title="${escapeHtml(dCond)}">${escapeHtml(dCond)}</div>` +
+            `<div class="wx-day-meta mono">` +
+              `<span>${en ? 'Wind' : 'Vent'} <b>${escapeHtml(dWind)}</b> · ${en ? 'Rain' : 'Pluie'} ${escapeHtml(dRain)}</span>` +
+              `<span>${en ? 'Hum.' : 'Humidité'} <b>${escapeHtml(dHum)}</b></span>` +
+              `<span class="${dUv.cls}">${escapeHtml(uvDisp)}</span>` +
+              (pTxt ? `<span>${escapeHtml(pTxt)}</span>` : '') +
+            `</div>` +
+          `</article>`
+        );
+      }).join('');
+    }
+  }
+}
+
+async function fetchWeatherByCoords(lat, lng, accuracyM = null) {
+  if (WX.loading) return;
+  WX.loading = true;
+  WX.coords = { lat, lng };
+  WX.accuracyM = accuracyM;
+  const lang = isEn() ? 'en' : 'fr';
+  try {
+    const resp = await fetch(`/api/weather?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&lang=${encodeURIComponent(lang)}`);
+    let data = null;
+    try { data = await resp.json(); } catch {}
+    if (resp.status === 429 || data?.quotaExceeded) {
+      window.dispatchEvent(new CustomEvent('gmp-quota-exceeded'));
+    }
+    if (!data?.success) {
+      const notice = $('wxPermissionNotice');
+      if (notice) {
+        notice.hidden = false;
+        notice.textContent = isEn()
+          ? 'Real-time weather service temporarily unavailable. Verify API key or retry GPS.'
+          : 'Service météo temps réel temporairement indisponible. Vérifiez la clé API ou réessayez le GPS.';
+      }
+      setT('wxLocLabel', `${lat.toFixed(2)}, ${lng.toFixed(2)}`);
+      setT('wxCondText', isEn() ? 'Weather unavailable' : 'Météo indisponible');
+      return;
+    }
+    renderWeatherData(data);
+  } catch {
+    setT('wxCondText', isEn() ? 'Network error' : 'Erreur réseau');
+  } finally {
+    WX.loading = false;
+  }
+}
+
+async function searchWeatherLocation(query) {
+  const q = String(query || '').trim();
+  if (!q) return;
+  const lang = isEn() ? 'en' : 'fr';
+  try {
+    const resp = await fetch(`/api/weather/search?q=${encodeURIComponent(q)}&lang=${encodeURIComponent(lang)}`);
+    let data = null;
+    try { data = await resp.json(); } catch {}
+    if (resp.status === 429 || data?.quotaExceeded) {
+      window.dispatchEvent(new CustomEvent('gmp-quota-exceeded'));
+      return;
+    }
+    if (!data?.success) {
+      const notice = $('wxPermissionNotice');
+      if (notice) {
+        notice.hidden = false;
+        notice.textContent = isEn() ? 'Location not found. Try a city or postal code.' : 'Lieu introuvable. Essayez une ville ou un code postal.';
+      }
+      return;
+    }
+    await fetchWeatherByCoords(data.lat, data.lng, null);
+    if (WX.isOpen) wxRestartAutoCloseTimer();
+  } catch {}
+}
+
+function refreshWeatherGps(userTriggered = false) {
+  const en = isEn();
+  if (!navigator.geolocation || typeof navigator.geolocation.getCurrentPosition !== 'function') {
+    const notice = $('wxPermissionNotice');
+    if (notice) {
+      notice.hidden = false;
+      notice.textContent = en
+        ? 'Browser GPS unavailable. Enter a city or address above to load live weather.'
+        : 'GPS navigateur indisponible. Saisissez une ville ci-dessus pour afficher la météo en temps réel.';
+    }
+    setT('wxLocLabel', en ? 'GPS unavailable · Search city' : 'GPS indisponible · Choisir ville');
+    setT('wxCondText', en ? 'Press to set location' : 'Appuyer pour choisir un lieu');
+    return;
+  }
+  setT('wxLocLabel', en ? 'Locating GPS…' : 'Localisation GPS…');
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const c = pos?.coords;
+      if (c && Number.isFinite(c.latitude) && Number.isFinite(c.longitude)) {
+        fetchWeatherByCoords(c.latitude, c.longitude, Number.isFinite(c.accuracy) ? c.accuracy : null);
+        if (userTriggered && WX.isOpen) wxRestartAutoCloseTimer();
+      }
+    },
+    err => {
+      const notice = $('wxPermissionNotice');
+      const denied = err && err.code === 1;
+      if (notice) {
+        notice.hidden = false;
+        notice.textContent = denied
+          ? (en
+              ? 'GPS location permission denied. Allow location access or search a city above.'
+              : 'Autorisation GPS refusée. Activez la géolocalisation ou recherchez votre ville ci-dessus.')
+          : (en
+              ? 'Unable to acquire high-precision GPS fix right now. Retry GPS or search a city.'
+              : 'Position GPS précise indisponible pour le moment. Réessayez ⌖ GPS ou recherchez une ville.');
+      }
+      setT('wxLocLabel', en ? 'Allow GPS / Search city' : 'Activer GPS / Ville');
+      setT('wxCondText', en ? 'Tap bar to set city' : 'Appuyer pour définir le lieu');
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+  );
+}
+
+function initWeatherStudio() {
+  window.addEventListener('gmp-quota-exceeded', () => {
+    const banner = $('gmpQuotaBanner');
+    if (banner) banner.hidden = false;
+  });
+
+  const bar = $('weatherTopBar');
+  const wrap = $('weatherTopWrap');
+  const btnClose = $('btnWxClose');
+  const btnGps = $('btnWxGpsRefresh');
+  const form = $('wxSearchForm');
+  const input = $('wxSearchInput');
+
+  if (isEn()) {
+    setT('wxHeroKicker', 'CURRENT CONDITIONS');
+    setT('wxUvKicker', 'UV INDEX & SUN INTENSITY');
+    setT('wxWindHumKicker', 'WIND & HUMIDITY');
+    setT('wxWindLbl', 'Wind');
+    setT('wxHumLbl', 'Humidity');
+    setT('wxAqiKicker', 'AIR QUALITY');
+    setT('wxPollenKicker', 'POLLEN ALLERGY');
+    setT('wxWeekTitle', '1-Week Detailed Forecast (7 Days)');
+    setT('wxWeekMeta', 'Temp · Condition · Wind km/h · UV · Humidity · Pollen (D1–D5)');
+    if (input) input.placeholder = 'Search city / address…';
+  }
+
+  if (bar) bar.addEventListener('click', toggleWeatherDrawer);
+  if (btnClose) btnClose.addEventListener('click', closeWeatherDrawer);
+  if (btnGps) btnGps.addEventListener('click', () => refreshWeatherGps(true));
+  if (form && input) {
+    input.addEventListener('focus', () => {
+      WX.pausedForInput = true;
+      wxClearTimers();
+      const fill = $('wxAutoTimerFill');
+      if (fill) fill.classList.remove('is-running');
+    });
+    input.addEventListener('blur', () => {
+      WX.pausedForInput = false;
+      if (WX.isOpen) wxRestartAutoCloseTimer();
+    });
+    form.addEventListener('submit', ev => {
+      ev.preventDefault();
+      WX.pausedForInput = false;
+      searchWeatherLocation(input.value);
+    });
+  }
+
+  document.addEventListener('click', ev => {
+    if (WX.isOpen && wrap && !wrap.contains(ev.target)) {
+      closeWeatherDrawer();
+    }
+  });
+  document.addEventListener('keydown', ev => {
+    if (ev.key === 'Escape' && WX.isOpen) closeWeatherDrawer();
+  });
+
+  refreshWeatherGps(false);
+}
+
 /* ---------------- boot ---------------- */
 function boot() {
   S.project = loadLocal();
@@ -9092,6 +9696,7 @@ function boot() {
   bind(); initVolume(); syncUI(); syncLoopBtn(); replan();
   bindCloudStudio();
   initNotice();
+  initWeatherStudio();
   initSlidingMenus();
   restoreFonts();
   // first visit on a phone: スマホ mode
@@ -9112,5 +9717,5 @@ function boot() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 J.ui = S;
 // hooks for hosts that embed the app (the After Effects CEP panel)
-J.uiApi = { toast, replan, syncUI, pause, seek, playRange, selectLyricWord, saveCorrectedLyrics, tlWHandleAt, tlDragWordTo, tlFocusWord, tlWordBoxAt, syncTimelineInspector, syncQualityControlPanel, reanalyzeLowConfidenceUI, jumpToNextLowConfWord, translateAllLyrics, toggleTranslationLayer, clearTranslationLayer, syncTranslationControls, updateTransCfg, saveSyncedLyrics, syncSlidingMenus, nudgeGlobalSyncOffset, alignAllWordsAcousticallyUI, microAlignTapPhrase, shiftTapPhraseWords, toggleTapLoop, assistRemainingTapLines, kpQuickTapCurrentWord, startTap, tapNow, tapEndHold, tapSkip, tapBack, stopTap, openCloudHub, setCloudTab, saveCurrentSongToFirebase, loadCloudSongIntoStudio, downloadCloudSongArtifact, recordWork, testVercelBridge, syncSongToVercel, deployToVercel, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines, openNotice, closeNotice };
+J.uiApi = { toast, replan, syncUI, pause, seek, playRange, selectLyricWord, saveCorrectedLyrics, tlWHandleAt, tlDragWordTo, tlFocusWord, tlWordBoxAt, syncTimelineInspector, syncQualityControlPanel, reanalyzeLowConfidenceUI, jumpToNextLowConfWord, translateAllLyrics, toggleTranslationLayer, clearTranslationLayer, syncTranslationControls, updateTransCfg, saveSyncedLyrics, syncSlidingMenus, nudgeGlobalSyncOffset, alignAllWordsAcousticallyUI, microAlignTapPhrase, shiftTapPhraseWords, toggleTapLoop, assistRemainingTapLines, kpQuickTapCurrentWord, startTap, tapNow, tapEndHold, tapSkip, tapBack, stopTap, openCloudHub, setCloudTab, saveCurrentSongToFirebase, loadCloudSongIntoStudio, downloadCloudSongArtifact, recordWork, testVercelBridge, syncSongToVercel, deployToVercel, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines, openNotice, closeNotice, initWeatherStudio, openWeatherDrawer, closeWeatherDrawer, toggleWeatherDrawer, refreshWeatherGps, wxClassifyUvRisk };
 })();

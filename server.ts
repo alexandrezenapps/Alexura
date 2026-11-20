@@ -77,7 +77,7 @@ app.get('/api/health', (_req, res) => {
     vercelConnected: Boolean(process.env.VERCEL || process.env.VERCEL_URL || process.env.EXTERNAL_APP_URL || process.env.VERCEL_DEPLOY_HOOK_URL),
     vercelUrl: process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : process.env.EXTERNAL_APP_URL || '',
     bridgeConfigured: Boolean(process.env.EXTERNAL_APP_URL || process.env.VERCEL_DEPLOY_HOOK_URL),
-    endpoints: ['/api/health', '/api/transcribe-lyrics', '/api/align-vocals', '/api/reanalyze-segment', '/api/translate-lyrics', '/api/bridge'],
+    endpoints: ['/api/health', '/api/weather', '/api/weather/search', '/api/transcribe-lyrics', '/api/align-vocals', '/api/reanalyze-segment', '/api/translate-lyrics', '/api/bridge'],
   });
 });
 
@@ -1107,6 +1107,447 @@ ${JSON.stringify(payloadLines)}`,
       reason: isBilling ? 'billing_required' : 'translation_error',
       requiresBilling: isBilling,
       message: msg.slice(0, 300),
+    });
+  }
+});
+
+// ---------------- Real-Time Weather, Air Quality, Pollen & Geocoding Proxy ----------------
+const GMP_SOLUTION_ID = 'gmp_mcp_codeassist_v1_aistudio';
+const weatherCache = new Map<string, { expiresAt: number; payload: any }>();
+const WEATHER_CACHE_TTL_MS = 10 * 60 * 1000;
+
+function getMapsApiKey(): string {
+  return (
+    process.env.GOOGLE_MAPS_API_KEY ||
+    process.env.VITE_GOOGLE_MAPS_API_KEY ||
+    process.env.MAPS_API_KEY ||
+    ''
+  ).trim();
+}
+
+function isGmpQuotaError(status: number, body: any): boolean {
+  if (status === 429) return true;
+  const errStatus = body?.error?.status;
+  if (errStatus === 'RESOURCE_EXHAUSTED') return true;
+  return false;
+}
+
+async function fetchJsonWithGmp(url: string, init: RequestInit = {}) {
+  const headers: Record<string, string> = {
+    'X-Goog-Maps-Solution-ID': GMP_SOLUTION_ID,
+    ...((init.headers as Record<string, string>) || {}),
+  };
+  const resp = await fetch(url, { ...init, headers });
+  let data: any = null;
+  try {
+    data = await resp.json();
+  } catch {
+    data = null;
+  }
+  return {
+    ok: resp.ok,
+    status: resp.status,
+    quotaExceeded: isGmpQuotaError(resp.status, data),
+    data,
+  };
+}
+
+function extractLocationSummary(geoData: any, lat: number, lng: number) {
+  const results = Array.isArray(geoData?.results) ? geoData.results : [];
+  if (!results.length) {
+    return {
+      shortName: `${lat.toFixed(3)}, ${lng.toFixed(3)}`,
+      locality: '',
+      neighborhood: '',
+      region: '',
+      country: '',
+      formattedAddress: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+    };
+  }
+  const comps: any[] = [];
+  for (const r of results) {
+    if (Array.isArray(r.addressComponents)) {
+      for (const c of r.addressComponents) comps.push(c);
+    }
+  }
+  const findComp = (...types: string[]) => {
+    for (const t of types) {
+      const hit = comps.find(c => Array.isArray(c.types) && c.types.includes(t));
+      if (hit?.longText || hit?.shortText) return String(hit.longText || hit.shortText);
+    }
+    return '';
+  };
+  const neighborhood = findComp('sublocality_level_1', 'sublocality', 'neighborhood', 'route');
+  const locality = findComp('locality', 'postal_town', 'administrative_area_level_2');
+  const region = findComp('administrative_area_level_1');
+  const country = findComp('country');
+  const shortParts = [neighborhood && neighborhood !== locality ? neighborhood : '', locality || region || country].filter(Boolean);
+  const shortName = shortParts.length ? shortParts.join(' · ') : (results[0]?.formattedAddress || `${lat.toFixed(3)}, ${lng.toFixed(3)}`);
+  const formattedAddress = String(results[0]?.formattedAddress || shortName);
+  return {
+    shortName,
+    locality: locality || region || '',
+    neighborhood,
+    region,
+    country,
+    formattedAddress,
+  };
+}
+
+function pollenGrainsToUpi(grains: number): { value: number; categoryFr: string; categoryEn: string } {
+  if (!Number.isFinite(grains) || grains <= 1) return { value: 0, categoryFr: 'Très faible', categoryEn: 'Very Low' };
+  if (grains <= 10) return { value: 1, categoryFr: 'Faible', categoryEn: 'Low' };
+  if (grains <= 35) return { value: 2, categoryFr: 'Modéré', categoryEn: 'Moderate' };
+  if (grains <= 80) return { value: 3, categoryFr: 'Élevé', categoryEn: 'High' };
+  if (grains <= 160) return { value: 4, categoryFr: 'Très élevé', categoryEn: 'Very High' };
+  return { value: 5, categoryFr: 'Extrême', categoryEn: 'Extreme' };
+}
+
+function classifyEaqi(eaqi: number, usAqi: number, isFr: boolean) {
+  const score = Number.isFinite(usAqi) ? Math.round(usAqi) : Math.round(eaqi);
+  if (Number.isFinite(eaqi)) {
+    if (eaqi <= 20) return { score, cat: isFr ? 'Excellente qualité de l’air' : 'Excellent air quality', advice: isFr ? 'Air pur, idéal pour toutes les activités extérieures.' : 'Clean air, ideal for all outdoor activities.' };
+    if (eaqi <= 40) return { score, cat: isFr ? 'Bonne qualité de l’air' : 'Good air quality', advice: isFr ? 'Conditions atmosphériques favorables en extérieur.' : 'Good outdoor atmospheric conditions.' };
+    if (eaqi <= 60) return { score, cat: isFr ? 'Qualité de l’air modérée' : 'Moderate air quality', advice: isFr ? 'Qualité correcte ; les personnes très sensibles peuvent limiter l’effort prolongé.' : 'Moderate quality; sensitive individuals should moderate prolonged exertion.' };
+    if (eaqi <= 80) return { score, cat: isFr ? 'Qualité de l’air médiocre' : 'Poor air quality', advice: isFr ? 'Réduisez les efforts intenses en plein air si vous ressentez une gêne.' : 'Reduce intense outdoor activity if respiratory discomfort occurs.' };
+    return { score, cat: isFr ? 'Mauvaise qualité de l’air' : 'Very poor air quality', advice: isFr ? 'Évitez les activités sportives extérieures prolongées.' : 'Avoid prolonged outdoor physical exertion.' };
+  }
+  return { score, cat: isFr ? 'Qualité modérée' : 'Moderate air quality', advice: '' };
+}
+
+async function fetchOpenMeteoAtmosphericFallback(lat: number, lng: number, lang: string) {
+  const isFr = !String(lang || 'fr').toLowerCase().startsWith('en');
+  try {
+    const url = new URL('https://air-quality-api.open-meteo.com/v1/air-quality');
+    url.searchParams.set('latitude', String(lat));
+    url.searchParams.set('longitude', String(lng));
+    url.searchParams.set('current', 'us_aqi,european_aqi,pm2_5,pm10,nitrogen_dioxide,ozone,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen');
+    url.searchParams.set('hourly', 'alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen');
+    url.searchParams.set('forecast_days', '5');
+    url.searchParams.set('timezone', 'auto');
+    const resp = await fetch(url.toString());
+    if (!resp.ok) return { aqi: null, pollen: null };
+    const om = await resp.json();
+    const cur = om?.current || {};
+
+    const pm25 = Number(cur.pm2_5);
+    const pm10 = Number(cur.pm10);
+    const no2 = Number(cur.nitrogen_dioxide);
+    const o3 = Number(cur.ozone);
+    const eaqi = Number(cur.european_aqi);
+    const usAqi = Number(cur.us_aqi);
+    const pollutantsRaw = [
+      { code: 'pm25', ratio: Number.isFinite(pm25) ? pm25 / 15 : 0, val: pm25 },
+      { code: 'pm10', ratio: Number.isFinite(pm10) ? pm10 / 45 : 0, val: pm10 },
+      { code: 'no2', ratio: Number.isFinite(no2) ? no2 / 25 : 0, val: no2 },
+      { code: 'o3', ratio: Number.isFinite(o3) ? o3 / 100 : 0, val: o3 },
+    ].sort((a, b) => b.ratio - a.ratio);
+    const dominantPollutant = pollutantsRaw[0]?.code || 'pm25';
+    const aqiMeta = classifyEaqi(eaqi, usAqi, isFr);
+    const aqi = Number.isFinite(aqiMeta.score) ? {
+      dateTime: cur.time || new Date().toISOString(),
+      source: 'open-meteo',
+      indexes: [
+        {
+          code: 'eaqi',
+          displayName: Number.isFinite(eaqi) ? 'European AQI' : 'US AQI',
+          aqi: Number.isFinite(eaqi) ? Math.round(eaqi) : aqiMeta.score,
+          aqiDisplay: String(Number.isFinite(eaqi) ? Math.round(eaqi) : aqiMeta.score),
+          category: aqiMeta.cat,
+          dominantPollutant,
+        },
+      ],
+      healthRecommendations: {
+        generalPopulation: aqiMeta.advice,
+      },
+    } : null;
+
+    const hTimes: string[] = Array.isArray(om?.hourly?.time) ? om.hourly.time : [];
+    const byDay = new Map<string, { grass: number; tree: number; weed: number; plants: Record<string, number> }>();
+    const addReading = (dateKey: string, field: string, v: number) => {
+      if (!byDay.has(dateKey)) {
+        byDay.set(dateKey, { grass: 0, tree: 0, weed: 0, plants: {} });
+      }
+      const b = byDay.get(dateKey)!;
+      const val = Number.isFinite(v) ? v : 0;
+      if (field === 'grass_pollen') b.grass = Math.max(b.grass, val);
+      else if (field === 'birch_pollen' || field === 'alder_pollen' || field === 'olive_pollen') {
+        b.tree = Math.max(b.tree, val);
+        b.plants[field] = Math.max(b.plants[field] || 0, val);
+      } else {
+        b.weed = Math.max(b.weed, val);
+        b.plants[field] = Math.max(b.plants[field] || 0, val);
+      }
+    };
+    const pFields = ['grass_pollen', 'birch_pollen', 'alder_pollen', 'olive_pollen', 'mugwort_pollen', 'ragweed_pollen'];
+    hTimes.forEach((iso, idx) => {
+      const dateKey = String(iso).slice(0, 10);
+      for (const f of pFields) {
+        const arr = om?.hourly?.[f];
+        if (Array.isArray(arr) && arr[idx] != null) addReading(dateKey, f, Number(arr[idx]));
+      }
+    });
+
+    const dailyInfo = Array.from(byDay.entries()).slice(0, 5).map(([dateKey, agg]) => {
+      const [yy, mm, dd] = dateKey.split('-').map(Number);
+      const gU = pollenGrainsToUpi(agg.grass);
+      const tU = pollenGrainsToUpi(agg.tree);
+      const wU = pollenGrainsToUpi(agg.weed);
+      const maxUpi = Math.max(gU.value, tU.value, wU.value);
+      const advice = maxUpi === 0
+        ? (isFr ? 'Niveau de pollen très faible aujourd’hui.' : 'Very low pollen levels today.')
+        : maxUpi <= 2
+          ? (isFr ? 'Allergènes faibles à modérés ; aérez plutôt le matin.' : 'Low to moderate pollen; ventilate indoors in early morning.')
+          : (isFr ? 'Pic pollinique actif : rincez vos yeux/cheveux et limitez l’aération l’après-midi.' : 'Active pollen peak: rinse hair and keep windows closed in afternoon.');
+      return {
+        date: { year: yy, month: mm, day: dd },
+        pollenTypeInfo: [
+          {
+            code: 'GRASS',
+            displayName: isFr ? 'Graminées' : 'Grass',
+            inSeason: agg.grass > 0,
+            indexInfo: { value: gU.value, category: isFr ? gU.categoryFr : gU.categoryEn },
+            healthRecommendations: [advice],
+          },
+          {
+            code: 'TREE',
+            displayName: isFr ? 'Arbres' : 'Tree',
+            inSeason: agg.tree > 0,
+            indexInfo: { value: tU.value, category: isFr ? tU.categoryFr : tU.categoryEn },
+          },
+          {
+            code: 'WEED',
+            displayName: isFr ? 'Herbacées' : 'Weed',
+            inSeason: agg.weed > 0,
+            indexInfo: { value: wU.value, category: isFr ? wU.categoryFr : wU.categoryEn },
+          },
+        ],
+        plantInfo: Object.entries(agg.plants)
+          .filter(([, gv]) => gv > 1)
+          .map(([k, gv]) => ({
+            code: k.toUpperCase(),
+            displayName: k.replace('_pollen', '').replace('_', ' '),
+            inSeason: true,
+            indexInfo: { value: pollenGrainsToUpi(gv).value },
+          })),
+      };
+    });
+
+    const pollen = dailyInfo.length ? { source: 'open-meteo', dailyInfo } : null;
+    return { aqi, pollen };
+  } catch {
+    return { aqi: null, pollen: null };
+  }
+}
+
+app.get('/api/weather', async (req, res) => {
+  const lat = Number(req.query.lat);
+  const lng = Number(req.query.lng);
+  const lang = String(req.query.lang || 'fr').trim().slice(0, 10) || 'fr';
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    return res.status(400).json({ success: false, reason: 'invalid_coordinates' });
+  }
+
+  const mapsKey = getMapsApiKey();
+  if (!mapsKey) {
+    return res.status(200).json({ success: false, reason: 'maps_key_not_configured' });
+  }
+
+  const cacheKey = `${lat.toFixed(2)},${lng.toFixed(2)},${lang}`;
+  const cached = weatherCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return res.json({ ...cached.payload, cached: true });
+  }
+
+  const curUrl = new URL('https://weather.googleapis.com/v1/currentConditions:lookup');
+  curUrl.searchParams.set('key', mapsKey);
+  curUrl.searchParams.set('location.latitude', String(lat));
+  curUrl.searchParams.set('location.longitude', String(lng));
+  curUrl.searchParams.set('unitsSystem', 'METRIC');
+
+  const daysUrl = new URL('https://weather.googleapis.com/v1/forecast/days:lookup');
+  daysUrl.searchParams.set('key', mapsKey);
+  daysUrl.searchParams.set('location.latitude', String(lat));
+  daysUrl.searchParams.set('location.longitude', String(lng));
+  daysUrl.searchParams.set('days', '7');
+  daysUrl.searchParams.set('pageSize', '7');
+  daysUrl.searchParams.set('unitsSystem', 'METRIC');
+
+  const aqiUrl = `https://airquality.googleapis.com/v1/currentConditions:lookup?key=${encodeURIComponent(mapsKey)}`;
+
+  const pollenUrl = new URL('https://pollen.googleapis.com/v1/forecast:lookup');
+  pollenUrl.searchParams.set('key', mapsKey);
+  pollenUrl.searchParams.set('location.latitude', String(lat));
+  pollenUrl.searchParams.set('location.longitude', String(lng));
+  pollenUrl.searchParams.set('days', '5');
+  pollenUrl.searchParams.set('plantsDescription', 'false');
+  pollenUrl.searchParams.set('languageCode', lang);
+
+  const geoUrl = new URL('https://geocode.googleapis.com/v4/geocode/location');
+  geoUrl.searchParams.set('location.latitude', String(lat));
+  geoUrl.searchParams.set('location.longitude', String(lng));
+  geoUrl.searchParams.set('languageCode', lang);
+
+  try {
+    const [curRes, daysRes, aqiRes, pollenRes, geoRes] = await Promise.all([
+      fetchJsonWithGmp(curUrl.toString()),
+      fetchJsonWithGmp(daysUrl.toString()),
+      fetchJsonWithGmp(aqiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          universalAqi: true,
+          location: { latitude: lat, longitude: lng },
+          extraComputations: [
+            'HEALTH_RECOMMENDATIONS',
+            'DOMINANT_POLLUTANT_CONCENTRATION',
+            'POLLUTANT_CONCENTRATION',
+            'LOCAL_AQI',
+          ],
+          languageCode: lang,
+        }),
+      }),
+      fetchJsonWithGmp(pollenUrl.toString()),
+      fetchJsonWithGmp(geoUrl.toString(), {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': mapsKey,
+          'X-Goog-FieldMask': 'results.placeId,results.formattedAddress,results.addressComponents,results.types,plusCode',
+        },
+      }),
+    ]);
+
+    const quotaExceeded = Boolean(
+      curRes.quotaExceeded ||
+      daysRes.quotaExceeded ||
+      aqiRes.quotaExceeded ||
+      pollenRes.quotaExceeded ||
+      geoRes.quotaExceeded,
+    );
+
+    if (quotaExceeded && !curRes.ok && !daysRes.ok) {
+      return res.status(429).json({
+        success: false,
+        quotaExceeded: true,
+        reason: 'quota_exceeded',
+      });
+    }
+
+    // Follow nextPageToken once if Forecast returned < 7 days cleanly
+    let forecastDays: any[] = Array.isArray(daysRes.data?.forecastDays) ? daysRes.data.forecastDays.slice() : [];
+    if (daysRes.ok && daysRes.data?.nextPageToken && forecastDays.length < 7) {
+      const p2Url = new URL(daysUrl.toString());
+      p2Url.searchParams.set('pageToken', String(daysRes.data.nextPageToken));
+      const p2Res = await fetchJsonWithGmp(p2Url.toString());
+      if (p2Res.ok && Array.isArray(p2Res.data?.forecastDays)) {
+        forecastDays = forecastDays.concat(p2Res.data.forecastDays).slice(0, 7);
+      }
+    }
+
+    let finalAqiRes = aqiRes;
+    if (!finalAqiRes.ok && !finalAqiRes.quotaExceeded && finalAqiRes.status === 400) {
+      finalAqiRes = await fetchJsonWithGmp(aqiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          universalAqi: true,
+          location: { latitude: lat, longitude: lng },
+        }),
+      });
+    }
+
+    const cur = curRes.ok ? curRes.data : null;
+    let aqi = finalAqiRes.ok ? finalAqiRes.data : null;
+    let pollen = pollenRes.ok ? pollenRes.data : null;
+    const location = extractLocationSummary(geoRes.ok ? geoRes.data : null, lat, lng);
+
+    if ((!aqi || !pollen) && !quotaExceeded) {
+      const fb = await fetchOpenMeteoAtmosphericFallback(lat, lng, lang);
+      if (!aqi && fb.aqi) aqi = fb.aqi;
+      if (!pollen && fb.pollen) pollen = fb.pollen;
+    }
+
+    if (!cur && !forecastDays.length) {
+      return res.status(200).json({
+        success: false,
+        quotaExceeded,
+        reason: curRes.data?.error?.message || 'weather_unavailable',
+        status: curRes.status,
+      });
+    }
+
+    const payload = {
+      success: true,
+      quotaExceeded,
+      fetchedAt: new Date().toISOString(),
+      coordinates: { lat: +lat.toFixed(5), lng: +lng.toFixed(5) },
+      location,
+      current: cur,
+      forecastDays,
+      airQuality: aqi,
+      pollen,
+    };
+
+    if (weatherCache.size > 100) {
+      const firstKey = weatherCache.keys().next().value;
+      if (firstKey) weatherCache.delete(firstKey);
+    }
+    weatherCache.set(cacheKey, {
+      expiresAt: Date.now() + WEATHER_CACHE_TTL_MS,
+      payload,
+    });
+
+    return res.json(payload);
+  } catch (err: any) {
+    return res.status(502).json({
+      success: false,
+      reason: 'weather_proxy_error',
+      message: err?.message || String(err),
+    });
+  }
+});
+
+app.get('/api/weather/search', async (req, res) => {
+  const q = String(req.query.q || '').trim();
+  const lang = String(req.query.lang || 'fr').trim().slice(0, 10) || 'fr';
+  if (!q) {
+    return res.status(400).json({ success: false, reason: 'missing_query' });
+  }
+  const mapsKey = getMapsApiKey();
+  if (!mapsKey) {
+    return res.status(200).json({ success: false, reason: 'maps_key_not_configured' });
+  }
+
+  try {
+    const geoUrl = new URL(`https://geocode.googleapis.com/v4/geocode/address/${encodeURIComponent(q)}`);
+    geoUrl.searchParams.set('languageCode', lang);
+    const geoRes = await fetchJsonWithGmp(geoUrl.toString(), {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': mapsKey,
+        'X-Goog-FieldMask': 'results.placeId,results.location,results.formattedAddress,results.addressComponents',
+      },
+    });
+    if (geoRes.quotaExceeded) {
+      return res.status(429).json({ success: false, quotaExceeded: true, reason: 'quota_exceeded' });
+    }
+    const first = Array.isArray(geoRes.data?.results) ? geoRes.data.results[0] : null;
+    if (!first?.location || !Number.isFinite(first.location.latitude) || !Number.isFinite(first.location.longitude)) {
+      return res.status(200).json({ success: false, reason: 'location_not_found' });
+    }
+    const summary = extractLocationSummary(geoRes.data, first.location.latitude, first.location.longitude);
+    return res.json({
+      success: true,
+      lat: first.location.latitude,
+      lng: first.location.longitude,
+      location: summary,
+    });
+  } catch (err: any) {
+    return res.status(502).json({
+      success: false,
+      reason: 'geocode_search_error',
+      message: err?.message || String(err),
     });
   }
 });

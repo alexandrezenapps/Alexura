@@ -8,6 +8,134 @@
   </div>
 </div>
 <div id="app">
+  <div id="gmpQuotaBanner" class="gmp-quota-banner" hidden role="status" aria-live="polite">
+    <span>
+      Google Maps Platform quota reached. If you are the app owner, visit
+      <a href="https://developers.google.com/maps/ai/ai-studio?utm_campaign=gmp_mcp_codeassist_v1_aistudio#quota_exceeded_errors" target="_blank" rel="noopener noreferrer">maps developer site</a>
+      for instructions to update your account.
+    </span>
+  </div>
+  <div id="weatherTopWrap" class="wx-wrap">
+    <button type="button" id="weatherTopBar" class="wx-bar" aria-expanded="false" aria-controls="weatherDetailDrawer" title="Appuyer pour afficher la météo détaillée, la qualité de l'air, les pollens, l'indice UV et les prévisions 7 jours (disparaît automatiquement après 6 secondes)">
+      <span class="wx-bar-left">
+        <span class="wx-gps-pin" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z"/></svg>
+        </span>
+        <span id="wxLocLabel" class="wx-loc">Localisation GPS…</span>
+      </span>
+      <span class="wx-bar-metrics">
+        <span class="wx-cond-wrap">
+          <span id="wxCondIcon" class="wx-ico" aria-hidden="true"></span>
+          <strong id="wxTempNow" class="wx-temp mono">--°C</strong>
+          <span id="wxCondText" class="wx-cond">Analyse météo…</span>
+        </span>
+        <span class="wx-sep" aria-hidden="true">·</span>
+        <span id="wxWindShort" class="wx-metric mono">Vent -- km/h</span>
+        <span class="wx-sep" aria-hidden="true">·</span>
+        <span id="wxHumShort" class="wx-metric mono">Humidité --%</span>
+        <span class="wx-sep" aria-hidden="true">·</span>
+        <span id="wxUvShort" class="wx-metric wx-uv-tag mono">UV --</span>
+        <span class="wx-sep wx-hide-sm" aria-hidden="true">·</span>
+        <span id="wxAqiShort" class="wx-metric wx-hide-sm mono">Air --</span>
+        <span class="wx-sep wx-hide-md" aria-hidden="true">·</span>
+        <span id="wxPollenShort" class="wx-metric wx-hide-md mono">Pollen --</span>
+      </span>
+      <span class="wx-bar-right">
+        <span id="wxTimerChip" class="wx-timer-chip mono" hidden>6s</span>
+        <span id="wxExpandHint" class="wx-expand">7 jours ▾</span>
+      </span>
+    </button>
+
+    <section id="weatherDetailDrawer" class="wx-drawer" hidden aria-label="Météo géolocalisée détaillée et prévisions 7 jours">
+      <div class="wx-timer-track" aria-hidden="true"><div id="wxAutoTimerFill" class="wx-timer-fill"></div></div>
+      <div class="wx-drawer-inner">
+        <div class="wx-drawer-head">
+          <div class="wx-head-loc">
+            <div class="wx-head-title-row">
+              <strong id="wxFullPlace">Localisation GPS en temps réel</strong>
+              <span id="wxGpsAccuracy" class="wx-gps-meta mono muted">GPS haute précision</span>
+            </div>
+            <div id="wxFullAddr" class="wx-head-sub muted">Détection des coordonnées GPS en cours…</div>
+          </div>
+          <div class="wx-head-actions">
+            <form id="wxSearchForm" class="wx-search-form">
+              <input id="wxSearchInput" type="search" placeholder="Changer de ville / adresse…" aria-label="Rechercher une ville ou adresse">
+              <button type="submit" id="btnWxSearch" class="ghost small">OK</button>
+            </form>
+            <button type="button" id="btnWxGpsRefresh" class="ghost small" title="Actualiser la position GPS en temps réel">⌖ GPS</button>
+            <span id="wxCountdownBadge" class="wx-cd-badge mono">Auto-fermeture 6s</span>
+            <button type="button" id="btnWxClose" class="ghost small" aria-label="Fermer le panneau météo">✕</button>
+          </div>
+        </div>
+
+        <div id="wxPermissionNotice" class="wx-notice" hidden></div>
+
+        <div class="wx-cards">
+          <article class="wx-card wx-card-hero">
+            <div class="wx-card-kicker" id="wxHeroKicker">CONDITIONS ACTUELLES</div>
+            <div class="wx-hero-main">
+              <span id="wxHeroIcon" class="wx-hero-ico" aria-hidden="true"></span>
+              <div>
+                <div id="wxHeroTemp" class="wx-hero-temp mono">--°C</div>
+                <div id="wxHeroCond" class="wx-hero-cond">—</div>
+                <div id="wxHeroFeels" class="wx-hero-sub muted">Ressentie --°C · Nuages --%</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="wx-card">
+            <div class="wx-card-kicker" id="wxUvKicker">INDICE UV &amp; SOLEIL</div>
+            <div class="wx-stat-row">
+              <strong id="wxUvVal" class="wx-stat-big mono">UV --</strong>
+              <span id="wxUvRiskBadge" class="wx-risk-label">—</span>
+            </div>
+            <p id="wxUvExplain" class="wx-card-desc muted">Intensité du rayonnement solaire aujourd’hui.</p>
+          </article>
+
+          <article class="wx-card">
+            <div class="wx-card-kicker" id="wxWindHumKicker">VENT &amp; HUMIDITÉ</div>
+            <div class="wx-stat-split">
+              <div>
+                <div class="wx-mini-lbl muted" id="wxWindLbl">Vent</div>
+                <div id="wxWindVal" class="wx-stat-mid mono">-- km/h</div>
+                <div id="wxWindSub" class="wx-mini-sub muted">Rafales -- km/h · —</div>
+              </div>
+              <div>
+                <div class="wx-mini-lbl muted" id="wxHumLbl">Humidité</div>
+                <div id="wxHumVal" class="wx-stat-mid mono">--%</div>
+                <div id="wxHumSub" class="wx-mini-sub muted">Pluie --% · Rosée --°C</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="wx-card">
+            <div class="wx-card-kicker" id="wxAqiKicker">QUALITÉ DE L’AIR</div>
+            <div class="wx-stat-row">
+              <strong id="wxAqiVal" class="wx-stat-big mono">--</strong>
+              <span id="wxAqiCat" class="wx-cat-text">—</span>
+            </div>
+            <p id="wxAqiExplain" class="wx-card-desc muted">Indice atmosphérique &amp; polluant dominant.</p>
+          </article>
+
+          <article class="wx-card">
+            <div class="wx-card-kicker" id="wxPollenKicker">ALLERGIE POLLEN</div>
+            <div class="wx-stat-row">
+              <strong id="wxPollenVal" class="wx-stat-big mono">-- / 5</strong>
+              <span id="wxPollenCat" class="wx-cat-text">—</span>
+            </div>
+            <p id="wxPollenExplain" class="wx-card-desc muted">Graminées · Arbres · Herbacées</p>
+          </article>
+        </div>
+
+        <div class="wx-week-head">
+          <strong id="wxWeekTitle">Prévisions détaillées sur 1 semaine (7 jours)</strong>
+          <span id="wxWeekMeta" class="muted mono">Températures · Temps · Vent km/h · UV · Humidité · Pollens (J1–J5)</span>
+        </div>
+        <div id="wxWeekGrid" class="wx-week-grid"></div>
+      </div>
+    </section>
+  </div>
+
   <header class="bar">
     <div class="brand"><span class="mark" aria-label="Logo Alexura"><svg class="alexura-icon" viewBox="0 0 32 32" width="30" height="30" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="axObsidian" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0b101b"/><stop offset="60%" stop-color="#131e36"/><stop offset="100%" stop-color="#0b285e"/></linearGradient><linearGradient id="axRim" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#d8be86" stop-opacity="0.72"/><stop offset="50%" stop-color="#60a5fa" stop-opacity="0.45"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0.22"/></linearGradient><linearGradient id="axIvory" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#dbe7fb"/></linearGradient><linearGradient id="axWave" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#d8be86"/><stop offset="50%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient></defs><rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="url(#axObsidian)" stroke="url(#axRim)" stroke-width="1.2"/><path d="M16 6.5 L23 24 H19.7 L18.1 19.8 H13.9 L12.3 24 H9 L16 6.5 Z M14.8 17 H17.2 L16 13.2 Z" fill="url(#axIvory)"/><path d="M5.8 16.5 C8.8 13.8 12.2 19.2 16 16.5 C19.8 13.8 23.2 19.2 26.2 16.5" stroke="url(#axWave)" stroke-width="1.75" stroke-linecap="round" fill="none"/></svg></span><span class="word">Alexura</span><span class="tag">motion studio</span><span class="ver">v@VERSION@</span></div>
     <div class="proj">
