@@ -5,6 +5,7 @@
 'use strict';
 if (!document.getElementById('app')) return;          // engine-only pages (tests)
 const $ = id => document.getElementById(id);
+const setT = (id, t) => { const el = $(id); if (el) el.textContent = t; };
 const LS_KEY = 'jizura.project.v1';
 const HUD_CHARS = '0123456789:./-_()【】・No.LYRICRECUNTITLEDXYlinebpminterlude—─／ ';
 const ICON = {
@@ -15,7 +16,7 @@ const ICON = {
   range: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 3v10M13 3v10"/><path d="M5.5 8h5M8.5 5.5L11 8l-2.5 2.5"/></svg>',
 };
 
-const S = { project: null, plan: null, audio: null, audioFile: null, cloudSongId: null, cloudSongs: [], cloudHistory: [], cloudUser: null, renderer: new J.Renderer(), playing: false, t: 0, t0: 0, playStopAt: null, loop: 'all', loopHold: null, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
+const S = { project: null, plan: null, audio: null, audioFile: null, cloudSongId: null, cloudSongs: [], cloudHistory: [], cloudUser: null, renderer: new J.Renderer(), playing: false, playbackRate: 1, kpStageMode: 'video', kpArtworkUrl: '', t: 0, t0: 0, playStopAt: null, loop: 'all', loopHold: null, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
 const LOOP_CYCLE = ['all', 'line', 'cut', false];
 const LOOP_COPY = {
   all:  { ja: 'ループ', en: 'Loop', titleJa: '全体を繰り返し', titleEn: 'Loop the whole piece' },
@@ -69,18 +70,48 @@ function syncLoopBtn() {
 
 /* WebAudio player (works inside sandboxed pages where blob media may be blocked) */
 const AP = {
-  ctx: null, src: null, startAt: 0, base: 0, rate: 1, gain: null, vol: 0.8, muted: false,
+  ctx: null, src: null, startAt: 0, base: 0, rate: 1, gain: null, analyser: null, freqBins: null, vol: 0.8, muted: false,
   play(buffer, offset, rate = 1) {
     if (!buffer) return;
     if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
     if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
     this.stop();
-    if (!this.gain) { this.gain = this.ctx.createGain(); this.gain.connect(this.ctx.destination); this.applyVol(); }
+    if (!this.gain) {
+      this.gain = this.ctx.createGain();
+      this.analyser = this.ctx.createAnalyser();
+      this.analyser.fftSize = 256;
+      this.analyser.smoothingTimeConstant = 0.78;
+      this.freqBins = new Uint8Array(this.analyser.frequencyBinCount);
+      this.gain.connect(this.analyser);
+      this.analyser.connect(this.ctx.destination);
+      this.applyVol();
+    }
     const s = this.ctx.createBufferSource(); s.buffer = buffer; s.connect(this.gain);
     const maxOff = Math.max(0, (Number(buffer.duration) || 0) - 0.01);
     const off = Math.max(0, Math.min(Number(offset) || 0, maxOff));
     this.rate = rate > 0 ? rate : 1; s.playbackRate.value = this.rate;
     s.start(0, off); this.src = s; this.startAt = this.ctx.currentTime; this.base = off;
+  },
+  setRate(rate) {
+    const r = Math.max(0.25, Math.min(2.5, Number(rate) || 1));
+    if (this.ctx && this.src) {
+      const curPos = this.time();
+      this.base = curPos;
+      this.startAt = this.ctx.currentTime;
+      this.rate = r;
+      try { this.src.playbackRate.setTargetAtTime(r, this.ctx.currentTime, 0.01); } catch (e) { this.src.playbackRate.value = r; }
+    } else {
+      this.rate = r;
+    }
+  },
+  getSpectrum() {
+    if (!this.analyser || !this.freqBins || !S.playing) return null;
+    try {
+      this.analyser.getByteFrequencyData(this.freqBins);
+      return this.freqBins;
+    } catch (e) {
+      return null;
+    }
   },
   stop() { if (this.src) { try { this.src.stop(); } catch (e) {} try { this.src.disconnect(); } catch (e) {} this.src = null; } },
   time() { return this.ctx ? this.base + (this.ctx.currentTime - this.startAt) * this.rate : 0; },
@@ -88,17 +119,27 @@ const AP = {
   setVol(v, muted) { if (v != null) this.vol = Math.max(0, Math.min(1, v)); if (muted != null) this.muted = !!muted; this.applyVol(); },
   applyVol() { if (!this.gain) return; const v = this.muted ? 0 : this.vol * this.vol; try { this.gain.gain.setTargetAtTime(v, this.ctx.currentTime, 0.015); } catch (e) { this.gain.gain.value = v; } },
 };
-/* プレビュー音量: remembered per browser */
+/* Volume preview: synced across main transport bar & Karaoke Player deck */
 function initVolume() {
-  const el = $('vol'), mb = $('btnMute'); if (!el || !mb) return;
+  const el = $('vol'), mb = $('btnMute'), kpEl = $('kpVolRange'), kpMb = $('kpBtnMute');
+  if (!el && !kpEl) return;
   let v = 0.8, m = false;
   try { const o = JSON.parse(localStorage.getItem('jizura.previewVolume') || 'null'); if (o) { v = +o.v; m = !!o.m; } } catch (e) {}
   if (!(v >= 0 && v <= 1)) v = 0.8;
-  const show = () => { el.value = Math.round(AP.vol * 100); mb.textContent = AP.muted || AP.vol === 0 ? '消音' : '音量'; mb.setAttribute('aria-pressed', String(AP.muted)); el.title = '音量 ' + Math.round(AP.vol * 100) + '%'; };
+  const show = () => {
+    const pct = Math.round(AP.vol * 100);
+    const isMuted = AP.muted || AP.vol === 0;
+    if (el) { el.value = pct; el.title = 'Volume ' + pct + '%'; }
+    if (mb) { mb.textContent = isMuted ? '消音' : '音量'; mb.setAttribute('aria-pressed', String(AP.muted)); }
+    if (kpEl) { kpEl.value = pct; kpEl.title = pct + '%'; }
+    if (kpMb) { kpMb.textContent = isMuted ? '🔇' : '🔊'; kpMb.setAttribute('aria-pressed', String(AP.muted)); }
+  };
   const save = () => { try { localStorage.setItem('jizura.previewVolume', JSON.stringify({ v: AP.vol, m: AP.muted })); } catch (e) {} };
   AP.setVol(v, m); show();
-  el.addEventListener('input', () => { AP.setVol(el.value / 100, false); show(); save(); });
-  mb.addEventListener('click', () => { AP.setVol(null, !AP.muted); show(); save(); });
+  if (el) el.addEventListener('input', () => { AP.setVol(el.value / 100, false); show(); save(); });
+  if (mb) mb.addEventListener('click', () => { AP.setVol(null, !AP.muted); show(); save(); });
+  if (kpEl) kpEl.addEventListener('input', () => { AP.setVol(kpEl.value / 100, false); show(); save(); });
+  if (kpMb) kpMb.addEventListener('click', () => { AP.setVol(null, !AP.muted); show(); save(); });
 }
 
 /* ---------------- project persistence ---------------- */
@@ -390,40 +431,59 @@ function tick(now) {
     followTlPlayhead();
   }
   if (S.tap) updateTapTelemetry(S.t);
+  if (S.playing || S.kpStageMode === 'visual' || S.need) drawKaraokeVisualizers(now);
   if (S.need) { S.need = false; draw(); }
 }
 let lastTimeMsTxt = '', lastDurMsTxt = '';
 function updateTimeUI() {
-  $('timeNow').textContent = J.fmtTime(S.t);
-  $('timeDur').textContent = J.fmtTime(S.plan.duration);
+  const curStr = J.fmtTime(S.t), durStr = J.fmtTime(S.plan.duration);
+  $('timeNow').textContent = curStr;
+  $('timeDur').textContent = durStr;
+  if ($('kpTimeNow')) $('kpTimeNow').textContent = curStr;
+  if ($('kpTimeDur')) $('kpTimeDur').textContent = durStr;
   if (J.fmtTimeMs) {
     const pMs = J.fmtTimeMs(S.t);
     if (pMs !== lastTimeMsTxt && $('tlPlayMs')) { lastTimeMsTxt = pMs; $('tlPlayMs').textContent = pMs; }
     const dMs = J.fmtTimeMs(S.plan.duration);
     if (dMs !== lastDurMsTxt && $('tlDurMs')) { lastDurMsTxt = dMs; $('tlDurMs').textContent = dMs; }
   }
-  if (!S.scrubbing) $('scrub').value = String(Math.round(S.t / Math.max(0.001, S.plan.duration) * 10000));
+  const frac = S.t / Math.max(0.001, S.plan.duration);
+  const sVal = String(Math.round(J.clamp(frac, 0, 1) * 10000));
+  if (!S.scrubbing) {
+    $('scrub').value = sVal;
+    if ($('kpProgress')) $('kpProgress').value = sVal;
+  }
+  if ($('kpProgWrap')) $('kpProgWrap').style.setProperty('--kp-pct', (J.clamp(frac, 0, 1) * 100).toFixed(2) + '%');
 }
-// タップ同期の速さ (0.5× / 0.75×): only while tapping — the song's own time is what gets stored
-const playRate = () => (S.tap && S.tap.rate > 0 ? S.tap.rate : 1);
+// Playback speed: honors active tap sync speed during tap mode, otherwise S.playbackRate
+const playRate = () => (S.tap && S.tap.rate > 0 ? S.tap.rate : (S.playbackRate > 0 ? S.playbackRate : 1));
+function syncPlayButtonsUI() {
+  const sym = S.playing ? '❚❚' : '▶';
+  const lbl = S.playing ? 'Pause' : 'Lecture';
+  if ($('btnPlay')) { $('btnPlay').textContent = sym; $('btnPlay').setAttribute('aria-label', lbl); }
+  if ($('kpBtnPlay')) { $('kpBtnPlay').textContent = sym; $('kpBtnPlay').setAttribute('aria-label', lbl); }
+  if ($('kpVisualStage')) $('kpVisualStage').classList.toggle('is-playing', !!S.playing);
+}
 function play() {
   refreshLoopHold();
   if (S.audio) AP.play(S.audio.buffer, S.t, playRate());
   else S.t0 = performance.now() - S.t * 1000 / playRate();
-  S.playing = true; $('btnPlay').textContent = '❚❚'; $('btnPlay').setAttribute('aria-label', '一時停止');
+  S.playing = true; syncPlayButtonsUI();
   if (S.tap) syncTapTransportBtn();
 }
 function pause() {
   S.playStopAt = null;
   S.playing = false; AP.stop();
-  $('btnPlay').textContent = '▶'; $('btnPlay').setAttribute('aria-label', '再生'); S.need = true;
+  syncPlayButtonsUI(); S.need = true;
   if (S.tap) syncTapTransportBtn();
 }
 function seek(t) {
-  S.t = J.clamp(t, 0, Math.max(0, S.plan.duration - 1e-3));
+  const dur = (S.plan && S.plan.duration) ? S.plan.duration : 0;
+  S.t = J.clamp(t, 0, Math.max(0, dur - 1e-3));
   if (S.audio) { if (S.playing) AP.play(S.audio.buffer, S.t, playRate()); }
   else S.t0 = performance.now() - S.t * 1000 / playRate();
   refreshLoopHold();
+  updateTimeUI();
   updateKaraokePrompter();
   if (S.tap) updateTapTelemetry(S.t);
   S.need = true;
@@ -446,32 +506,49 @@ function getKaraokeCfg() {
 }
 function applyKaraokeLabels() {
   const lang = (document.documentElement.lang || 'fr').toLowerCase();
-  const isFr = lang === 'fr', isEn = lang === 'en', isZh = lang.startsWith('zh'), isKo = lang === 'ko';
+  const isFr = lang.startsWith('fr'), isEn = lang.startsWith('en'), isZh = lang.startsWith('zh'), isKo = lang.startsWith('ko'), isId = lang.startsWith('id'), isVi = lang.startsWith('vi');
   const copy = isFr ? {
     title: '🎤 Karaoké', word: 'Mot', prog: 'Progressif', char: 'Caractère', cfg: '⚙ Réglages',
     fsOn: '✕ Quitter plein écran', fsOff: '⛶ Plein écran', size: 'Taille', pos: 'Position', bg: 'Fond',
     base: 'Texte', active: 'Chanté', scroll: 'Défilement auto', top: 'Haut', mid: 'Centre', bot: 'Bas',
     syncMaster: 'Synchro Chant↔Affichage', tapWord: '⏱ Caler mot ici', autoAlign: '⚡ Auto-Calage Voix',
+    stageVid: 'Vidéo', stageAud: 'Audio', speed: 'Vitesse', wordsCfg: '⚙ Mots', coverBtn: 'Pochette',
   } : isEn ? {
     title: '🎤 Karaoke', word: 'Word', prog: 'Progressive', char: 'Char', cfg: '⚙ Settings',
     fsOn: '✕ Exit Fullscreen', fsOff: '⛶ Fullscreen', size: 'Size', pos: 'Position', bg: 'Backdrop',
     base: 'Base', active: 'Active', scroll: 'Auto-scroll', top: 'Top', mid: 'Center', bot: 'Bottom',
     syncMaster: 'Vocal↔Display Sync', tapWord: '⏱ Pin word here', autoAlign: '⚡ Auto-Align Vocals',
+    stageVid: 'Video', stageAud: 'Audio', speed: 'Speed', wordsCfg: '⚙ Words', coverBtn: 'Cover',
   } : isZh ? {
     title: '🎤 卡拉OK同步', word: '逐词', prog: '渐进', char: '逐字', cfg: '⚙ 样式设置',
     fsOn: '✕ 退出全屏', fsOff: '⛶ 全屏卡拉OK', size: '字号', pos: '位置', bg: '透明度',
     base: '未唱', active: '高亮', scroll: '自动滚动', top: '上', mid: '中', bot: '下',
     syncMaster: '歌声↔歌词微调', tapWord: '⏱ 锁定当前词', autoAlign: '⚡ 人声自动精对齐',
+    stageVid: '视频', stageAud: '封面声波', speed: '倍速', wordsCfg: '⚙ 词高亮', coverBtn: '更换封面',
   } : isKo ? {
     title: '🎤 노래방 싱크', word: '단어별', prog: '점진적', char: '글자별', cfg: '⚙ 설정',
     fsOn: '✕ 전체화면 종료', fsOff: '⛶ 전체화면', size: '크기', pos: '위치', bg: '배경',
     base: '기본색', active: '하이라이트', scroll: '자동 스크롤', top: '상', mid: '중', bot: '하',
     syncMaster: '보컬↔가사 싱크', tapWord: '⏱ 현재 단어 고정', autoAlign: '⚡ 보컬 자동 정렬',
+    stageVid: '비디오', stageAud: '앨범/파형', speed: '속도', wordsCfg: '⚙ 단어설정', coverBtn: '앨범 커버',
+  } : isId ? {
+    title: '🎤 Karaoke', word: 'Kata', prog: 'Progresif', char: 'Huruf', cfg: '⚙ Pengaturan',
+    fsOn: '✕ Keluar Layar Penuh', fsOff: '⛶ Layar Penuh', size: 'Ukuran', pos: 'Posisi', bg: 'Latar',
+    base: 'Teks', active: 'Aktif', scroll: 'Gulir Otomatis', top: 'Atas', mid: 'Tengah', bot: 'Bawah',
+    syncMaster: 'Sinkron Vokal↔Lirik', tapWord: '⏱ Tandai Kata', autoAlign: '⚡ Selaraskan Vokal',
+    stageVid: 'Video', stageAud: 'Audio', speed: 'Kecepatan', wordsCfg: '⚙ Kata', coverBtn: 'Sampul',
+  } : isVi ? {
+    title: '🎤 Karaoke', word: 'Theo từ', prog: 'Từng nhịp', char: 'Theo ký tự', cfg: '⚙ Cài đặt',
+    fsOn: '✕ Thoát toàn màn hình', fsOff: '⛶ Toàn màn hình', size: 'Cỡ chữ', pos: 'Vị trí', bg: 'Nền',
+    base: 'Chữ thường', active: 'Đang hát', scroll: 'Tự cuộn', top: 'Trên', mid: 'Giữa', bot: 'Dưới',
+    syncMaster: 'Đồng bộ Giọng↔Lời', tapWord: '⏱ Khớp từ tại đây', autoAlign: '⚡ Tự khớp giọng hát',
+    stageVid: 'Video', stageAud: 'Âm thanh', speed: 'Tốc độ', wordsCfg: '⚙ Tô từ', coverBtn: 'Ảnh bìa',
   } : {
     title: '🎤 カラオケ同期', word: '単語別', prog: 'プログレッシブ', char: '文字別', cfg: '⚙ 設定',
     fsOn: '✕ 全画面終了', fsOff: '⛶ 全画面', size: '文字サイズ', pos: '表示位置', bg: '背景透過',
     base: '通常色', active: '強調色', scroll: '自動スクロール', top: '上', mid: '中央', bot: '下',
     syncMaster: 'ボーカル↔表示補正', tapWord: '⏱ 今の単語を固定', autoAlign: '⚡ 声に自動フィット',
+    stageVid: '動画', stageAud: '波形/アート', speed: '速度', wordsCfg: '⚙ ハイライト', coverBtn: 'ジャケット',
   };
   const setT = (id, t) => { const el = $(id); if (el) el.textContent = t; };
   setT('kpTitle', copy.title);
@@ -485,6 +562,11 @@ function applyKaraokeLabels() {
   setT('lblKpSyncMaster', copy.syncMaster);
   setT('btnKpTapWord', copy.tapWord);
   setT('btnKpAutoAlign', copy.autoAlign);
+  setT('kpStageBtnVideo', copy.stageVid);
+  setT('kpStageBtnVisual', copy.stageAud);
+  setT('lblKpSpeed', copy.speed);
+  setT('kpBtnHighlightCfg', copy.wordsCfg);
+  setT('kpStageArtOverlay', copy.coverBtn);
   const seg = $('kModeSeg');
   if (seg) {
     const bw = seg.querySelector('[data-kmode="word"]'), bp = seg.querySelector('[data-kmode="progressive"]'), bc = seg.querySelector('[data-kmode="char"]');
@@ -497,11 +579,16 @@ function applyKaraokeLabels() {
     const v = b.dataset.ky;
     b.textContent = v === '14' ? copy.top : v === '50' ? copy.mid : copy.bot;
   });
-  const fsBtn = $('btnKaraokeFs'), stg = document.querySelector('.col-stage');
+  const fsBtn = $('btnKaraokeFs'), kpFsBtn = $('kpBtnFs'), stg = document.querySelector('.col-stage');
+  const isFs = !!(stg && stg.classList.contains('is-karaoke-fs'));
   if (fsBtn) {
-    const isFs = !!(stg && stg.classList.contains('is-karaoke-fs'));
     fsBtn.textContent = isFs ? copy.fsOn : copy.fsOff;
     fsBtn.setAttribute('aria-pressed', String(isFs));
+  }
+  if (kpFsBtn) {
+    kpFsBtn.textContent = isFs ? '✕' : '⛶';
+    kpFsBtn.setAttribute('aria-pressed', String(isFs));
+    kpFsBtn.title = isFs ? copy.fsOn : copy.fsOff;
   }
 }
 function applyKaraokeStyleVars() {
@@ -532,8 +619,8 @@ function syncKaraokeControls() {
   if ($('kPosYVal')) $('kPosYVal').textContent = Math.round(cfg.yPct) + '%';
   if ($('kBgAlpha')) $('kBgAlpha').value = String(Math.round(cfg.bgAlpha * 100));
   if ($('kBgAlphaVal')) $('kBgAlphaVal').textContent = Math.round(cfg.bgAlpha * 100) + '%';
-  if ($('kBaseColor')) $('kBaseColor').value = cfg.baseColor || '#b8bec8';
-  if ($('kActiveColor')) $('kActiveColor').value = cfg.activeColor || '#0071e3';
+  if ($('kBaseColor')) $('kBaseColor').value = cfg.baseColor || '#7c8594';
+  if ($('kActiveColor')) $('kActiveColor').value = cfg.activeColor || '#ffffff';
   if ($('kAutoScroll')) $('kAutoScroll').checked = cfg.autoScroll !== false;
   const gOff = Math.round(J.clamp(Number((S.project.timing && S.project.timing.globalOffsetMs) || 0), -600, 600));
   const offBadge = $('kpSyncOffsetBadge');
@@ -802,7 +889,168 @@ function toggleKaraokeFullscreen(force) {
   }
   applyKaraokeLabels();
   applyKaraokeStyleVars();
-  setTimeout(() => { sizeViewport(); drawTimeline(); updateKaraokePrompter(); }, 30);
+  setTimeout(() => { sizeViewport(); drawTimeline(); updateKaraokePrompter(); drawKaraokeVisualizers(performance.now()); }, 30);
+}
+function syncKaraokeDeckMeta() {
+  const p = S.project || {};
+  const rawTitle = String(p.title || '').trim();
+  const audioBase = String(p.audioName || '').replace(/\.[^.]+$/, '').trim();
+  const title = rawTitle || audioBase || 'Alexura Studio';
+  const lang = (document.documentElement.lang || 'fr').toLowerCase();
+  const defSub = lang.startsWith('fr') ? 'Lecteur Karaoké Studio' : lang.startsWith('en') ? 'Studio Karaoke Player' : lang.startsWith('zh') ? '专业卡拉OK播放器' : lang.startsWith('ko') ? '스튜디오 가라오케 플레이어' : lang.startsWith('id') ? 'Pemutar Karaoke Studio' : lang.startsWith('vi') ? 'Trình phát Karaoke Studio' : 'スタジオカラオケプレーヤー';
+  const artist = String(p.artist || '').trim() || (S.audio ? `${S.audio.bpm || '—'} BPM` : defSub);
+  setT('kpDeckTitle', title);
+  setT('kpDeckArtist', artist);
+  setT('kpStageTitle', title);
+  setT('kpStageArtist', artist);
+  const mark = document.querySelector('.kp-vinyl-mark');
+  if (mark) mark.textContent = (title[0] || 'A').toUpperCase();
+}
+function setPlaybackRate(rate) {
+  const r = J.clamp(Number(rate) || 1, 0.5, 2.0);
+  S.playbackRate = r;
+  if ($('kpSpeedSel')) {
+    const valStr = String(r);
+    const hasOpt = Array.from($('kpSpeedSel').options).some(o => Number(o.value) === r);
+    if (hasOpt) $('kpSpeedSel').value = valStr;
+  }
+  if (S.playing) {
+    if (S.audio) AP.setRate(playRate());
+    else S.t0 = performance.now() - S.t * 1000 / playRate();
+  }
+  S.need = true;
+}
+function jumpLyricLine(dir) {
+  const L = (S.plan && S.plan.lines) || [];
+  const vocal = L.filter(l => !l.interlude && l.text);
+  const pool = vocal.length ? vocal : L;
+  if (!pool.length) {
+    seek(dir < 0 ? 0 : Math.max(0, (S.plan && S.plan.duration ? S.plan.duration - 0.1 : 0)));
+    return;
+  }
+  let idx = -1;
+  for (let i = 0; i < pool.length; i++) {
+    if (pool[i].start <= S.t + 0.08) idx = i;
+    else break;
+  }
+  let target = 0;
+  if (dir < 0) {
+    if (idx >= 0 && (S.t - pool[idx].start) > 1.8) target = pool[idx].start;
+    else target = idx > 0 ? pool[idx - 1].start : 0;
+  } else {
+    const next = pool.find(l => l.start > S.t + 0.08);
+    target = next ? next.start : pool[pool.length - 1].start;
+  }
+  seek(target + 0.002);
+}
+function setKpStageMode(mode) {
+  const next = mode === 'visual' ? 'visual' : 'video';
+  S.kpStageMode = next;
+  const vp = $('viewport'), vs = $('kpVisualStage');
+  if (vp) vp.classList.toggle('is-visual-mode', next === 'visual');
+  if (vs) vs.hidden = next !== 'visual';
+  if ($('kpStageBtnVideo')) $('kpStageBtnVideo').setAttribute('aria-pressed', String(next === 'video'));
+  if ($('kpStageBtnVisual')) $('kpStageBtnVisual').setAttribute('aria-pressed', String(next === 'visual'));
+  if (next === 'visual') drawKaraokeVisualizers(performance.now());
+  else { sizeViewport(); S.need = true; }
+}
+function loadKaraokeArtwork(file) {
+  if (!file) return;
+  if (S.kpArtworkUrl && S.kpArtworkUrl.startsWith('blob:')) {
+    try { URL.revokeObjectURL(S.kpArtworkUrl); } catch (e) {}
+  }
+  const url = URL.createObjectURL(file);
+  S.kpArtworkUrl = url;
+  const img1 = $('kpStageArtImg'), img2 = $('kpDeckArtImg'), vinyl = $('kpStageArtVinyl'), disc = $('kpDeckArtDisc');
+  if (img1) { img1.src = url; img1.hidden = false; }
+  if (img2) { img2.src = url; img2.hidden = false; }
+  if (vinyl) vinyl.hidden = true;
+  if (disc) disc.hidden = true;
+  setKpStageMode('visual');
+}
+function drawKaraokeVisualizers(now) {
+  const spec = AP.getSpectrum();
+  const activeCfg = getKaraokeCfg();
+  const accentCol = activeCfg.activeColor || '#0a84ff';
+  const timeSec = (now || performance.now()) * 0.001;
+
+  const mini = $('kpMiniViz');
+  if (mini) {
+    const mctx = mini.getContext('2d');
+    if (mctx) {
+      const mw = mini.width, mh = mini.height;
+      mctx.clearRect(0, 0, mw, mh);
+      const bars = 6, bw = 3.5, gap = 2.5, totalW = bars * bw + (bars - 1) * gap, x0 = (mw - totalW) * 0.5;
+      for (let i = 0; i < bars; i++) {
+        let amp = 0.14;
+        if (spec) amp = spec[Math.min(spec.length - 1, 2 + i * 7)] / 255;
+        else if (S.playing) amp = 0.25 + 0.55 * (0.5 + 0.5 * Math.sin(timeSec * (5 + i * 1.3) + i));
+        const bh = Math.max(3, amp * (mh * 0.58));
+        mctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.9)' : 'rgba(56,189,248,0.92)';
+        mctx.fillRect(x0 + i * (bw + gap), mh - 6 - bh, bw, bh);
+      }
+    }
+  }
+
+  if (S.kpStageMode !== 'visual') return;
+  const cv = $('kpVizCanvas'), stage = $('kpVisualStage');
+  if (!cv || !stage || stage.hidden) return;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const cw = Math.max(320, Math.round((stage.clientWidth || 800) * dpr));
+  const ch = Math.max(180, Math.round((stage.clientHeight || 450) * dpr));
+  if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; }
+  const ctx = cv.getContext('2d');
+  if (!ctx) return;
+
+  ctx.clearRect(0, 0, cw, ch);
+  let bass = 0.12;
+  if (spec) {
+    for (let i = 0; i < 8; i++) bass += spec[i] / 255;
+    bass /= 8;
+  } else if (S.playing) {
+    bass = 0.22 + 0.2 * Math.sin(timeSec * 3.8);
+  }
+
+  const cx = cw * 0.5, cy = ch * 0.44;
+  const rGlow = Math.min(cw, ch) * (0.42 + bass * 0.22);
+  const g = ctx.createRadialGradient(cx, cy, rGlow * 0.08, cx, cy, rGlow);
+  g.addColorStop(0, `rgba(10, 132, 255, ${(0.22 + bass * 0.28).toFixed(3)})`);
+  g.addColorStop(0.5, `rgba(214, 180, 106, ${(0.08 + bass * 0.10).toFixed(3)})`);
+  g.addColorStop(1, 'rgba(5, 5, 8, 0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, cw, ch);
+
+  const bars = 64;
+  const usableW = cw * 0.86;
+  const step = usableW / bars;
+  const barW = Math.max(2 * dpr, step * 0.56);
+  const startX = (cw - usableW) * 0.5;
+  const baseY = ch - 18 * dpr;
+  const maxBarH = ch * 0.24;
+
+  const grad = ctx.createLinearGradient(startX, baseY - maxBarH, startX + usableW, baseY);
+  grad.addColorStop(0, 'rgba(56, 189, 248, 0.85)');
+  grad.addColorStop(0.5, accentCol || '#0a84ff');
+  grad.addColorStop(1, 'rgba(214, 180, 106, 0.82)');
+  ctx.fillStyle = grad;
+
+  for (let i = 0; i < bars; i++) {
+    const mirrorIdx = Math.abs(i - bars * 0.5) / (bars * 0.5);
+    let val = 0.06;
+    if (spec) {
+      const bin = Math.min(spec.length - 1, Math.floor(mirrorIdx * (spec.length * 0.65)));
+      val = spec[bin] / 255;
+    } else if (S.playing) {
+      val = 0.18 + 0.36 * (0.5 + 0.5 * Math.sin(timeSec * 4.4 - mirrorIdx * 5.2));
+    } else {
+      val = 0.05 + 0.04 * (0.5 + 0.5 * Math.sin(timeSec * 1.4 + i * 0.2));
+    }
+    const bh = Math.max(3 * dpr, val * maxBarH);
+    const x = startX + i * step + (step - barW) * 0.5;
+    ctx.globalAlpha = 0.28 + val * 0.68;
+    ctx.fillRect(x, baseY - bh, barW, bh);
+  }
+  ctx.globalAlpha = 1;
 }
 function syncKaraokeBtn() {
   const b = $('btnKaraokeHud');
@@ -1733,11 +1981,11 @@ function drawTimeline() {
 
     const x = cacheCtx || outX;
 
-    // Background
-    x.fillStyle = '#f8f9fb'; x.fillRect(0, 0, w, h);
+    // Background (Deep Obsidian Pro Mastering Timeline)
+    x.fillStyle = '#07090f'; x.fillRect(0, 0, w, h);
     // Track separators
-    x.fillStyle = '#ffffff'; x.fillRect(0, B.rulerTop, w, B.rulerBot - B.rulerTop);
-    x.fillStyle = 'rgba(15,23,42,0.06)';
+    x.fillStyle = '#0c0f17'; x.fillRect(0, B.rulerTop, w, B.rulerBot - B.rulerTop);
+    x.fillStyle = 'rgba(255,255,255,0.06)';
     [B.rulerBot, B.waveBot, B.segBot, B.wordBot, B.charBot].forEach(y => x.fillRect(0, y, w, 1));
 
     // Time ruler ticks (adaptive step down to 100ms / 50ms on deep zoom)
@@ -1750,16 +1998,16 @@ function drawTimeline() {
     for (let tt = tStart; tt <= off + vd + step * 0.5; tt += step) {
       if (tt < 0 || tt > D) continue;
       const rx = Math.round(X(tt));
-      x.fillStyle = 'rgba(15,23,42,0.16)';
+      x.fillStyle = 'rgba(255,255,255,0.16)';
       x.fillRect(rx, B.rulerBot - 5 * dpr, 1, 5 * dpr);
-      x.fillStyle = '#64748b';
+      x.fillStyle = '#94a3b8';
       const lbl = step < 1 ? J.fmtTimeMs(tt).slice(3) : J.fmtTime(tt);
       x.fillText(lbl, rx + 3 * dpr, B.rulerTop + 10 * dpr);
     }
 
     // Export range shading
     const R = exportRange();
-    if (R) { x.fillStyle = 'rgba(0,113,227,0.07)'; x.fillRect(X(R.t0), 0, X(R.t1) - X(R.t0), h); }
+    if (R) { x.fillStyle = 'rgba(10,132,255,0.10)'; x.fillRect(X(R.t0), 0, X(R.t1) - X(R.t0), h); }
 
     // Instrumental, vocal & overlap sections inside waveform track
     if (S.audio) {
@@ -1780,9 +2028,9 @@ function drawTimeline() {
           }
         }
       };
-      drawSegs(S.audio.instrumentalSegments, 'rgba(100,116,139,0.08)', 'rgba(100,116,139,0.45)', 'INST');
-      drawSegs(S.audio.vocalSegments, 'rgba(16,185,129,0.09)', 'rgba(5,150,105,0.55)', 'VOIX');
-      drawSegs(S.audio.overlapSegments, 'rgba(139,92,246,0.12)', 'rgba(124,58,237,0.70)', 'DUO');
+      drawSegs(S.audio.instrumentalSegments, 'rgba(148,163,184,0.08)', 'rgba(148,163,184,0.52)', 'INST');
+      drawSegs(S.audio.vocalSegments, 'rgba(16,185,129,0.10)', 'rgba(52,211,153,0.68)', 'VOIX');
+      drawSegs(S.audio.overlapSegments, 'rgba(168,85,247,0.14)', 'rgba(192,132,252,0.78)', 'DUO');
     }
 
     // Track 1: Full audio waveform + separate Vocal waveform overlay
@@ -1790,7 +2038,7 @@ function drawTimeline() {
     const waveAmp = Math.max(6 * dpr, (B.waveBot - B.waveTop) * 0.44);
     if (TL.showWave && S.audio && S.audio.peaks) {
       const pk = S.audio.peaks, n = pk.length, sd = S.audio.duration;
-      x.fillStyle = 'rgba(100,116,139,0.48)';
+      x.fillStyle = 'rgba(148,163,184,0.42)';
       for (let i = 0; i < w; i += 2) {
         const t = T(i); if (t > sd) break; if (t < 0) continue;
         const v = pk[Math.min(n - 1, Math.floor(t / sd * n))];
@@ -1803,7 +2051,7 @@ function drawTimeline() {
       const rate = S.audio.vocalEnv100 ? 100 : 50;
       let maxV = 0.05;
       for (let k = 0; k < env.length; k += 4) if (env[k] > maxV) maxV = env[k];
-      x.fillStyle = 'rgba(14,165,233,0.76)';
+      x.fillStyle = 'rgba(56,189,248,0.88)';
       for (let i = 0; i < w; i += 2) {
         const t = T(i);
         const idx = Math.floor(t * rate);
@@ -1823,16 +2071,16 @@ function drawTimeline() {
       const isSelL = ln.index === EDL.lineIdx;
       const cx0 = Math.max(0, x0), cw = Math.max(2 * dpr, Math.min(w, x1) - cx0 - 1);
       const hue = ln.interlude ? 215 : ((ln.index * 47 + 205) % 360);
-      x.fillStyle = ln.interlude ? 'rgba(100,116,139,0.14)' : (isSelL ? 'rgba(0,113,227,0.18)' : `hsla(${hue},68%,50%,0.13)`);
+      x.fillStyle = ln.interlude ? 'rgba(148,163,184,0.12)' : (isSelL ? 'rgba(10,132,255,0.24)' : `hsla(${hue},68%,56%,0.16)`);
       x.fillRect(cx0, B.segTop + 1, cw, segH);
-      x.fillStyle = isSelL ? '#0071e3' : (ln.interlude ? '#64748b' : `hsla(${hue},75%,42%,0.75)`);
+      x.fillStyle = isSelL ? '#0a84ff' : (ln.interlude ? '#94a3b8' : `hsla(${hue},78%,64%,0.85)`);
       x.fillRect(cx0, B.segTop + 1, Math.max(1.5 * dpr, isSelL ? 2.5 * dpr : 1.5 * dpr), segH);
       if (isSelL) {
-        x.strokeStyle = 'rgba(0,113,227,0.55)'; x.lineWidth = dpr;
+        x.strokeStyle = 'rgba(59,158,255,0.68)'; x.lineWidth = dpr;
         x.strokeRect(cx0 + 0.5, B.segTop + 1.5, Math.max(1, cw - 1), segH - 1);
       }
       if (cw > 26 * dpr) {
-        x.fillStyle = isSelL ? '#0051a8' : '#1e293b';
+        x.fillStyle = isSelL ? '#ffffff' : '#e2e8f0';
         x.font = `600 ${9 * dpr}px ${monoFont}`;
         x.save(); x.beginPath(); x.rect(cx0 + 3 * dpr, B.segTop + 1, Math.max(1, cw - 5 * dpr), segH); x.clip();
         const segTxt = ln.interlude ? `♪ ${ln.secs || Math.round(ln.end - ln.start)}s` : `${ln.index + 1}. ${ln.text}`;
@@ -1859,35 +2107,35 @@ function drawTimeline() {
 
         if (isSelW) {
           selWordObj = wd;
-          x.fillStyle = 'rgba(0,113,227,0.11)';
+          x.fillStyle = 'rgba(10,132,255,0.14)';
           x.fillRect(wx0, B.waveTop, Math.max(2 * dpr, wx1 - wx0), B.charBot - B.waveTop);
         }
 
         x.fillStyle = isSelW
-          ? 'rgba(0,113,227,0.28)'
+          ? 'rgba(10,132,255,0.34)'
           : isLow
-            ? 'rgba(220,38,38,0.22)'
+            ? 'rgba(239,68,68,0.22)'
             : isHigh
-              ? 'rgba(5,150,105,0.18)'
-              : 'rgba(217,119,6,0.16)';
+              ? 'rgba(16,185,129,0.20)'
+              : 'rgba(245,158,11,0.18)';
         x.fillRect(wx0, B.wordTop + 1, Math.max(2 * dpr, wx1 - wx0 - 1), wordH);
 
         if (isSelLine) {
           const hStart = (TL.wDrag && TL.wDrag.lineIdx === ln.index && TL.wDrag.wordIdx === wi && TL.wDrag.edge === 'start') || (TL.wHover && TL.wHover.lineIdx === ln.index && TL.wHover.wordIdx === wi && TL.wHover.edge === 'start');
           const hEnd = (TL.wDrag && TL.wDrag.lineIdx === ln.index && TL.wDrag.wordIdx === wi && TL.wDrag.edge === 'end') || (TL.wHover && TL.wHover.lineIdx === ln.index && TL.wHover.wordIdx === wi && TL.wHover.edge === 'end');
-          x.fillStyle = hStart ? '#0071e3' : isLow ? '#dc2626' : isHigh ? '#059669' : '#d97706';
+          x.fillStyle = hStart ? '#3b9eff' : isLow ? '#f87171' : isHigh ? '#34d399' : '#fbbf24';
           x.fillRect(wx0 - dpr * 0.5, B.wordTop + 1, 2 * dpr, wordH);
           x.beginPath(); x.arc(wx0, B.wordTop + 4 * dpr, (hStart ? 3.8 : 2.5) * dpr, 0, Math.PI * 2); x.fill();
-          x.fillStyle = hEnd ? '#0071e3' : '#64748b';
+          x.fillStyle = hEnd ? '#3b9eff' : '#94a3b8';
           x.fillRect(wx1 - dpr * 0.5, B.wordTop + 1, 2 * dpr, wordH);
           x.beginPath(); x.arc(wx1, B.wordBot - 4 * dpr, (hEnd ? 3.8 : 2.2) * dpr, 0, Math.PI * 2); x.fill();
         } else {
-          x.fillStyle = isLow ? 'rgba(220,38,38,0.75)' : isHigh ? 'rgba(5,150,105,0.55)' : 'rgba(217,119,6,0.60)';
+          x.fillStyle = isLow ? 'rgba(248,113,113,0.78)' : isHigh ? 'rgba(52,211,153,0.62)' : 'rgba(251,191,36,0.65)';
           x.fillRect(wx0, B.wordTop + 1, 1.2 * dpr, wordH);
         }
 
         if (wx1 - wx0 > 14 * dpr) {
-          x.fillStyle = isSelW ? '#004999' : (isLow ? '#991b1b' : isHigh ? '#065f46' : '#92400e');
+          x.fillStyle = isSelW ? '#ffffff' : (isLow ? '#fca5a5' : isHigh ? '#6ee7b7' : '#fcd34d');
           x.font = `${isSelW ? 700 : 600} ${8.5 * dpr}px ${monoFont}`;
           x.save(); x.beginPath(); x.rect(wx0 + 2 * dpr, B.wordTop + 1, Math.max(1, wx1 - wx0 - 4 * dpr), wordH); x.clip();
           x.fillText(wd.text, wx0 + 3 * dpr, B.wordTop + wordH - 5 * dpr);
@@ -1899,10 +2147,10 @@ function drawTimeline() {
           chs.forEach(ch => {
             const cx0 = X(ch.start), cx1 = X(ch.end);
             if (cx1 < 0 || cx0 > w) return;
-            x.fillStyle = 'rgba(100,116,139,0.12)';
+            x.fillStyle = 'rgba(148,163,184,0.14)';
             x.fillRect(cx0, B.charTop + 1, Math.max(1, cx1 - cx0 - 1), charH);
             if (cx1 - cx0 > 10 * dpr) {
-              x.fillStyle = '#475569';
+              x.fillStyle = '#cbd5e1';
               x.font = `500 ${8 * dpr}px ${monoFont}`;
               x.fillText(ch.ch != null ? ch.ch : (ch.char || ''), cx0 + 2 * dpr, B.charTop + charH - 4 * dpr);
             }
@@ -1918,12 +2166,12 @@ function drawTimeline() {
         const cx0 = X(ch.start), cx1 = X(ch.end);
         if (cx1 < -2 || cx0 > w + 2) return;
         const isSelCh = ci === TL.selCharIdx;
-        x.fillStyle = isSelCh ? 'rgba(0,113,227,0.34)' : 'rgba(14,165,233,0.18)';
+        x.fillStyle = isSelCh ? 'rgba(10,132,255,0.38)' : 'rgba(56,189,248,0.18)';
         x.fillRect(cx0, B.charTop + 1, Math.max(2 * dpr, cx1 - cx0 - 1), charH);
-        x.fillStyle = isSelCh ? '#0071e3' : 'rgba(14,165,233,0.72)';
+        x.fillStyle = isSelCh ? '#0a84ff' : 'rgba(56,189,248,0.75)';
         x.fillRect(cx0, B.charTop + 1, dpr, charH);
         if (cx1 - cx0 > 8 * dpr) {
-          x.fillStyle = isSelCh ? '#004999' : '#0369a1';
+          x.fillStyle = isSelCh ? '#ffffff' : '#7dd3fc';
           x.font = `700 ${8.5 * dpr}px ${monoFont}`;
           const label = (ch.ch != null ? ch.ch : (ch.char || '')) + (cx1 - cx0 > 46 * dpr ? ` ${(ch.end - ch.start) * 1000 | 0}ms` : '');
           x.save(); x.beginPath(); x.rect(cx0 + dpr, B.charTop + 1, Math.max(1, cx1 - cx0 - 2 * dpr), charH); x.clip();
@@ -1935,11 +2183,11 @@ function drawTimeline() {
 
     // Beats + Zoom overview bar at bottom
     const beats = S.plan.beats || [];
-    x.fillStyle = '#cbd5e1';
+    x.fillStyle = 'rgba(255,255,255,0.20)';
     for (const b of beats) { if (b < off) continue; if (b > off + vd) break; x.fillRect(Math.round(X(b)), h - 5 * dpr, 1, 5 * dpr); }
     if (TL.z > 1) {
-      x.fillStyle = 'rgba(0,0,0,0.08)'; x.fillRect(0, h - 3 * dpr, w, 3 * dpr);
-      x.fillStyle = '#0071e3'; x.fillRect(off / D * w, h - 3 * dpr, Math.max(6 * dpr, vd / D * w), 3 * dpr);
+      x.fillStyle = 'rgba(255,255,255,0.08)'; x.fillRect(0, h - 3 * dpr, w, 3 * dpr);
+      x.fillStyle = '#0a84ff'; x.fillRect(off / D * w, h - 3 * dpr, Math.max(6 * dpr, vd / D * w), 3 * dpr);
     }
 
     // Top Ruler Line-Start Handles
@@ -1949,17 +2197,17 @@ function drawTimeline() {
       const lx = X(ln.start);
       if (lx < -20 * dpr || lx > w + 2) continue;
       const on = ln.index === TL.drag || ln.index === TL.hover, man = LT[ln.index] != null;
-      x.fillStyle = on ? '#0071e3' : man ? '#0284c7' : '#64748b';
+      x.fillStyle = on ? '#0a84ff' : man ? '#38bdf8' : '#64748b';
       x.fillRect(lx - (on ? dpr : 0), B.rulerTop, on ? 2 * dpr : 1, B.rulerBot - B.rulerTop);
       x.beginPath(); x.moveTo(lx - 4.5 * dpr, B.rulerTop); x.lineTo(lx + 4.5 * dpr, B.rulerTop); x.lineTo(lx, B.rulerTop + 6.5 * dpr); x.closePath(); x.fill();
-      x.fillStyle = on ? '#0071e3' : '#475569';
+      x.fillStyle = on ? '#3b9eff' : '#94a3b8';
       x.fillText(String(ln.index + 1).padStart(2, '0'), lx + 3 * dpr, B.rulerTop + 17.5 * dpr);
     }
 
     // Active Loop Highlight
     if (S.loop === 'line' || S.loop === 'cut') {
       const r = activeLoopRange();
-      x.fillStyle = 'rgba(0,113,227,0.10)';
+      x.fillStyle = 'rgba(10,132,255,0.14)';
       x.fillRect(X(r.start), 0, Math.max(2 * dpr, X(r.end) - X(r.start)), h);
     }
 
@@ -1971,7 +2219,7 @@ function drawTimeline() {
 
   // Playhead cursor (dynamic overlay per frame)
   const px = X(S.t);
-  outX.fillStyle = '#0071e3';
+  outX.fillStyle = '#0a84ff';
   outX.fillRect(Math.round(px) - dpr, 0, 2 * dpr, h);
   outX.beginPath(); outX.moveTo(px - 5 * dpr, 0); outX.lineTo(px + 5 * dpr, 0); outX.lineTo(px, 6 * dpr); outX.closePath(); outX.fill();
 }
@@ -3257,9 +3505,70 @@ function applyExportLabels() {
     if ($('btnExpELRC')) $('btnExpELRC').textContent = 'Enhanced LRC';
   }
   const chk = $('expIncludeTrans');
-  if (chk && chk.dataset.userTouched !== '1') {
-    chk.checked = !!(S.project && S.project.translation && S.project.translation.enabled);
-  }
+  const qChk = $('quickExpTransChk');
+  const defChecked = !!(S.project && S.project.translation && S.project.translation.enabled);
+  if (chk && chk.dataset.userTouched !== '1') chk.checked = defChecked;
+  if (qChk && qChk.dataset.userTouched !== '1') qChk.checked = chk ? chk.checked : defChecked;
+}
+function syncMainStudioLabels() {
+  const lang = document.documentElement.lang || 'ja';
+  const copy = lang === 'fr' ? {
+    audioSec: 'Audio & Minutage',
+    dropTitle: 'Importer ou glisser-déposer une chanson',
+    uploadBtn: 'Importer Audio',
+    noAudio: 'Aucun audio — glissez un fichier (MP3, WAV, FLAC…) ou cliquez pour importer',
+    quickExpTitle: 'Exporter les paroles',
+    quickExpTrans: 'Trad.',
+  } : lang === 'en' ? {
+    audioSec: 'Song & Timing',
+    dropTitle: 'Upload or drag & drop a song',
+    uploadBtn: 'Upload Song',
+    noAudio: 'No song loaded — drag & drop MP3, WAV, FLAC or click to browse',
+    quickExpTitle: 'Export Lyrics',
+    quickExpTrans: 'Trans.',
+  } : (lang === 'zh-Hans' || lang === 'zh-Hant') ? {
+    audioSec: lang === 'zh-Hans' ? '歌曲与节拍定时' : '歌曲與節拍定時',
+    dropTitle: lang === 'zh-Hans' ? '点击上传或拖拽音频文件至此' : '點擊上傳或拖曳音訊檔案至此',
+    uploadBtn: lang === 'zh-Hans' ? '上传歌曲' : '上傳歌曲',
+    noAudio: lang === 'zh-Hans' ? '未加载音频（支持拖拽 MP3 / WAV / FLAC / M4A）' : '未載入音訊（支援拖曳 MP3 / WAV / FLAC / M4A）',
+    quickExpTitle: lang === 'zh-Hans' ? '导出同步歌词' : '匯出同步歌詞',
+    quickExpTrans: lang === 'zh-Hans' ? '含翻译' : '含翻譯',
+  } : lang === 'ko' ? {
+    audioSec: '오디오 & 타이밍',
+    dropTitle: '곡 업로드 또는 드래그 앤 드롭',
+    uploadBtn: '곡 업로드',
+    noAudio: '오디오 없음 (MP3 / WAV / FLAC / M4A 드래그 또는 클릭)',
+    quickExpTitle: '가사 내보내기',
+    quickExpTrans: '번역',
+  } : lang.startsWith('id') ? {
+    audioSec: 'Audio & Timing',
+    dropTitle: 'Unggah atau seret & lepas lagu',
+    uploadBtn: 'Unggah Lagu',
+    noAudio: 'Tidak ada audio — seret MP3, WAV, FLAC atau klik untuk memilih',
+    quickExpTitle: 'Ekspor Lirik',
+    quickExpTrans: 'Terj.',
+  } : lang.startsWith('vi') ? {
+    audioSec: 'Âm thanh & Thời gian',
+    dropTitle: 'Tải lên hoặc kéo thả bài hát',
+    uploadBtn: 'Tải bài hát',
+    noAudio: 'Chưa có âm thanh — kéo MP3, WAV, FLAC hoặc nhấn để chọn',
+    quickExpTitle: 'Xuất lời bài hát',
+    quickExpTrans: 'Dịch',
+  } : {
+    audioSec: '曲とタイミング',
+    dropTitle: '曲をアップロード／ドラッグ＆ドロップ',
+    uploadBtn: '曲を読み込む',
+    noAudio: '曲なし（MP3 / WAV / FLAC 等をドロップまたはクリック）',
+    quickExpTitle: '同期歌詞を書き出す',
+    quickExpTrans: '翻訳',
+  };
+  setT('lblAudioSecTitle', copy.audioSec);
+  setT('lblDropAudioTitle', copy.dropTitle);
+  setT('lblUploadAudioBtn', copy.uploadBtn);
+  setT('lblQuickExportTitle', copy.quickExpTitle);
+  setT('lblQuickExportTrans', copy.quickExpTrans);
+  audioNameDefault = copy.noAudio;
+  if (!S.audio && $('audioName')) $('audioName').textContent = copy.noAudio;
 }
 function saveSyncedLyrics(format = 'lrc') {
   const fmt = String(format || 'lrc').toLowerCase();
@@ -5480,6 +5789,8 @@ function syncUI() {
   $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   document.querySelectorAll('.themeSel').forEach(el => { el.value = J.THEMES[S.project.themeId] ? S.project.themeId : ''; });
   syncThemeMeta();
+  syncMainStudioLabels();
+  syncKaraokeDeckMeta();
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); applyExportLabels(); drawStyleGrid(); syncKaraokeBtn(); syncKaraokeControls(); syncTranslationControls(); syncAudioDetectPanel(); applyLeLabels(); syncLyricsEditor();
 }
 function syncThemeMeta() {
@@ -5547,8 +5858,32 @@ async function runAiTranscription(opts = {}) {
     6: '6/7 歌词校验…',
     7: '7/7 生成同步字幕…',
   };
+  const setAiProgress = (stageNum, label) => {
+    const box = $('aiProgressBox');
+    const stEl = $('aiProgressStage');
+    const pctEl = $('aiProgressPct');
+    const fillEl = $('aiProgressFill');
+    const stepsEl = $('aiProgressSteps');
+    const pcts = [12, 26, 44, 62, 78, 90, 100];
+    const pct = pcts[Math.max(0, Math.min(6, (stageNum | 0) - 1))] || 12;
+    if (box) box.hidden = false;
+    if (stEl) stEl.textContent = label || '';
+    if (pctEl) pctEl.textContent = pct + '%';
+    if (fillEl) fillEl.style.width = pct + '%';
+    if (stepsEl) {
+      stepsEl.querySelectorAll('span[data-step]').forEach(sp => {
+        const n = parseInt(sp.dataset.step, 10) || 0;
+        sp.classList.toggle('is-done', n > 0 && n < stageNum);
+        sp.classList.toggle('is-cur', n === stageNum);
+      });
+    }
+  };
+  let aiDone = false;
   const onStage = (stageNum) => {
-    if (bai && stageLabels[stageNum]) bai.textContent = `✨ ${stageLabels[stageNum]}`;
+    const lbl = stageLabels[stageNum] || `${stageNum}/7`;
+    if (bai && stageLabels[stageNum]) bai.textContent = `✨ ${lbl}`;
+    setAiProgress(stageNum, lbl);
+    if (stageNum >= 7) aiDone = true;
   };
   if (bai) {
     bai.classList.add('is-analyzing');
@@ -5826,6 +6161,14 @@ async function runAiTranscription(opts = {}) {
       bai.disabled = false;
       bai.textContent = origText;
     }
+    const pBox = $('aiProgressBox');
+    if (pBox) {
+      if (aiDone) {
+        setTimeout(() => { if (!($('btnAiTranscribe') && $('btnAiTranscribe').classList.contains('is-analyzing'))) pBox.hidden = true; }, 650);
+      } else {
+        pBox.hidden = true;
+      }
+    }
   }
   return false;
 }
@@ -5939,8 +6282,8 @@ function bind() {
       : (J.LANG_LABEL[S.project.lang] || J.LANG_LABEL[info.primary]);
     toast('Langue : ' + lbl);
   });
-  $('songTitle').addEventListener('input', e => { S.project.title = e.target.value; replanSoon(300); });
-  $('songArtist').addEventListener('input', e => { S.project.artist = e.target.value; replanSoon(300); });
+  $('songTitle').addEventListener('input', e => { S.project.title = e.target.value; syncKaraokeDeckMeta(); replanSoon(300); });
+  $('songArtist').addEventListener('input', e => { S.project.artist = e.target.value; syncKaraokeDeckMeta(); replanSoon(300); });
   $('btnSyntax').addEventListener('click', e => { const s = $('syntax'); s.hidden = !s.hidden; e.target.setAttribute('aria-expanded', String(!s.hidden)); });
   $('bpm').addEventListener('change', e => { S.project.timing.bpm = Math.max(0, parseFloat(e.target.value) || 0); replan(); });
   $('offset').addEventListener('change', e => { S.project.timing.offset = Math.max(0, parseFloat(e.target.value) || 0); replan(); });
@@ -5948,6 +6291,31 @@ function bind() {
   $('snap').addEventListener('change', e => { S.project.timing.snap = e.target.checked; replan(); });
   $('btnResetTimes').addEventListener('click', () => { pushEdit(); S.project.timing.lineTimes = {}; S.project.timing.lineEnds = {}; S.project.timing.wordTimes = {}; replan(); });
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
+  const adz = $('audioDropzone');
+  if (adz) {
+    adz.addEventListener('click', e => {
+      if (e.target.closest('label.file') || e.target === $('audioFile')) return;
+      if ($('audioFile')) $('audioFile').click();
+    });
+    adz.addEventListener('keydown', e => {
+      if ((e.key === 'Enter' || e.key === ' ') && document.activeElement === adz) {
+        e.preventDefault();
+        if ($('audioFile')) $('audioFile').click();
+      }
+    });
+    adz.addEventListener('dragenter', e => { e.preventDefault(); e.stopPropagation(); adz.classList.add('is-dragover'); });
+    adz.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'; adz.classList.add('is-dragover'); });
+    adz.addEventListener('dragleave', e => {
+      if (!e.relatedTarget || !adz.contains(e.relatedTarget)) adz.classList.remove('is-dragover');
+    });
+    adz.addEventListener('drop', e => {
+      e.preventDefault(); e.stopPropagation(); adz.classList.remove('is-dragover');
+      if ($('dropHint')) $('dropHint').hidden = true;
+      const files = Array.from((e.dataTransfer && e.dataTransfer.files) || []);
+      const song = files.find(f => /^audio\//.test(f.type) || /\.(mp3|wav|m4a|aac|ogg|flac|opus|webm|mp4|aiff|aif|wma)$/i.test(f.name || ''));
+      if (song) loadAudioFile(song);
+    });
+  }
   $('btnTap').addEventListener('click', () => (S.tap ? stopTap() : startTap()));
   const bai = $('btnAiTranscribe');
   if (bai) {
@@ -6125,6 +6493,30 @@ function bind() {
   if ($('tapSkip')) $('tapSkip').addEventListener('click', () => { tapSkip(); if ($('tapBtn')) $('tapBtn').focus(); });
   $('tapStop').addEventListener('click', () => { pause(); stopTap(); });
   $('btnPlay').addEventListener('click', () => (S.playing ? pause() : play()));
+  if ($('kpBtnPlay')) $('kpBtnPlay').addEventListener('click', () => (S.playing ? pause() : play()));
+  if ($('kpBtnPrev')) $('kpBtnPrev').addEventListener('click', () => jumpLyricLine(-1));
+  if ($('kpBtnNext')) $('kpBtnNext').addEventListener('click', () => jumpLyricLine(1));
+  if ($('kpSpeedSel')) $('kpSpeedSel').addEventListener('change', e => setPlaybackRate(parseFloat(e.target.value) || 1));
+  if ($('kpStageBtnVideo')) $('kpStageBtnVideo').addEventListener('click', () => setKpStageMode('video'));
+  if ($('kpStageBtnVisual')) $('kpStageBtnVisual').addEventListener('click', () => setKpStageMode('visual'));
+  if ($('kpDeckArtBtn')) $('kpDeckArtBtn').addEventListener('click', () => setKpStageMode(S.kpStageMode === 'visual' ? 'video' : 'visual'));
+  if ($('kpArtFile')) $('kpArtFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadKaraokeArtwork(f); });
+  if ($('kpBtnHighlightCfg')) {
+    $('kpBtnHighlightCfg').addEventListener('click', () => {
+      const dr = $('karaokeControls'), cfgBtn = $('btnKaraokeCfg'), kpCfg = $('kpBtnHighlightCfg');
+      if (!dr) return;
+      dr.hidden = !dr.hidden;
+      const open = String(!dr.hidden);
+      if (cfgBtn) cfgBtn.setAttribute('aria-expanded', open);
+      if (kpCfg) kpCfg.setAttribute('aria-expanded', open);
+    });
+  }
+  if ($('kpBtnFs')) $('kpBtnFs').addEventListener('click', () => toggleKaraokeFullscreen());
+  const kpSc = $('kpProgress');
+  if (kpSc) {
+    kpSc.addEventListener('input', () => { S.scrubbing = true; seek(kpSc.value / 10000 * S.plan.duration); });
+    kpSc.addEventListener('change', () => { S.scrubbing = false; });
+  }
   const cutPickAuto = $('cutPickAuto'), cutPickClose = $('cutPickClose');
   if (cutPickClose) cutPickClose.addEventListener('click', () => { closeCutPick(); updateCutInfo(); });
   if (cutPickAuto) cutPickAuto.addEventListener('click', () => {
@@ -6354,7 +6746,7 @@ function bind() {
     J.saveFile(fn, JSON.stringify(J.planForAE(S.plan, S.project, exportRange()), null, 1));
     recordWork('export_ae', 'export', fn);
   });
-  audioNameDefault = $('audioName').textContent;
+  syncMainStudioLabels();
   $('btnClearLyrics').addEventListener('click', clearLyrics);
   document.querySelectorAll('.themeSel').forEach(el => el.addEventListener('change', () => {
     S.project.themeId = J.THEMES[el.value] ? el.value : null;
@@ -6365,7 +6757,17 @@ function bind() {
     else { syncThemeMeta(); drawStyleGrid(); flushSave(); }
   }));
   $('fileLrc').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; openLyricFile(f); });
-  if ($('expIncludeTrans')) $('expIncludeTrans').addEventListener('change', e => { e.target.dataset.userTouched = '1'; });
+  if ($('expIncludeTrans')) $('expIncludeTrans').addEventListener('change', e => {
+    e.target.dataset.userTouched = '1';
+    if ($('quickExpTransChk')) { $('quickExpTransChk').checked = e.target.checked; $('quickExpTransChk').dataset.userTouched = '1'; }
+  });
+  if ($('quickExpTransChk')) $('quickExpTransChk').addEventListener('change', e => {
+    e.target.dataset.userTouched = '1';
+    if ($('expIncludeTrans')) { $('expIncludeTrans').checked = e.target.checked; $('expIncludeTrans').dataset.userTouched = '1'; }
+  });
+  document.querySelectorAll('#quickExportLyrics [data-exp-fmt]').forEach(btn => {
+    btn.addEventListener('click', () => saveSyncedLyrics(btn.dataset.expFmt || 'lrc'));
+  });
   ['btnLRC', 'eLRC'].forEach(id => { if ($(id)) $(id).addEventListener('click', () => saveSyncedLyrics('lrc')); });
   ['btnExpSRT', 'eSRT'].forEach(id => { if ($(id)) $(id).addEventListener('click', () => saveSyncedLyrics('srt')); });
   ['btnExpVTT', 'eVTT'].forEach(id => { if ($(id)) $(id).addEventListener('click', () => saveSyncedLyrics('vtt')); });

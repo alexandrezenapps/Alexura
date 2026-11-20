@@ -95,11 +95,70 @@
             </div>
           </div>
       </div>
-      <div class="sec">
+      <div class="sec sec-audio">
+        <div class="sec-h">
+          <h2 id="lblAudioSecTitle">曲とタイミング</h2>
+          <span class="sec-btns">
+            <button id="btnResetTimes" class="ghost small pro-only" title="手動タイミングを消す">手動タイミングを消す</button>
+          </span>
+        </div>
+        <div id="audioDropzone" class="audio-dropzone" tabindex="0" role="region" aria-label="Importer ou glisser-déposer un fichier audio">
+          <div class="ad-drop-main">
+            <span class="ad-drop-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </span>
+            <div class="ad-drop-copy">
+              <strong id="lblDropAudioTitle">Importer ou glisser-déposer une chanson</strong>
+              <div id="audioName" class="muted audio-name">曲なし（読み込むと拍を検出してカットを合わせます）</div>
+            </div>
+          </div>
+          <label class="file audio-upload-cta" title="mp3 / wav / m4a など"><span id="lblUploadAudioBtn">曲を読み込む</span><input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.opus,.webm,.mp4,.aiff,.aif,.wma"></label>
+        </div>
+        <div class="row audio-ai-row">
+          <button id="btnAiTranscribe" class="accent" title="AI听音识词：自动分析歌曲音频，多语言（中文、法文、英文等）识别人声歌词并即时同步到视频">✨ AI 识词与同步</button>
+          <button id="btnVocalSync" class="ghost" title="根据歌声人声起始瞬间，自动精准同步各行歌词">⚡ 人声同步</button>
+          <button id="btnTap" title="Synchronisation manuelle guidée au rythme de la voix (ligne par ligne ou mot par mot)">⏱ タップで同期</button>
+        </div>
+        <div id="aiProgressBox" class="ai-prog-box" hidden aria-live="polite">
+          <div class="ai-prog-head">
+            <span id="aiProgressStage" class="ai-prog-stage">1/7 Analyse…</span>
+            <span id="aiProgressPct" class="ai-prog-pct mono">0%</span>
+          </div>
+          <div class="ai-prog-track"><i id="aiProgressFill"></i></div>
+          <div id="aiProgressSteps" class="ai-prog-steps" aria-hidden="true">
+            <span data-step="1"></span><span data-step="2"></span><span data-step="3"></span><span data-step="4"></span><span data-step="5"></span><span data-step="6"></span><span data-step="7"></span>
+          </div>
+        </div>
+        <div id="audioDetectPanel" class="audio-detect" hidden aria-live="polite"></div>
+        <div id="qcSummaryBox" class="qc-box" hidden aria-live="polite">
+          <div class="qc-head">
+            <strong id="qcBoxTitle">Contrôle Qualité &amp; Précision</strong>
+            <span id="qcOverallBadge" class="qc-overall mono muted">—</span>
+          </div>
+          <div id="qcTierCounts" class="qc-tiers"></div>
+          <div id="qcCondAlerts" class="qc-cond-alerts" hidden></div>
+          <div class="qc-actions">
+            <button type="button" id="btnReanalyzeLow" class="ghost small" title="Ré-analyser automatiquement les segments à faible confiance avec haute résolution vocale">🔬 Ré-analyser segments faibles</button>
+            <button type="button" id="btnNextLowConf" class="ghost small" title="Aller au prochain mot à faible confiance">⚠ Prochain faible</button>
+          </div>
+        </div>
+        <div class="fields pro-only">
+          <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="自動"></label>
+          <label class="field">開始(秒)<input id="offset" type="number" min="0" step="0.05"></label>
+          <label class="field">行の長さ<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
+        </div>
+        <div class="row pro-only">
+          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> 拍にスナップ</label>
+        </div>
+      </div>
+
+      <div class="sec sec-lyrics">
         <div class="sec-h"><h2>歌詞</h2><span class="sec-btns"><label class="file ghost small" title="LRC ファイル（タイムスタンプ付きの歌詞）や字幕ファイル（SRT / VTT）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）。ファイルを画面にドロップしても読み込めます">LRC / SRT を読み込む<input id="fileLrc" type="file" accept=".lrc,.srt,.vtt,.txt,text/plain"></label><button id="btnClearLyrics" class="ghost small" title="歌詞と、行ごとのタイミング・指定・書き出す範囲を消します（「元に戻す」か Ctrl+Z で戻せます）">歌詞を消す</button><button id="btnSyntax" class="ghost small" aria-expanded="false">記法</button></span></div>
         <textarea id="lyrics" rows="9" spellcheck="false" aria-label="歌詞（1行 = 1フレーズ）"></textarea>
-        <label class="lang-row">歌詞の言語<select id="lyricLang"><option value="auto">自動判定</option><option value="multi">Multilingue (Mix)</option><option value="en">English</option><option value="fr">Français</option><option value="zh-Hans">简体中文</option><option value="zh-Hant">繁體中文</option><option value="es">Español</option><option value="de">Deutsch</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="it">Italiano</option><option value="pt">Português</option></select><span id="langNote" class="muted"></span></label>
-        <div id="detectedLangPills" class="lang-pills" hidden aria-live="polite"></div>
+        <div class="lang-det-wrap">
+          <label class="lang-row">歌詞の言語<select id="lyricLang"><option value="auto">自動判定</option><option value="multi">Multilingue (Mix)</option><option value="en">English</option><option value="fr">Français</option><option value="zh-Hans">简体中文</option><option value="zh-Hant">繁體中文</option><option value="es">Español</option><option value="de">Deutsch</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="it">Italiano</option><option value="pt">Português</option></select><span id="langNote" class="muted"></span></label>
+          <div id="detectedLangPills" class="lang-pills" hidden aria-live="polite"></div>
+        </div>
         <div id="translationPanel" class="tr-panel">
           <div class="tr-head">
             <strong id="trPanelTitle">🌐 Couche de traduction optionnelle</strong>
@@ -135,6 +194,20 @@
             </div>
           </div>
         </div>
+        <div id="quickExportLyrics" class="quick-exp-bar" aria-label="Exporter les paroles synchronisées">
+          <div class="quick-exp-head">
+            <strong id="lblQuickExportTitle">Exporter les paroles</strong>
+            <label class="lyrics-exp-opt"><input id="quickExpTransChk" type="checkbox"><span id="lblQuickExportTrans">Trad.</span></label>
+          </div>
+          <div class="quick-exp-btns">
+            <button type="button" class="ghost small" data-exp-fmt="lrc">LRC</button>
+            <button type="button" class="ghost small" data-exp-fmt="srt">SRT</button>
+            <button type="button" class="ghost small" data-exp-fmt="vtt">VTT</button>
+            <button type="button" class="ghost small" data-exp-fmt="elrc">ELRC</button>
+            <button type="button" class="ghost small" data-exp-fmt="json">JSON</button>
+            <button type="button" class="ghost small" data-exp-fmt="txt">TXT</button>
+          </div>
+        </div>
         <div id="syntax" class="syntax" hidden>
           <ul>
             <li>1行が1フレーズ。空行は少し間を空けます</li>
@@ -146,39 +219,6 @@
             <li><code>[間奏 8]</code> … 8秒の間奏（歌詞は出さず、背景と装飾だけ）。秒数を省くと4秒、タップ同期やマーカーで長さを合わせられます</li>
             <li><code>#</code> で始まる行 … コメント（無視）</li>
           </ul>
-        </div>
-      </div>
-
-      <div class="sec">
-        <div class="sec-h"><h2>曲とタイミング</h2></div>
-        <div id="audioName" class="muted audio-name">曲なし（読み込むと拍を検出してカットを合わせます）</div>
-        <div id="audioDetectPanel" class="audio-detect" hidden aria-live="polite"></div>
-        <div id="qcSummaryBox" class="qc-box" hidden aria-live="polite">
-          <div class="qc-head">
-            <strong id="qcBoxTitle">Contrôle Qualité &amp; Précision</strong>
-            <span id="qcOverallBadge" class="qc-overall mono muted">—</span>
-          </div>
-          <div id="qcTierCounts" class="qc-tiers"></div>
-          <div id="qcCondAlerts" class="qc-cond-alerts" hidden></div>
-          <div class="qc-actions">
-            <button type="button" id="btnReanalyzeLow" class="ghost small" title="Ré-analyser automatiquement les segments à faible confiance avec haute résolution vocale">🔬 Ré-analyser segments faibles</button>
-            <button type="button" id="btnNextLowConf" class="ghost small" title="Aller au prochain mot à faible confiance">⚠ Prochain faible</button>
-          </div>
-        </div>
-        <div class="row">
-          <label class="file" title="mp3 / wav / m4a など">曲を読み込む<input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.opus,.webm,.mp4,.aiff,.aif,.wma"></label>
-          <button id="btnAiTranscribe" class="accent" title="AI听音识词：自动分析歌曲音频，多语言（中文、法文、英文等）识别人声歌词并即时同步到视频">✨ AI 识词与同步</button>
-          <button id="btnVocalSync" class="ghost" title="根据歌声人声起始瞬间，自动精准同步各行歌词">⚡ 人声同步</button>
-          <button id="btnTap" title="Synchronisation manuelle guidée au rythme de la voix (ligne par ligne ou mot par mot)">⏱ タップで同期</button>
-        </div>
-        <div class="fields pro-only">
-          <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="自動"></label>
-          <label class="field">開始(秒)<input id="offset" type="number" min="0" step="0.05"></label>
-          <label class="field">行の長さ<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
-        </div>
-        <div class="row pro-only">
-          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> 拍にスナップ</label>
-          <button id="btnResetTimes" class="ghost small">手動タイミングを消す</button>
         </div>
       </div>
 
@@ -257,7 +297,58 @@
 
     <!-- ================= center: stage ================= -->
     <section class="col col-stage" aria-label="プレビュー">
-      <div class="viewport" id="viewport"><canvas id="view" width="1280" height="720"></canvas><div id="viewMsg" class="overlay-msg" hidden></div><div id="keyBadge" class="key-badge" hidden></div><div id="toast" class="toast" role="status" aria-live="polite" hidden></div></div>
+      <div class="viewport" id="viewport"><canvas id="view" width="1280" height="720"></canvas><div id="kpVisualStage" class="kp-visual-stage" hidden aria-label="Pochette d'album et visualisation audio"><canvas id="kpVizCanvas" width="960" height="540" aria-hidden="true"></canvas><div class="kp-stage-center"><label id="kpStageArtCard" class="kp-stage-art" title="Importer une pochette d'album"><img id="kpStageArtImg" alt="Pochette d'album" hidden><div id="kpStageArtVinyl" class="kp-stage-art-vinyl"><div class="kp-vinyl-grooves"></div><div class="kp-vinyl-label"><span class="kp-vinyl-mark">A</span></div></div><span id="kpStageArtOverlay" class="kp-stage-art-overlay">Pochette</span><input id="kpArtFile" type="file" accept="image/*"></label><div class="kp-stage-meta"><h3 id="kpStageTitle" class="kp-stage-title">Alexura Studio</h3><p id="kpStageArtist" class="kp-stage-artist muted">—</p></div></div></div><div id="viewMsg" class="overlay-msg" hidden></div><div id="keyBadge" class="key-badge" hidden></div><div id="toast" class="toast" role="status" aria-live="polite" hidden></div></div>
+      <section id="karaokePlayerDeck" class="kp-deck" aria-label="Lecteur Karaoké">
+        <div class="kp-deck-top">
+          <div class="kp-deck-track">
+            <button type="button" id="kpDeckArtBtn" class="kp-deck-art" title="Basculer entre Vidéo et Pochette / Visualiseur audio">
+              <img id="kpDeckArtImg" alt="" hidden>
+              <span id="kpDeckArtDisc" class="kp-deck-disc" aria-hidden="true">♪</span>
+              <canvas id="kpMiniViz" width="44" height="44" aria-hidden="true"></canvas>
+            </button>
+            <div class="kp-deck-meta">
+              <strong id="kpDeckTitle" class="kp-deck-title">Alexura Studio</strong>
+              <span id="kpDeckArtist" class="kp-deck-artist muted">—</span>
+            </div>
+          </div>
+          <div id="kpStageModeGroup" class="kp-stage-seg" role="group" aria-label="Mode d'affichage scène">
+            <button type="button" id="kpStageBtnVideo" data-stage-mode="video" aria-pressed="true" title="Aperçu vidéo animée">Vidéo</button>
+            <button type="button" id="kpStageBtnVisual" data-stage-mode="visual" aria-pressed="false" title="Pochette d'album et spectre audio temps réel">Audio</button>
+          </div>
+          <div class="kp-deck-transport">
+            <button type="button" id="kpBtnPrev" class="ghost kp-deck-btn" aria-label="Phrase précédente" title="Phrase précédente">⏮</button>
+            <button type="button" id="kpBtnPlay" class="kp-deck-play" aria-label="Lecture" title="Lecture / Pause">▶</button>
+            <button type="button" id="kpBtnNext" class="ghost kp-deck-btn" aria-label="Phrase suivante" title="Phrase suivante">⏭</button>
+          </div>
+          <div class="kp-deck-tools">
+            <label class="kp-deck-speed" title="Vitesse de lecture">
+              <span id="lblKpSpeed">Vitesse</span>
+              <select id="kpSpeedSel" aria-label="Vitesse de lecture">
+                <option value="0.5">0.5×</option>
+                <option value="0.75">0.75×</option>
+                <option value="0.85">0.85×</option>
+                <option value="1" selected>1.0×</option>
+                <option value="1.25">1.25×</option>
+                <option value="1.5">1.5×</option>
+                <option value="2">2.0×</option>
+              </select>
+            </label>
+            <div class="kp-deck-vol">
+              <button type="button" id="kpBtnMute" class="ghost kp-deck-btn" aria-pressed="false" aria-label="Son / Muet" title="Couper / rétablir le son">🔊</button>
+              <input id="kpVolRange" type="range" min="0" max="100" value="80" aria-label="Volume Karaoké">
+            </div>
+            <button type="button" id="kpBtnHighlightCfg" class="ghost small kp-deck-cfg" aria-expanded="false" aria-controls="karaokeControls" title="Réglages de surbrillance des mots">⚙ Mots</button>
+            <button type="button" id="kpBtnFs" class="ghost small kp-deck-fs" aria-pressed="false" title="Mode Karaoké Plein Écran">⛶</button>
+          </div>
+        </div>
+        <div class="kp-deck-prog">
+          <span id="kpTimeNow" class="kp-time mono">00:00.00</span>
+          <div id="kpProgWrap" class="kp-prog-wrap">
+            <input id="kpProgress" type="range" min="0" max="10000" value="0" aria-label="Progression du morceau">
+          </div>
+          <span id="kpTimeDur" class="kp-time mono muted">00:00.00</span>
+        </div>
+      </section>
       <div id="karaokePrompter" class="karaoke-prompter" data-kmode="progressive" aria-label="カラオケ同期プロンプター">
         <div class="kp-head">
           <span class="kp-title" id="kpTitle">🎤 カラオケ同期</span>
