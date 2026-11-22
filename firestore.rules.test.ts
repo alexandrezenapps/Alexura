@@ -20,5 +20,7 @@ assert.ok(!/allow list:\s*if\s*isSignedIn\(\)\s*;/.test(rules), 'No client-deleg
 assert.ok(rules.includes('allow list: if isVerified() && existing().ownerId == request.auth.uid;'), 'Server-enforced query filter on songs list');
 assert.ok(rules.includes('(resource == null || existing().ownerId == request.auth.uid)'), 'Existence checks on allow get must handle resource == null safely');
 assert.ok(rules.includes('isValidWorkHistoryEntry(incoming(), historyId)'), 'Validation blueprint required on WorkHistoryEntry');
+assert.ok(rules.includes('isValidTimestampSnapshot(incoming(), versionId, songId)'), 'Validation blueprint required on TimestampSnapshot');
+assert.ok(rules.includes('match /timestampVersions/{versionId}'), 'Subcollection match block required for timestampVersions');
 
 console.log('FIRESTORE_RULES_SECURITY_INVARIANTS_VERIFIED');

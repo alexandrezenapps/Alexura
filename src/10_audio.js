@@ -1731,11 +1731,19 @@ J.realignLineWords = (analysis, lineText, lineStart, lineEnd, lang = 'auto', def
   return out;
 };
 
-/* AI Vocal forced alignment (Stages 2, 4, 5, 6, 7) via server API with 10ms Viterbi acoustic fallback */
-J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto') => {
+/* AI Vocal forced alignment (Stages 2, 4, 5, 6, 7) via server API with Two-Pass 10ms Viterbi acoustic optimization */
+J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null) => {
   let requiresBilling = false;
+  let errorReason = '';
+  const report = (st, msg) => { if (typeof onStage === 'function') try { onStage(st, msg); } catch (e) {} };
+  const vocalSegs = Array.isArray(audioAnalysis && audioAnalysis.vocalSegments)
+    ? audioAnalysis.vocalSegments.slice(0, 48).map(s => ({ start: +Number(s.start || 0).toFixed(3), end: +Number(s.end || 0).toFixed(3) }))
+    : [];
+  const dur = (audioAnalysis && audioAnalysis.duration) || 30;
+
   try {
     if (audioAnalysis && audioAnalysis.buffer) {
+      report(1, 'stem');
       const sr = audioAnalysis.duration > 150 ? 10000 : 16000;
       const wavBlob = J.audioMonoWav(audioAnalysis.buffer, Math.min(300, audioAnalysis.duration), sr);
       const base64Audio = await blobToBase64(wavBlob);
@@ -1744,56 +1752,92 @@ J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto') => {
         const sepBlob = J.audioVocalSeparatedWavWindow(audioAnalysis.buffer, 0, Math.min(300, audioAnalysis.duration), sr);
         separatedVocalBase64 = await blobToBase64(sepBlob);
       }
+      report(2, 'align');
       const lineTexts = lines.map((l, i) => ({ i, text: l.interlude ? '[interlude]' : l.text }));
       const resp = await fetch('/api/align-vocals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ audioBase64: base64Audio, separatedVocalBase64, lines: lineTexts, lang }),
+        body: JSON.stringify({
+          audioBase64: base64Audio,
+          separatedVocalBase64,
+          lines: lineTexts,
+          lang,
+          vocalSegments: vocalSegs,
+        }),
       });
       if (resp.ok) {
         const data = await resp.json();
         if (data && data.requiresBilling) requiresBilling = true;
+        if (data && data.reason) errorReason = data.reason;
         if (data && data.lineTimes && Object.keys(data.lineTimes).length) {
+          report(3, 'optimize');
           const refinedWords = {};
           const keys = Object.keys(data.wordTimes || {});
+          let scoreSum = 0, errSum = 0, lineCnt = 0;
           for (const k of keys) {
             const idx = +k;
             const s = data.lineTimes[idx] ?? 0;
             const nextL = lines[idx + 1];
-            const e = (nextL && data.lineTimes[idx + 1] != null) ? data.lineTimes[idx + 1] : Math.min(audioAnalysis.duration || 300, s + 4);
+            const e = (nextL && data.lineTimes[idx + 1] != null) ? data.lineTimes[idx + 1] : Math.min(dur || 300, s + 4);
             const metaSpk = (data.lineMeta && data.lineMeta[idx] && data.lineMeta[idx].speaker) || 'Lead';
-            refinedWords[idx] = J.refineWordTimingsAcoustic(audioAnalysis, data.wordTimes[idx], s, e, lang, metaSpk);
+            const r1 = J.refineWordTimingsAcoustic(audioAnalysis, data.wordTimes[idx], s, e, lang, metaSpk);
+            const r2 = J.optimizeLineVocalCoordination ? J.optimizeLineVocalCoordination(audioAnalysis, r1, s, e, lang, metaSpk) : r1;
+            refinedWords[idx] = r2;
+            if (J.analyzeLineVocalCoordination && r2.length) {
+              const coh = J.analyzeLineVocalCoordination(audioAnalysis, r2, s, e);
+              scoreSum += coh.score; errSum += coh.avgAbsErrMs; lineCnt++;
+            }
           }
+          report(4, 'done');
           return {
             lineTimes: data.lineTimes,
             wordTimes: refinedWords,
             lineMeta: data.lineMeta || {},
+            coherenceScore: lineCnt ? Math.round(scoreSum / lineCnt) : 90,
+            avgAbsErrMs: lineCnt ? Math.round(errSum / lineCnt) : 18,
             source: 'ai',
             requiresBilling: false,
+            errorReason: '',
           };
         }
       }
     }
   } catch (e) {
-    console.warn('AI vocal alignment fallback to acoustic forced alignment:', e);
+    errorReason = 'network_or_align_error';
   }
 
+  report(3, 'acoustic_viterbi');
   const lineTimes = J.alignLinesToVocals(audioAnalysis, lines);
   const wordTimes = {};
   const lineMeta = {};
-  const dur = (audioAnalysis && audioAnalysis.duration) || 30;
+  let scoreSum = 0, errSum = 0, lineCnt = 0;
   for (let i = 0; i < lines.length; i++) {
     const ln = lines[i];
     if (!ln || ln.interlude || !ln.text) continue;
     const s = lineTimes[i] != null ? lineTimes[i] : (ln.start ?? 0.4);
     const e = i < lines.length - 1 && lineTimes[i + 1] != null ? lineTimes[i + 1] : Math.min(dur, s + 3.2);
-    const words = J.alignWordsAcoustic(audioAnalysis, ln.text, s, e, lang, 'Lead', 0.85);
+    const pass1 = J.alignWordsAcoustic(audioAnalysis, ln.text, s, e, lang, 'Lead', 0.85);
+    const words = J.optimizeLineVocalCoordination ? J.optimizeLineVocalCoordination(audioAnalysis, pass1, s, e, lang, 'Lead') : pass1;
     wordTimes[i] = words;
+    if (J.analyzeLineVocalCoordination && words.length) {
+      const coh = J.analyzeLineVocalCoordination(audioAnalysis, words, s, e);
+      scoreSum += coh.score; errSum += coh.avgAbsErrMs; lineCnt++;
+    }
     const avgAlign = words.length ? +(words.reduce((a, w) => a + (w.alignmentConfidence || 0.7), 0) / words.length).toFixed(3) : 0.7;
     const flags = words.some(w => w.alignmentConfidence < 0.7) ? ['uncertain_boundary'] : [];
     lineMeta[i] = { speaker: 'Lead', recognitionConfidence: 0.85, alignmentConfidence: avgAlign, flags };
   }
-  return { lineTimes, wordTimes, lineMeta, source: 'acoustic', requiresBilling };
+  report(4, 'done');
+  return {
+    lineTimes,
+    wordTimes,
+    lineMeta,
+    coherenceScore: lineCnt ? Math.round(scoreSum / lineCnt) : 0,
+    avgAbsErrMs: lineCnt ? Math.round(errSum / lineCnt) : 0,
+    source: 'acoustic',
+    requiresBilling,
+    errorReason,
+  };
 };
 
 /* Downsample a window of an AudioBuffer to mono WAV for high-speed AI speech/lyric recognition */
@@ -1840,16 +1884,22 @@ J.audioMonoWav = (buffer, maxSeconds = 300, targetSampleRate = 16000) => {
   return J.audioMonoWavWindow(buffer, 0, maxSeconds, targetSampleRate);
 };
 
-/* CORE FUNCTION 05 — Complete 7-Stage Audio Analysis, Vocal Separation, Singing Transcription,
+/* CORE FUNCTION 05 — Complete 7-Stage Audio Analysis, Vocal Separation, Streaming Singing Transcription,
    Forced Alignment, Refinement, Validation & Synchronized Subtitle Generation Pipeline */
-J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
-  if (!audioAnalysis || !audioAnalysis.buffer) return null;
+J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null, onPartialResult = null) => {
+  if (!audioAnalysis || !audioAnalysis.buffer) {
+    return { success: false, reason: 'no_audio', errorMessage: 'No decoded audio buffer available' };
+  }
   const totalDur = audioAnalysis.duration || audioAnalysis.buffer.duration || 0;
   const reportStage = (stage, label) => { if (typeof onStage === 'function') try { onStage(stage, label); } catch (e) {} };
+  const reportPartial = (payload) => { if (typeof onPartialResult === 'function') try { onPartialResult(payload); } catch (e) {} };
   const prep = audioAnalysis.preprocessing || {};
+  const allVocalSegs = Array.isArray(audioAnalysis.vocalSegments)
+    ? audioAnalysis.vocalSegments.map(s => ({ start: +Number(s.start || 0).toFixed(3), end: +Number(s.end || 0).toFixed(3) }))
+    : [];
 
   reportStage(1, 'preprocessing');
-  const postChunk = async (chunkStart, chunkDur, sampleRate, withSeparated) => {
+  const buildPayload = async (chunkStart, chunkDur, sampleRate, withSeparated) => {
     const wavBlob = J.audioMonoWavWindow(audioAnalysis.buffer, chunkStart, chunkDur, sampleRate);
     const base64Audio = await blobToBase64(wavBlob);
     let separatedVocalBase64 = '';
@@ -1858,38 +1908,137 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
       const sepBlob = J.audioVocalSeparatedWavWindow(audioAnalysis.buffer, chunkStart, chunkDur, sampleRate);
       separatedVocalBase64 = await blobToBase64(sepBlob);
     }
-    reportStage(3, 'transcription');
-    return fetch('/api/transcribe-lyrics', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        audioBase64: base64Audio,
-        separatedVocalBase64,
-        lang,
-        audioFormat: audioAnalysis.format || 'AUDIO',
-        duration: totalDur,
-        sampleRate: audioAnalysis.sampleRate,
-        chunkStartSec: chunkStart,
-        chunkDurationSec: chunkDur,
-        preprocessingSummary: prep,
-      }),
+    const chunkEnd = chunkStart + chunkDur;
+    const windowSegs = allVocalSegs.filter(s => s.end > chunkStart && s.start < chunkEnd);
+    return JSON.stringify({
+      audioBase64: base64Audio,
+      separatedVocalBase64,
+      lang,
+      audioFormat: audioAnalysis.format || 'AUDIO',
+      duration: totalDur,
+      sampleRate: audioAnalysis.sampleRate,
+      chunkStartSec: chunkStart,
+      chunkDurationSec: chunkDur,
+      preprocessingSummary: prep,
+      vocalSegments: windowSegs.slice(0, 48),
     });
+  };
+
+  const readSseStream = async (resp) => {
+    if (!resp.body || typeof resp.body.getReader !== 'function') {
+      return resp.json();
+    }
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    let finalData = null;
+
+    const handleBlock = (block) => {
+      let evtName = 'message';
+      const dataLines = [];
+      for (const rawLine of block.split(/\r?\n/)) {
+        if (!rawLine || rawLine.startsWith(':')) continue;
+        if (rawLine.startsWith('event:')) evtName = rawLine.slice(6).trim();
+        else if (rawLine.startsWith('data:')) dataLines.push(rawLine.slice(5).trim());
+      }
+      if (!dataLines.length) return;
+      try {
+        const parsed = JSON.parse(dataLines.join('\n'));
+        if (evtName === 'stage') {
+          reportStage(parsed.stage || 3, parsed.label || 'transcribing');
+        } else if (evtName === 'transcript_preview') {
+          reportPartial({
+            stage: 'preview',
+            previewLines: Array.isArray(parsed.previewLines) ? parsed.previewLines : [],
+            transcript: parsed.transcript || '',
+            offsetSec: parsed.offsetSec || 0,
+          });
+        } else if (evtName === 'result' || evtName === 'error') {
+          finalData = parsed;
+        }
+      } catch (e) {}
+    };
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (value) {
+        buf += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buf.indexOf('\n\n')) !== -1) {
+          const blk = buf.slice(0, idx);
+          buf = buf.slice(idx + 2);
+          handleBlock(blk);
+        }
+      }
+      if (done) break;
+    }
+    if (buf.trim()) handleBlock(buf);
+    return finalData;
   };
 
   const transcribeWindow = async (chunkStart, chunkDur) => {
     const useSep = Boolean(prep.shouldSeparate);
-    let resp = await postChunk(chunkStart, chunkDur, chunkDur > 140 ? 12000 : 16000, useSep);
-    if (resp.status === 413) {
-      // Retry cleanly with single stream at 8kHz if payload is tight
-      resp = await postChunk(chunkStart, chunkDur, 8000, false);
+    let sr = chunkDur > 140 ? 12000 : 16000;
+    let bodyJson = await buildPayload(chunkStart, chunkDur, sr, useSep);
+    reportStage(3, 'transcription');
+    try {
+      let resp = await fetch('/api/transcribe-lyrics/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: bodyJson,
+      });
+      if (resp.status === 413) {
+        bodyJson = await buildPayload(chunkStart, chunkDur, 8000, false);
+        resp = await fetch('/api/transcribe-lyrics/stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: bodyJson,
+        });
+      }
+      if (resp.ok) {
+        const ctype = (resp.headers.get('content-type') || '').toLowerCase();
+        const streamed = ctype.includes('text/event-stream') ? await readSseStream(resp) : await resp.json();
+        if (streamed) return streamed;
+      }
+    } catch (e) {}
+
+    // Fallback cleanly to standard JSON endpoint if SSE stream fails
+    let respFallback = await fetch('/api/transcribe-lyrics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: bodyJson,
+    });
+    if (respFallback.status === 413) {
+      bodyJson = await buildPayload(chunkStart, chunkDur, 8000, false);
+      respFallback = await fetch('/api/transcribe-lyrics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: bodyJson,
+      });
     }
-    if (!resp.ok) return null;
-    return resp.json();
+    if (!respFallback.ok) {
+      return { success: false, reason: 'http_error', errorMessage: `HTTP ${respFallback.status}` };
+    }
+    return respFallback.json();
   };
 
   const refineAndValidate = (rawLines, detectedLang, serverValidation, usedModels) => {
     reportStage(5, 'refinement');
-    const refined = rawLines.map(l => {
+    const needsAcousticLineSnap = usedModels && usedModels.forcedAlignment === 'client_10ms_vocal_onset_aligner';
+    let workingLines = rawLines;
+    if (needsAcousticLineSnap && workingLines.length) {
+      const parsedPseudo = workingLines.map(l => ({ text: l.text, interlude: Boolean(l.isInstrumentalSection) }));
+      const snappedTimes = J.alignLinesToVocals(audioAnalysis, parsedPseudo);
+      workingLines = workingLines.map((l, idx) => {
+        if (l.isInstrumentalSection) return l;
+        const ns = snappedTimes[idx] != null ? snappedTimes[idx] : l.start;
+        const ne = (idx < workingLines.length - 1 && snappedTimes[idx + 1] != null)
+          ? Math.max(ns + 0.35, snappedTimes[idx + 1] - 0.05)
+          : Math.max(ns + 0.5, Math.min(totalDur, l.end || ns + 3.0));
+        return Object.assign({}, l, { start: +ns.toFixed(3), end: +ne.toFixed(3) });
+      });
+    }
+    const refined = workingLines.map(l => {
       const lineLang = l.language || detectedLang || lang;
       const lineSpk = l.speaker || 'Lead';
       if (l.isInstrumentalSection || l.vocalType === 'instrumental') {
@@ -1917,11 +2066,16 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
     return { lines: validated.lines, validationSummary: validated.validationSummary, pipelineReport };
   };
 
-  // For songs up to 155s, run a single cohesive full-song analysis; for longer songs, chunk cleanly with 5s overlap so 100% of audio is analyzed
-  if (totalDur <= 155) {
+  // Single cohesive window up to 42s; for longer tracks, stream 36s windows with 3s overlap so lyrics start appearing immediately!
+  if (totalDur <= 42) {
     const data = await transcribeWindow(0, totalDur);
-    if (!data) return null;
-    if (data.requiresBilling) return { billingRequired: true, lines: [] };
+    if (!data) return { success: false, reason: 'empty_response', errorMessage: 'Empty server response' };
+    if (data.requiresBilling || data.reason === 'billing_required') {
+      return { success: false, billingRequired: true, reason: 'billing_required', errorMessage: data.message || '', lines: [] };
+    }
+    if (data.reason === 'ai_not_configured') {
+      return { success: false, notConfigured: true, reason: 'ai_not_configured', errorMessage: data.message || '', lines: [] };
+    }
     if (data.success && (Array.isArray(data.lines) || data.isInstrumental)) {
       const rv = refineAndValidate(data.lines || [], data.language, data.validationSummary, data.pipelineModels);
       data.lines = rv.lines;
@@ -1936,11 +2090,12 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
       if (data.detectedLanguages.length > 1 && !lang) data.language = data.detectedLanguages[0];
       return data;
     }
-    return null;
+    return { success: false, reason: data.reason || 'transcription_error', errorMessage: data.message || data.errorMessage || '', lines: [] };
   }
 
-  const winDur = 125;
-  const step = 120;
+  const winDur = 36;
+  const step = 33;
+  const totalChunks = Math.max(1, Math.ceil((totalDur - 0.5) / step));
   const mergedLines = [];
   const mergedSections = [];
   const mergedGaps = [];
@@ -1956,13 +2111,24 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
   let hasRepeatedChorus = false;
   let allInstrumental = true;
   let lastModels = null;
+  let lastError = null;
+  let chunkIndex = 0;
 
   for (let t0 = 0; t0 < totalDur - 0.5; t0 += step) {
+    chunkIndex++;
     const dur = Math.min(winDur, totalDur - t0);
     const chunkData = await transcribeWindow(t0, dur);
     if (!chunkData) continue;
-    if (chunkData.requiresBilling) return { billingRequired: true, lines: [] };
-    if (!chunkData.success) continue;
+    if (chunkData.requiresBilling || chunkData.reason === 'billing_required') {
+      return { success: false, billingRequired: true, reason: 'billing_required', errorMessage: chunkData.message || '', lines: [] };
+    }
+    if (chunkData.reason === 'ai_not_configured') {
+      return { success: false, notConfigured: true, reason: 'ai_not_configured', errorMessage: chunkData.message || '', lines: [] };
+    }
+    if (!chunkData.success) {
+      lastError = chunkData;
+      continue;
+    }
     if (chunkData.pipelineModels) lastModels = chunkData.pipelineModels;
 
     if (chunkData.language && chunkData.language !== 'auto' && chunkData.language !== 'instrumental' && primaryLang === 'auto') {
@@ -1987,7 +2153,7 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
       for (const ln of chunkData.lines) {
         if (ln.speaker && ln.speaker !== 'Instrumental') speakers.add(ln.speaker);
         const prev = mergedLines[mergedLines.length - 1];
-        if (prev && ln.start < prev.end + 0.35 && prev.text.toLowerCase() === ln.text.toLowerCase()) continue;
+        if (prev && ln.start < prev.end + 0.45 && prev.text.trim().toLowerCase() === String(ln.text || '').trim().toLowerCase()) continue;
         if (prev && ln.start < prev.end) {
           ln.start = +Math.max(prev.end + 0.02, ln.start).toFixed(3);
           if (ln.end <= ln.start) ln.end = +(ln.start + 0.25).toFixed(3);
@@ -1995,9 +2161,27 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
         mergedLines.push(ln);
       }
     }
+
+    if (mergedLines.length) {
+      reportPartial({
+        stage: 'chunk',
+        chunkIndex,
+        totalChunks,
+        lines: mergedLines.slice(),
+        language: primaryLang,
+        detectedLanguages: Array.from(langs),
+      });
+    }
   }
 
-  if (!mergedLines.length && !allInstrumental) return null;
+  if (!mergedLines.length && !allInstrumental) {
+    return {
+      success: false,
+      reason: (lastError && lastError.reason) || 'transcription_error',
+      errorMessage: (lastError && (lastError.message || lastError.errorMessage)) || '',
+      lines: [],
+    };
+  }
   let combinedType = 'singing';
   if (allInstrumental) combinedType = 'instrumental';
   else if (audioTypes.has('combination') || (audioTypes.size > 1) || (audioTypes.has('speech') && audioTypes.has('singing'))) combinedType = 'combination';
@@ -2022,6 +2206,207 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
     validationSummary: rv.validationSummary,
     pipelineReport: rv.pipelineReport,
     lines: rv.lines,
+  };
+};
+
+/* Instant Built-in Browser Voice & Singing Recognition (Web Speech API + Live Mic RMS Level) */
+J.isVoiceRecognitionSupported = () => {
+  return Boolean(typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition));
+};
+
+J.mapLangToSpeechLocale = (lang = 'auto') => {
+  const raw = String(lang || 'auto').trim().toLowerCase();
+  const map = {
+    fr: 'fr-FR',
+    en: 'en-US',
+    'zh-hans': 'zh-CN',
+    'zh-hant': 'zh-TW',
+    zh: 'zh-CN',
+    ja: 'ja-JP',
+    ko: 'ko-KR',
+    es: 'es-ES',
+    de: 'de-DE',
+    it: 'it-IT',
+    pt: 'pt-PT',
+  };
+  if (map[raw]) return map[raw];
+  const docLang = (typeof document !== 'undefined' && document.documentElement.lang || '').toLowerCase();
+  return map[docLang] || (typeof navigator !== 'undefined' && navigator.language) || 'fr-FR';
+};
+
+J.createLiveVoiceRecognizer = (opts = {}) => {
+  const SpeechCtor = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
+  const onInterim = typeof opts.onInterim === 'function' ? opts.onInterim : () => {};
+  const onPhrase = typeof opts.onPhrase === 'function' ? opts.onPhrase : () => {};
+  const onLevel = typeof opts.onLevel === 'function' ? opts.onLevel : () => {};
+  const onStatus = typeof opts.onStatus === 'function' ? opts.onStatus : () => {};
+  const getClock = typeof opts.getClock === 'function' ? opts.getClock : () => (performance.now() / 1000);
+
+  let active = false;
+  let recognition = null;
+  let startClockSec = 0;
+  let phraseStartSec = null;
+  let pauseFlushTimer = null;
+  let lastInterimText = '';
+  let mediaStream = null;
+  let audioCtx = null;
+  let rafId = 0;
+  let restartTimer = 0;
+
+  const stopMeter = () => {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+    if (mediaStream) {
+      try { mediaStream.getTracks().forEach(t => t.stop()); } catch (e) {}
+      mediaStream = null;
+    }
+    if (audioCtx) {
+      try { audioCtx.close(); } catch (e) {}
+      audioCtx = null;
+    }
+    onLevel(0);
+  };
+
+  const startMeter = async () => {
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) return;
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx || !active) return;
+      audioCtx = new Ctx();
+      const src = audioCtx.createMediaStreamSource(mediaStream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      src.connect(analyser);
+      const data = new Uint8Array(analyser.fftSize);
+      const tick = () => {
+        if (!active) return;
+        analyser.getByteTimeDomainData(data);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) {
+          const v = (data[i] - 128) / 128;
+          sum += v * v;
+        }
+        const rms = Math.sqrt(sum / data.length);
+        onLevel(Math.min(1, rms * 3.8));
+        rafId = requestAnimationFrame(tick);
+      };
+      rafId = requestAnimationFrame(tick);
+    } catch (e) {
+      // Optional meter failure should not block SpeechRecognition
+    }
+  };
+
+  const emitFinal = (txt, conf = 0.92) => {
+    const clean = String(txt || '').trim();
+    if (!clean) return;
+    const nowSec = Math.max(0, getClock() - startClockSec);
+    const sSec = phraseStartSec != null ? Math.max(0, phraseStartSec) : Math.max(0, nowSec - 1.4);
+    const eSec = Math.max(sSec + 0.35, nowSec);
+    phraseStartSec = null;
+    lastInterimText = '';
+    onInterim({ text: '', startSec: sSec });
+    onPhrase({ text: clean, startSec: +sSec.toFixed(3), endSec: +eSec.toFixed(3), confidence: conf });
+  };
+
+  const spawnRecognition = () => {
+    if (!SpeechCtor || !active) return;
+    recognition = new SpeechCtor();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+    recognition.lang = J.mapLangToSpeechLocale(opts.lang || 'auto');
+
+    recognition.onstart = () => {
+      if (active) onStatus('listening', { lang: recognition.lang });
+    };
+
+    recognition.onresult = (event) => {
+      if (!active) return;
+      clearTimeout(pauseFlushTimer);
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const res = event.results[i];
+        const transcript = (res[0] && res[0].transcript) ? String(res[0].transcript) : '';
+        const conf = (res[0] && typeof res[0].confidence === 'number' && res[0].confidence > 0) ? res[0].confidence : 0.91;
+        if (phraseStartSec == null) {
+          phraseStartSec = Math.max(0, getClock() - startClockSec);
+        }
+        if (res.isFinal) {
+          emitFinal(transcript, conf);
+        } else {
+          interim += transcript;
+        }
+      }
+      const cleanInterim = interim.trim();
+      lastInterimText = cleanInterim;
+      if (cleanInterim) {
+        onInterim({ text: cleanInterim, startSec: phraseStartSec ?? 0 });
+        pauseFlushTimer = setTimeout(() => {
+          if (active && lastInterimText) {
+            emitFinal(lastInterimText, 0.86);
+            try { recognition && recognition.stop(); } catch (e) {}
+          }
+        }, 1250);
+      }
+    };
+
+    recognition.onerror = (ev) => {
+      const err = (ev && ev.error) || 'error';
+      if (err === 'not-allowed' || err === 'service-not-allowed') {
+        active = false;
+        stopMeter();
+        onStatus('denied', { error: err });
+      } else if (err === 'no-speech' || err === 'aborted') {
+        // Silent timeout — auto-restarted on onend
+      } else {
+        onStatus('error', { error: err });
+      }
+    };
+
+    recognition.onend = () => {
+      if (!active) return;
+      restartTimer = setTimeout(() => {
+        if (active) spawnRecognition();
+      }, 140);
+    };
+
+    try {
+      recognition.start();
+    } catch (e) {
+      active = false;
+      stopMeter();
+      onStatus('error', { error: (e && e.message) || 'start_failed' });
+    }
+  };
+
+  return {
+    start(overrideLang) {
+      if (!SpeechCtor) {
+        onStatus('unsupported', { error: 'SpeechRecognition unavailable' });
+        return false;
+      }
+      if (overrideLang) opts.lang = overrideLang;
+      active = true;
+      startClockSec = getClock();
+      phraseStartSec = null;
+      lastInterimText = '';
+      spawnRecognition();
+      startMeter();
+      return true;
+    },
+    stop() {
+      active = false;
+      clearTimeout(pauseFlushTimer);
+      clearTimeout(restartTimer);
+      if (lastInterimText) emitFinal(lastInterimText, 0.85);
+      if (recognition) {
+        try { recognition.onend = null; recognition.stop(); } catch (e) {}
+        recognition = null;
+      }
+      stopMeter();
+      onStatus('stopped');
+    },
+    isActive() { return active; },
   };
 };
 

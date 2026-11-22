@@ -251,6 +251,74 @@
         }
       },
       "required": ["historyId", "ownerId", "action", "category", "songId", "songTitle", "artist", "details", "createdAt"]
+    },
+    "TimestampSnapshot": {
+      "title": "Structured Timestamp Snapshot",
+      "description": "Versioned structured line/word/phoneme forced-alignment timestamps with provenance and confidence telemetry belonging to a parent SongRecord.",
+      "type": "object",
+      "properties": {
+        "versionId": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "songId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "uploadId": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "language": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "provenanceSummary": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "lineCount": {
+          "type": "integer"
+        },
+        "wordCount": {
+          "type": "integer"
+        },
+        "validationSummary": {
+          "type": "object",
+          "description": "Calibrated word confidence tier counts and uncertainty counters."
+        },
+        "lines": {
+          "type": "array",
+          "description": "Ordered array of structured lyric line and word/phoneme timing maps."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "versionId",
+        "songId",
+        "ownerId",
+        "language",
+        "provenanceSummary",
+        "lineCount",
+        "wordCount",
+        "lines",
+        "createdAt",
+        "updatedAt"
+      ]
     }
   },
   "firestore": {
@@ -273,6 +341,10 @@
     "/songs/{songId}/audioChunks/{chunkId}": {
       "schema": { "$ref": "#/entities/AudioChunk" },
       "description": "Chunked audio binary slices tied via Master Gate to parent SongRecord ownership."
+    },
+    "/songs/{songId}/timestampVersions/{versionId}": {
+      "schema": { "$ref": "#/entities/TimestampSnapshot" },
+      "description": "Structured forced-alignment line/word/phoneme timestamp versions tied via Master Gate to parent SongRecord ownership."
     }
   }
 }

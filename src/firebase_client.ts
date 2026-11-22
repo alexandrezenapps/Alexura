@@ -666,6 +666,83 @@ export async function clearWorkHistory(): Promise<void> {
   }
 }
 
+export interface TimestampSnapshotInput {
+  songId: string;
+  versionId?: string;
+  uploadId?: string;
+  language?: string;
+  provenanceSummary: string;
+  validationSummary?: Record<string, unknown>;
+  lines: Array<Record<string, unknown>>;
+}
+
+export async function saveTimestampSnapshot(input: TimestampSnapshotInput): Promise<{ versionId: string }> {
+  const user = auth.currentUser;
+  if (!user) throw new Error('AUTH_REQUIRED');
+  const songId = sanitizeId(input.songId);
+  const versionId = sanitizeId(input.versionId || `v_${Date.now().toString(36)}`, 'v_1').slice(0, 64);
+  const path = `songs/${songId}/timestampVersions/${versionId}`;
+  const ref = doc(db, 'songs', songId, 'timestampVersions', versionId);
+
+  const cleanLines = (Array.isArray(input.lines) ? input.lines.slice(0, 1000) : []).map((ln) =>
+    toFirestoreClean(ln)
+  );
+  const wordCount = cleanLines.reduce((acc: number, ln: unknown) => {
+    const words = (ln as { words?: unknown[] })?.words;
+    return acc + (Array.isArray(words) ? words.length : 0);
+  }, 0);
+
+  let existingCreatedAt: unknown = null;
+  try {
+    const prevSnap = await getDoc(ref);
+    if (prevSnap.exists()) existingCreatedAt = prevSnap.data().createdAt || null;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.GET, path);
+  }
+
+  const payload: Record<string, unknown> = {
+    versionId,
+    songId,
+    ownerId: user.uid,
+    language: clampStr(input.language || 'auto', 32),
+    provenanceSummary: clampStr(input.provenanceSummary || 'dsp_acoustic_viterbi', 160),
+    lineCount: Math.max(0, Math.min(1000, cleanLines.length)),
+    wordCount: Math.max(0, Math.min(20000, wordCount)),
+    lines: cleanLines,
+    createdAt: existingCreatedAt || serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  if (input.uploadId) payload.uploadId = sanitizeId(input.uploadId, '').slice(0, 64);
+  if (input.validationSummary) {
+    payload.validationSummary = toFirestoreClean(input.validationSummary) as Record<string, unknown>;
+  }
+
+  try {
+    await setDoc(ref, payload);
+    return { versionId };
+  } catch (error) {
+    handleFirestoreError(error, existingCreatedAt ? OperationType.UPDATE : OperationType.CREATE, path);
+  }
+}
+
+export async function listTimestampSnapshots(songId: string): Promise<Record<string, unknown>[]> {
+  const user = auth.currentUser;
+  if (!user) return [];
+  const cleanSongId = sanitizeId(songId);
+  const path = `songs/${cleanSongId}/timestampVersions`;
+  try {
+    const q = query(
+      collection(db, 'songs', cleanSongId, 'timestampVersions'),
+      where('ownerId', '==', user.uid),
+      where('songId', '==', cleanSongId)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ ...d.data(), id: d.id }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+  }
+}
+
 export function subscribeAuth(cb: (user: User | null) => void): Unsubscribe {
   return onAuthStateChanged(auth, cb);
 }
@@ -689,6 +766,8 @@ const AlexuraCloud = {
   saveSongToCloud,
   loadSongFromCloud,
   deleteSongFromCloud,
+  saveTimestampSnapshot,
+  listTimestampSnapshots,
   logWorkHistory,
   deleteHistoryEntry,
   clearWorkHistory,

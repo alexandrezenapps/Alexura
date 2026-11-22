@@ -1,4 +1,6 @@
-# JIZURA 字面 — 文字PV自動構成ツール
+# JIZURA 字面 / Alexura — AI Lyrics Sync Engine
+
+> **Alexura AI Lyrics Sync Engine (Phase 1 — Professional Architecture Foundation):** See [`README_SYNC_ENGINE.md`](README_SYNC_ENGINE.md) for the React + TypeScript + shadcn/ui frontend, Python FastAPI + Pydantic backend, normalized JSON schema, 9-stage pipeline states, and local startup instructions.
 
 **English edition:** [Open the app](https://852wa.github.io/JIZURA/en/) · [English guide](README.en.md)　／　**Bahasa Indonesia**：[Buka](https://852wa.github.io/JIZURA/id/) · [Panduan](README.id.md)　**Tiếng Việt**：[Mở](https://852wa.github.io/JIZURA/vi/) · [Hướng dẫn](README.vi.md)　**繁體中文**：[開啟](https://852wa.github.io/JIZURA/zh-hant/)　**简体中文**：[打开](https://852wa.github.io/JIZURA/zh-hans/)　**한국어**：[열기](https://852wa.github.io/JIZURA/ko/) · [한국어 가이드](README.ko.md)
 

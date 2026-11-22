@@ -134,6 +134,36 @@ service cloud.firestore {
         && data.updatedAt is timestamp;
     }
 
+    // Validation blueprint: TimestampSnapshot
+    function isValidTimestampSnapshot(data, versionId, songId) {
+      return data.keys().hasAll([
+          'versionId', 'songId', 'ownerId', 'language', 'provenanceSummary',
+          'lineCount', 'wordCount', 'lines', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'versionId', 'songId', 'ownerId', 'uploadId', 'language',
+          'provenanceSummary', 'lineCount', 'wordCount', 'validationSummary',
+          'lines', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.versionId)
+        && data.versionId == versionId
+        && data.versionId.size() <= 64
+        && isValidId(data.songId)
+        && data.songId == songId
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && isOptString(data, 'uploadId', 64)
+        && data.language is string && data.language.size() <= 32
+        && data.provenanceSummary is string && data.provenanceSummary.size() <= 160
+        && data.lineCount is int && data.lineCount >= 0 && data.lineCount <= 1000
+        && data.wordCount is int && data.wordCount >= 0 && data.wordCount <= 20000
+        && (!('validationSummary' in data) || data.validationSummary is map)
+        && data.lines is list && data.lines.size() <= 1000
+        && (data.lines.size() == 0 || data.lines[0] is map)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
     // Connection validation document for startup check
     match /test/{docId} {
       allow get: if isVerified() && docId == 'connection';
@@ -238,6 +268,36 @@ service cloud.firestore {
           && incoming().updatedAt == request.time
           && incoming().diff(existing()).affectedKeys().hasOnly(['index', 'data', 'updatedAt']);
         allow delete: if isValidId(songId) && isValidId(chunkId) && isVerified() && parentSongOwned() && existing().ownerId == request.auth.uid;
+      }
+
+      // Master Gate subcollection for structured forced-alignment timestamp snapshots
+      match /timestampVersions/{versionId} {
+        function parentSongOwnedTs() {
+          return exists(/databases/$(database)/documents/songs/$(songId))
+            && get(/databases/$(database)/documents/songs/$(songId)).data.ownerId == request.auth.uid;
+        }
+        allow get: if isValidId(songId) && isValidId(versionId) && isVerified() && parentSongOwnedTs() && (resource == null || existing().ownerId == request.auth.uid);
+        allow list: if isVerified() && existing().ownerId == request.auth.uid && existing().songId == songId;
+        allow create: if isValidId(songId) && isValidId(versionId)
+          && isVerified()
+          && isValidTimestampSnapshot(incoming(), versionId, songId)
+          && parentSongOwnedTs()
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time;
+        allow update: if isValidId(songId) && isValidId(versionId)
+          && isVerified()
+          && isValidTimestampSnapshot(incoming(), versionId, songId)
+          && parentSongOwnedTs()
+          && incoming().versionId == existing().versionId
+          && incoming().songId == existing().songId
+          && incoming().ownerId == existing().ownerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'uploadId', 'language', 'provenanceSummary', 'lineCount', 'wordCount',
+            'validationSummary', 'lines', 'updatedAt'
+          ]);
+        allow delete: if isValidId(songId) && isValidId(versionId) && isVerified() && parentSongOwnedTs() && existing().ownerId == request.auth.uid;
       }
     }
   }

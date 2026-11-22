@@ -55,6 +55,7 @@ BODY = {
     '押し間違えたら <span class="kbd">Backspace</span> か「1つ戻る」。途中の行からやり直すときは、行一覧の ◎ を押します。': ' A wrong tap? Press <span class="kbd">Backspace</span> or “Undo tap”. To redo from a line in the middle, press ◎ in the line list.',
     '<button id="btnAiTranscribe" class="accent" title="AI听音识词：自动分析歌曲音频，多语言（中文、法文、英文等）识别人声歌词并即时同步到视频">✨ AI 识词与同步</button>': '<button id="btnAiTranscribe" class="accent" title="AI Music Transcription: listens to the full song, detects language (French, Chinese, English…), transcribes lyrics and aligns every word">✨ AI Transcribe Lyrics</button>',
     '<button id="btnVocalSync" class="ghost" title="根据歌声人声起始瞬间，自动精准同步各行歌词">⚡ 人声同步</button>': '<button id="btnVocalSync" class="ghost" title="Instantly align lyric lines and words to the singing voice">⚡ Voice Sync</button>',
+    '<button id="btnVoiceDictate" type="button" class="ghost" aria-pressed="false" title="リアルタイム音声認識：マイクで歌や音声を認識して即座に歌詞化・同期します">🎙️ ライブ音声認識</button>': '<button id="btnVoiceDictate" type="button" class="ghost" aria-pressed="false" title="Instant live microphone voice recognition: sing or speak to generate time-synced lyrics">🎙️ Live Voice Mic</button>',
     'aria-label="カラオケ同期プロンプター"': 'aria-label="Live Karaoke Prompter"',
     '<span class="kp-title" id="kpTitle">🎤 カラオケ同期</span>': '<span class="kp-title" id="kpTitle">🎤 Live Karaoke</span>',
     '<span id="karaokeModeBadge" class="kp-meta">自動同期</span>': '<span id="karaokeModeBadge" class="kp-meta">Auto Sync</span>',

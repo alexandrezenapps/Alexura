@@ -36,6 +36,8 @@ def build(lang):
     alternates = '\n'.join(f'<link rel="alternate" hreflang="{hl}" href="{i18n.BASE}{f + "/" if f else ""}">' for c, f, hl, _ in i18n.EDITIONS)
     html_lang = dict((c, hl) for c, _, hl, _ in i18n.EDITIONS)[lang]
     fb_tag = f'\n<script>\n{fb_bridge}\n</script>' if fb_bridge else ''
+    studio_css_tag = '\n<link rel="stylesheet" href="/vendor/studio-react.css">' if os.path.exists('vendor/studio-react.css') else ''
+    studio_js_tag = '\n<script src="/vendor/studio-react.js" defer></script>' if os.path.exists('vendor/studio-react.js') else ''
     html = f'''<!doctype html>
 <html lang="{html_lang}">
 <head>
@@ -55,7 +57,7 @@ def build(lang):
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,600&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 {read('app/style.css')}
-</style>
+</style>{studio_css_tag}
 </head>
 <body>
 {body}
@@ -64,7 +66,7 @@ def build(lang):
 </script>{fb_tag}
 <script>
 {script}
-</script>
+</script>{studio_js_tag}
 </body>
 </html>
 '''

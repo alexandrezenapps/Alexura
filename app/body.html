@@ -162,6 +162,8 @@
       <button id="btnSave" title="プロジェクトを .json で保存">保存</button>
       <button id="btnAE" title="After Effects パネル用の構成データを書き出す">AE用に書き出し</button>
       <button id="btnReset" class="ghost" title="歌詞・曲・設定・履歴をすべて消して、最初の状態に戻します">初期化</button>
+      <button id="bgJobPill" type="button" class="ghost small bg-job-btn" hidden title="Traitement audio en cours en arrière-plan — cliquez pour ouvrir le Studio IA React"><span class="bg-job-dot" aria-hidden="true"></span><span id="bgJobText" class="mono">Analyse 0%</span></button>
+      <button id="btnModularStudio" type="button" class="accent small" title="Ouvrir le Studio Pipeline Modulaire React/TypeScript (Web Audio, Forme d'onde, Workers asynchrone &amp; Base Timestamps)">🎛 Studio IA React</button>
       <button id="btnNotice" type="button" class="ghost small notice-open" title="Ouvrir la Notice complète d’Alexura Motion Studio — guide illustré de chaque touche et fonctionnement">Notice</button>
       <button id="btnTerms" class="ghost terms-open" title="出力物の権利とライセンス">利用について</button>
     </div>
@@ -246,6 +248,7 @@
           <button id="btnAiTranscribe" class="accent" title="AI听音识词：自动分析歌曲音频，多语言（中文、法文、英文等）识别人声歌词并即时同步到视频">✨ AI 识词与同步</button>
           <button id="btnVocalSync" class="ghost" title="根据歌声人声起始瞬间，自动精准同步各行歌词">⚡ 人声同步</button>
           <button id="btnTap" title="Synchronisation manuelle guidée au rythme de la voix (ligne par ligne ou mot par mot)">⏱ タップで同期</button>
+          <button id="btnVoiceDictate" type="button" class="ghost" aria-pressed="false" title="リアルタイム音声認識：マイクで歌や音声を認識して即座に歌詞化・同期します">🎙️ ライブ音声認識</button>
         </div>
         <div id="aiProgressBox" class="ai-prog-box" hidden aria-live="polite">
           <div class="ai-prog-head">
@@ -256,8 +259,16 @@
           <div id="aiProgressSteps" class="ai-prog-steps" aria-hidden="true">
             <span data-step="1"></span><span data-step="2"></span><span data-step="3"></span><span data-step="4"></span><span data-step="5"></span><span data-step="6"></span><span data-step="7"></span>
           </div>
+          <div id="aiVoiceMeterWrap" class="ai-voice-meter-wrap" hidden>
+            <span class="ai-voice-dot" aria-hidden="true"></span>
+            <div class="ai-voice-meter" aria-hidden="true"><i id="aiVoiceMeterFill"></i></div>
+            <span id="aiVoiceLocaleBadge" class="ai-voice-locale mono">FR</span>
+            <button type="button" id="btnStopVoiceInline" class="ghost small">⏹ Terminer</button>
+          </div>
+          <div id="aiLiveTranscript" class="ai-live-transcript" hidden></div>
         </div>
         <div id="audioDetectPanel" class="audio-detect" hidden aria-live="polite"></div>
+        <div id="aiVoiceActionBar" class="ai-voice-action-bar" hidden aria-live="polite"></div>
         <div id="qcSummaryBox" class="qc-box" hidden aria-live="polite">
           <div class="qc-head">
             <strong id="qcBoxTitle">Contrôle Qualité &amp; Précision</strong>

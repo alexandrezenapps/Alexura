@@ -5,16 +5,22 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "esbuild src/firebase_client.ts --bundle --minify --format=iife --platform=browser --outfile=vendor/firebase-bridge.js && esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=server.js",
+    "build": "esbuild src/firebase_client.ts --bundle --minify --format=iife --platform=browser --outfile=vendor/firebase-bridge.js && vite build --config vite.studio.config.ts && python3 build.py && esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=server.js",
     "start": "node server.js",
-    "clean": "rm -rf dist server.js",
+    "clean": "rm -rf dist server.js vendor/studio-react.js vendor/studio-react.css",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
     "@firebase/eslint-plugin-security-rules": "^0.0.2",
     "@google/genai": "^2.4.0",
+    "@radix-ui/react-progress": "^1.2.1",
+    "@radix-ui/react-slider": "^1.6.1",
+    "@radix-ui/react-slot": "^1.5.0",
+    "@radix-ui/react-tabs": "^1.2.1",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^6.1.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
     "eslint": "^10.15.0",
     "express": "^4.21.2",
@@ -23,6 +29,7 @@
     "motion": "^12.23.24",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
+    "tailwind-merge": "^3.7.1",
     "vite": "^8.3.0"
   },
   "devDependencies": {

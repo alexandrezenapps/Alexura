@@ -1,8 +1,8 @@
 # Security Specification — Alexura Firebase Cloud Storage
 
 ## 1. Data Invariants
-1. **Strict Single-Owner Isolation**: Every `SongRecord`, `AudioChunk`, `UserProfile`, `VercelSettings`, and `WorkHistoryEntry` document belongs strictly to a single verified Firebase Auth UID (`request.auth.uid`), with `request.auth.token.email_verified == true`.
-2. **Master Gate on Subcollections**: An `AudioChunk` at `/songs/{songId}/audioChunks/{chunkId}` can ONLY be read or written if the parent `/songs/{songId}` document exists and its `ownerId == request.auth.uid`, and both `songId` and `ownerId` match. `WorkHistoryEntry` at `/users/{userId}/history/{historyId}` is strictly isolated to `userId == request.auth.uid`, immutable once written (`allow update: if false`), and bounded (`details <= 500`, `songTitle <= 200`).
+1. **Strict Single-Owner Isolation**: Every `SongRecord`, `AudioChunk`, `TimestampSnapshot`, `UserProfile`, `VercelSettings`, and `WorkHistoryEntry` document belongs strictly to a single verified Firebase Auth UID (`request.auth.uid`), with `request.auth.token.email_verified == true`.
+2. **Master Gate on Subcollections**: An `AudioChunk` at `/songs/{songId}/audioChunks/{chunkId}` or `TimestampSnapshot` at `/songs/{songId}/timestampVersions/{versionId}` can ONLY be read or written if the parent `/songs/{songId}` document exists and its `ownerId == request.auth.uid`, and both `songId` and `ownerId` match. `WorkHistoryEntry` at `/users/{userId}/history/{historyId}` is strictly isolated to `userId == request.auth.uid`, immutable once written (`allow update: if false`), and bounded (`details <= 500`, `songTitle <= 200`).
 3. **Immutable Ownership & Temporal Integrity**: `ownerId`, `songId` (on songs/chunks), and `createdAt` are immutable once created. `createdAt == request.time` on create; `updatedAt == request.time` on create and update.
 4. **Volumetric Boundaries**:
    - Path IDs strictly match `^[a-zA-Z0-9_\-]+$` (`size() <= 128`).

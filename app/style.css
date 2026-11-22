@@ -606,14 +606,42 @@ h3 {
 .audio-ai-row > #btnAiTranscribe {
   flex: 1 1 100%;
   justify-content: center;
-  padding: 9px 14px;
+  padding: 10px 14px;
+  letter-spacing: 0.01em;
 }
 .audio-ai-row > #btnVocalSync,
-.audio-ai-row > #btnTap {
+.audio-ai-row > #btnTap,
+.audio-ai-row > #btnVoiceDictate {
   flex: 1 1 0;
+  min-width: 108px;
 }
 
-/* AI 7-Stage Processing Progress */
+#btnVoiceDictate {
+  background: rgba(56, 189, 248, 0.09);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  color: #b7e4ff;
+  font-weight: 600;
+  border-radius: var(--r);
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#btnVoiceDictate:hover {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: #38bdf8;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+#btnVoiceDictate.is-listening {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(248, 113, 113, 0.72);
+  color: #fecaca;
+  animation: pulseVoiceMic 1.25s infinite ease-in-out;
+}
+@keyframes pulseVoiceMic {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.36); }
+  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}
+
+/* AI 7-Stage Processing Progress + Live Recognition Preview */
 .ai-prog-box {
   display: grid;
   gap: 7px;
@@ -669,6 +697,82 @@ h3 {
 }
 .ai-prog-steps span.is-done { background: #38bdf8; }
 .ai-prog-steps span.is-cur { background: #0a84ff; box-shadow: 0 0 8px rgba(10, 132, 255, 0.65); }
+
+.ai-voice-meter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+.ai-voice-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.85);
+  flex: 0 0 auto;
+}
+.ai-voice-meter {
+  flex: 1 1 auto;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.ai-voice-meter i {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #22c55e, #38bdf8);
+  transition: width 0.08s linear;
+}
+.ai-voice-locale {
+  font-size: 10.5px;
+  color: #93c5fd;
+}
+.ai-live-transcript {
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  color: #f0f9ff;
+  font-size: 12.5px;
+  line-height: 1.45;
+  font-weight: 500;
+  max-height: 74px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ai-live-transcript .ai-live-interim {
+  color: #7dd3fc;
+  font-style: italic;
+}
+
+.ai-voice-action-bar {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(56, 189, 248, 0.30);
+  margin-top: 2px;
+}
+.ai-voice-action-msg {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #e2e8f0;
+}
+.ai-voice-action-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ai-voice-action-btns button {
+  font-size: 11.5px;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
 
 /* Language detection & Quick Export Bar */
 .lang-det-wrap {
@@ -763,21 +867,32 @@ h3 {
   50% { box-shadow: 0 6px 26px rgba(56, 189, 248, 0.45); }
 }
 
-/* Vocal Sync Button - Sapphire Crystal */
+/* Vocal Sync Button - Sapphire Crystal Studio Action */
 #btnVocalSync {
-  background: rgba(10, 132, 255, 0.11);
-  border: 1px solid rgba(10, 132, 255, 0.32);
-  color: #8cc5ff;
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.14) 0%, rgba(56, 189, 248, 0.14) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.36);
+  color: #9dd4ff;
   font-weight: 700;
   border-radius: var(--r);
+  box-shadow: 0 2px 10px rgba(10, 132, 255, 0.12);
   transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 #btnVocalSync:hover {
-  background: rgba(10, 132, 255, 0.20);
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.24) 0%, rgba(56, 189, 248, 0.22) 100%);
   border-color: var(--accent);
   color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(10, 132, 255, 0.22);
+  box-shadow: 0 6px 18px rgba(10, 132, 255, 0.26);
+}
+#btnVocalSync:active {
+  transform: translateY(0.5px) scale(0.99);
+}
+#btnVocalSync.is-syncing {
+  opacity: 0.92;
+  pointer-events: none;
+  border-color: #38bdf8;
+  color: #ffffff;
+  animation: pulseAiTranscribe 1.2s infinite ease-in-out;
 }
 
 /* Studio Tap Sync Button & Guided Console */
@@ -5069,6 +5184,44 @@ dialog.notice-dlg:not([open]) {
   .wx-drawer, .wx-timer-fill.is-running {
     animation: none;
   }
+}
+
+.bg-job-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-color: rgba(56, 189, 248, 0.35);
+  background: rgba(10, 132, 255, 0.12);
+  color: #bae6fd;
+}
+.bg-job-btn.is-done {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: rgba(22, 163, 74, 0.14);
+  color: #86efac;
+}
+.bg-job-btn.is-err {
+  border-color: rgba(239, 68, 68, 0.45);
+  background: rgba(220, 38, 38, 0.14);
+  color: #fca5a5;
+}
+.bg-job-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #38bdf8;
+  animation: bgJobPulse 1.2s ease-in-out infinite;
+}
+.bg-job-btn.is-done .bg-job-dot {
+  background: #4ade80;
+  animation: none;
+}
+.bg-job-btn.is-err .bg-job-dot {
+  background: #f87171;
+  animation: none;
+}
+@keyframes bgJobPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.75); }
 }
 
 

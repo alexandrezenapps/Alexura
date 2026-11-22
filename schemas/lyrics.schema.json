@@ -1,0 +1,256 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexura.app/schemas/lyrics.schema.json",
+  "title": "Alexura Normalized LyricsDocument Schema",
+  "description": "Normalized Phase 1 JSON schema for AI Lyrics Sync Engine. All timestamps MUST be expressed in seconds (>= 0.0) relative to the untouched original uploaded audio file (origin = 0.000s).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentId",
+    "audioId",
+    "title",
+    "artist",
+    "primaryLanguage",
+    "detectedLanguages",
+    "durationSeconds",
+    "timelineOriginSeconds",
+    "preservesOriginalAudio",
+    "alignmentStatus",
+    "source",
+    "segments",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "documentId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "audioId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "jobId": {
+      "type": ["string", "null"]
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 240
+    },
+    "artist": {
+      "type": "string",
+      "maxLength": 240
+    },
+    "primaryLanguage": {
+      "type": "string",
+      "description": "BCP-47 language code or 'auto' / 'und'."
+    },
+    "detectedLanguages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "durationSeconds": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Original audio duration in seconds."
+    },
+    "timelineOriginSeconds": {
+      "type": "number",
+      "const": 0,
+      "description": "Must always be 0.0 relative to the original audio timeline."
+    },
+    "preservesOriginalAudio": {
+      "type": "boolean",
+      "const": true
+    },
+    "alignmentStatus": {
+      "type": "string",
+      "enum": [
+        "unaligned",
+        "phase1_placeholder",
+        "partial_manual",
+        "aligned",
+        "validated"
+      ]
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "phase1_stub",
+        "manual_editor",
+        "singing_asr_adapter",
+        "forced_alignment_adapter"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "segments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/LyricSegment"
+      }
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "LyricUnit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unitId", "text", "unitType", "alignmentState"],
+      "properties": {
+        "unitId": { "type": "string", "minLength": 1 },
+        "text": { "type": "string", "minLength": 1 },
+        "unitType": {
+          "type": "string",
+          "enum": ["character", "syllable", "mora", "phoneme"]
+        },
+        "startSeconds": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Start time in seconds relative to original audio, or null when unaligned."
+        },
+        "endSeconds": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "End time in seconds relative to original audio, or null when unaligned."
+        },
+        "confidence": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "alignmentState": {
+          "type": "string",
+          "enum": ["unaligned", "manual", "aligned"]
+        }
+      }
+    },
+    "LyricWord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wordId", "text", "alignmentState", "units"],
+      "properties": {
+        "wordId": { "type": "string", "minLength": 1 },
+        "text": { "type": "string", "minLength": 1 },
+        "startSeconds": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Word start in seconds relative to original audio; MUST be null when unaligned (never fake timestamps)."
+        },
+        "endSeconds": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Word end in seconds relative to original audio; MUST be null when unaligned."
+        },
+        "confidence": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "alignmentState": {
+          "type": "string",
+          "enum": ["unaligned", "manual", "aligned"]
+        },
+        "speaker": { "type": ["string", "null"] },
+        "flags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "units": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LyricUnit"
+          }
+        }
+      }
+    },
+    "LyricSegment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "segmentId",
+        "index",
+        "text",
+        "sectionType",
+        "vocalType",
+        "alignmentState",
+        "words"
+      ],
+      "properties": {
+        "segmentId": { "type": "string", "minLength": 1 },
+        "index": { "type": "integer", "minimum": 0 },
+        "text": { "type": "string" },
+        "startSeconds": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Segment start in seconds relative to original audio, or null when unaligned."
+        },
+        "endSeconds": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Segment end in seconds relative to original audio, or null when unaligned."
+        },
+        "language": { "type": ["string", "null"] },
+        "sectionType": {
+          "type": "string",
+          "enum": [
+            "intro",
+            "verse",
+            "pre_chorus",
+            "chorus",
+            "bridge",
+            "outro",
+            "instrumental",
+            "speech",
+            "other"
+          ]
+        },
+        "vocalType": {
+          "type": "string",
+          "enum": [
+            "lead",
+            "backing",
+            "harmony",
+            "overlapping",
+            "speech",
+            "instrumental",
+            "unclear"
+          ]
+        },
+        "speaker": { "type": ["string", "null"] },
+        "confidence": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "alignmentState": {
+          "type": "string",
+          "enum": ["unaligned", "manual", "aligned"]
+        },
+        "isPlaceholder": { "type": "boolean" },
+        "words": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LyricWord"
+          }
+        }
+      }
+    }
+  }
+}
