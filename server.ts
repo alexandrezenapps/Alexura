@@ -4,6 +4,14 @@ import { fileURLToPath } from 'url';
 import { GoogleGenAI, Type } from '@google/genai';
 import { createPipelineRouter } from './server/routes/pipelineRoutes.ts';
 import { createSyncEngineV1Router } from './server/routes/syncEngineRoutes.ts';
+import {
+  warmupWhisper,
+  isWhisperWarm,
+  transcribeWithWhisper,
+  alignLyricsWithWhisperDTW,
+} from './server/services/whisperEngine.ts';
+import { analyzeAndFixOrthography } from './server/services/lyricSpellReconciler.ts';
+import { reconcileAndReformulateLyrics } from './server/services/aiLyricReformulator.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -81,6 +89,8 @@ app.get('/api/health', (_req, res) => {
     ok: true,
     app: 'Alexura',
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+    whisperReady: isWhisperWarm(),
+    neuralAsrAvailable: true,
     firebaseConfigured: true,
     vercelConnected: Boolean(process.env.VERCEL || process.env.VERCEL_URL || process.env.EXTERNAL_APP_URL || process.env.VERCEL_DEPLOY_HOOK_URL),
     vercelUrl: process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : process.env.EXTERNAL_APP_URL || '',
@@ -95,7 +105,10 @@ app.get('/api/health', (_req, res) => {
       '/api/weather/search',
       '/api/transcribe-lyrics',
       '/api/transcribe-lyrics/stream',
+      '/api/transcribe-voice-clip',
+      '/api/audit-lyrics',
       '/api/align-vocals',
+      '/api/reconcile-lyrics',
       '/api/reanalyze-segment',
       '/api/translate-lyrics',
       '/api/bridge',
@@ -448,14 +461,216 @@ function summarizeValidation(lines: any[], missingGaps: any[] = []) {
   };
 }
 
-// Stage 4/5/6/7: Singing-Aware Forced Alignment + Validation Endpoint
-app.post('/api/align-vocals', async (req, res) => {
+// Standalone fast Stage-A Orthography & Diacritics Audit Endpoint
+app.post('/api/audit-lyrics', (req, res) => {
   try {
-    const { audioBase64, separatedVocalBase64, lines, lang, vocalSegments } = req.body || {};
-    if (!ai || !audioBase64 || !lines || !lines.length) {
-      return res.status(200).json({ success: false, reason: 'ai_not_configured' });
+    const { lyrics, lines, lang } = req.body || {};
+    const entries: Array<{ lineIdx: number; rawText: string }> = Array.isArray(lines) && lines.length
+      ? lines.map((l: any, k: number) => ({
+          lineIdx: typeof l?.i === 'number' ? l.i : (typeof l?.index === 'number' ? l.index : k),
+          rawText: typeof l === 'string' ? l : String(l?.text || ''),
+        }))
+      : String(lyrics || '').split(/\r?\n/).map((t, k) => ({ lineIdx: k, rawText: t }));
+
+    const report = analyzeAndFixOrthography(entries.map(e => e.rawText), String(lang || 'auto'));
+    const correctedLines: Record<number, string> = {};
+    entries.forEach((e, k) => {
+      const nextTxt = report.correctedLines[k];
+      if (nextTxt && nextTxt.trim() !== e.rawText.trim()) {
+        correctedLines[e.lineIdx] = nextTxt;
+      }
+    });
+    const changes = report.changes.map(ch => ({
+      ...ch,
+      lineIdx: entries[ch.lineIdx]?.lineIdx ?? ch.lineIdx,
+    }));
+
+    return res.json({
+      success: true,
+      detectedLanguage: report.detectedLanguage,
+      spellingFixCount: changes.length,
+      changes,
+      correctedLines,
+      correctedText: report.correctedText,
+    });
+  } catch (err: any) {
+    return res.status(200).json({
+      success: false,
+      reason: 'audit_error',
+      message: (err?.message || String(err || '')).slice(0, 200),
+    });
+  }
+});
+
+// Dedicated AI Lyric Reformulation & Hard-Problem Diagnostic Endpoint
+app.post('/api/reconcile-lyrics', async (req, res) => {
+  try {
+    const {
+      lines,
+      recognizedLines,
+      vocalSegments,
+      divergences,
+      corrections,
+      lang,
+      durationSec,
+      matchRatio,
+      lineMatchRatios,
+      stretchedLineIndices,
+    } = req.body || {};
+
+    if (!Array.isArray(lines) || !lines.length) {
+      return res.status(200).json({ success: false, reason: 'missing_lines', reformulations: [], unresolvableProblems: [] });
     }
 
+    const userLines = lines.map((l: any, idx: number) => ({
+      lineIdx: typeof l?.lineIdx === 'number' ? l.lineIdx : (typeof l?.i === 'number' ? l.i : (typeof l?.index === 'number' ? l.index : idx)),
+      text: String(l?.text || ''),
+      start: Number(l?.start) || 0,
+      end: Number(l?.end) || 0,
+      confidence: typeof l?.confidence === 'number' ? l.confidence : undefined,
+      matchRatio: typeof l?.matchRatio === 'number' ? l.matchRatio : undefined,
+      flags: Array.isArray(l?.flags) ? l.flags : [],
+      interlude: Boolean(l?.interlude),
+    }));
+
+    const result = await reconcileAndReformulateLyrics({
+      ai,
+      userLines,
+      recognizedLines: Array.isArray(recognizedLines) ? recognizedLines : [],
+      vocalSegments: Array.isArray(vocalSegments) ? vocalSegments : [],
+      divergences: Array.isArray(divergences) ? divergences : [],
+      corrections: Array.isArray(corrections) ? corrections : [],
+      lang: String(lang || 'auto'),
+      durationSec: Number(durationSec) || 0,
+      matchRatio: typeof matchRatio === 'number' ? matchRatio : 1,
+      lineMatchRatios: (lineMatchRatios && typeof lineMatchRatios === 'object') ? lineMatchRatios : {},
+      stretchedLineIndices: Array.isArray(stretchedLineIndices) ? stretchedLineIndices : [],
+    });
+
+    return res.json(result);
+  } catch (err: any) {
+    return res.status(200).json({
+      success: false,
+      reason: 'reconcile_error',
+      message: (err?.message || String(err || '')).slice(0, 300),
+      reformulations: [],
+      unresolvableProblems: [],
+    });
+  }
+});
+
+// Stage 4/5/6/7: Singing-Aware Forced Alignment + Orthography Repair + Validation Endpoint
+app.post('/api/align-vocals', async (req, res) => {
+  const { audioBase64, separatedVocalBase64, lines, lang, vocalSegments, durationSec } = req.body || {};
+  if (!audioBase64 || !Array.isArray(lines) || !lines.length) {
+    return res.status(200).json({ success: false, reason: 'missing_input' });
+  }
+
+  const runWhisperAlignFallback = async (geminiErrReason?: string) => {
+    try {
+      const dtwRes = await alignLyricsWithWhisperDTW({
+        audioBase64,
+        separatedVocalBase64,
+        lines,
+        lang: lang || 'auto',
+        vocalSegments: Array.isArray(vocalSegments) ? vocalSegments : [],
+      });
+      const recLinesNorm = Array.isArray(dtwRes.recognizedLines) && dtwRes.recognizedLines.length
+        ? normalizeKaraokeLines(dtwRes.recognizedLines, 0)
+        : [];
+      const userLinesForReconcile = lines.map((l: any, k: number) => {
+        const li = typeof l?.i === 'number' ? l.i : (typeof l?.index === 'number' ? l.index : k);
+        const wArr = dtwRes.wordTimes[li] || [];
+        const ls = dtwRes.lineTimes[li] ?? (wArr[0]?.start ?? 0);
+        const le = wArr.length ? wArr[wArr.length - 1].end : ls + 2;
+        const meta = dtwRes.lineMeta[li] || {};
+        return {
+          lineIdx: li,
+          text: dtwRes.correctedLines[li] || String(l?.text || ''),
+          start: ls,
+          end: le,
+          confidence: meta.alignmentConfidence ?? 0.85,
+          matchRatio: dtwRes.lineMatchRatios?.[li] ?? dtwRes.matchRatio,
+          flags: Array.isArray(meta.flags) ? meta.flags : [],
+          interlude: /^\[interlude/i.test(String(l?.text || '').trim()),
+        };
+      });
+      const reconcile = await reconcileAndReformulateLyrics({
+        ai,
+        userLines: userLinesForReconcile,
+        recognizedLines: recLinesNorm.map((rl: any) => ({
+          text: rl.text,
+          start: rl.start,
+          end: rl.end,
+          recognitionConfidence: rl.recognitionConfidence,
+        })),
+        vocalSegments: Array.isArray(vocalSegments) ? vocalSegments : [],
+        divergences: dtwRes.divergences,
+        corrections: dtwRes.corrections,
+        lang: dtwRes.detectedLanguage !== 'auto' ? dtwRes.detectedLanguage : String(lang || 'auto'),
+        durationSec: Number(durationSec) || 0,
+        matchRatio: dtwRes.matchRatio,
+        lineMatchRatios: dtwRes.lineMatchRatios,
+        stretchedLineIndices: dtwRes.stretchedLineIndices,
+      });
+
+      if (dtwRes.success && Object.keys(dtwRes.lineTimes).length > 0) {
+        return res.json({
+          success: true,
+          source: 'neural_whisper_dtw',
+          engine: dtwRes.engine,
+          matchedCount: dtwRes.matchedCount,
+          matchRatio: dtwRes.matchRatio,
+          lineTimes: dtwRes.lineTimes,
+          wordTimes: dtwRes.wordTimes,
+          lineMeta: dtwRes.lineMeta,
+          lineMatchRatios: dtwRes.lineMatchRatios,
+          corrections: dtwRes.corrections,
+          spellingFixCount: dtwRes.spellingFixCount,
+          correctedLines: dtwRes.correctedLines,
+          correctedText: dtwRes.correctedText,
+          divergences: dtwRes.divergences,
+          reformulations: reconcile.reformulations,
+          unresolvableProblems: reconcile.unresolvableProblems,
+          reconcileSummary: reconcile.summary,
+          detectedLanguage: dtwRes.detectedLanguage,
+          recognizedLines: recLinesNorm,
+          recognizedTranscript: recLinesNorm.length ? dtwRes.recognizedTranscript : '',
+        });
+      }
+      return res.status(200).json({
+        success: false,
+        reason: geminiErrReason || 'no_vocal_match',
+        matchedCount: 0,
+        matchRatio: 0,
+        corrections: dtwRes.corrections,
+        spellingFixCount: dtwRes.spellingFixCount,
+        correctedLines: dtwRes.correctedLines,
+        correctedText: dtwRes.correctedText,
+        divergences: dtwRes.divergences,
+        reformulations: reconcile.reformulations,
+        unresolvableProblems: reconcile.unresolvableProblems,
+        reconcileSummary: reconcile.summary,
+        detectedLanguage: dtwRes.detectedLanguage,
+        recognizedLines: recLinesNorm,
+        recognizedTranscript: dtwRes.recognizedTranscript || '',
+        requiresBilling: false,
+      });
+    } catch (wErr: any) {
+      return res.status(200).json({
+        success: false,
+        reason: 'alignment_error',
+        requiresBilling: false,
+        message: (wErr?.message || String(wErr || '')).slice(0, 300),
+      });
+    }
+  };
+
+  if (!ai) {
+    return runWhisperAlignFallback();
+  }
+
+  try {
     const cleanSegs = Array.isArray(vocalSegments)
       ? vocalSegments
           .slice(0, 48)
@@ -576,16 +791,76 @@ CRITICAL SINGING-AWARE ALIGNMENT & VALIDATION RULES:
       });
     }
 
-    return res.json({ success: true, lineTimes, wordTimes, lineMeta });
+    const preAudit = analyzeAndFixOrthography(lines.map((l: any) => String(l?.text || '')), String(lang || 'auto'));
+    const correctedLines: Record<number, string> = {};
+    lines.forEach((l: any, k: number) => {
+      const li = typeof l?.i === 'number' ? l.i : (typeof l?.index === 'number' ? l.index : k);
+      const nextTxt = preAudit.correctedLines[k];
+      if (nextTxt && nextTxt.trim() !== String(l?.text || '').trim()) {
+        correctedLines[li] = nextTxt;
+      }
+    });
+    const corrections = preAudit.changes.map(ch => ({
+      ...ch,
+      lineIdx: (typeof lines[ch.lineIdx]?.i === 'number' ? lines[ch.lineIdx].i : ch.lineIdx),
+    }));
+
+    // Build diagnostic & reformulation pass comparing Gemini Cloud word alignment flags vs original lines
+    const userLinesGem = lines.map((l: any, k: number) => {
+      const li = typeof l?.i === 'number' ? l.i : (typeof l?.index === 'number' ? l.index : k);
+      const wArr = wordTimes[li] || [];
+      const ls = lineTimes[li] ?? (wArr[0]?.start ?? 0);
+      const le = wArr.length ? wArr[wArr.length - 1].end : ls + 2;
+      const meta = lineMeta[li] || {};
+      return {
+        lineIdx: li,
+        text: correctedLines[li] || String(l?.text || ''),
+        start: ls,
+        end: le,
+        confidence: meta.alignmentConfidence ?? 0.88,
+        matchRatio: (meta.flags || []).includes('misrecognized_word') ? 0.3 : 1,
+        flags: Array.isArray(meta.flags) ? meta.flags : [],
+        interlude: /^\[interlude/i.test(String(l?.text || '').trim()),
+      };
+    });
+    const gemRecLines = (parsed.alignments || []).map((a: any) => ({
+      text: (a.words || []).map((w: any) => w.text).join(' ').trim(),
+      start: Number(a.start) || 0,
+      end: Number(a.end) || 0,
+      recognitionConfidence: Number(a.recognitionConfidence) || 0.88,
+    })).filter((r: any) => r.text);
+    const reconcile = await reconcileAndReformulateLyrics({
+      ai,
+      userLines: userLinesGem,
+      recognizedLines: gemRecLines,
+      vocalSegments: Array.isArray(vocalSegments) ? vocalSegments : [],
+      divergences: [],
+      corrections,
+      lang: preAudit.detectedLanguage !== 'auto' ? preAudit.detectedLanguage : String(lang || 'auto'),
+      durationSec: Number(durationSec) || 0,
+      matchRatio: 1,
+    });
+
+    return res.json({
+      success: true,
+      source: 'gemini_cloud',
+      lineTimes,
+      wordTimes,
+      lineMeta,
+      corrections,
+      spellingFixCount: corrections.length,
+      correctedLines,
+      correctedText: preAudit.correctedText,
+      reformulations: reconcile.reformulations,
+      unresolvableProblems: reconcile.unresolvableProblems,
+      reconcileSummary: reconcile.summary,
+      recognizedLines: gemRecLines,
+      detectedLanguage: preAudit.detectedLanguage,
+    });
   } catch (err: any) {
     const msg = err?.message || String(err || '');
     const isBilling = msg.includes('billing') || msg.includes('free tier') || err?.status === 'PERMISSION_DENIED' || err?.code === 403;
-    return res.status(200).json({
-      success: false,
-      reason: isBilling ? 'billing_required' : 'alignment_error',
-      requiresBilling: isBilling,
-      message: msg.slice(0, 300),
-    });
+    return runWhisperAlignFallback(isBilling ? 'billing_fallback_whisper' : 'alignment_fallback_whisper');
   }
 });
 
@@ -639,6 +914,63 @@ function parseTranscriptLinesForRecovery(
   return out;
 }
 
+async function runWhisperFallbackPipeline(
+  body: any,
+  onProgress?: (evt: { stage: number; event: string; payload?: any }) => void,
+) {
+  const {
+    audioBase64,
+    separatedVocalBase64,
+    lang,
+    chunkStartSec,
+    chunkDurationSec,
+    duration,
+  } = body || {};
+
+  const offsetSec = Math.max(0, Number(chunkStartSec) || 0);
+  const winDur = Math.max(1, Number(chunkDurationSec) || Number(duration) || 30);
+
+  const wRes = await transcribeWithWhisper({
+    audioBase64,
+    separatedVocalBase64,
+    lang: lang || 'auto',
+    chunkStartSec: offsetSec,
+    chunkDurationSec: winDur,
+    onProgress,
+  });
+
+  onProgress?.({ stage: 4, event: 'stage', payload: { label: 'aligning' } });
+
+  // wRes.lines already have offsetSec applied by buildKaraokeLinesFromWhisperChunks — pass 0 to avoid double shift
+  const lines = normalizeKaraokeLines(wRes.lines, 0);
+  const validationSummary = summarizeValidation(lines, []);
+
+  return {
+    success: true,
+    engine: 'neural_whisper',
+    needsClientAcousticAlign: false,
+    audioType: wRes.audioType,
+    language: wRes.language,
+    detectedLanguages: wRes.detectedLanguages,
+    detectedSpeakers: wRes.detectedSpeakers,
+    hasBackingVocals: wRes.hasBackingVocals,
+    hasUnclearSections: wRes.hasUnclearSections,
+    hasInstrumentalSections: wRes.hasInstrumentalSections,
+    hasRepeatedChorus: wRes.hasRepeatedChorus,
+    title: '',
+    artist: '',
+    isInstrumental: wRes.isInstrumental,
+    sections: [],
+    validationSummary,
+    pipelineModels: {
+      separation: separatedVocalBase64 ? 'client_mid_side+ffmpeg_vocal_stem' : 'ffmpeg_vocal_bandpass_stem',
+      transcription: 'whisper-base-q8',
+      forcedAlignment: 'whisper_word_timestamps+10ms_viterbi',
+    },
+    lines,
+  };
+}
+
 async function runSingingTranscriptionPipeline(
   body: any,
   onProgress?: (evt: { stage: number; event: string; payload?: any }) => void,
@@ -656,8 +988,13 @@ async function runSingingTranscriptionPipeline(
     vocalSegments,
   } = body || {};
 
-  if (!ai || !audioBase64) {
-    return { success: false, reason: 'ai_not_configured' };
+  if (!audioBase64) {
+    return { success: false, reason: 'no_audio' };
+  }
+
+  // If Cloud Gemini is unconfigured, run self-hosted Neural Whisper + FFmpeg Vocal Isolation directly
+  if (!ai) {
+    return runWhisperFallbackPipeline(body, onProgress);
   }
 
   const offsetSec = Math.max(0, Number(chunkStartSec) || 0);
@@ -714,7 +1051,7 @@ async function runSingingTranscriptionPipeline(
   } catch (tErr: any) {
     const tMsg = tErr?.message || String(tErr || '');
     if (tMsg.includes('billing') || tMsg.includes('free tier') || errIsPermissionDenied(tErr)) {
-      throw tErr;
+      return runWhisperFallbackPipeline(body, onProgress);
     }
   }
 
@@ -857,7 +1194,7 @@ Preserve timeline starting at 0.000s of this audio window (${winDur}s total). Ou
   } catch (alignErr: any) {
     const aMsg = alignErr?.message || String(alignErr || '');
     if (aMsg.includes('billing') || aMsg.includes('free tier') || errIsPermissionDenied(alignErr)) {
-      throw alignErr;
+      return runWhisperFallbackPipeline(body, onProgress);
     }
     if (vocalTranscript) {
       const recovered = parseTranscriptLinesForRecovery(vocalTranscript, cleanSegments, winDur, offsetSec, lang);
@@ -990,23 +1327,85 @@ app.post('/api/transcribe-lyrics/stream', async (req, res) => {
   }
 });
 
+// Direct live voice clip transcription endpoint (mic WebM/Opus/Ogg/MP4/WAV -> Neural Whisper)
+app.post('/api/transcribe-voice-clip', async (req, res) => {
+  try {
+    const { audioBase64, lang } = req.body || {};
+    if (!audioBase64) {
+      return res.status(400).json({ success: false, reason: 'missing_audio' });
+    }
+    const wRes = await transcribeWithWhisper({
+      audioBase64,
+      lang: lang || 'auto',
+      chunkStartSec: 0,
+      chunkDurationSec: 45,
+    });
+    const lines = normalizeKaraokeLines(wRes.lines, 0);
+    return res.json({
+      success: true,
+      engine: wRes.engine,
+      language: wRes.language,
+      isInstrumental: wRes.isInstrumental,
+      transcript: wRes.rawTranscript,
+      lines,
+    });
+  } catch (err: any) {
+    return res.status(200).json({
+      success: false,
+      reason: 'voice_clip_error',
+      message: (err?.message || String(err || '')).slice(0, 300),
+    });
+  }
+});
+
 // FUNCTION 08: Accuracy-First Automatic Re-Analysis of Low-Confidence Segments
 app.post('/api/reanalyze-segment', async (req, res) => {
-  try {
-    const {
-      audioBase64,
-      separatedVocalBase64,
-      startSec,
-      endSec,
-      existingWords,
-      qualityConditions,
-      lang,
-    } = req.body || {};
-    if (!ai || !audioBase64) {
-      return res.status(200).json({ success: false, reason: 'ai_not_configured' });
+  const {
+    audioBase64,
+    separatedVocalBase64,
+    startSec,
+    endSec,
+    existingWords,
+    qualityConditions,
+    lang,
+  } = req.body || {};
+  if (!audioBase64) {
+    return res.status(200).json({ success: false, reason: 'missing_audio' });
+  }
+  const offsetSec = Math.max(0, Number(startSec) || 0);
+  const segDur = Math.max(0.2, (Number(endSec) || offsetSec + 2) - offsetSec);
+
+  const runWhisperReanalyzeFallback = async () => {
+    try {
+      const wRes = await transcribeWithWhisper({
+        audioBase64,
+        separatedVocalBase64,
+        lang: lang || 'auto',
+        chunkStartSec: offsetSec,
+        chunkDurationSec: segDur,
+      });
+      const lines = normalizeKaraokeLines(wRes.lines, 0);
+      return res.json({
+        success: true,
+        engine: wRes.engine,
+        lines,
+        focusTranscript: wRes.rawTranscript,
+      });
+    } catch (wErr: any) {
+      return res.status(200).json({
+        success: false,
+        reason: 'reanalysis_error',
+        requiresBilling: false,
+        message: (wErr?.message || String(wErr || '')).slice(0, 300),
+      });
     }
-    const offsetSec = Math.max(0, Number(startSec) || 0);
-    const segDur = Math.max(0.2, (Number(endSec) || offsetSec + 2) - offsetSec);
+  };
+
+  if (!ai) {
+    return runWhisperReanalyzeFallback();
+  }
+
+  try {
     const condDesc = qualityConditions
       ? `noise=${qualityConditions.isNoisy ? 'YES' : 'no'}, distortion=${qualityConditions.isDistorted ? 'YES' : 'no'}, reverb=${qualityConditions.isReverberated ? 'YES' : 'no'}, overlappingVocals=${qualityConditions.hasOverlappingSingers ? 'YES' : 'no'}`
       : 'standard';
@@ -1108,12 +1507,10 @@ Rules:
   } catch (err: any) {
     const msg = err?.message || String(err || '');
     const isBilling = msg.includes('billing') || msg.includes('free tier') || err?.status === 'PERMISSION_DENIED' || err?.code === 403;
-    return res.status(200).json({
-      success: false,
-      reason: isBilling ? 'billing_required' : 'reanalysis_error',
-      requiresBilling: isBilling,
-      message: msg.slice(0, 300),
-    });
+    if (isBilling) {
+      return runWhisperReanalyzeFallback();
+    }
+    return runWhisperReanalyzeFallback();
   }
 });
 
@@ -1721,4 +2118,6 @@ app.use((req, res) => {
 
 app.listen(PORT, HOST, () => {
   console.log(`Alexura server running at http://${HOST}:${PORT}`);
+  // Background-warm Xenova/whisper-base ONNX model in memory so transcription & Synchro Voix respond fast
+  setTimeout(() => warmupWhisper(), 1200);
 });
