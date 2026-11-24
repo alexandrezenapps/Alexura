@@ -1437,6 +1437,9 @@ function applyWordElementHighlight(sp, w, t, mode, lang) {
   sp.classList.toggle('is-now', t >= w.start && t <= w.end);
 }
 let lastKpBadgeText = '';
+let lastKpMomentEvalT = -999;
+let lastKpMomentWordIdx = -1;
+let lastKpMomentSnap = null;
 function updateKaraokePrompter() {
   const activeEl = $('karaokeActive'), transActiveEl = $('karaokeTransActive'), backingEl = $('karaokeBacking'), nextEl = $('karaokeNext'), badge = $('karaokeModeBadge');
   const scrollStage = $('karaokeScrollStage'), scrollLinesEl = $('karaokeScrollLines');
@@ -1466,17 +1469,34 @@ function updateKaraokePrompter() {
     const hasAiWords = wt && displayLn && Array.isArray(wt[displayLn.index]) && wt[displayLn.index].length > 0;
     const lang = document.documentElement.lang;
     let baseLbl = hasAiWords
-      ? (lang === 'fr' ? 'IA Mot + Caractère' : lang === 'en' ? 'AI Word + Char' : 'AI 词字精同步')
+      ? (lang === 'fr' ? 'Syncro Voix & Parole' : lang === 'en' ? 'Voice & Lyric Sync' : 'AI 词字精同步')
       : (lang === 'fr' ? 'Alignement Vocal 10ms' : lang === 'en' ? '10ms Vocal Sync' : '10ms 声学词同步');
     if (displayLn && displayLn.wordsTimed && displayLn.wordsTimed.length) {
       const words = displayLn.wordsTimed;
-      const avgAlign = Math.round((words.reduce((a, w) => a + (w.alignmentConfidence ?? 0.85), 0) / words.length) * 100);
+      let activeWi = -1;
+      for (let wi = 0; wi < words.length; wi++) {
+        if (t >= words[wi].start && t <= words[wi].end) { activeWi = wi; break; }
+      }
+      if (S.audio && J.getMomentCoordinationSnapshot) {
+        if (!lastKpMomentSnap || activeWi !== lastKpMomentWordIdx || Math.abs(t - lastKpMomentEvalT) >= 0.08) {
+          lastKpMomentEvalT = t;
+          lastKpMomentWordIdx = activeWi;
+          lastKpMomentSnap = J.getMomentCoordinationSnapshot(S.audio, displayLn, activeWi >= 0 ? words[activeWi] : null, t);
+        }
+      } else {
+        lastKpMomentSnap = null;
+      }
+      const snap = lastKpMomentSnap;
+      const pctScore = snap ? snap.momentScore : Math.round((words.reduce((a, w) => a + (w.alignmentConfidence ?? 0.85), 0) / words.length) * 100);
+      const driftBadge = snap && activeWi >= 0 && snap.hasAudio
+        ? ` · ${snap.driftMs >= 0 ? '+' : ''}${snap.driftMs}ms`
+        : '';
       const spk = (displayLn.meta && displayLn.meta.speaker && displayLn.meta.speaker !== 'Lead')
         ? displayLn.meta.speaker
         : (words[0].speaker && words[0].speaker !== 'Lead' ? words[0].speaker : '');
       const lCode = displayLn.language || (displayLn.meta && displayLn.meta.language) || '';
       const lTag = lCode && J.LANG_LABEL[lCode] ? ` · ${lCode}` : '';
-      baseLbl += ` · ${avgAlign}%${lTag}` + (spk ? ` · ${spk}` : '');
+      baseLbl += ` · ${pctScore}%${driftBadge}${lTag}` + (spk ? ` · ${spk}` : '');
     }
     if (baseLbl !== lastKpBadgeText) {
       lastKpBadgeText = baseLbl;
@@ -6778,7 +6798,7 @@ function bind() {
       if (!S.audio) {
         showAiVoiceActionBar({
           message: isFr
-            ? '⚡ Synchro Voix : importez un fichier audio pour aligner automatiquement vos paroles sur la voix, OU activez la Reconnaissance Vocale en direct au micro pour générer et synchroniser vos paroles instantanément :'
+            ? '⚡ SYNCRO VOIX ET PAROLE : importez un fichier audio pour coordonner en temps réel vos paroles sur la voix, OU activez la Reconnaissance Vocale en direct au micro :'
             : isEn
             ? '⚡ Voice Sync: load an audio file to align lyrics to the singing voice, OR start Live Voice Recognition with your microphone to generate & sync lyrics instantaneously:'
             : '⚡ 人聲同步：請先匯入音樂檔案進行人聲逐詞對齊，或立即使用「即時麥克風語音辨識」邊唱邊自動產生同步歌詞：',
@@ -6801,7 +6821,7 @@ function bind() {
         return;
       }
 
-      // Case 3: Audio + real lyrics -> 3-Stage Orthography Pre-Analysis + Voice-Linked Repair + Precision Forced Alignment
+      // Case 3: Audio + real lyrics -> Real-Time Streaming SYNCRO VOIX ET PAROLE
       if (activeVoiceController && activeVoiceController.isActive()) stopLiveVoiceDictation();
       hideAiVoiceActionBar();
       const origTxt = bvs.textContent;
@@ -6809,10 +6829,15 @@ function bind() {
       bvs.disabled = true;
 
       const stageCopy = isFr
-        ? { 1: '1/4 Analyse orthographe & piste vocale…', 2: '2/4 Lien voix-paroles & correction…', 3: '3/4 Calage Viterbi 10 ms…', 4: '4/4 Synchro Voix & correction prêtes !' }
+        ? {
+            1: '1/4 Analyse orthographe & piste vocale…',
+            2: '2/4 Écoute & lien temps réel voix-paroles…',
+            3: '3/4 Coordination acoustique 10 ms instant par instant…',
+            4: '4/4 SYNCRO VOIX ET PAROLE prête !',
+          }
         : isEn
-        ? { 1: '1/4 Spelling check & vocal stem…', 2: '2/4 Voice-lyric linking & repair…', 3: '3/4 10ms Viterbi tuning…', 4: '4/4 Voice Sync & fixes ready!' }
-        : { 1: '1/4 歌詞拼寫分析與人聲提取…', 2: '2/4 歌聲對齊與錯字訂正…', 3: '3/4 10ms 細微校準…', 4: '4/4 人聲同步與錯字修正完成！' };
+        ? { 1: '1/4 Spelling check & vocal stem…', 2: '2/4 Real-time voice-lyric linking…', 3: '3/4 10ms Viterbi tuning…', 4: '4/4 Voice Sync & fixes ready!' }
+        : { 1: '1/4 歌詞拼寫分析與人聲提取…', 2: '2/4 即時歌聲對齊與錯字訂正…', 3: '3/4 10ms 細微校準…', 4: '4/4 人聲同步與錯字修正完成！' };
 
       const applyCorrectedLinesToProjectLyrics = (rawLyrics, planLines, correctedLines) => {
         if (!correctedLines || !Object.keys(correctedLines).length) return rawLyrics;
@@ -6846,24 +6871,75 @@ function bind() {
       const pctEl = $('aiProgressPct');
       const fillEl = $('aiProgressFill');
       const stepsEl = $('aiProgressSteps');
-      const setSyncProg = (st) => {
-        const pct = [25, 55, 85, 100][Math.max(0, Math.min(3, (st | 0) - 1))] || 25;
+      const liveEl = $('aiLiveTranscript');
+      if (liveEl) { liveEl.hidden = true; liveEl.innerHTML = ''; }
+
+      let lastLiveUiSyncMs = 0;
+      const streamedLineTimes = Object.assign({}, (S.project.timing && S.project.timing.lineTimes) || {});
+      const streamedWordTimes = Object.assign({}, (S.project.timing && S.project.timing.wordTimes) || {});
+
+      const setSyncProg = (st, customLabel = '', meta = null) => {
+        const defaultPct = [18, 45, 78, 100][Math.max(0, Math.min(3, (st | 0) - 1))] || 20;
+        const pct = Math.max(5, Math.min(100, Math.round(Number(meta && meta.pct) || defaultPct)));
+        const uiStep = Math.max(1, Math.min(4, st <= 1 ? 1 : st <= 3 ? 2 : st <= 5 ? 3 : 4));
+        const label = (typeof customLabel === 'string' && customLabel.length > 4 && customLabel !== 'stem' && customLabel !== 'align' && customLabel !== 'optimize' && customLabel !== 'done' && customLabel !== 'acoustic_viterbi')
+          ? customLabel
+          : (stageCopy[uiStep] || stageCopy[1]);
         if (pBox) pBox.hidden = false;
-        if (stEl) stEl.textContent = stageCopy[st] || '';
+        if (stEl) stEl.textContent = label;
         if (pctEl) pctEl.textContent = `${pct}%`;
         if (fillEl) fillEl.style.width = `${pct}%`;
         if (stepsEl) {
           stepsEl.querySelectorAll('span[data-step]').forEach(sp => {
             const n = parseInt(sp.dataset.step, 10) || 0;
-            sp.classList.toggle('is-done', n <= st * 1.75);
-            sp.classList.toggle('is-cur', n === Math.min(7, st * 2 - 1));
+            sp.classList.toggle('is-done', n <= Math.round((pct / 100) * 7));
+            sp.classList.toggle('is-cur', n === Math.min(7, Math.max(1, Math.ceil((pct / 100) * 7))));
           });
         }
         bvs.textContent = `⚡ ${pct}%`;
       };
 
-      setSyncProg(1);
-      toast(isFr ? '⚡ Analyse orthographe & calage vocal haute précision…' : isEn ? '⚡ Checking spelling & running precision Voice Sync…' : '⚡ 正在檢查歌詞拼寫並進行高精度人聲對齊…');
+      const onLiveSyncEvent = (evt) => {
+        if (!evt) return;
+        const origPlanLines = S.plan && S.plan.lines ? S.plan.lines : [];
+        if (evt.refinedLineTimes && evt.refinedWordTimes) {
+          Object.assign(streamedLineTimes, evt.refinedLineTimes);
+          Object.assign(streamedWordTimes, evt.refinedWordTimes);
+          S.project.timing.lineTimes = Object.assign({}, streamedLineTimes);
+          S.project.timing.wordTimes = Object.assign({}, streamedWordTimes);
+          const now = performance.now();
+          if (now - lastLiveUiSyncMs > 180) {
+            lastLiveUiSyncMs = now;
+            replan();
+            syncUI();
+          }
+        }
+        if (liveEl) {
+          const parts = [];
+          if (evt.matchedCount != null && evt.totalTokens) {
+            parts.push(`<div class="ai-live-line"><strong>⚡ ${evt.matchedCount}/${evt.totalTokens} mots ancrés</strong> · Coordination instant par instant</div>`);
+          } else if (Array.isArray(evt.recognizedLines) && evt.recognizedLines.length) {
+            parts.push(`<div class="ai-live-line">${escapeHtml(evt.recognizedLines.slice(0, 3).map(l => l.text).join(' / '))}</div>`);
+          }
+          if (evt.refinedLineTimes) {
+            const keys = Object.keys(evt.refinedLineTimes).map(Number).sort((a, b) => a - b).slice(-3);
+            keys.forEach(li => {
+              const tStart = Number(evt.refinedLineTimes[li] || 0);
+              const lTxt = (origPlanLines[li] && origPlanLines[li].text) || '';
+              if (lTxt) {
+                parts.push(`<div class="ai-live-line"><span class="mono">[${tStart.toFixed(2)}s]</span> ${escapeHtml(lTxt)}</div>`);
+              }
+            });
+          }
+          if (parts.length) {
+            liveEl.hidden = false;
+            liveEl.innerHTML = parts.join('');
+          }
+        }
+      };
+
+      setSyncProg(1, stageCopy[1], { pct: 10 });
+      toast(isFr ? '⚡ SYNCRO VOIX ET PAROLE en temps réel…' : isEn ? '⚡ Real-time Voice Sync running…' : '⚡ 正在即時執行人聲與歌詞精準對齊…');
       pushEdit();
 
       let syncDone = false;
@@ -6873,7 +6949,7 @@ function bind() {
         if ((!alignLangHint || alignLangHint === 'auto') && /[\u4e00-\u9fff]/.test(`${S.project.lyrics || ''} ${S.project.title || ''} ${S.project.artist || ''} ${(S.audio && S.audio.fileName) || ''}`)) {
           alignLangHint = 'zh-Hans';
         }
-        const aligned = await J.aiAlignVocals(S.audio, origPlanLines, alignLangHint, setSyncProg);
+        const aligned = await J.aiAlignVocals(S.audio, origPlanLines, alignLangHint, setSyncProg, onLiveSyncEvent);
 
         // Apply automatic orthography & voice-confirmed spelling fixes directly to lyrics editor
         let appliedLyricsChanged = false;
@@ -6951,7 +7027,7 @@ function bind() {
           recordWork('vocal_sync', 'sync', `${lineCount} lignes${cohNote}${fixCount ? ` · ${fixCount} corrigées` : ''}`);
 
           toast(isFr
-            ? `🎤 Synchro Voix${isDtw ? ' Neuronale' : ''} réussie (${lineCount} lignes${cohNote})${fixNote} !`
+            ? `🎤 SYNCRO VOIX ET PAROLE${isDtw ? ' Neuronale' : ''} réussie (${lineCount} lignes${cohNote})${fixNote} !`
             : isEn
             ? `🎤 ${isDtw ? 'Neural ' : ''}Voice Sync complete (${lineCount} lines${cohNote})${fixNote}!`
             : `🎤 ${isDtw ? '類神經' : ''}人聲同步完成（${lineCount} 句${cohNote}）${fixNote}！`);
@@ -7062,7 +7138,7 @@ function bind() {
             const diagSummaryMsg = (() => {
               if (reformList.length && problemList.length) {
                 return isFr
-                  ? `🧠 Diagnostic Synchro Voix : ${reformList.length} différence(s) reformulable(s) par IA et ${problemList.length} passage(s) complexe(s) à vérifier :`
+                  ? `🧠 Diagnostic SYNCRO VOIX ET PAROLE : ${reformList.length} différence(s) reformulable(s) par IA et ${problemList.length} passage(s) complexe(s) à vérifier :`
                   : isEn
                   ? `🧠 Voice Sync Diagnostic: ${reformList.length} AI reformulation(s) ready and ${problemList.length} complex section(s) flagged:`
                   : `🧠 人聲同步診斷：發現 ${reformList.length} 處 AI 可重構差異與 ${problemList.length} 處困難片段：`;
@@ -7159,6 +7235,7 @@ function bind() {
         bvs.classList.remove('is-syncing');
         bvs.disabled = false;
         bvs.textContent = origTxt;
+        if (liveEl) liveEl.hidden = true;
         if (pBox && !(activeVoiceController && activeVoiceController.isActive())) {
           setTimeout(() => { if (!bvs.classList.contains('is-syncing')) pBox.hidden = true; }, syncDone ? 650 : 200);
         }
@@ -8099,13 +8176,63 @@ function setCloudTab(tab) {
 function showCloudError(err) {
   const box = $('cloudErrorBox');
   if (!box) return;
-  if (!err) { box.hidden = true; box.textContent = ''; return; }
-  let msg = err instanceof Error ? err.message : String(err);
-  try {
-    const parsed = JSON.parse(msg);
-    if (parsed && parsed.error) msg = `${parsed.error}${parsed.path ? ' (' + parsed.path + ')' : ''}`;
-  } catch (e) {}
-  box.textContent = msg;
+  if (!err) {
+    box.hidden = true;
+    box.textContent = '';
+    return;
+  }
+  const lang = document.documentElement.lang || 'fr';
+  const fmt =
+    window.AlexuraCloud && typeof window.AlexuraCloud.formatAuthError === 'function'
+      ? window.AlexuraCloud.formatAuthError(err, lang)
+      : {
+          code: '',
+          message: err instanceof Error ? err.message : String(err),
+          canRetryRedirect: false,
+          shouldOpenNewTab: false,
+          isCancelled: false,
+        };
+  let msg = fmt.message || '';
+  if (!window.AlexuraCloud || typeof window.AlexuraCloud.formatAuthError !== 'function') {
+    try {
+      const parsed = JSON.parse(msg);
+      if (parsed && parsed.error) msg = `${parsed.error}${parsed.path ? ' (' + parsed.path + ')' : ''}`;
+    } catch (e) {}
+  }
+  box.innerHTML = '';
+  const txt = document.createElement('div');
+  txt.className = 'cloud-err-msg';
+  txt.textContent = msg;
+  box.appendChild(txt);
+
+  if (fmt.canRetryRedirect || fmt.shouldOpenNewTab) {
+    const actRow = document.createElement('div');
+    actRow.className = 'cloud-err-acts';
+    if (fmt.canRetryRedirect && window.AlexuraCloud && typeof window.AlexuraCloud.signInGoogleRedirect === 'function') {
+      const btnRedir = document.createElement('button');
+      btnRedir.type = 'button';
+      btnRedir.className = 'ghost small';
+      btnRedir.textContent = lang === 'en' ? '↻ Retry with redirect' : lang === 'ja' ? '↻ リダイレクトでログイン' : '↻ Connexion par redirection';
+      btnRedir.addEventListener('click', async () => {
+        try {
+          await window.AlexuraCloud.signInGoogleRedirect();
+        } catch (rErr) {
+          showCloudError(rErr);
+        }
+      });
+      actRow.appendChild(btnRedir);
+    }
+    if (fmt.shouldOpenNewTab) {
+      const a = document.createElement('a');
+      a.className = 'ghost small cloud-link';
+      a.href = window.location.href;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = lang === 'en' ? '↗ Open in new tab' : lang === 'ja' ? '↗ 新しいタブで開く' : '↗ Ouvrir dans un nouvel onglet';
+      actRow.appendChild(a);
+    }
+    box.appendChild(actRow);
+  }
   box.hidden = false;
 }
 function readLocalHistory() {
@@ -8472,25 +8599,34 @@ function renderWorkHistory(entries) {
     listEl.appendChild(row);
   });
 }
+let cloudSaveInFlight = false;
 async function saveCurrentSongToFirebase(asNew = false, silent = false) {
   const c = cloudCopy();
   if (!window.AlexuraCloud) return null;
-  if (!S.cloudUser) {
+  if (cloudSaveInFlight && silent) return null;
+  let activeUser = S.cloudUser || (typeof window.AlexuraCloud.getUser === 'function' ? window.AlexuraCloud.getUser() : null);
+  if (!activeUser) {
     openCloudHub('songs');
     try {
-      await window.AlexuraCloud.signInGoogle();
+      const signedUser = await window.AlexuraCloud.signInGoogle();
+      activeUser = S.cloudUser || signedUser || (typeof window.AlexuraCloud.getUser === 'function' ? window.AlexuraCloud.getUser() : null);
+      if (activeUser) S.cloudUser = activeUser;
     } catch (err) {
       showCloudError(err);
       return null;
     }
   }
-  if (!S.cloudUser) return null;
+  if (!activeUser) return null;
+  if (cloudSaveInFlight) return null;
+  cloudSaveInFlight = true;
   showCloudError(null);
   if (!silent) toast(c.saving);
   try {
+    const ownedByOther = S.project && S.project.cloudOwnerUid && S.project.cloudOwnerUid !== activeUser.uid;
+    const effectiveSongId = asNew || ownedByOther ? undefined : (S.cloudSongId || undefined);
     const vCfg = collectVercelInputs();
     const songInput = {
-      songId: asNew ? undefined : (S.cloudSongId || undefined),
+      songId: effectiveSongId,
       title: S.project.title || 'Sans titre',
       artist: S.project.artist || '',
       lyrics: S.project.lyrics || '',
@@ -8501,11 +8637,12 @@ async function saveCurrentSongToFirebase(asNew = false, silent = false) {
       duration: (S.audio && S.audio.duration) || (S.plan && S.plan.duration) || 0,
       bpm: (S.audio && S.audio.bpm) || (S.project.timing && S.project.timing.bpm) || 0,
       vercelSyncedUrl: vCfg.appUrl || '',
-      project: Object.assign({}, S.project, { appVersion: '@VERSION@' }),
+      project: Object.assign({}, S.project, { appVersion: '@VERSION@', cloudOwnerUid: activeUser.uid }),
     };
     const res = await window.AlexuraCloud.saveSongToCloud(songInput, S.audioFile);
     S.cloudSongId = res.songId;
     S.project.cloudSongId = res.songId;
+    S.project.cloudOwnerUid = activeUser.uid;
     if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = `ID: ${res.songId}`;
     try { localStorage.setItem(LS_KEY, JSON.stringify(S.project)); } catch (e) {}
     if (!silent) {
@@ -8518,8 +8655,13 @@ async function saveCurrentSongToFirebase(asNew = false, silent = false) {
     return res;
   } catch (err) {
     showCloudError(err);
-    if (!silent) toast('Firebase: ' + (err && err.message ? err.message.slice(0, 80) : 'Erreur'));
+    const fmtErr = window.AlexuraCloud && typeof window.AlexuraCloud.formatAuthError === 'function'
+      ? window.AlexuraCloud.formatAuthError(err, document.documentElement.lang || 'fr').message
+      : (err && err.message ? err.message : 'Erreur');
+    if (!silent) toast('Firebase: ' + String(fmtErr).slice(0, 90));
     return null;
+  } finally {
+    cloudSaveInFlight = false;
   }
 }
 async function loadCloudSongIntoStudio(songId) {
@@ -8535,6 +8677,7 @@ async function loadCloudSongIntoStudio(songId) {
     S.project = np;
     S.cloudSongId = String(s.songId || songId);
     S.project.cloudSongId = S.cloudSongId;
+    if (S.cloudUser && S.cloudUser.uid) S.project.cloudOwnerUid = S.cloudUser.uid;
     ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
     syncUI(); replan(); restoreFonts(); commit(); updateEditBtns(); flushSave();
     if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = `ID: ${S.cloudSongId}`;
@@ -8677,6 +8820,43 @@ async function deployToVercel() {
     return { success: false };
   }
 }
+function tearDownCloudListeners() {
+  if (cloudSongsUnsub) {
+    try { cloudSongsUnsub(); } catch (e) {}
+    cloudSongsUnsub = null;
+  }
+  if (cloudHistoryUnsub) {
+    try { cloudHistoryUnsub(); } catch (e) {}
+    cloudHistoryUnsub = null;
+  }
+}
+async function attachCloudListeners(user) {
+  tearDownCloudListeners();
+  if (!user || !window.AlexuraCloud) return;
+  try {
+    const vCfg = await window.AlexuraCloud.loadVercelConfig();
+    if (vCfg) {
+      applyVercelInputs(vCfg);
+      try { localStorage.setItem(LS_VERCEL, JSON.stringify(vCfg)); } catch (e) {}
+    }
+  } catch (err) {
+    // Non-fatal if user email isn't verified or rules defer initial profile sync
+    const fmt = typeof window.AlexuraCloud.formatAuthError === 'function'
+      ? window.AlexuraCloud.formatAuthError(err, document.documentElement.lang || 'fr')
+      : null;
+    if (!fmt || !fmt.isCancelled) showCloudError(err);
+  }
+  cloudSongsUnsub = window.AlexuraCloud.subscribeUserSongs(
+    (songs) => { renderCloudSongs(songs); renderWorkHistory(S.cloudHistory); },
+    (err) => showCloudError(err)
+  );
+  if (typeof window.AlexuraCloud.subscribeWorkHistory === 'function') {
+    cloudHistoryUnsub = window.AlexuraCloud.subscribeWorkHistory(
+      (entries) => renderWorkHistory(entries),
+      (err) => showCloudError(err)
+    );
+  }
+}
 function bindCloudStudio() {
   applyCloudLabels();
   applyVercelInputs(readLocalVercelCfg());
@@ -8686,16 +8866,37 @@ function bindCloudStudio() {
   if ($('chkFbAutoSave')) $('chkFbAutoSave').addEventListener('change', e => {
     try { localStorage.setItem(LS_FBAUTO, e.target.checked ? '1' : '0'); } catch (err) {}
   });
+
+  const runGoogleAuth = async ({ switchAccount = false, openModalOnError = true } = {}) => {
+    if (!window.AlexuraCloud) { openCloudHub('songs'); return null; }
+    showCloudError(null);
+    const btns = ['btnGoogleAuth', 'btnFbSignIn', 'btnFbSwitchAccount'].map(id => $(id)).filter(Boolean);
+    btns.forEach(b => { b.disabled = true; });
+    try {
+      const fn = switchAccount && typeof window.AlexuraCloud.switchAccountGoogle === 'function'
+        ? window.AlexuraCloud.switchAccountGoogle
+        : window.AlexuraCloud.signInGoogle;
+      const u = await fn();
+      showCloudError(null);
+      return u;
+    } catch (err) {
+      // Restore active session listeners if an account-switch popup was cancelled cleanly
+      const activeUser = typeof window.AlexuraCloud.getUser === 'function' ? window.AlexuraCloud.getUser() : null;
+      if (activeUser && !cloudSongsUnsub) {
+        attachCloudListeners(activeUser);
+      }
+      if (openModalOnError) openCloudHub('songs');
+      showCloudError(err);
+      return null;
+    } finally {
+      btns.forEach(b => { b.disabled = false; });
+    }
+  };
+
   if ($('btnGoogleAuth')) $('btnGoogleAuth').addEventListener('click', async () => {
     if (S.cloudUser) { openCloudHub('songs'); return; }
-    if (!window.AlexuraCloud) { openCloudHub('songs'); return; }
-    try {
-      await window.AlexuraCloud.signInGoogle();
-      openCloudHub('songs');
-    } catch (err) {
-      openCloudHub('songs');
-      showCloudError(err);
-    }
+    const u = await runGoogleAuth({ switchAccount: false, openModalOnError: true });
+    if (u) openCloudHub('songs');
   });
   if ($('btnCloudHub')) $('btnCloudHub').addEventListener('click', () => openCloudHub());
   if ($('btnCloudClose')) $('btnCloudClose').addEventListener('click', closeCloudHub);
@@ -8724,16 +8925,12 @@ function bindCloudStudio() {
   if ($('btnCloudSave')) $('btnCloudSave').addEventListener('click', () => saveCurrentSongToFirebase(false, false));
   if ($('btnFbSaveSong')) $('btnFbSaveSong').addEventListener('click', () => saveCurrentSongToFirebase(false, false));
   if ($('btnFbSaveNew')) $('btnFbSaveNew').addEventListener('click', () => saveCurrentSongToFirebase(true, false));
-  const doSignIn = async () => {
-    if (!window.AlexuraCloud) return;
-    showCloudError(null);
-    try { await window.AlexuraCloud.signInGoogle(); } catch (err) { showCloudError(err); }
-  };
-  if ($('btnFbSignIn')) $('btnFbSignIn').addEventListener('click', doSignIn);
-  if ($('btnFbSwitchAccount')) $('btnFbSwitchAccount').addEventListener('click', doSignIn);
+  if ($('btnFbSignIn')) $('btnFbSignIn').addEventListener('click', () => runGoogleAuth({ switchAccount: false, openModalOnError: false }));
+  if ($('btnFbSwitchAccount')) $('btnFbSwitchAccount').addEventListener('click', () => runGoogleAuth({ switchAccount: true, openModalOnError: false }));
   if ($('btnFbSignOut')) $('btnFbSignOut').addEventListener('click', async () => {
     if (!window.AlexuraCloud) return;
     showCloudError(null);
+    tearDownCloudListeners();
     try { await window.AlexuraCloud.signOutGoogle(); } catch (err) { showCloudError(err); }
   });
   if ($('btnVercelSave')) $('btnVercelSave').addEventListener('click', saveVercelSettings);
@@ -8741,47 +8938,54 @@ function bindCloudStudio() {
   if ($('btnVercelSync')) $('btnVercelSync').addEventListener('click', () => syncSongToVercel(null, null, false));
   if ($('btnVercelDeploy')) $('btnVercelDeploy').addEventListener('click', deployToVercel);
 
+  if (window.AlexuraCloud && typeof window.AlexuraCloud.subscribeBeforeAuthChange === 'function') {
+    window.AlexuraCloud.subscribeBeforeAuthChange(() => tearDownCloudListeners());
+  }
+  if (window.AlexuraCloud && typeof window.AlexuraCloud.subscribeAuthError === 'function') {
+    window.AlexuraCloud.subscribeAuthError((err) => {
+      openCloudHub('songs');
+      showCloudError(err);
+    });
+  }
+
   if (window.AlexuraCloud && typeof window.AlexuraCloud.subscribeAuth === 'function') {
     let lastAuthUid = null;
     window.AlexuraCloud.subscribeAuth(async (user) => {
       const nextUid = user ? user.uid : null;
       if ((lastAuthUid && nextUid !== lastAuthUid) || !nextUid) {
-        S.cloudSongId = null;
-        if (S.project) delete S.project.cloudSongId;
-        if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = '';
+        if (S.project && S.project.cloudOwnerUid && S.project.cloudOwnerUid !== nextUid) {
+          S.cloudSongId = null;
+          delete S.project.cloudSongId;
+          delete S.project.cloudOwnerUid;
+        } else if (!nextUid) {
+          S.cloudSongId = null;
+          if (S.project) {
+            delete S.project.cloudSongId;
+            delete S.project.cloudOwnerUid;
+          }
+        }
+        if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = S.cloudSongId ? `ID: ${S.cloudSongId}` : '';
       }
       lastAuthUid = nextUid;
       S.cloudUser = user || null;
-      if (cloudSongsUnsub) { cloudSongsUnsub(); cloudSongsUnsub = null; }
-      if (cloudHistoryUnsub) { cloudHistoryUnsub(); cloudHistoryUnsub = null; }
+      tearDownCloudListeners();
       applyCloudLabels();
       if (user) {
+        showCloudError(null);
         if ($('fbSignedOutRow')) $('fbSignedOutRow').hidden = true;
         if ($('fbSignedInBox')) $('fbSignedInBox').hidden = false;
-        if ($('fbUserName')) $('fbUserName').textContent = user.displayName || 'Creator';
+        if ($('fbUserName')) $('fbUserName').textContent = user.displayName || user.email || 'Creator';
         if ($('fbUserEmail')) $('fbUserEmail').textContent = user.email || '';
         const av = $('fbUserAvatar');
         if (av) {
           if (user.photoURL) { av.src = user.photoURL; av.hidden = false; }
-          else { av.hidden = true; }
+          else { av.hidden = true; av.removeAttribute('src'); }
         }
-        try {
-          const vCfg = await window.AlexuraCloud.loadVercelConfig();
-          if (vCfg) {
-            applyVercelInputs(vCfg);
-            try { localStorage.setItem(LS_VERCEL, JSON.stringify(vCfg)); } catch (e) {}
-          }
-        } catch (err) { showCloudError(err); }
-        cloudSongsUnsub = window.AlexuraCloud.subscribeUserSongs(
-          (songs) => { renderCloudSongs(songs); renderWorkHistory(S.cloudHistory); },
-          (err) => showCloudError(err)
-        );
-        if (typeof window.AlexuraCloud.subscribeWorkHistory === 'function') {
-          cloudHistoryUnsub = window.AlexuraCloud.subscribeWorkHistory(
-            (entries) => renderWorkHistory(entries),
-            (err) => showCloudError(err)
-          );
+        if (user.emailVerified === false) {
+          showCloudError(new Error('AUTH_EMAIL_NOT_VERIFIED'));
+          return;
         }
+        await attachCloudListeners(user);
       } else {
         if ($('fbSignedOutRow')) $('fbSignedOutRow').hidden = false;
         if ($('fbSignedInBox')) $('fbSignedInBox').hidden = true;
@@ -9236,7 +9440,7 @@ function getNoticeContent() {
         ],
         steps: [
           { num: 'Étape 01', title: 'Mettre le son et le texte', desc: 'Importez votre MP3/WAV puis collez vos paroles — ou laissez l’IA écouter la voix et écrire les paroles toute seule.' },
-          { num: 'Étape 02', title: 'Caler sur le chanteur', desc: 'Cliquez sur « Synchro Voix » pour un calage automatique, ou tapez au rythme du chant dans « Synchro au tap ».' },
+          { num: 'Étape 02', title: 'Caler sur le chanteur', desc: 'Cliquez sur « SYNCRO VOIX ET PAROLE » pour une coordination automatique en temps réel, ou tapez au rythme du chant dans « Synchro au tap ».' },
           { num: 'Étape 03', title: 'Choisir le look et exporter', desc: 'Choisissez un Thème (Cinematic, Art & Motion…), appuyez sur Aléatoire (touche R) puis cliquez sur « Exporter en MP4 ».' },
         ],
         subh: 'À quoi sert chaque bouton de la barre du haut ?',
@@ -9326,13 +9530,13 @@ function getNoticeContent() {
         num: '03',
         nav: 'Audio, IA & Synchro au Tap',
         title: '03. Synchroniser parfaitement chaque mot sur la voix du chanteur',
-        lead: 'Pour que les paroles s’allument exactement quand le chanteur chante, Alexura vous donne 3 outils simples : l’IA qui écrit et cale tout, la « Synchro Voix » en 1 clic, ou le studio « Synchro au Tap » très ludique.',
+        lead: 'Pour que les paroles s’allument exactement quand le chanteur chante, Alexura vous donne 3 outils simples : l’IA qui écrit et cale tout, « SYNCRO VOIX ET PAROLE » en temps réel, ou le studio « Synchro au Tap » très ludique.',
         gallery: [
           {
             src: imgs.sync,
-            title: 'Photo 5 — Comment l’IA et « Synchro Voix » repèrent le chant',
+            title: 'Photo 5 — Comment l’IA et « SYNCRO VOIX ET PAROLE » repèrent le chant',
             alt: 'Illustration de l’onde sonore vocale avec détection d’attaques à 10 ms et barres d’alignement de chaque mot',
-            caption: 'Alexura isole la voix (en vert émeraude) du reste des instruments et aligne chaque mot au millième de seconde près.',
+            caption: 'Alexura isole la voix (en vert émeraude) du reste des instruments et coordonne chaque mot en temps réel.',
           },
           {
             src: imgs.tap,
@@ -9355,10 +9559,10 @@ function getNoticeContent() {
             photo: { src: imgs.sync, title: 'Voir l’alignement acoustique sur la Photo 5', caption: 'Chaque mot est calé sur le vrai pic d’énergie de la voix humaine.' },
           },
           {
-            label: '⚡ Synchro Voix',
+            label: '⚡ SYNCRO VOIX ET PAROLE',
             zone: 'Colonne gauche · Audio',
-            desc: 'Vous avez déjà collé vos paroles dans la boîte ? Cliquez simplement sur <strong>⚡ Synchro Voix</strong> : Alexura écoute le morceau et place automatiquement chaque phrase et chaque mot pile sur la voix.',
-            example: '<strong>Quand l’utiliser ?</strong> Juste après avoir importé le MP3 et collé le texte. C’est la méthode la plus rapide pour démarrer proprement en 5 secondes.',
+            desc: 'Vous avez déjà collé vos paroles dans la boîte ? Cliquez simplement sur <strong>⚡ SYNCRO VOIX ET PAROLE</strong> : Alexura analyse en temps réel la voix et vos paroles pour placer automatiquement chaque phrase et chaque mot avec une précision millimétrique à chaque instant.',
+            example: '<strong>Quand l’utiliser ?</strong> Juste après avoir importé le MP3 et collé le texte. La coordination temps réel calibre chaque syllabe sur la voix.',
           },
           {
             label: '🔬 Contrôle Qualité & Éditeur mot à mot',
@@ -9555,7 +9759,7 @@ function getNoticeContent() {
             src: imgs.tap,
             title: 'Étape 2 — Caler au millimètre',
             alt: 'Radar Tap Studio étape 2',
-            caption: 'Synchro Voix ou Tap Studio [Espace], puis ±10 ms à l’oreille.',
+            caption: 'SYNCRO VOIX ET PAROLE ou Tap Studio [Espace], puis ±10 ms à l’oreille.',
           },
           {
             src: imgs.exportImg,
@@ -9572,7 +9776,7 @@ function getNoticeContent() {
           { label: 'Espace · E · P · S · Retour · Tab · Échap', zone: 'Dans Synchro au Tap', desc: '<span class="notice-kbd">Espace</span> = Tapper · <span class="notice-kbd">E</span> = Marquer la fin · <span class="notice-kbd">P</span> = Pause · <span class="notice-kbd">S</span> = Passer · <span class="notice-kbd">Retour</span> = Annuler le dernier tap · <span class="notice-kbd">Tab</span> = Couper un plan · <span class="notice-kbd">Échap</span> = Enregistrer et quitter.' },
         ],
         steps: [
-          { num: 'Parcours 1', title: 'Clip express en 2 minutes', desc: '1. Importez le MP3 → 2. Collez les paroles → 3. Cliquez « Synchro Voix » → 4. Choisissez « Music Video » ou « Art & Motion » → 5. Touche R jusqu’au coup de cœur → 6. Exporter en MP4 1080p.' },
+          { num: 'Parcours 1', title: 'Clip express en 2 minutes', desc: '1. Importez le MP3 → 2. Collez les paroles → 3. Cliquez « SYNCRO VOIX ET PAROLE » → 4. Choisissez « Music Video » ou « Art & Motion » → 5. Touche R jusqu’au coup de cœur → 6. Exporter en MP4 1080p.' },
           { num: 'Parcours 2', title: 'Karaoké ultra précis', desc: '1. Importez l’audio → 2. Cliquez « Détecter les paroles par IA » → 3. Vérifiez les rares mots orange → 4. Ajustez Chant↔Affichage (±10 ms) → 5. Exporter MP4 + Enhanced LRC.' },
           { num: 'Parcours 3', title: 'Montage Reel / TikTok / Chanteur', desc: '1. Format 9:16 → 2. Cochez « Libérer le centre » ou « Fond vert » (ou PNG transparent) → 3. Passez à 60 fps → 4. Posez directement sur votre vidéo dans CapCut ou Premiere.' },
         ],
@@ -9850,9 +10054,7 @@ function initNotice() {
   }
 }
 
-/* ============================================================
-   Real-Time GPS Weather Studio Strip (~1cm / 38px) & 6s Drawer
-   ============================================================ */
+const WX_STORAGE_KEY = 'alexura_wx_loc_v1';
 const WX = {
   data: null,
   coords: null,
@@ -9863,11 +10065,63 @@ const WX = {
   closeAt: 0,
   pausedForInput: false,
   loading: false,
+  reqSeq: 0,
   DURATION_MS: 6000,
 };
 
+function wxNum(v) {
+  if (v === null || v === undefined || v === '') return NaN;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+function wxWindToKmH(speedObj) {
+  if (!speedObj) return NaN;
+  const raw = wxNum(speedObj.value);
+  if (!Number.isFinite(raw)) return NaN;
+  const unit = String(speedObj.unit || '').toUpperCase();
+  if (unit === 'METERS_PER_SECOND') return raw * 3.6;
+  if (unit === 'MILES_PER_HOUR') return raw * 1.60934;
+  return raw;
+}
+
+function wxClassifyAqi(score, code) {
+  const n = wxNum(score);
+  if (!Number.isFinite(n)) return 'is-good';
+  const c = String(code || '').toLowerCase();
+  if (c === 'uaqi') {
+    // Google Universal AQI: higher is cleaner (80-100 Excellent, 60-79 Good, 40-59 Moderate, <40 Poor)
+    if (n >= 60) return 'is-good';
+    if (n >= 40) return 'is-mod';
+    return 'is-poor';
+  }
+  // European AQI / US EPA: lower is cleaner
+  if (n <= 40) return 'is-good';
+  if (n <= 75) return 'is-mod';
+  return 'is-poor';
+}
+
+function wxSaveLoc(lat, lng, label) {
+  try {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    localStorage.setItem(WX_STORAGE_KEY, JSON.stringify({ lat, lng, label: label || '', ts: Date.now() }));
+  } catch {}
+}
+
+function wxLoadSavedLoc() {
+  try {
+    const raw = localStorage.getItem(WX_STORAGE_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+    const lat = wxNum(p?.lat);
+    const lng = wxNum(p?.lng);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng, label: String(p.label || '') };
+  } catch {}
+  return null;
+}
+
 function wxClassifyUvRisk(uv) {
-  const n = Number(uv);
+  const n = wxNum(uv);
   const en = isEn();
   if (!Number.isFinite(n)) {
     return { cls: 'is-low', label: en ? '—' : '—', explain: '' };
@@ -9998,22 +10252,22 @@ function wxWindDirLabel(cardinal) {
   const c = String(cardinal || '').toUpperCase();
   const en = isEn();
   const map = {
-    NORTH: en ? 'N' : 'N',
-    NORTH_NORTHEAST: en ? 'NNE' : 'NNE',
-    NORTHEAST: en ? 'NE' : 'NE',
-    EAST_NORTHEAST: en ? 'ENE' : 'ENE',
-    EAST: en ? 'E' : 'E',
-    EAST_SOUTHEAST: en ? 'ESE' : 'ESE',
-    SOUTHEAST: en ? 'SE' : 'SE',
-    SOUTH_SOUTHEAST: en ? 'SSE' : 'SSE',
-    SOUTH: en ? 'S' : 'S',
+    NORTH: 'N',
+    NORTH_NORTHEAST: 'NNE',
+    NORTHEAST: 'NE',
+    EAST_NORTHEAST: 'ENE',
+    EAST: 'E',
+    EAST_SOUTHEAST: 'ESE',
+    SOUTHEAST: 'SE',
+    SOUTH_SOUTHEAST: 'SSE',
+    SOUTH: 'S',
     SOUTH_SOUTHWEST: en ? 'SSW' : 'SSO',
     SOUTHWEST: en ? 'SW' : 'SO',
     WEST_SOUTHWEST: en ? 'WSW' : 'OSO',
     WEST: en ? 'W' : 'O',
     WEST_NORTHWEST: en ? 'WNW' : 'ONO',
     NORTHWEST: en ? 'NW' : 'NO',
-    NORTH_NORTHWEST: en ? 'NNW' : 'NNO',
+    NORTH_NORTHWEST: 'NNW',
   };
   return map[c] || '';
 }
@@ -10072,7 +10326,7 @@ function openWeatherDrawer() {
   WX.isOpen = true;
   drawer.hidden = false;
   bar.setAttribute('aria-expanded', 'true');
-  setT('wxExpandHint', isEn() ? 'Hide ▴' : 'Masquer ▴');
+  setT('wxExpandHint', isEn() ? 'Hide' : 'Masquer');
   wxRestartAutoCloseTimer();
 }
 
@@ -10088,7 +10342,7 @@ function closeWeatherDrawer() {
   if (bar) bar.setAttribute('aria-expanded', 'false');
   if (fill) fill.classList.remove('is-running');
   if (chip) chip.hidden = true;
-  setT('wxExpandHint', isEn() ? '7 days ▾' : '7 jours ▾');
+  setT('wxExpandHint', isEn() ? '7 days' : '7 jours');
 }
 
 function toggleWeatherDrawer() {
@@ -10096,7 +10350,7 @@ function toggleWeatherDrawer() {
   else openWeatherDrawer();
 }
 
-function renderWeatherData(payload) {
+function renderWeatherData(payload, opts = {}) {
   WX.data = payload;
   const en = isEn();
   const cur = payload?.current || null;
@@ -10105,33 +10359,37 @@ function renderWeatherData(payload) {
   const pollenData = payload?.pollen || null;
   const days = Array.isArray(payload?.forecastDays) ? payload.forecastDays : [];
 
-  const placeLabel = loc.shortName || (en ? 'Current GPS location' : 'Position GPS actuelle');
+  const placeLabel = loc.shortName || loc.locality || (en ? 'Current location' : 'Position actuelle');
   setT('wxLocLabel', placeLabel);
   setT('wxFullPlace', placeLabel);
   setT('wxFullAddr', loc.formattedAddress || `${payload?.coordinates?.lat ?? ''}, ${payload?.coordinates?.lng ?? ''}`);
   if (WX.accuracyM != null) {
     setT('wxGpsAccuracy', en ? `GPS ±${Math.round(WX.accuracyM)}m` : `GPS temps réel ±${Math.round(WX.accuracyM)}m`);
   } else {
-    setT('wxGpsAccuracy', en ? 'Verified coordinates' : 'Position géolocalisée');
+    setT('wxGpsAccuracy', en ? 'Live weather coordinates' : 'Météo géolocalisée en direct');
+  }
+
+  if (payload?.coordinates?.lat != null && payload?.coordinates?.lng != null) {
+    wxSaveLoc(payload.coordinates.lat, payload.coordinates.lng, placeLabel);
   }
 
   const notice = $('wxPermissionNotice');
-  if (notice) notice.hidden = true;
+  if (notice && !opts.keepNotice) notice.hidden = true;
 
-  // Current weather
+  // Current weather (safe null checks so null never becomes 0)
   const isDay = cur?.isDaytime !== false;
-  const tempNum = Number(cur?.temperature?.degrees);
-  const feelsNum = Number(cur?.feelsLikeTemperature?.degrees);
+  const tempNum = wxNum(cur?.temperature?.degrees);
+  const feelsNum = wxNum(cur?.feelsLikeTemperature?.degrees);
   const condLabel = cur?.weatherCondition ? wxConditionLabel(cur.weatherCondition, isDay) : (en ? 'Unavailable' : 'Indisponible');
   const condSvg = wxConditionSvg(cur?.weatherCondition, isDay);
-  const windKm = Number(cur?.wind?.speed?.value);
-  const gustKm = Number(cur?.wind?.gust?.value);
+  const windKm = wxWindToKmH(cur?.wind?.speed);
+  const gustKm = wxWindToKmH(cur?.wind?.gust);
   const windDir = wxWindDirLabel(cur?.wind?.direction?.cardinal);
-  const humPct = Number(cur?.relativeHumidity);
-  const rainPct = Number(cur?.precipitation?.probability?.percent);
-  const cloudPct = Number(cur?.cloudCover);
-  const dewNum = Number(cur?.dewPoint?.degrees);
-  const uvNum = Number(cur?.uvIndex);
+  const humPct = wxNum(cur?.relativeHumidity);
+  const rainPct = wxNum(cur?.precipitation?.probability?.percent);
+  const cloudPct = wxNum(cur?.cloudCover);
+  const dewNum = wxNum(cur?.dewPoint?.degrees);
+  const uvNum = wxNum(cur?.uvIndex);
   const uvInfo = wxClassifyUvRisk(uvNum);
 
   const icoEl = $('wxCondIcon');
@@ -10142,15 +10400,21 @@ function renderWeatherData(payload) {
   const tempStr = Number.isFinite(tempNum) ? `${Math.round(tempNum)}°C` : '--°C';
   const windStr = Number.isFinite(windKm) ? `${Math.round(windKm)} km/h` : '-- km/h';
   const humStr = Number.isFinite(humPct) ? `${Math.round(humPct)}%` : '--%';
-  const uvBarStr = Number.isFinite(uvNum) ? `UV ${Math.round(uvNum)} · ${uvInfo.label}` : 'UV --';
+  const uvBarStr = Number.isFinite(uvNum) ? `${Math.round(uvNum)} · ${uvInfo.label}` : '--';
+
+  setT('wxWindLblTop', en ? 'Wind' : 'Vent');
+  setT('wxHumLblTop', en ? 'Humidity' : 'Humidité');
+  setT('wxUvLblTop', 'UV');
+  setT('wxAqiLblTop', 'Air');
+  setT('wxPollenLblTop', 'Pollen');
 
   setT('wxTempNow', tempStr);
   setT('wxCondText', condLabel);
-  setT('wxWindShort', `${en ? 'Wind' : 'Vent'} ${windStr}`);
-  setT('wxHumShort', `${en ? 'Hum.' : 'Humidité'} ${humStr}`);
+  setT('wxWindShort', windStr);
+  setT('wxHumShort', humStr);
   setT('wxUvShort', uvBarStr);
   const uvShortEl = $('wxUvShort');
-  if (uvShortEl) uvShortEl.className = `wx-metric wx-uv-tag mono ${uvInfo.cls}`;
+  if (uvShortEl) uvShortEl.className = `wx-ch-val wx-uv-tag mono ${uvInfo.cls}`;
 
   setT('wxHeroTemp', tempStr);
   setT('wxHeroCond', condLabel);
@@ -10177,18 +10441,25 @@ function renderWeatherData(payload) {
 
   // Air quality
   const indexes = Array.isArray(aqiData?.indexes) ? aqiData.indexes : [];
-  const mainAqi = indexes.find(x => x.code === 'uaqi') || indexes[0] || null;
+  const mainAqi = indexes.find(x => x.code === 'uaqi') || indexes.find(x => Number.isFinite(wxNum(x.aqi))) || indexes[0] || null;
+  const aqiShortEl = $('wxAqiShort');
   if (mainAqi) {
-    const score = mainAqi.aqiDisplay || mainAqi.aqi || '--';
+    const rawDisplay = mainAqi.aqiDisplay != null && mainAqi.aqiDisplay !== '' ? String(mainAqi.aqiDisplay) : null;
+    const rawNum = wxNum(mainAqi.aqi);
+    const score = rawDisplay || (Number.isFinite(rawNum) ? String(Math.round(rawNum)) : '--');
     const cat = mainAqi.category || '—';
     const dom = mainAqi.dominantPollutant ? String(mainAqi.dominantPollutant).toUpperCase() : '';
     const advice = aqiData?.healthRecommendations?.generalPopulation || '';
-    setT('wxAqiShort', `${en ? 'Air' : 'Air'} ${score}`);
+    const aqiCls = wxClassifyAqi(Number.isFinite(rawNum) ? rawNum : score, mainAqi.code);
+    const shortAqiTxt = aqiCls === 'is-good' ? (en ? 'Good' : 'Bon') : aqiCls === 'is-mod' ? (en ? 'Mod.' : 'Modéré') : (en ? 'Poor' : 'Médiocre');
+    setT('wxAqiShort', `${score} · ${shortAqiTxt}`);
+    if (aqiShortEl) aqiShortEl.className = `wx-ch-val wx-aqi-tag mono ${aqiCls}`;
     setT('wxAqiVal', `${score} AQI`);
     setT('wxAqiCat', cat);
     setT('wxAqiExplain', (dom ? `${en ? 'Dominant' : 'Polluant dominant'} : ${dom}. ` : '') + (advice || ''));
   } else {
-    setT('wxAqiShort', en ? 'Air N/A' : 'Air N/D');
+    setT('wxAqiShort', en ? 'N/A' : 'N/D');
+    if (aqiShortEl) aqiShortEl.className = 'wx-ch-val wx-aqi-tag mono';
     setT('wxAqiVal', '--');
     setT('wxAqiCat', en ? 'Unavailable' : 'Indisponible');
     setT('wxAqiExplain', en ? 'Air quality telemetry unavailable for this zone.' : 'Qualité de l’air non couverte sur cette zone.');
@@ -10206,11 +10477,11 @@ function renderWeatherData(payload) {
     let maxCat = '';
     const breakdown = [];
     types.forEach(pt => {
-      const val = pt?.indexInfo?.value;
+      const val = wxNum(pt?.indexInfo?.value);
       const cat = pt?.indexInfo?.category;
-      if (Number.isFinite(Number(val))) {
-        if (Number(val) > maxVal) {
-          maxVal = Number(val);
+      if (Number.isFinite(val)) {
+        if (val > maxVal) {
+          maxVal = val;
           maxCat = cat || '';
         }
         breakdown.push(`${pt.displayName || pt.code}: ${val}/5`);
@@ -10232,7 +10503,7 @@ function renderWeatherData(payload) {
       .filter(pl => pl?.inSeason && pl?.indexInfo)
       .slice(0, 3)
       .map(pl => pl.displayName || pl.code);
-    setT('wxPollenShort', `Pollen ${maxV}/5`);
+    setT('wxPollenShort', `${maxV}/5`);
     setT('wxPollenVal', `${maxV} / 5`);
     setT('wxPollenCat', cat);
     const parts = [];
@@ -10241,7 +10512,7 @@ function renderWeatherData(payload) {
     if (rec) parts.push(rec);
     setT('wxPollenExplain', parts.join(' — ') || (en ? 'Low allergen risk.' : 'Risque allergène faible.'));
   } else {
-    setT('wxPollenShort', en ? 'Pollen N/A' : 'Pollen N/D');
+    setT('wxPollenShort', en ? 'N/A' : 'N/D');
     setT('wxPollenVal', '-- / 5');
     setT('wxPollenCat', en ? 'Out of coverage' : 'Hors couverture');
     setT('wxPollenExplain', en ? 'Pollen telemetry unavailable for these coordinates.' : 'Données pollen non disponibles pour cette zone.');
@@ -10258,13 +10529,19 @@ function renderWeatherData(payload) {
         const dayF = fd.daytimeForecast || {};
         const dCond = wxConditionLabel(dayF.weatherCondition, true);
         const dSvg = wxConditionSvg(dayF.weatherCondition, true);
-        const tMax = Number.isFinite(Number(fd.maxTemperature?.degrees)) ? `${Math.round(fd.maxTemperature.degrees)}°` : '--°';
-        const tMin = Number.isFinite(Number(fd.minTemperature?.degrees)) ? `${Math.round(fd.minTemperature.degrees)}°` : '--°';
-        const dWind = Number.isFinite(Number(dayF.wind?.speed?.value)) ? `${Math.round(dayF.wind.speed.value)} km/h` : '-- km/h';
-        const dHum = Number.isFinite(Number(dayF.relativeHumidity)) ? `${Math.round(dayF.relativeHumidity)}%` : '--%';
-        const dRain = Number.isFinite(Number(dayF.precipitation?.probability?.percent)) ? `${Math.round(dayF.precipitation.probability.percent)}%` : '0%';
-        const dUv = wxClassifyUvRisk(dayF.uvIndex);
-        const uvDisp = Number.isFinite(Number(dayF.uvIndex)) ? `UV ${Math.round(dayF.uvIndex)} · ${dUv.label}` : 'UV --';
+        const tMaxNum = wxNum(fd.maxTemperature?.degrees);
+        const tMinNum = wxNum(fd.minTemperature?.degrees);
+        const tMax = Number.isFinite(tMaxNum) ? `${Math.round(tMaxNum)}°` : '--°';
+        const tMin = Number.isFinite(tMinNum) ? `${Math.round(tMinNum)}°` : '--°';
+        const dWindKm = wxWindToKmH(dayF.wind?.speed);
+        const dWind = Number.isFinite(dWindKm) ? `${Math.round(dWindKm)} km/h` : '-- km/h';
+        const dHumNum = wxNum(dayF.relativeHumidity);
+        const dHum = Number.isFinite(dHumNum) ? `${Math.round(dHumNum)}%` : '--%';
+        const dRainNum = wxNum(dayF.precipitation?.probability?.percent);
+        const dRain = Number.isFinite(dRainNum) ? `${Math.round(dRainNum)}%` : '0%';
+        const dUvNum = wxNum(dayF.uvIndex);
+        const dUv = wxClassifyUvRisk(dUvNum);
+        const uvDisp = Number.isFinite(dUvNum) ? `UV ${Math.round(dUvNum)} · ${dUv.label}` : 'UV --';
         const dKey = fd.displayDate
           ? `${fd.displayDate.year}-${String(fd.displayDate.month).padStart(2, '0')}-${String(fd.displayDate.day).padStart(2, '0')}`
           : '';
@@ -10294,8 +10571,8 @@ function renderWeatherData(payload) {
   }
 }
 
-async function fetchWeatherByCoords(lat, lng, accuracyM = null) {
-  if (WX.loading) return;
+async function fetchWeatherByCoords(lat, lng, accuracyM = null, opts = {}) {
+  const seq = ++WX.reqSeq;
   WX.loading = true;
   WX.coords = { lat, lng };
   WX.accuracyM = accuracyM;
@@ -10304,6 +10581,7 @@ async function fetchWeatherByCoords(lat, lng, accuracyM = null) {
     const resp = await fetch(`/api/weather?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&lang=${encodeURIComponent(lang)}`);
     let data = null;
     try { data = await resp.json(); } catch {}
+    if (seq !== WX.reqSeq) return;
     if (resp.status === 429 || data?.quotaExceeded) {
       window.dispatchEvent(new CustomEvent('gmp-quota-exceeded'));
     }
@@ -10312,19 +10590,36 @@ async function fetchWeatherByCoords(lat, lng, accuracyM = null) {
       if (notice) {
         notice.hidden = false;
         notice.textContent = isEn()
-          ? 'Real-time weather service temporarily unavailable. Verify API key or retry GPS.'
-          : 'Service météo temps réel temporairement indisponible. Vérifiez la clé API ou réessayez le GPS.';
+          ? 'Real-time weather service temporarily unavailable. Verify network or retry GPS.'
+          : 'Service météo temps réel temporairement indisponible. Vérifiez la connexion ou réessayez ⌖ GPS.';
       }
-      setT('wxLocLabel', `${lat.toFixed(2)}, ${lng.toFixed(2)}`);
-      setT('wxCondText', isEn() ? 'Weather unavailable' : 'Météo indisponible');
+      if (!WX.data) {
+        setT('wxLocLabel', `${lat.toFixed(2)}, ${lng.toFixed(2)}`);
+        setT('wxCondText', isEn() ? 'Weather unavailable' : 'Météo indisponible');
+      }
       return;
     }
-    renderWeatherData(data);
+    renderWeatherData(data, opts);
   } catch {
-    setT('wxCondText', isEn() ? 'Network error' : 'Erreur réseau');
+    if (seq === WX.reqSeq && !WX.data) {
+      setT('wxCondText', isEn() ? 'Network error' : 'Erreur réseau');
+    }
   } finally {
-    WX.loading = false;
+    if (seq === WX.reqSeq) WX.loading = false;
   }
+}
+
+async function fetchWeatherAutoFallback(keepNotice = false) {
+  try {
+    const resp = await fetch('/api/weather/locate');
+    let loc = null;
+    try { loc = await resp.json(); } catch {}
+    if (loc && Number.isFinite(Number(loc.lat)) && Number.isFinite(Number(loc.lng))) {
+      await fetchWeatherByCoords(Number(loc.lat), Number(loc.lng), null, { keepNotice });
+      return;
+    }
+  } catch {}
+  await fetchWeatherByCoords(48.8566, 2.3522, null, { keepNotice });
 }
 
 async function searchWeatherLocation(query) {
@@ -10354,19 +10649,32 @@ async function searchWeatherLocation(query) {
 
 function refreshWeatherGps(userTriggered = false) {
   const en = isEn();
+  const saved = !userTriggered ? wxLoadSavedLoc() : null;
+
+  // On initial boot, immediately hydrate from saved location so metrics appear without delay
+  if (!userTriggered && saved) {
+    setT('wxLocLabel', saved.label || (en ? 'Loading weather…' : 'Chargement météo…'));
+    fetchWeatherByCoords(saved.lat, saved.lng, null);
+  }
+
   if (!navigator.geolocation || typeof navigator.geolocation.getCurrentPosition !== 'function') {
-    const notice = $('wxPermissionNotice');
-    if (notice) {
-      notice.hidden = false;
-      notice.textContent = en
-        ? 'Browser GPS unavailable. Enter a city or address above to load live weather.'
-        : 'GPS navigateur indisponible. Saisissez une ville ci-dessus pour afficher la météo en temps réel.';
+    if (userTriggered) {
+      const notice = $('wxPermissionNotice');
+      if (notice) {
+        notice.hidden = false;
+        notice.textContent = en
+          ? 'Browser GPS unavailable. Showing approximate location — search a city above if needed.'
+          : 'GPS navigateur indisponible. Position approximative affichée — saisissez votre ville ci-dessus si besoin.';
+      }
     }
-    setT('wxLocLabel', en ? 'GPS unavailable · Search city' : 'GPS indisponible · Choisir ville');
-    setT('wxCondText', en ? 'Press to set location' : 'Appuyer pour choisir un lieu');
+    if (!saved) fetchWeatherAutoFallback(userTriggered);
     return;
   }
-  setT('wxLocLabel', en ? 'Locating GPS…' : 'Localisation GPS…');
+
+  if (userTriggered || !saved) {
+    setT('wxLocLabel', en ? 'Locating GPS…' : 'Localisation GPS…');
+  }
+
   navigator.geolocation.getCurrentPosition(
     pos => {
       const c = pos?.coords;
@@ -10376,22 +10684,29 @@ function refreshWeatherGps(userTriggered = false) {
       }
     },
     err => {
-      const notice = $('wxPermissionNotice');
       const denied = err && err.code === 1;
-      if (notice) {
-        notice.hidden = false;
-        notice.textContent = denied
-          ? (en
-              ? 'GPS location permission denied. Allow location access or search a city above.'
-              : 'Autorisation GPS refusée. Activez la géolocalisation ou recherchez votre ville ci-dessus.')
-          : (en
-              ? 'Unable to acquire high-precision GPS fix right now. Retry GPS or search a city.'
-              : 'Position GPS précise indisponible pour le moment. Réessayez ⌖ GPS ou recherchez une ville.');
+      if (userTriggered) {
+        const notice = $('wxPermissionNotice');
+        if (notice) {
+          notice.hidden = false;
+          notice.textContent = denied
+            ? (en
+                ? 'GPS permission blocked in browser/frame. Search your city above to switch location.'
+                : 'Géolocalisation bloquée par le navigateur. Recherchez votre ville ci-dessus pour changer de lieu.')
+            : (en
+                ? 'Unable to acquire GPS fix right now. Showing fallback location — search a city above.'
+                : 'Signal GPS indisponible pour le moment. Météo affichée — recherchez votre ville ci-dessus.');
+        }
       }
-      setT('wxLocLabel', en ? 'Allow GPS / Search city' : 'Activer GPS / Ville');
-      setT('wxCondText', en ? 'Tap bar to set city' : 'Appuyer pour définir le lieu');
+      if (!saved && !WX.data) {
+        fetchWeatherAutoFallback(userTriggered);
+      }
     },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    {
+      enableHighAccuracy: Boolean(userTriggered),
+      timeout: userTriggered ? 6000 : 4000,
+      maximumAge: userTriggered ? 0 : 300000,
+    },
   );
 }
 

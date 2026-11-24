@@ -98,6 +98,9 @@ export async function syncTimestampSnapshotToFirestore(song: SongTimestampRecord
   if (!cloud?.saveTimestampSnapshot || !cloud?.saveSongToCloud) {
     throw new Error('FIREBASE_BRIDGE_UNAVAILABLE');
   }
+  if (!cloud.getUser?.() && cloud.signInGoogle) {
+    await cloud.signInGoogle();
+  }
   if (!cloud.getUser?.()) {
     throw new Error('AUTH_REQUIRED');
   }
@@ -136,9 +139,10 @@ export function isCloudAuthenticated(): boolean {
   return Boolean(w.AlexuraCloud?.getUser?.());
 }
 
-export async function signInWithGoogleForCloud(): Promise<void> {
+export async function signInWithGoogleForCloud(): Promise<boolean> {
   const w = window as unknown as AlexuraWindow;
   await w.AlexuraCloud?.signInGoogle?.();
+  return Boolean(w.AlexuraCloud?.getUser?.());
 }
 
 export function flattenLinesWordsCount(lines: SyncedLine[]): number {

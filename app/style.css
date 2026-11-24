@@ -609,10 +609,18 @@ h3 {
   padding: 10px 14px;
   letter-spacing: 0.01em;
 }
-.audio-ai-row > #btnVocalSync,
+.audio-ai-row > #btnVocalSync {
+  flex: 1 1 215px;
+  min-width: 195px;
+  justify-content: center;
+  white-space: nowrap;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  padding: 9px 11px;
+}
 .audio-ai-row > #btnTap,
 .audio-ai-row > #btnVoiceDictate {
-  flex: 1 1 0;
+  flex: 1 1 115px;
   min-width: 108px;
 }
 
@@ -2837,13 +2845,24 @@ button.chip { cursor: pointer; }
   letter-spacing: -0.01em;
 }
 .cloud-err {
-  padding: 8px 11px;
+  padding: 9px 12px;
   border-radius: 8px;
   border: 1px solid rgba(239, 68, 68, 0.35);
   background: rgba(239, 68, 68, 0.12);
   color: #fca5a5;
   font-size: 12px;
   word-break: break-word;
+  display: grid;
+  gap: 8px;
+}
+.cloud-err-msg {
+  line-height: 1.45;
+}
+.cloud-err-acts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .cloud-card {
   border: 1px solid var(--line);
@@ -4802,15 +4821,39 @@ dialog.notice-dlg:not([open]) {
   position: relative;
   width: 100%;
   z-index: 62;
-  background: linear-gradient(90deg, rgba(8, 10, 16, 0.98) 0%, rgba(13, 18, 30, 0.98) 50%, rgba(8, 10, 16, 0.98) 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.085);
+  background: linear-gradient(
+    90deg,
+    rgba(11, 16, 30, 0.97) 0%,
+    rgba(14, 24, 42, 0.96) 32%,
+    rgba(22, 19, 34, 0.96) 68%,
+    rgba(11, 18, 30, 0.97) 100%
+  );
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+.wx-wrap::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(56, 189, 248, 0.0) 0%,
+    rgba(56, 189, 248, 0.42) 22%,
+    rgba(245, 208, 130, 0.48) 52%,
+    rgba(52, 211, 153, 0.40) 80%,
+    rgba(52, 211, 153, 0.0) 100%
+  );
 }
 
 .wx-bar {
   width: 100%;
-  height: 38px;
-  min-height: 38px;
-  padding: 0 22px;
+  min-height: 44px;
+  height: auto;
+  padding: 7px 24px;
   margin: 0;
   border: 0;
   border-radius: 0;
@@ -4819,20 +4862,23 @@ dialog.notice-dlg:not([open]) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 20px;
   cursor: pointer;
   text-align: left;
+  font-family: var(--ui);
   font-size: 12px;
-  line-height: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  transition: background 0.16s ease;
+  line-height: 1.25;
+  transition: background 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .wx-bar:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.05) 0%, rgba(214, 180, 106, 0.05) 55%, rgba(52, 211, 153, 0.05) 100%);
+}
+.wx-bar:focus-visible {
+  outline: 1px solid rgba(214, 180, 106, 0.7);
+  outline-offset: -2px;
 }
 .wx-bar[aria-expanded="true"] {
-  background: rgba(10, 132, 255, 0.10);
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.08) 0%, rgba(214, 180, 106, 0.08) 55%, rgba(52, 211, 153, 0.07) 100%);
 }
 
 .wx-bar-left {
@@ -4841,44 +4887,55 @@ dialog.notice-dlg:not([open]) {
   gap: 7px;
   min-width: 0;
   flex: 0 1 auto;
+  padding-right: 18px;
+  border-right: 1px solid rgba(255, 255, 255, 0.09);
   overflow: hidden;
 }
-.wx-gps-pin {
+.wx-emoji {
   display: inline-flex;
   align-items: center;
-  color: var(--champagne);
+  justify-content: center;
+  font-size: 12.5px;
+  line-height: 1;
   flex-shrink: 0;
+  filter: saturate(1.08);
+}
+.wx-pin-emoji {
+  font-size: 12px;
 }
 .wx-loc {
   font-weight: 600;
+  font-size: 12.5px;
   letter-spacing: -0.01em;
-  color: #f8fafc;
+  color: #f6e7c1;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 240px;
+  white-space: nowrap;
+  max-width: 210px;
 }
 
 .wx-bar-metrics {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  flex-wrap: wrap;
+  gap: 4px 16px;
   min-width: 0;
   flex: 1 1 auto;
   justify-content: center;
-  overflow: hidden;
   font-variant-numeric: tabular-nums;
 }
 .wx-cond-wrap {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  white-space: nowrap;
 }
 .wx-ico {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 17px;
-  height: 17px;
+  width: 19px;
+  height: 19px;
   flex-shrink: 0;
 }
 .wx-ico svg, .wx-hero-ico svg, .wx-day-ico svg {
@@ -4887,46 +4944,100 @@ dialog.notice-dlg:not([open]) {
   height: 100%;
 }
 .wx-temp {
-  font-size: 12.5px;
+  font-size: 15px;
   font-weight: 700;
-  color: #ffffff;
+  letter-spacing: -0.025em;
+  color: #fef3c7;
+  background: linear-gradient(180deg, #ffffff 18%, #fde68a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  white-space: nowrap;
 }
 .wx-cond {
-  color: var(--text-soft);
+  font-family: var(--ui);
+  color: #b9cce8;
+  font-size: 12px;
   font-weight: 500;
+  white-space: nowrap;
 }
 .wx-sep {
-  color: rgba(255, 255, 255, 0.22);
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.14) 50%, transparent 100%);
+  flex-shrink: 0;
   user-select: none;
 }
-.wx-metric {
-  color: var(--text-soft);
-  font-size: 11.5px;
+.wx-ch {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  white-space: nowrap;
 }
-.wx-uv-tag.is-low { color: #6ee7b7; }
-.wx-uv-tag.is-med { color: #fbbf24; }
-.wx-uv-tag.is-high { color: #fb7185; font-weight: 700; }
+.wx-ch-lbl {
+  font-family: var(--ui);
+  font-size: 11px;
+  font-weight: 500;
+  color: #8b97ab;
+  letter-spacing: 0.01em;
+}
+.wx-ch-val {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e2e8f0;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.wx-ch-wind .wx-ch-lbl { color: #7ca7c7; }
+.wx-ch-wind .wx-ch-val { color: #93c5fd; }
+.wx-ch-hum .wx-ch-lbl { color: #6fb4c4; }
+.wx-ch-hum .wx-ch-val { color: #67e8f9; }
+.wx-ch-uv .wx-ch-lbl { color: #bfa675; }
+.wx-ch-aqi .wx-ch-lbl { color: #78b39a; }
+.wx-ch-pollen .wx-ch-lbl { color: #b498c9; }
+.wx-ch-pollen .wx-ch-val { color: #e2c6ff; }
+.wx-uv-tag.is-low, .wx-aqi-tag.is-good { color: #6ee7b7; }
+.wx-uv-tag.is-med, .wx-aqi-tag.is-mod { color: #fcd34d; }
+.wx-uv-tag.is-high, .wx-aqi-tag.is-poor { color: #fda4af; font-weight: 700; }
 
 .wx-bar-right {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   flex-shrink: 0;
+  padding-left: 16px;
+  border-left: 1px solid rgba(255, 255, 255, 0.09);
 }
 .wx-timer-chip {
-  font-size: 10.5px;
-  font-weight: 700;
-  color: #7dd3fc;
-  letter-spacing: 0.02em;
-}
-.wx-expand {
   font-size: 11px;
   font-weight: 600;
-  color: var(--muted);
-  transition: color 0.16s ease;
+  color: #fde68a;
+  letter-spacing: 0.01em;
 }
-.wx-bar:hover .wx-expand {
-  color: #ffffff;
+.wx-expand {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #e5cfa0;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  transition: color 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.wx-chevron {
+  color: #d6b46a;
+  flex-shrink: 0;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), color 0.16s ease;
+}
+.wx-bar:hover .wx-expand,
+.wx-bar:hover .wx-chevron {
+  color: #fff3d1;
+}
+.wx-bar[aria-expanded="true"] .wx-expand {
+  color: #fde68a;
+}
+.wx-bar[aria-expanded="true"] .wx-chevron {
+  transform: rotate(180deg);
+  color: #fde68a;
 }
 
 .wx-drawer {
@@ -5239,10 +5350,28 @@ dialog.notice-dlg:not([open]) {
 }
 @media (max-width: 760px) {
   .wx-bar {
-    padding: 0 12px;
-    gap: 8px;
+    padding: 8px 14px;
+    gap: 8px 12px;
+    flex-wrap: wrap;
   }
-  .wx-loc { max-width: 130px; }
+  .wx-bar-left {
+    padding-right: 0;
+    border-right: 0;
+  }
+  .wx-loc { max-width: 165px; }
+  .wx-bar-right {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .wx-bar-metrics {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: flex-start;
+    gap: 6px 12px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .wx-sep { height: 11px; }
   .wx-hide-sm { display: none; }
   .wx-cards {
     grid-template-columns: 1fr;
@@ -5256,8 +5385,9 @@ dialog.notice-dlg:not([open]) {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .wx-drawer, .wx-timer-fill.is-running {
+  .wx-drawer, .wx-timer-fill.is-running, .wx-chevron {
     animation: none;
+    transition: none;
   }
 }
 

@@ -18,31 +18,50 @@
   <div id="weatherTopWrap" class="wx-wrap">
     <button type="button" id="weatherTopBar" class="wx-bar" aria-expanded="false" aria-controls="weatherDetailDrawer" title="Appuyer pour afficher la météo détaillée, la qualité de l'air, les pollens, l'indice UV et les prévisions 7 jours (disparaît automatiquement après 6 secondes)">
       <span class="wx-bar-left">
-        <span class="wx-gps-pin" aria-hidden="true">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z"/></svg>
-        </span>
+        <span class="wx-emoji wx-pin-emoji" aria-hidden="true">📍</span>
         <span id="wxLocLabel" class="wx-loc">Localisation GPS…</span>
       </span>
       <span class="wx-bar-metrics">
         <span class="wx-cond-wrap">
           <span id="wxCondIcon" class="wx-ico" aria-hidden="true"></span>
           <strong id="wxTempNow" class="wx-temp mono">--°C</strong>
-          <span id="wxCondText" class="wx-cond">Analyse météo…</span>
+          <span id="wxCondText" class="wx-cond wx-hide-sm">Analyse météo…</span>
         </span>
-        <span class="wx-sep" aria-hidden="true">·</span>
-        <span id="wxWindShort" class="wx-metric mono">Vent -- km/h</span>
-        <span class="wx-sep" aria-hidden="true">·</span>
-        <span id="wxHumShort" class="wx-metric mono">Humidité --%</span>
-        <span class="wx-sep" aria-hidden="true">·</span>
-        <span id="wxUvShort" class="wx-metric wx-uv-tag mono">UV --</span>
-        <span class="wx-sep wx-hide-sm" aria-hidden="true">·</span>
-        <span id="wxAqiShort" class="wx-metric wx-hide-sm mono">Air --</span>
-        <span class="wx-sep wx-hide-md" aria-hidden="true">·</span>
-        <span id="wxPollenShort" class="wx-metric wx-hide-md mono">Pollen --</span>
+        <span class="wx-sep" aria-hidden="true"></span>
+        <span class="wx-ch wx-ch-wind">
+          <span class="wx-emoji" aria-hidden="true">🌬️</span>
+          <span id="wxWindLblTop" class="wx-ch-lbl">Vent</span>
+          <span id="wxWindShort" class="wx-ch-val mono">-- km/h</span>
+        </span>
+        <span class="wx-sep" aria-hidden="true"></span>
+        <span class="wx-ch wx-ch-hum">
+          <span class="wx-emoji" aria-hidden="true">💧</span>
+          <span id="wxHumLblTop" class="wx-ch-lbl">Humidité</span>
+          <span id="wxHumShort" class="wx-ch-val mono">--%</span>
+        </span>
+        <span class="wx-sep" aria-hidden="true"></span>
+        <span class="wx-ch wx-ch-uv">
+          <span class="wx-emoji" aria-hidden="true">☀️</span>
+          <span id="wxUvLblTop" class="wx-ch-lbl">UV</span>
+          <span id="wxUvShort" class="wx-ch-val wx-uv-tag mono">--</span>
+        </span>
+        <span class="wx-sep" aria-hidden="true"></span>
+        <span class="wx-ch wx-ch-aqi">
+          <span class="wx-emoji" aria-hidden="true">🍃</span>
+          <span id="wxAqiLblTop" class="wx-ch-lbl">Air</span>
+          <span id="wxAqiShort" class="wx-ch-val wx-aqi-tag mono">--</span>
+        </span>
+        <span class="wx-sep wx-hide-md" aria-hidden="true"></span>
+        <span class="wx-ch wx-ch-pollen wx-hide-md">
+          <span class="wx-emoji" aria-hidden="true">🌼</span>
+          <span id="wxPollenLblTop" class="wx-ch-lbl">Pollen</span>
+          <span id="wxPollenShort" class="wx-ch-val mono">--</span>
+        </span>
       </span>
       <span class="wx-bar-right">
         <span id="wxTimerChip" class="wx-timer-chip mono" hidden>6s</span>
-        <span id="wxExpandHint" class="wx-expand">7 jours ▾</span>
+        <span id="wxExpandHint" class="wx-expand">7 jours</span>
+        <svg class="wx-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
       </span>
     </button>
 

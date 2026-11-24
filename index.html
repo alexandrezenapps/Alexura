@@ -631,14 +631,50 @@ h3 {
 .audio-ai-row > #btnAiTranscribe {
   flex: 1 1 100%;
   justify-content: center;
-  padding: 9px 14px;
+  padding: 10px 14px;
+  letter-spacing: 0.01em;
 }
-.audio-ai-row > #btnVocalSync,
-.audio-ai-row > #btnTap {
-  flex: 1 1 0;
+.audio-ai-row > #btnVocalSync {
+  flex: 1 1 215px;
+  min-width: 195px;
+  justify-content: center;
+  white-space: nowrap;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  padding: 9px 11px;
+}
+.audio-ai-row > #btnTap,
+.audio-ai-row > #btnVoiceDictate {
+  flex: 1 1 115px;
+  min-width: 108px;
 }
 
-/* AI 7-Stage Processing Progress */
+#btnVoiceDictate {
+  background: rgba(56, 189, 248, 0.09);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  color: #b7e4ff;
+  font-weight: 600;
+  border-radius: var(--r);
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#btnVoiceDictate:hover {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: #38bdf8;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+#btnVoiceDictate.is-listening {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(248, 113, 113, 0.72);
+  color: #fecaca;
+  animation: pulseVoiceMic 1.25s infinite ease-in-out;
+}
+@keyframes pulseVoiceMic {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.36); }
+  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}
+
+/* AI 7-Stage Processing Progress + Live Recognition Preview */
 .ai-prog-box {
   display: grid;
   gap: 7px;
@@ -694,6 +730,157 @@ h3 {
 }
 .ai-prog-steps span.is-done { background: #38bdf8; }
 .ai-prog-steps span.is-cur { background: #0a84ff; box-shadow: 0 0 8px rgba(10, 132, 255, 0.65); }
+
+.ai-voice-meter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+.ai-voice-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.85);
+  flex: 0 0 auto;
+}
+.ai-voice-meter {
+  flex: 1 1 auto;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.ai-voice-meter i {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #22c55e, #38bdf8);
+  transition: width 0.08s linear;
+}
+.ai-voice-locale {
+  font-size: 10.5px;
+  color: #93c5fd;
+}
+.ai-live-transcript {
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  color: #f0f9ff;
+  font-size: 12.5px;
+  line-height: 1.45;
+  font-weight: 500;
+  max-height: 74px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ai-live-transcript .ai-live-interim {
+  color: #7dd3fc;
+  font-style: italic;
+}
+
+.ai-voice-action-bar {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(56, 189, 248, 0.30);
+  margin-top: 2px;
+}
+.ai-voice-action-msg {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #e2e8f0;
+}
+.ai-voice-action-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ai-voice-action-btns button {
+  font-size: 11.5px;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+.ai-diag-wrap {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+  max-height: 290px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.ai-diag-sec-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #93c5fd;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ai-diag-card {
+  display: grid;
+  gap: 5px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+.ai-diag-card.is-warn {
+  border-color: rgba(251, 191, 36, 0.40);
+  background: rgba(69, 26, 3, 0.24);
+}
+.ai-diag-card.is-high {
+  border-color: rgba(248, 113, 113, 0.45);
+  background: rgba(69, 10, 10, 0.25);
+}
+.ai-diag-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+.ai-diag-diff {
+  display: grid;
+  gap: 3px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.ai-diag-orig {
+  color: #fca5a5;
+  text-decoration: line-through;
+  opacity: 0.88;
+}
+.ai-diag-next {
+  color: #86efac;
+  font-weight: 600;
+}
+.ai-diag-desc {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: #cbd5e1;
+}
+.ai-diag-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+.ai-diag-actions button {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
 
 /* Language detection & Quick Export Bar */
 .lang-det-wrap {
@@ -788,21 +975,32 @@ h3 {
   50% { box-shadow: 0 6px 26px rgba(56, 189, 248, 0.45); }
 }
 
-/* Vocal Sync Button - Sapphire Crystal */
+/* Vocal Sync Button - Sapphire Crystal Studio Action */
 #btnVocalSync {
-  background: rgba(10, 132, 255, 0.11);
-  border: 1px solid rgba(10, 132, 255, 0.32);
-  color: #8cc5ff;
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.14) 0%, rgba(56, 189, 248, 0.14) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.36);
+  color: #9dd4ff;
   font-weight: 700;
   border-radius: var(--r);
+  box-shadow: 0 2px 10px rgba(10, 132, 255, 0.12);
   transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 #btnVocalSync:hover {
-  background: rgba(10, 132, 255, 0.20);
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.24) 0%, rgba(56, 189, 248, 0.22) 100%);
   border-color: var(--accent);
   color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(10, 132, 255, 0.22);
+  box-shadow: 0 6px 18px rgba(10, 132, 255, 0.26);
+}
+#btnVocalSync:active {
+  transform: translateY(0.5px) scale(0.99);
+}
+#btnVocalSync.is-syncing {
+  opacity: 0.92;
+  pointer-events: none;
+  border-color: #38bdf8;
+  color: #ffffff;
+  animation: pulseAiTranscribe 1.2s infinite ease-in-out;
 }
 
 /* Studio Tap Sync Button & Guided Console */
@@ -5096,6 +5294,44 @@ dialog.notice-dlg:not([open]) {
   }
 }
 
+.bg-job-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-color: rgba(56, 189, 248, 0.35);
+  background: rgba(10, 132, 255, 0.12);
+  color: #bae6fd;
+}
+.bg-job-btn.is-done {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: rgba(22, 163, 74, 0.14);
+  color: #86efac;
+}
+.bg-job-btn.is-err {
+  border-color: rgba(239, 68, 68, 0.45);
+  background: rgba(220, 38, 38, 0.14);
+  color: #fca5a5;
+}
+.bg-job-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #38bdf8;
+  animation: bgJobPulse 1.2s ease-in-out infinite;
+}
+.bg-job-btn.is-done .bg-job-dot {
+  background: #4ade80;
+  animation: none;
+}
+.bg-job-btn.is-err .bg-job-dot {
+  background: #f87171;
+  animation: none;
+}
+@keyframes bgJobPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.75); }
+}
+
 
 
 
@@ -5268,6 +5504,8 @@ dialog.notice-dlg:not([open]) {
       <button id="btnSave" title="プロジェクトを .json で保存">保存</button>
       <button id="btnAE" title="After Effects パネル用の構成データを書き出す">AE用に書き出し</button>
       <button id="btnReset" class="ghost" title="歌詞・曲・設定・履歴をすべて消して、最初の状態に戻します">初期化</button>
+      <button id="bgJobPill" type="button" class="ghost small bg-job-btn" hidden title="Traitement audio en cours en arrière-plan — cliquez pour ouvrir le Studio IA React"><span class="bg-job-dot" aria-hidden="true"></span><span id="bgJobText" class="mono">Analyse 0%</span></button>
+      <button id="btnModularStudio" type="button" class="accent small" title="Ouvrir le Studio Pipeline Modulaire React/TypeScript (Web Audio, Forme d'onde, Workers asynchrone &amp; Base Timestamps)">🎛 Studio IA React</button>
       <button id="btnNotice" type="button" class="ghost small notice-open" title="Ouvrir la Notice complète d’Alexura Motion Studio — guide illustré de chaque touche et fonctionnement">Notice</button>
       <button id="btnTerms" class="ghost terms-open" title="出力物の権利とライセンス">利用について</button>
     </div>
@@ -5352,6 +5590,7 @@ dialog.notice-dlg:not([open]) {
           <button id="btnAiTranscribe" class="accent" title="AI听音识词：自动分析歌曲音频，多语言（中文、法文、英文等）识别人声歌词并即时同步到视频">✨ AI 识词与同步</button>
           <button id="btnVocalSync" class="ghost" title="根据歌声人声起始瞬间，自动精准同步各行歌词">⚡ 人声同步</button>
           <button id="btnTap" title="Synchronisation manuelle guidée au rythme de la voix (ligne par ligne ou mot par mot)">⏱ タップで同期</button>
+          <button id="btnVoiceDictate" type="button" class="ghost" aria-pressed="false" title="リアルタイム音声認識：マイクで歌や音声を認識して即座に歌詞化・同期します">🎙️ ライブ音声認識</button>
         </div>
         <div id="aiProgressBox" class="ai-prog-box" hidden aria-live="polite">
           <div class="ai-prog-head">
@@ -5362,8 +5601,16 @@ dialog.notice-dlg:not([open]) {
           <div id="aiProgressSteps" class="ai-prog-steps" aria-hidden="true">
             <span data-step="1"></span><span data-step="2"></span><span data-step="3"></span><span data-step="4"></span><span data-step="5"></span><span data-step="6"></span><span data-step="7"></span>
           </div>
+          <div id="aiVoiceMeterWrap" class="ai-voice-meter-wrap" hidden>
+            <span class="ai-voice-dot" aria-hidden="true"></span>
+            <div class="ai-voice-meter" aria-hidden="true"><i id="aiVoiceMeterFill"></i></div>
+            <span id="aiVoiceLocaleBadge" class="ai-voice-locale mono">FR</span>
+            <button type="button" id="btnStopVoiceInline" class="ghost small">⏹ Terminer</button>
+          </div>
+          <div id="aiLiveTranscript" class="ai-live-transcript" hidden></div>
         </div>
         <div id="audioDetectPanel" class="audio-detect" hidden aria-live="polite"></div>
+        <div id="aiVoiceActionBar" class="ai-voice-action-bar" hidden aria-live="polite"></div>
         <div id="qcSummaryBox" class="qc-box" hidden aria-live="polite">
           <div class="qc-head">
             <strong id="qcBoxTitle">Contrôle Qualité &amp; Précision</strong>
@@ -13847,6 +14094,7 @@ J.alignWordsAcoustic = (analysis, text, tStart, tEnd, lang, speaker = 'Lead', re
   const env = analysis && (analysis.vocalEnv100 || analysis.vocalEnergy);
   const att = analysis && (analysis.wordAttack100 || analysis.vocalOnset);
   const con = analysis && analysis.consonantFlux100;
+  const sideMap = analysis && analysis.sideRatio100;
   const er = (analysis && analysis.vocalEnv100 ? analysis.fineRate : analysis && analysis.energyRate) || 100;
   const useAcoustic = !!(env && env.length && er > 0);
 
@@ -13926,10 +14174,11 @@ J.alignWordsAcoustic = (analysis, text, tStart, tEnd, lang, speaker = 'Lead', re
 
   for (let m = 0; m <= M; m++) {
     const fi = Math.min(env.length - 1, activeStartF + m * strideF);
-    const eNorm = maxE > 1e-5 ? env[fi] / maxE : 0.5;
+    const sidePenalty = sideMap ? Math.min(0.35, sideMap[fi] * 0.42) : 0;
+    const eNorm = maxE > 1e-5 ? Math.max(0.02, (env[fi] / maxE) * (1 - sidePenalty)) : 0.5;
     const attNorm = att ? Math.min(1.5, att[fi]) : 0;
-    const conBoost = con && maxE > 1e-5 ? Math.min(0.8, con[fi] / maxE) : 0;
-    frameAttack[m] = attNorm + 0.35 * conBoost;
+    const conBoost = con && maxE > 1e-5 ? Math.min(0.95, con[fi] / maxE) : 0;
+    frameAttack[m] = Math.max(0, attNorm + 0.45 * conBoost - 0.18 * sidePenalty);
     frameLowEnergy[m] = env[fi] < silenceThr ? 1 : 0;
     if (m > 0) prefEnergy[m] = prefEnergy[m - 1] + (0.25 + 0.75 * Math.pow(eNorm, 0.7));
   }
@@ -14098,6 +14347,7 @@ J.refineWordTimingsAcoustic = (analysis, rawWords, lineStart, lineEnd, lang, def
 
   const att = analysis && analysis.wordAttack100;
   const env = analysis && analysis.vocalEnv100;
+  const con = analysis && analysis.consonantFlux100;
   const vad = analysis && analysis.voicing100;
   const ovMap = analysis && analysis.sideRatio100;
   const fr = (analysis && analysis.fineRate) || 100;
@@ -14109,17 +14359,22 @@ J.refineWordTimingsAcoustic = (analysis, rawWords, lineStart, lineEnd, lang, def
     let we = Math.min(eLine, Math.max(ws + 0.018, w.end));
 
     if (canSnap) {
-      // 1) Snap onset onto crisp vocal/consonant attack peak within ±70ms
+      // 1) Snap onset onto crisp vocal/consonant attack peak within ±80ms using composite vocal-center score
       const centerF = Math.round(ws * fr);
-      const loF = Math.max(Math.ceil(prevEnd * fr), centerF - 7);
-      const hiF = Math.min(Math.floor((we - 0.02) * fr), att.length - 1, centerF + 7);
-      let bestF = centerF, bestA = -1, meanA = 0, cntA = 0;
+      const loF = Math.max(Math.ceil(prevEnd * fr), centerF - 8);
+      const hiF = Math.min(Math.floor((we - 0.02) * fr), att.length - 1, centerF + 8);
+      let maxLocalE = 1e-4;
+      for (let f = loF; f <= hiF; f++) { if (env[f] > maxLocalE) maxLocalE = env[f]; }
+      let bestF = centerF, bestScore = -1, meanScore = 0, cntA = 0;
       for (let f = loF; f <= hiF; f++) {
-        meanA += att[f]; cntA++;
-        if (att[f] > bestA) { bestA = att[f]; bestF = f; }
+        const cBoost = con ? Math.min(0.8, con[f] / maxLocalE) : 0;
+        const sidePen = ovMap ? Math.min(0.2, ovMap[f] * 0.25) : 0;
+        const comp = att[f] + 0.32 * cBoost - sidePen;
+        meanScore += comp; cntA++;
+        if (comp > bestScore) { bestScore = comp; bestF = f; }
       }
-      const avgA = cntA > 0 ? meanA / cntA : 0;
-      if (bestA > Math.max(0.18, avgA * 1.45)) {
+      const avgScore = cntA > 0 ? meanScore / cntA : 0;
+      if (bestScore > Math.max(0.16, avgScore * 1.38)) {
         const snapped = bestF / fr;
         if (snapped >= prevEnd && snapped < we - 0.02) {
           ws = snapped;
@@ -14129,7 +14384,7 @@ J.refineWordTimingsAcoustic = (analysis, rawWords, lineStart, lineEnd, lang, def
       if (vad && vad.length) {
         let fEnd = Math.min(vad.length - 1, Math.round(we * fr));
         const fMin = Math.ceil((ws + 0.03) * fr);
-        while (fEnd > fMin && vad[fEnd] < 0.14 && env[fEnd] < 0.008 && (Math.round(we * fr) - fEnd) < 12) {
+        while (fEnd > fMin && vad[fEnd] < 0.16 && env[fEnd] < 0.009 && (Math.round(we * fr) - fEnd) < 14) {
           fEnd--;
         }
         const trimmedEnd = fEnd / fr;
@@ -14476,7 +14731,7 @@ J.analyzeLineVocalCoordination = (analysis, words, lineStart = 0, lineEnd = 0) =
 };
 
 /* Two-Pass Vocal-to-Lyric Optimizer:
-   Pass 1 runs anchored 10ms Viterbi alignment; Pass 2 pulls residual >45ms unvalidated words onto clean nearby vocal transients. */
+   Pass 1 runs anchored 10ms Viterbi alignment; Pass 2 pulls residual >28ms unvalidated words onto clean nearby vocal transients + enforces zero-overlap. */
 J.optimizeLineVocalCoordination = (analysis, words, lineStart, lineEnd, lang, defaultSpeaker = 'Lead') => {
   const pass1 = J.alignLineWordsAnchored(analysis, words, lineStart, lineEnd, lang, defaultSpeaker);
   if (!analysis || !(analysis.wordAttack100 && analysis.wordAttack100.length) || !pass1.length) {
@@ -14495,7 +14750,7 @@ J.optimizeLineVocalCoordination = (analysis, words, lineStart, lineEnd, lang, de
     if (hi - lo < 0.05) continue;
 
     const atk = J.estimateVocalAttackNear(analysis, cur.start, 0.14, lo, hi - 0.035);
-    if (atk.found && Math.abs(atk.driftMs) >= 35 && Math.abs(atk.driftMs) <= 145) {
+    if (atk.found && Math.abs(atk.driftMs) >= 28 && Math.abs(atk.driftMs) <= 150) {
       const snappedS = +J.clamp(atk.attackTime, prevEnd - 0.04, hi - 0.045).toFixed(3);
       if (i > 0 && pass1[i - 1].end > snappedS - 0.008) {
         if (pass1[i - 1].validated) continue;
@@ -14505,12 +14760,69 @@ J.optimizeLineVocalCoordination = (analysis, words, lineStart, lineEnd, lang, de
       const nextE = Math.min(nextStart, Math.max(snappedS + 0.05, cur.end));
       cur.start = snappedS;
       cur.end = +Math.max(snappedS + 0.04, nextE).toFixed(3);
-      cur.alignmentConfidence = +Math.min(0.95, Math.max(Number(cur.alignmentConfidence) || 0.78, 0.88 + 0.06 * atk.clarity)).toFixed(3);
+      cur.alignmentConfidence = +Math.min(0.96, Math.max(Number(cur.alignmentConfidence) || 0.78, 0.89 + 0.06 * atk.clarity)).toFixed(3);
       cur.flags = (cur.flags || []).filter(f => f !== 'uncertain_boundary');
       cur.chars = J.buildCharTimings(cur.text, cur.start, cur.end, analysis);
     }
   }
   return pass1;
+};
+
+/* O(1) Real-Time Playback Moment Coordination Telemetry (zero allocations per frame):
+   Evaluates voice presence, onset lock ±ms, and vocal-lyric coherence at exact playback moment t. */
+J.getMomentCoordinationSnapshot = (analysis, lineObj, activeWord, t) => {
+  const env = analysis && analysis.vocalEnv100;
+  const vad = analysis && analysis.voicing100;
+  const att = analysis && analysis.wordAttack100;
+  const fr = (analysis && analysis.fineRate) || 100;
+  const hasAudio = Boolean(env && env.length && fr > 0);
+  const wConf = activeWord && typeof activeWord.alignmentConfidence === 'number'
+    ? activeWord.alignmentConfidence
+    : (lineObj && Array.isArray(lineObj.wordsTimed) && lineObj.wordsTimed.length
+      ? lineObj.wordsTimed.reduce((a, w) => a + (w.alignmentConfidence ?? 0.86), 0) / lineObj.wordsTimed.length
+      : 0.86);
+
+  if (!hasAudio || !Number.isFinite(t)) {
+    return {
+      hasAudio: false,
+      vocalActive: Boolean(activeWord),
+      locked: Boolean(activeWord),
+      driftMs: 0,
+      momentScore: Math.round(wConf * 100),
+    };
+  }
+
+  const idx = Math.max(0, Math.min(env.length - 1, Math.round(t * fr)));
+  const curEnv = env[idx] || 0;
+  const curVad = vad ? (vad[idx] || 0) : 0.65;
+  const vocalActive = curEnv > 0.004 || curVad > 0.24;
+
+  let driftMs = 0;
+  if (activeWord && att && att.length) {
+    const cF = Math.max(0, Math.min(att.length - 1, Math.round(activeWord.start * fr)));
+    const f0 = Math.max(0, cF - 10);
+    const f1 = Math.min(att.length - 1, cF + 10);
+    let bestF = cF, bestA = -1;
+    for (let f = f0; f <= f1; f++) {
+      if (att[f] > bestA) { bestA = att[f]; bestF = f; }
+    }
+    if (bestA > 0.04) {
+      driftMs = Math.round((activeWord.start - bestF / fr) * 1000);
+    }
+  }
+  const absDrift = Math.abs(driftMs);
+  const baseScore = activeWord
+    ? Math.max(40, Math.min(99, Math.round((0.55 * wConf + 0.45 * (1 - Math.min(1, absDrift / 140))) * 100)))
+    : Math.round(wConf * 100);
+  const locked = Boolean(activeWord && vocalActive && absDrift <= 40);
+
+  return {
+    hasAudio: true,
+    vocalActive,
+    locked,
+    driftMs,
+    momentScore: baseScore,
+  };
 };
 
 const blobToBase64 = (blob) => new Promise((res, rej) => {
@@ -14549,10 +14861,10 @@ J.audioVocalSeparatedWavWindow = (buffer, startSec = 0, durationSec = 140, targe
   v.setUint32(28, targetSr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
   str(36, 'data'); v.setUint32(40, bytes, true);
 
-  // 160Hz HPF + 4800Hz LPF on center-isolated lead signal to attenuate sub-bass, kick, and stereo hats/pads
+  // 140Hz HPF + 7400Hz LPF on center-isolated lead signal to attenuate sub-bass/kick while preserving crisp vocal consonants
   const dt = 1 / targetSr;
-  const aHP = (1 / (2 * Math.PI * 160)) / (1 / (2 * Math.PI * 160) + dt);
-  const aLP = dt / (1 / (2 * Math.PI * 4800) + dt);
+  const aHP = (1 / (2 * Math.PI * 140)) / (1 / (2 * Math.PI * 140) + dt);
+  const aLP = dt / (1 / (2 * Math.PI * 7400) + dt);
   let pHP = 0, pX = 0, pLP = 0;
 
   let o = 44;
@@ -15084,69 +15396,382 @@ J.realignLineWords = (analysis, lineText, lineStart, lineEnd, lang = 'auto', def
   return out;
 };
 
-/* AI Vocal forced alignment (Stages 2, 4, 5, 6, 7) via server API with 10ms Viterbi acoustic fallback */
-J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto') => {
+/* Standalone Stage-A Orthography, Diacritics & Contractions Audit */
+J.auditLyricsSpelling = async (linesOrText, lang = 'auto') => {
+  try {
+    const body = Array.isArray(linesOrText)
+      ? { lines: linesOrText, lang }
+      : { lyrics: String(linesOrText || ''), lang };
+    const resp = await fetch('/api/audit-lyrics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data && data.success) return data;
+    }
+  } catch (e) {}
+  return { success: false, spellingFixCount: 0, changes: [], correctedLines: {}, correctedText: '', detectedLanguage: lang };
+};
+
+/* AI Real-Time Streaming Vocal-Lyric Coordination (SSE /api/align-vocals/stream + 10ms Moment Refinement) */
+J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null, onLiveEvent = null) => {
   let requiresBilling = false;
+  let errorReason = '';
+  let recognizedLines = [];
+  let recognizedTranscript = '';
+  let corrections = [];
+  let spellingFixCount = 0;
+  let correctedLines = {};
+  let correctedText = '';
+  let divergences = [];
+  let reformulations = [];
+  let unresolvableProblems = [];
+  let reconcileSummary = null;
+  let lineMatchRatios = {};
+  let detectedLanguage = lang;
+  const report = (st, msg, meta = null) => { if (typeof onStage === 'function') try { onStage(st, msg, meta); } catch (e) {} };
+  const emitLive = (evt) => { if (typeof onLiveEvent === 'function') try { onLiveEvent(evt); } catch (e) {} };
+  const vocalSegs = Array.isArray(audioAnalysis && audioAnalysis.vocalSegments)
+    ? audioAnalysis.vocalSegments.slice(0, 48).map(s => ({ start: +Number(s.start || 0).toFixed(3), end: +Number(s.end || 0).toFixed(3) }))
+    : [];
+  const dur = (audioAnalysis && audioAnalysis.duration) || 30;
+  const lineTexts = lines.map((l, i) => ({ i, text: l.interlude ? '[interlude]' : l.text }));
+
+  const refineAlignedLinesBatch = (rawLineTimes, rawWordTimes, rawLineMeta) => {
+    const refinedLineTimes = Object.assign({}, rawLineTimes || {});
+    const refinedWords = {};
+    const keys = Object.keys(rawWordTimes || {}).map(Number).filter(n => Number.isFinite(n)).sort((a, b) => a - b);
+    let scoreSum = 0, errSum = 0, lineCnt = 0;
+
+    for (const idx of keys) {
+      let s = refinedLineTimes[idx] ?? 0;
+      const prevIdx = idx - 1;
+      if (refinedWords[prevIdx] && refinedWords[prevIdx].length) {
+        const prevWordEnd = refinedWords[prevIdx][refinedWords[prevIdx].length - 1].end;
+        if (s < prevWordEnd + 0.015) s = +(prevWordEnd + 0.015).toFixed(3);
+      }
+      refinedLineTimes[idx] = s;
+      const nextL = lines[idx + 1];
+      const nextRawStart = (nextL && refinedLineTimes[idx + 1] != null) ? refinedLineTimes[idx + 1] : Math.min(dur || 300, s + 4);
+      const e = Math.max(s + 0.14, nextRawStart - 0.015);
+      const metaSpk = (rawLineMeta && rawLineMeta[idx] && rawLineMeta[idx].speaker) || 'Lead';
+      const r1 = J.refineWordTimingsAcoustic(audioAnalysis, rawWordTimes[idx], s, e, lang, metaSpk);
+      const r2 = J.optimizeLineVocalCoordination ? J.optimizeLineVocalCoordination(audioAnalysis, r1, s, e, lang, metaSpk) : r1;
+      if (r2.length) {
+        refinedLineTimes[idx] = r2[0].start;
+      }
+      refinedWords[idx] = r2;
+      if (J.analyzeLineVocalCoordination && r2.length) {
+        const coh = J.analyzeLineVocalCoordination(audioAnalysis, r2, s, e);
+        scoreSum += coh.score; errSum += coh.avgAbsErrMs; lineCnt++;
+      }
+    }
+    return { refinedLineTimes, refinedWords, scoreSum, errSum, lineCnt };
+  };
+
+  const readAlignSseStream = async (resp) => {
+    if (!resp.body || typeof resp.body.getReader !== 'function') {
+      return await resp.json();
+    }
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    let finalData = null;
+
+    const handleBlock = (blk) => {
+      const rows = blk.split(/\r?\n/);
+      let evtName = 'message';
+      const dataLines = [];
+      for (const row of rows) {
+        if (row.startsWith('event:')) evtName = row.slice(6).trim();
+        else if (row.startsWith('data:')) dataLines.push(row.slice(5).trim());
+      }
+      if (!dataLines.length) return;
+      try {
+        const parsed = JSON.parse(dataLines.join('\n'));
+        if (evtName === 'progress') {
+          let partialRefined = null;
+          if (parsed.partialLineTimes && parsed.partialWordTimes) {
+            partialRefined = refineAlignedLinesBatch(parsed.partialLineTimes, parsed.partialWordTimes, {});
+          }
+          report(parsed.stage || 2, parsed.label || parsed.step || 'align', {
+            pct: parsed.pct,
+            step: parsed.step,
+            matchedCount: parsed.matchedCount,
+            totalTokens: parsed.totalTokens,
+          });
+          emitLive({
+            type: 'progress',
+            ...parsed,
+            refinedLineTimes: partialRefined ? partialRefined.refinedLineTimes : null,
+            refinedWordTimes: partialRefined ? partialRefined.refinedWords : null,
+          });
+        } else if (evtName === 'result' || evtName === 'error') {
+          finalData = parsed;
+        }
+      } catch (e) {}
+    };
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (value) {
+        buf += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buf.indexOf('\n\n')) !== -1) {
+          const blk = buf.slice(0, idx);
+          buf = buf.slice(idx + 2);
+          handleBlock(blk);
+        }
+      }
+      if (done) break;
+    }
+    if (buf.trim()) handleBlock(buf);
+    return finalData;
+  };
+
   try {
     if (audioAnalysis && audioAnalysis.buffer) {
-      const sr = audioAnalysis.duration > 150 ? 10000 : 16000;
-      const wavBlob = J.audioMonoWav(audioAnalysis.buffer, Math.min(300, audioAnalysis.duration), sr);
+      report(1, 'Extraction piste vocale & orthographe…', { pct: 12 });
+      const sr = dur > 180 ? 10000 : dur > 90 ? 12000 : 16000;
+      const includeDualSep = Boolean(audioAnalysis.preprocessing && audioAnalysis.preprocessing.shouldSeparate && dur <= 85);
+      const wavBlob = J.audioMonoWav(audioAnalysis.buffer, Math.min(300, dur), sr);
       const base64Audio = await blobToBase64(wavBlob);
       let separatedVocalBase64 = '';
-      if (audioAnalysis.preprocessing && audioAnalysis.preprocessing.shouldSeparate) {
-        const sepBlob = J.audioVocalSeparatedWavWindow(audioAnalysis.buffer, 0, Math.min(300, audioAnalysis.duration), sr);
+      if (includeDualSep) {
+        const sepBlob = J.audioVocalSeparatedWavWindow(audioAnalysis.buffer, 0, Math.min(300, dur), sr);
         separatedVocalBase64 = await blobToBase64(sepBlob);
       }
-      const lineTexts = lines.map((l, i) => ({ i, text: l.interlude ? '[interlude]' : l.text }));
-      const resp = await fetch('/api/align-vocals', {
+      report(2, 'Streaming vocal temps réel…', { pct: 22 });
+      const buildAlignReqBody = (b64, sepB64) => JSON.stringify({
+        audioBase64: b64,
+        separatedVocalBase64: sepB64,
+        lines: lineTexts,
+        lang,
+        vocalSegments: vocalSegs,
+        durationSec: dur,
+      });
+
+      let reqBody = buildAlignReqBody(base64Audio, separatedVocalBase64);
+      let resp = await fetch('/api/align-vocals/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ audioBase64: base64Audio, separatedVocalBase64, lines: lineTexts, lang }),
+        body: reqBody,
       });
+      if (resp.status === 413) {
+        const slimBlob = (audioAnalysis.preprocessing && audioAnalysis.preprocessing.shouldSeparate)
+          ? J.audioVocalSeparatedWavWindow(audioAnalysis.buffer, 0, Math.min(300, dur), 8000)
+          : J.audioMonoWav(audioAnalysis.buffer, Math.min(300, dur), 8000);
+        const slimB64 = await blobToBase64(slimBlob);
+        reqBody = buildAlignReqBody(slimB64, '');
+        resp = await fetch('/api/align-vocals/stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: reqBody,
+        });
+      }
+      let data = null;
       if (resp.ok) {
-        const data = await resp.json();
+        const ctype = (resp.headers.get('content-type') || '').toLowerCase();
+        data = ctype.includes('text/event-stream') ? await readAlignSseStream(resp) : await resp.json();
+      }
+      if (!data) {
+        const fbResp = await fetch('/api/align-vocals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: reqBody,
+        });
+        if (fbResp.ok) data = await fbResp.json();
+      }
+
+      if (data) {
         if (data && data.requiresBilling) requiresBilling = true;
+        if (data && data.reason) errorReason = data.reason;
+        if (data && Array.isArray(data.corrections)) corrections = data.corrections;
+        if (data && Number.isFinite(Number(data.spellingFixCount))) spellingFixCount = Number(data.spellingFixCount);
+        if (data && data.correctedLines && typeof data.correctedLines === 'object') correctedLines = data.correctedLines;
+        if (data && data.correctedText) correctedText = data.correctedText;
+        if (data && Array.isArray(data.divergences)) divergences = data.divergences;
+        if (data && Array.isArray(data.reformulations)) reformulations = data.reformulations;
+        if (data && Array.isArray(data.unresolvableProblems)) unresolvableProblems = data.unresolvableProblems;
+        if (data && data.reconcileSummary && typeof data.reconcileSummary === 'object') reconcileSummary = data.reconcileSummary;
+        if (data && data.lineMatchRatios && typeof data.lineMatchRatios === 'object') lineMatchRatios = data.lineMatchRatios;
+        if (data && data.detectedLanguage) detectedLanguage = data.detectedLanguage;
+        if (data && Array.isArray(data.recognizedLines) && data.recognizedLines.length) {
+          recognizedLines = data.recognizedLines;
+          recognizedTranscript = data.recognizedTranscript || '';
+        }
         if (data && data.lineTimes && Object.keys(data.lineTimes).length) {
-          const refinedWords = {};
-          const keys = Object.keys(data.wordTimes || {});
-          for (const k of keys) {
-            const idx = +k;
-            const s = data.lineTimes[idx] ?? 0;
-            const nextL = lines[idx + 1];
-            const e = (nextL && data.lineTimes[idx + 1] != null) ? data.lineTimes[idx + 1] : Math.min(audioAnalysis.duration || 300, s + 4);
-            const metaSpk = (data.lineMeta && data.lineMeta[idx] && data.lineMeta[idx].speaker) || 'Lead';
-            refinedWords[idx] = J.refineWordTimingsAcoustic(audioAnalysis, data.wordTimes[idx], s, e, lang, metaSpk);
-          }
+          report(3, 'Calage acoustique 10 ms & séparation respiratoire…', { pct: 95 });
+          const finalRefined = refineAlignedLinesBatch(data.lineTimes, data.wordTimes, data.lineMeta);
+          const { refinedLineTimes, refinedWords, scoreSum, errSum, lineCnt } = finalRefined;
+          report(4, 'Synchronisation prête !', { pct: 100 });
           return {
-            lineTimes: data.lineTimes,
+            lineTimes: refinedLineTimes,
             wordTimes: refinedWords,
             lineMeta: data.lineMeta || {},
+            coherenceScore: lineCnt ? Math.round(scoreSum / lineCnt) : 92,
+            avgAbsErrMs: lineCnt ? Math.round(errSum / lineCnt) : 14,
+            matchedCount: data.matchedCount ?? 0,
+            matchRatio: data.matchRatio ?? 1,
+            corrections,
+            spellingFixCount: spellingFixCount || corrections.length,
+            correctedLines,
+            correctedText,
+            divergences,
+            reformulations,
+            unresolvableProblems,
+            reconcileSummary,
+            lineMatchRatios,
+            detectedLanguage,
+            recognizedLines,
+            recognizedTranscript,
             source: 'ai',
+            engineSource: data.source || 'gemini_cloud',
+            engineName: data.engine || '',
             requiresBilling: false,
+            errorReason: '',
           };
         }
       }
     }
   } catch (e) {
-    console.warn('AI vocal alignment fallback to acoustic forced alignment:', e);
+    errorReason = 'network_or_align_error';
   }
 
+  // Ensure Stage-A orthography corrections still run if /api/align-vocals couldn't complete
+  if (!corrections.length && !Object.keys(correctedLines).length) {
+    const audit = await J.auditLyricsSpelling(lineTexts, lang);
+    if (audit && audit.success) {
+      corrections = audit.changes || [];
+      spellingFixCount = audit.spellingFixCount || corrections.length;
+      correctedLines = audit.correctedLines || {};
+      correctedText = audit.correctedText || '';
+      if (audit.detectedLanguage) detectedLanguage = audit.detectedLanguage;
+    }
+  }
+
+  report(3, 'acoustic_viterbi');
   const lineTimes = J.alignLinesToVocals(audioAnalysis, lines);
   const wordTimes = {};
   const lineMeta = {};
-  const dur = (audioAnalysis && audioAnalysis.duration) || 30;
+  let scoreSum = 0, errSum = 0, lineCnt = 0;
   for (let i = 0; i < lines.length; i++) {
     const ln = lines[i];
     if (!ln || ln.interlude || !ln.text) continue;
+    const effectiveText = correctedLines[i] || ln.text;
     const s = lineTimes[i] != null ? lineTimes[i] : (ln.start ?? 0.4);
     const e = i < lines.length - 1 && lineTimes[i + 1] != null ? lineTimes[i + 1] : Math.min(dur, s + 3.2);
-    const words = J.alignWordsAcoustic(audioAnalysis, ln.text, s, e, lang, 'Lead', 0.85);
+    const pass1 = J.alignWordsAcoustic(audioAnalysis, effectiveText, s, e, lang, 'Lead', 0.85);
+    const words = J.optimizeLineVocalCoordination ? J.optimizeLineVocalCoordination(audioAnalysis, pass1, s, e, lang, 'Lead') : pass1;
     wordTimes[i] = words;
+    if (J.analyzeLineVocalCoordination && words.length) {
+      const coh = J.analyzeLineVocalCoordination(audioAnalysis, words, s, e);
+      scoreSum += coh.score; errSum += coh.avgAbsErrMs; lineCnt++;
+    }
     const avgAlign = words.length ? +(words.reduce((a, w) => a + (w.alignmentConfidence || 0.7), 0) / words.length).toFixed(3) : 0.7;
     const flags = words.some(w => w.alignmentConfidence < 0.7) ? ['uncertain_boundary'] : [];
     lineMeta[i] = { speaker: 'Lead', recognitionConfidence: 0.85, alignmentConfidence: avgAlign, flags };
   }
-  return { lineTimes, wordTimes, lineMeta, source: 'acoustic', requiresBilling };
+  report(4, 'done');
+  return {
+    lineTimes,
+    wordTimes,
+    lineMeta,
+    coherenceScore: lineCnt ? Math.round(scoreSum / lineCnt) : 0,
+    avgAbsErrMs: lineCnt ? Math.round(errSum / lineCnt) : 0,
+    matchedCount: 0,
+    matchRatio: 0,
+    corrections,
+    spellingFixCount: spellingFixCount || corrections.length,
+    correctedLines,
+    correctedText,
+    divergences,
+    reformulations,
+    unresolvableProblems,
+    reconcileSummary,
+    lineMatchRatios,
+    detectedLanguage,
+    recognizedLines,
+    recognizedTranscript,
+    source: 'acoustic',
+    requiresBilling,
+    errorReason,
+  };
+};
+
+/* Dedicated On-Demand AI Lyric Reformulation & Diagnostic Reconciliation */
+J.reconcileLyricsWithAI = async ({ lines = [], recognizedLines = [], vocalSegments = [], divergences = [], corrections = [], lang = 'auto', durationSec = 0, matchRatio = 1, lineMatchRatios = {} } = {}) => {
+  try {
+    const resp = await fetch('/api/reconcile-lyrics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lines,
+        recognizedLines,
+        vocalSegments,
+        divergences,
+        corrections,
+        lang,
+        durationSec,
+        matchRatio,
+        lineMatchRatios,
+      }),
+    });
+    if (resp.ok) return await resp.json();
+  } catch (e) {}
+  return { success: false, reformulations: [], unresolvableProblems: [] };
+};
+
+/* Surgical Single-Segment Vocal Re-Analysis for Low-Confidence or Divergent Lines */
+J.reanalyzeLineAudio = async (audioAnalysis, startSec, endSec, existingWords = [], lang = 'auto') => {
+  if (!audioAnalysis || !audioAnalysis.buffer) return { success: false };
+  const s0 = Math.max(0, (Number(startSec) || 0) - 0.35);
+  const e0 = Math.min(audioAnalysis.duration || (s0 + 6), Math.max(s0 + 1.2, (Number(endSec) || (s0 + 3)) + 0.45));
+  const segDur = Math.max(0.8, e0 - s0);
+  try {
+    const rawBlob = J.audioMonoWavWindow(audioAnalysis.buffer, s0, segDur, 16000);
+    const audioBase64 = await blobToBase64(rawBlob);
+    let separatedVocalBase64 = '';
+    if (audioAnalysis.preprocessing && audioAnalysis.preprocessing.shouldSeparate && J.audioVocalSeparatedWavWindow) {
+      const sepBlob = J.audioVocalSeparatedWavWindow(audioAnalysis.buffer, s0, segDur, 16000);
+      separatedVocalBase64 = await blobToBase64(sepBlob);
+    }
+    const resp = await fetch('/api/reanalyze-segment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        audioBase64,
+        separatedVocalBase64,
+        startSec: s0,
+        endSec: e0,
+        existingWords,
+        qualityConditions: (audioAnalysis.preprocessing && audioAnalysis.preprocessing.quality) || {},
+        lang,
+      }),
+    });
+    if (!resp.ok) return { success: false };
+    const data = await resp.json();
+    if (data && data.success && Array.isArray(data.lines) && data.lines.length) {
+      const shifted = data.lines.map(ln => ({
+        ...ln,
+        start: +((Number(ln.start) || 0) + s0).toFixed(3),
+        end: +((Number(ln.end) || 0) + s0).toFixed(3),
+        words: Array.isArray(ln.words)
+          ? ln.words.map(w => ({
+              ...w,
+              start: +((Number(w.start) || 0) + s0).toFixed(3),
+              end: +((Number(w.end) || 0) + s0).toFixed(3),
+            }))
+          : [],
+      }));
+      return { success: true, lines: shifted, focusTranscript: data.focusTranscript || '' };
+    }
+    return data || { success: false };
+  } catch (e) {
+    return { success: false };
+  }
 };
 
 /* Downsample a window of an AudioBuffer to mono WAV for high-speed AI speech/lyric recognition */
@@ -15193,16 +15818,22 @@ J.audioMonoWav = (buffer, maxSeconds = 300, targetSampleRate = 16000) => {
   return J.audioMonoWavWindow(buffer, 0, maxSeconds, targetSampleRate);
 };
 
-/* CORE FUNCTION 05 — Complete 7-Stage Audio Analysis, Vocal Separation, Singing Transcription,
+/* CORE FUNCTION 05 — Complete 7-Stage Audio Analysis, Vocal Separation, Streaming Singing Transcription,
    Forced Alignment, Refinement, Validation & Synchronized Subtitle Generation Pipeline */
-J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
-  if (!audioAnalysis || !audioAnalysis.buffer) return null;
+J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null, onPartialResult = null) => {
+  if (!audioAnalysis || !audioAnalysis.buffer) {
+    return { success: false, reason: 'no_audio', errorMessage: 'No decoded audio buffer available' };
+  }
   const totalDur = audioAnalysis.duration || audioAnalysis.buffer.duration || 0;
   const reportStage = (stage, label) => { if (typeof onStage === 'function') try { onStage(stage, label); } catch (e) {} };
+  const reportPartial = (payload) => { if (typeof onPartialResult === 'function') try { onPartialResult(payload); } catch (e) {} };
   const prep = audioAnalysis.preprocessing || {};
+  const allVocalSegs = Array.isArray(audioAnalysis.vocalSegments)
+    ? audioAnalysis.vocalSegments.map(s => ({ start: +Number(s.start || 0).toFixed(3), end: +Number(s.end || 0).toFixed(3) }))
+    : [];
 
   reportStage(1, 'preprocessing');
-  const postChunk = async (chunkStart, chunkDur, sampleRate, withSeparated) => {
+  const buildPayload = async (chunkStart, chunkDur, sampleRate, withSeparated) => {
     const wavBlob = J.audioMonoWavWindow(audioAnalysis.buffer, chunkStart, chunkDur, sampleRate);
     const base64Audio = await blobToBase64(wavBlob);
     let separatedVocalBase64 = '';
@@ -15211,38 +15842,137 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
       const sepBlob = J.audioVocalSeparatedWavWindow(audioAnalysis.buffer, chunkStart, chunkDur, sampleRate);
       separatedVocalBase64 = await blobToBase64(sepBlob);
     }
-    reportStage(3, 'transcription');
-    return fetch('/api/transcribe-lyrics', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        audioBase64: base64Audio,
-        separatedVocalBase64,
-        lang,
-        audioFormat: audioAnalysis.format || 'AUDIO',
-        duration: totalDur,
-        sampleRate: audioAnalysis.sampleRate,
-        chunkStartSec: chunkStart,
-        chunkDurationSec: chunkDur,
-        preprocessingSummary: prep,
-      }),
+    const chunkEnd = chunkStart + chunkDur;
+    const windowSegs = allVocalSegs.filter(s => s.end > chunkStart && s.start < chunkEnd);
+    return JSON.stringify({
+      audioBase64: base64Audio,
+      separatedVocalBase64,
+      lang,
+      audioFormat: audioAnalysis.format || 'AUDIO',
+      duration: totalDur,
+      sampleRate: audioAnalysis.sampleRate,
+      chunkStartSec: chunkStart,
+      chunkDurationSec: chunkDur,
+      preprocessingSummary: prep,
+      vocalSegments: windowSegs.slice(0, 48),
     });
+  };
+
+  const readSseStream = async (resp) => {
+    if (!resp.body || typeof resp.body.getReader !== 'function') {
+      return resp.json();
+    }
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    let finalData = null;
+
+    const handleBlock = (block) => {
+      let evtName = 'message';
+      const dataLines = [];
+      for (const rawLine of block.split(/\r?\n/)) {
+        if (!rawLine || rawLine.startsWith(':')) continue;
+        if (rawLine.startsWith('event:')) evtName = rawLine.slice(6).trim();
+        else if (rawLine.startsWith('data:')) dataLines.push(rawLine.slice(5).trim());
+      }
+      if (!dataLines.length) return;
+      try {
+        const parsed = JSON.parse(dataLines.join('\n'));
+        if (evtName === 'stage') {
+          reportStage(parsed.stage || 3, parsed.label || 'transcribing');
+        } else if (evtName === 'transcript_preview') {
+          reportPartial({
+            stage: 'preview',
+            previewLines: Array.isArray(parsed.previewLines) ? parsed.previewLines : [],
+            transcript: parsed.transcript || '',
+            offsetSec: parsed.offsetSec || 0,
+          });
+        } else if (evtName === 'result' || evtName === 'error') {
+          finalData = parsed;
+        }
+      } catch (e) {}
+    };
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (value) {
+        buf += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buf.indexOf('\n\n')) !== -1) {
+          const blk = buf.slice(0, idx);
+          buf = buf.slice(idx + 2);
+          handleBlock(blk);
+        }
+      }
+      if (done) break;
+    }
+    if (buf.trim()) handleBlock(buf);
+    return finalData;
   };
 
   const transcribeWindow = async (chunkStart, chunkDur) => {
     const useSep = Boolean(prep.shouldSeparate);
-    let resp = await postChunk(chunkStart, chunkDur, chunkDur > 140 ? 12000 : 16000, useSep);
-    if (resp.status === 413) {
-      // Retry cleanly with single stream at 8kHz if payload is tight
-      resp = await postChunk(chunkStart, chunkDur, 8000, false);
+    let sr = chunkDur > 140 ? 12000 : 16000;
+    let bodyJson = await buildPayload(chunkStart, chunkDur, sr, useSep);
+    reportStage(3, 'transcription');
+    try {
+      let resp = await fetch('/api/transcribe-lyrics/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: bodyJson,
+      });
+      if (resp.status === 413) {
+        bodyJson = await buildPayload(chunkStart, chunkDur, 8000, false);
+        resp = await fetch('/api/transcribe-lyrics/stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: bodyJson,
+        });
+      }
+      if (resp.ok) {
+        const ctype = (resp.headers.get('content-type') || '').toLowerCase();
+        const streamed = ctype.includes('text/event-stream') ? await readSseStream(resp) : await resp.json();
+        if (streamed) return streamed;
+      }
+    } catch (e) {}
+
+    // Fallback cleanly to standard JSON endpoint if SSE stream fails
+    let respFallback = await fetch('/api/transcribe-lyrics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: bodyJson,
+    });
+    if (respFallback.status === 413) {
+      bodyJson = await buildPayload(chunkStart, chunkDur, 8000, false);
+      respFallback = await fetch('/api/transcribe-lyrics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: bodyJson,
+      });
     }
-    if (!resp.ok) return null;
-    return resp.json();
+    if (!respFallback.ok) {
+      return { success: false, reason: 'http_error', errorMessage: `HTTP ${respFallback.status}` };
+    }
+    return respFallback.json();
   };
 
   const refineAndValidate = (rawLines, detectedLang, serverValidation, usedModels) => {
     reportStage(5, 'refinement');
-    const refined = rawLines.map(l => {
+    const needsAcousticLineSnap = usedModels && usedModels.forcedAlignment === 'client_10ms_vocal_onset_aligner';
+    let workingLines = rawLines;
+    if (needsAcousticLineSnap && workingLines.length) {
+      const parsedPseudo = workingLines.map(l => ({ text: l.text, interlude: Boolean(l.isInstrumentalSection) }));
+      const snappedTimes = J.alignLinesToVocals(audioAnalysis, parsedPseudo);
+      workingLines = workingLines.map((l, idx) => {
+        if (l.isInstrumentalSection) return l;
+        const ns = snappedTimes[idx] != null ? snappedTimes[idx] : l.start;
+        const ne = (idx < workingLines.length - 1 && snappedTimes[idx + 1] != null)
+          ? Math.max(ns + 0.35, snappedTimes[idx + 1] - 0.05)
+          : Math.max(ns + 0.5, Math.min(totalDur, l.end || ns + 3.0));
+        return Object.assign({}, l, { start: +ns.toFixed(3), end: +ne.toFixed(3) });
+      });
+    }
+    const refined = workingLines.map(l => {
       const lineLang = l.language || detectedLang || lang;
       const lineSpk = l.speaker || 'Lead';
       if (l.isInstrumentalSection || l.vocalType === 'instrumental') {
@@ -15270,11 +16000,16 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
     return { lines: validated.lines, validationSummary: validated.validationSummary, pipelineReport };
   };
 
-  // For songs up to 155s, run a single cohesive full-song analysis; for longer songs, chunk cleanly with 5s overlap so 100% of audio is analyzed
-  if (totalDur <= 155) {
+  // Single cohesive window up to 42s; for longer tracks, stream 36s windows with 3s overlap so lyrics start appearing immediately!
+  if (totalDur <= 42) {
     const data = await transcribeWindow(0, totalDur);
-    if (!data) return null;
-    if (data.requiresBilling) return { billingRequired: true, lines: [] };
+    if (!data) return { success: false, reason: 'empty_response', errorMessage: 'Empty server response' };
+    if (data.requiresBilling || data.reason === 'billing_required') {
+      return { success: false, billingRequired: true, reason: 'billing_required', errorMessage: data.message || '', lines: [] };
+    }
+    if (data.reason === 'ai_not_configured') {
+      return { success: false, notConfigured: true, reason: 'ai_not_configured', errorMessage: data.message || '', lines: [] };
+    }
     if (data.success && (Array.isArray(data.lines) || data.isInstrumental)) {
       const rv = refineAndValidate(data.lines || [], data.language, data.validationSummary, data.pipelineModels);
       data.lines = rv.lines;
@@ -15289,11 +16024,12 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
       if (data.detectedLanguages.length > 1 && !lang) data.language = data.detectedLanguages[0];
       return data;
     }
-    return null;
+    return { success: false, reason: data.reason || 'transcription_error', errorMessage: data.message || data.errorMessage || '', lines: [] };
   }
 
-  const winDur = 125;
-  const step = 120;
+  const winDur = 36;
+  const step = 33;
+  const totalChunks = Math.max(1, Math.ceil((totalDur - 0.5) / step));
   const mergedLines = [];
   const mergedSections = [];
   const mergedGaps = [];
@@ -15309,13 +16045,24 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
   let hasRepeatedChorus = false;
   let allInstrumental = true;
   let lastModels = null;
+  let lastError = null;
+  let chunkIndex = 0;
 
   for (let t0 = 0; t0 < totalDur - 0.5; t0 += step) {
+    chunkIndex++;
     const dur = Math.min(winDur, totalDur - t0);
     const chunkData = await transcribeWindow(t0, dur);
     if (!chunkData) continue;
-    if (chunkData.requiresBilling) return { billingRequired: true, lines: [] };
-    if (!chunkData.success) continue;
+    if (chunkData.requiresBilling || chunkData.reason === 'billing_required') {
+      return { success: false, billingRequired: true, reason: 'billing_required', errorMessage: chunkData.message || '', lines: [] };
+    }
+    if (chunkData.reason === 'ai_not_configured') {
+      return { success: false, notConfigured: true, reason: 'ai_not_configured', errorMessage: chunkData.message || '', lines: [] };
+    }
+    if (!chunkData.success) {
+      lastError = chunkData;
+      continue;
+    }
     if (chunkData.pipelineModels) lastModels = chunkData.pipelineModels;
 
     if (chunkData.language && chunkData.language !== 'auto' && chunkData.language !== 'instrumental' && primaryLang === 'auto') {
@@ -15340,7 +16087,7 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
       for (const ln of chunkData.lines) {
         if (ln.speaker && ln.speaker !== 'Instrumental') speakers.add(ln.speaker);
         const prev = mergedLines[mergedLines.length - 1];
-        if (prev && ln.start < prev.end + 0.35 && prev.text.toLowerCase() === ln.text.toLowerCase()) continue;
+        if (prev && ln.start < prev.end + 0.45 && prev.text.trim().toLowerCase() === String(ln.text || '').trim().toLowerCase()) continue;
         if (prev && ln.start < prev.end) {
           ln.start = +Math.max(prev.end + 0.02, ln.start).toFixed(3);
           if (ln.end <= ln.start) ln.end = +(ln.start + 0.25).toFixed(3);
@@ -15348,9 +16095,27 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
         mergedLines.push(ln);
       }
     }
+
+    if (mergedLines.length) {
+      reportPartial({
+        stage: 'chunk',
+        chunkIndex,
+        totalChunks,
+        lines: mergedLines.slice(),
+        language: primaryLang,
+        detectedLanguages: Array.from(langs),
+      });
+    }
   }
 
-  if (!mergedLines.length && !allInstrumental) return null;
+  if (!mergedLines.length && !allInstrumental) {
+    return {
+      success: false,
+      reason: (lastError && lastError.reason) || 'transcription_error',
+      errorMessage: (lastError && (lastError.message || lastError.errorMessage)) || '',
+      lines: [],
+    };
+  }
   let combinedType = 'singing';
   if (allInstrumental) combinedType = 'instrumental';
   else if (audioTypes.has('combination') || (audioTypes.size > 1) || (audioTypes.has('speech') && audioTypes.has('singing'))) combinedType = 'combination';
@@ -15375,6 +16140,392 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null) => {
     validationSummary: rv.validationSummary,
     pipelineReport: rv.pipelineReport,
     lines: rv.lines,
+  };
+};
+
+/* Instant Built-in Browser Voice & Singing Recognition + Automatic Neural Whisper Mic Fallback */
+J.isVoiceRecognitionSupported = () => {
+  if (typeof window === 'undefined') return false;
+  const hasSpeech = Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
+  const hasMicRec = Boolean(typeof navigator !== 'undefined' && navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function' && typeof window.MediaRecorder === 'function');
+  return hasSpeech || hasMicRec;
+};
+
+J.mapLangToSpeechLocale = (lang = 'auto') => {
+  const raw = String(lang || 'auto').trim().toLowerCase();
+  const map = {
+    fr: 'fr-FR',
+    en: 'en-US',
+    'zh-hans': 'zh-CN',
+    'zh-hant': 'zh-TW',
+    zh: 'zh-CN',
+    ja: 'ja-JP',
+    ko: 'ko-KR',
+    es: 'es-ES',
+    de: 'de-DE',
+    it: 'it-IT',
+    pt: 'pt-PT',
+  };
+  if (map[raw]) return map[raw];
+  const docLang = (typeof document !== 'undefined' && document.documentElement.lang || '').toLowerCase();
+  return map[docLang] || (typeof navigator !== 'undefined' && navigator.language) || 'fr-FR';
+};
+
+J.createLiveVoiceRecognizer = (opts = {}) => {
+  const SpeechCtor = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
+  const onInterim = typeof opts.onInterim === 'function' ? opts.onInterim : () => {};
+  const onPhrase = typeof opts.onPhrase === 'function' ? opts.onPhrase : () => {};
+  const onLevel = typeof opts.onLevel === 'function' ? opts.onLevel : () => {};
+  const onStatus = typeof opts.onStatus === 'function' ? opts.onStatus : () => {};
+  const getClock = typeof opts.getClock === 'function' ? opts.getClock : () => (performance.now() / 1000);
+
+  let active = false;
+  let mode = 'speech'; // 'speech' | 'whisper_mic'
+  let recognition = null;
+  let startClockSec = 0;
+  let phraseStartSec = null;
+  let pauseFlushTimer = null;
+  let lastInterimText = '';
+  let mediaStream = null;
+  let audioCtx = null;
+  let rafId = 0;
+  let restartTimer = 0;
+  let mediaRec = null;
+  let recChunks = [];
+  let recStartClock = 0;
+  let recStartMs = 0;
+  let hadVoiceInClip = false;
+  let lastVoiceMs = 0;
+  let flushingWhisperClip = false;
+
+  const pickRecorderMime = () => {
+    if (typeof window === 'undefined' || typeof window.MediaRecorder !== 'function' || typeof window.MediaRecorder.isTypeSupported !== 'function') {
+      return '';
+    }
+    const cands = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+    return cands.find(m => window.MediaRecorder.isTypeSupported(m)) || '';
+  };
+
+  const stopMeter = () => {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+    if (mediaRec && mediaRec.state !== 'inactive') {
+      try { mediaRec.onstop = null; mediaRec.stop(); } catch (e) {}
+    }
+    mediaRec = null;
+    if (mediaStream) {
+      try { mediaStream.getTracks().forEach(t => t.stop()); } catch (e) {}
+      mediaStream = null;
+    }
+    if (audioCtx) {
+      try { audioCtx.close(); } catch (e) {}
+      audioCtx = null;
+    }
+    onLevel(0);
+  };
+
+  const sendWhisperClip = async (blob, clipStartRel, clipDurSec) => {
+    if (!blob || blob.size < 800) return;
+    try {
+      const b64 = await blobToBase64(blob);
+      const resp = await fetch('/api/transcribe-voice-clip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ audioBase64: b64, lang: opts.lang || 'auto' }),
+      });
+      if (!resp.ok) return;
+      const data = await resp.json();
+      if (data && data.success && !data.isInstrumental && Array.isArray(data.lines) && data.lines.length) {
+        data.lines.forEach(ln => {
+          const txt = String((ln && ln.text) || '').trim();
+          if (!txt || /^\[?instrumental/i.test(txt)) return;
+          const s = clipStartRel + Math.max(0, Number(ln.start) || 0);
+          const e = clipStartRel + Math.max(0.35, Number(ln.end) || clipDurSec);
+          onInterim({ text: '', startSec: s });
+          onPhrase({
+            text: txt,
+            startSec: +s.toFixed(3),
+            endSec: +Math.max(s + 0.35, e).toFixed(3),
+            confidence: ln.recognitionConfidence || 0.9,
+            words: Array.isArray(ln.words)
+              ? ln.words.map(w => Object.assign({}, w, {
+                  start: +(clipStartRel + (Number(w.start) || 0)).toFixed(3),
+                  end: +(clipStartRel + (Number(w.end) || 0.1)).toFixed(3),
+                }))
+              : undefined,
+          });
+        });
+      }
+    } catch (e) {
+      // Non-fatal clip upload error; listener stays active for next phrase
+    }
+  };
+
+  const startWhisperSegment = () => {
+    if (!active || !mediaStream || typeof window.MediaRecorder !== 'function') return;
+    flushingWhisperClip = false;
+    recChunks = [];
+    hadVoiceInClip = false;
+    recStartMs = performance.now();
+    lastVoiceMs = recStartMs;
+    recStartClock = Math.max(0, getClock() - startClockSec);
+    const mime = pickRecorderMime();
+    try {
+      mediaRec = mime ? new window.MediaRecorder(mediaStream, { mimeType: mime }) : new window.MediaRecorder(mediaStream);
+    } catch (e) {
+      mediaRec = new window.MediaRecorder(mediaStream);
+    }
+    const localStart = recStartClock;
+    const localMs = recStartMs;
+    mediaRec.ondataavailable = (ev) => {
+      if (ev && ev.data && ev.data.size > 0) recChunks.push(ev.data);
+    };
+    mediaRec.onstop = () => {
+      const chunksCopy = recChunks.slice();
+      const spoke = hadVoiceInClip;
+      const dur = Math.max(0.2, (performance.now() - localMs) / 1000);
+      recChunks = [];
+      mediaRec = null;
+      if (spoke && chunksCopy.length) {
+        const blob = new Blob(chunksCopy, { type: (chunksCopy[0] && chunksCopy[0].type) || mime || 'audio/webm' });
+        onInterim({ text: '✨ Whisper IA…', startSec: localStart });
+        sendWhisperClip(blob, localStart, dur);
+      }
+      if (active && mode === 'whisper_mic') {
+        startWhisperSegment();
+      }
+    };
+    mediaRec.start(250);
+  };
+
+  const flushCurrentWhisperSegment = () => {
+    if (flushingWhisperClip || !mediaRec || mediaRec.state !== 'recording') return;
+    flushingWhisperClip = true;
+    try { mediaRec.stop(); } catch (e) { flushingWhisperClip = false; }
+  };
+
+  const switchToWhisperMic = async () => {
+    mode = 'whisper_mic';
+    if (recognition) {
+      try { recognition.onend = null; recognition.stop(); } catch (e) {}
+      recognition = null;
+    }
+    await startMeter(true);
+    if (active && mediaStream) {
+      onStatus('listening', { lang: J.mapLangToSpeechLocale(opts.lang || 'auto'), mode: 'whisper_mic' });
+      startWhisperSegment();
+    } else if (active) {
+      active = false;
+      stopMeter();
+      onStatus('denied', { error: 'microphone_unavailable' });
+    }
+  };
+
+  const startMeter = async (startWhisperCapture = false) => {
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) return;
+    if (mediaStream) return;
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx || !active) return;
+      audioCtx = new Ctx();
+      const src = audioCtx.createMediaStreamSource(mediaStream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      src.connect(analyser);
+      const data = new Uint8Array(analyser.fftSize);
+      const tick = () => {
+        if (!active) return;
+        analyser.getByteTimeDomainData(data);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) {
+          const v = (data[i] - 128) / 128;
+          sum += v * v;
+        }
+        const rms = Math.sqrt(sum / data.length);
+        onLevel(Math.min(1, rms * 3.8));
+        if (mode === 'whisper_mic' && mediaRec && mediaRec.state === 'recording') {
+          const nowMs = performance.now();
+          const isZhLive = String(opts.lang || '').toLowerCase().startsWith('zh');
+          const silThresh = isZhLive ? 520 : 680;
+          const minClip = isZhLive ? 720 : 900;
+          const maxClip = isZhLive ? 3500 : 4600;
+          if (rms > 0.020) {
+            hadVoiceInClip = true;
+            lastVoiceMs = nowMs;
+            onInterim({ text: isZhLive ? '🎙️ 正在识别中文语音…' : '🎙️ …', startSec: recStartClock });
+          }
+          const clipMs = nowMs - recStartMs;
+          const silenceMs = nowMs - lastVoiceMs;
+          if ((hadVoiceInClip && silenceMs > silThresh && clipMs > minClip) || clipMs > maxClip) {
+            flushCurrentWhisperSegment();
+          }
+        }
+        rafId = requestAnimationFrame(tick);
+      };
+      rafId = requestAnimationFrame(tick);
+      if (startWhisperCapture && !mediaRec) startWhisperSegment();
+    } catch (e) {
+      if (mode === 'whisper_mic') {
+        active = false;
+        stopMeter();
+        onStatus('denied', { error: 'not-allowed' });
+      }
+    }
+  };
+
+  const emitFinal = (txt, conf = 0.92) => {
+    let clean = String(txt || '').trim();
+    if (/[\u4e00-\u9fff]/.test(clean)) {
+      clean = clean
+        .replace(/([\u4e00-\u9fff\u3400-\u4dbf])\s+(?=[\u4e00-\u9fff\u3400-\u4dbf，。！？；：、])/g, '$1')
+        .replace(/[。]+$/g, '');
+    }
+    if (!clean) return;
+    const nowSec = Math.max(0, getClock() - startClockSec);
+    const sSec = phraseStartSec != null ? Math.max(0, phraseStartSec) : Math.max(0, nowSec - 1.4);
+    const eSec = Math.max(sSec + 0.35, nowSec);
+    phraseStartSec = null;
+    lastInterimText = '';
+    onInterim({ text: '', startSec: sSec });
+    onPhrase({ text: clean, startSec: +sSec.toFixed(3), endSec: +eSec.toFixed(3), confidence: conf });
+  };
+
+  const spawnRecognition = () => {
+    if (!SpeechCtor || !active || mode !== 'speech') return;
+    recognition = new SpeechCtor();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+    recognition.lang = J.mapLangToSpeechLocale(opts.lang || 'auto');
+
+    recognition.onstart = () => {
+      if (active && mode === 'speech') onStatus('listening', { lang: recognition.lang, mode: 'speech' });
+    };
+
+    recognition.onresult = (event) => {
+      if (!active || mode !== 'speech') return;
+      clearTimeout(pauseFlushTimer);
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const res = event.results[i];
+        const transcript = (res[0] && res[0].transcript) ? String(res[0].transcript) : '';
+        const conf = (res[0] && typeof res[0].confidence === 'number' && res[0].confidence > 0) ? res[0].confidence : 0.91;
+        if (phraseStartSec == null) {
+          phraseStartSec = Math.max(0, getClock() - startClockSec);
+        }
+        if (res.isFinal) {
+          emitFinal(transcript, conf);
+        } else {
+          interim += transcript;
+        }
+      }
+      const cleanInterim = interim.trim();
+      lastInterimText = cleanInterim;
+      if (cleanInterim) {
+        onInterim({ text: cleanInterim, startSec: phraseStartSec ?? 0 });
+        const flushDelayMs = String(opts.lang || '').toLowerCase().startsWith('zh') ? 880 : 1250;
+        pauseFlushTimer = setTimeout(() => {
+          if (active && mode === 'speech' && lastInterimText) {
+            emitFinal(lastInterimText, 0.86);
+            try { recognition && recognition.stop(); } catch (e) {}
+          }
+        }, flushDelayMs);
+      }
+    };
+
+    recognition.onerror = (ev) => {
+      const err = (ev && ev.error) || 'error';
+      if (err === 'not-allowed') {
+        active = false;
+        stopMeter();
+        onStatus('denied', { error: err });
+      } else if (err === 'service-not-allowed' || err === 'network' || err === 'language-not-supported') {
+        // Automatic fallback to Studio Whisper Mic Recording when browser cloud speech is blocked
+        if (active && typeof window.MediaRecorder === 'function') {
+          switchToWhisperMic();
+        } else {
+          active = false;
+          stopMeter();
+          onStatus('denied', { error: err });
+        }
+      } else if (err === 'no-speech' || err === 'aborted') {
+        // Silent timeout — auto-restarted on onend
+      } else {
+        onStatus('error', { error: err });
+      }
+    };
+
+    recognition.onend = () => {
+      if (!active || mode !== 'speech') return;
+      restartTimer = setTimeout(() => {
+        if (active && mode === 'speech') spawnRecognition();
+      }, 140);
+    };
+
+    try {
+      recognition.start();
+    } catch (e) {
+      if (typeof window.MediaRecorder === 'function') {
+        switchToWhisperMic();
+      } else {
+        active = false;
+        stopMeter();
+        onStatus('error', { error: (e && e.message) || 'start_failed' });
+      }
+    }
+  };
+
+  return {
+    start(overrideLang) {
+      if (!J.isVoiceRecognitionSupported()) {
+        onStatus('unsupported', { error: 'Voice recognition unavailable' });
+        return false;
+      }
+      if (overrideLang) opts.lang = overrideLang;
+      active = true;
+      startClockSec = getClock();
+      phraseStartSec = null;
+      lastInterimText = '';
+      if (SpeechCtor) {
+        mode = 'speech';
+        spawnRecognition();
+        startMeter(false);
+      } else {
+        switchToWhisperMic();
+      }
+      return true;
+    },
+    stop() {
+      const wasWhisperMic = mode === 'whisper_mic';
+      active = false;
+      clearTimeout(pauseFlushTimer);
+      clearTimeout(restartTimer);
+      if (lastInterimText) emitFinal(lastInterimText, 0.85);
+      if (recognition) {
+        try { recognition.onend = null; recognition.stop(); } catch (e) {}
+        recognition = null;
+      }
+      if (wasWhisperMic && mediaRec && mediaRec.state === 'recording') {
+        const ref = mediaRec;
+        const chunksCopy = recChunks;
+        const spoke = hadVoiceInClip;
+        const localStart = recStartClock;
+        const dur = Math.max(0.2, (performance.now() - recStartMs) / 1000);
+        ref.onstop = () => {
+          if (spoke && chunksCopy.length) {
+            const blob = new Blob(chunksCopy, { type: (chunksCopy[0] && chunksCopy[0].type) || 'audio/webm' });
+            sendWhisperClip(blob, localStart, dur);
+          }
+          stopMeter();
+          onStatus('stopped');
+        };
+        try { ref.stop(); } catch (e) { stopMeter(); onStatus('stopped'); }
+        return;
+      }
+      stopMeter();
+      onStatus('stopped');
+    },
+    isActive() { return active; },
   };
 };
 
@@ -73241,6 +74392,9 @@ function applyWordElementHighlight(sp, w, t, mode, lang) {
   sp.classList.toggle('is-now', t >= w.start && t <= w.end);
 }
 let lastKpBadgeText = '';
+let lastKpMomentEvalT = -999;
+let lastKpMomentWordIdx = -1;
+let lastKpMomentSnap = null;
 function updateKaraokePrompter() {
   const activeEl = $('karaokeActive'), transActiveEl = $('karaokeTransActive'), backingEl = $('karaokeBacking'), nextEl = $('karaokeNext'), badge = $('karaokeModeBadge');
   const scrollStage = $('karaokeScrollStage'), scrollLinesEl = $('karaokeScrollLines');
@@ -73270,17 +74424,34 @@ function updateKaraokePrompter() {
     const hasAiWords = wt && displayLn && Array.isArray(wt[displayLn.index]) && wt[displayLn.index].length > 0;
     const lang = document.documentElement.lang;
     let baseLbl = hasAiWords
-      ? (lang === 'fr' ? 'IA Mot + Caractère' : lang === 'en' ? 'AI Word + Char' : 'AI 词字精同步')
+      ? (lang === 'fr' ? 'Syncro Voix & Parole' : lang === 'en' ? 'Voice & Lyric Sync' : 'AI 词字精同步')
       : (lang === 'fr' ? 'Alignement Vocal 10ms' : lang === 'en' ? '10ms Vocal Sync' : '10ms 声学词同步');
     if (displayLn && displayLn.wordsTimed && displayLn.wordsTimed.length) {
       const words = displayLn.wordsTimed;
-      const avgAlign = Math.round((words.reduce((a, w) => a + (w.alignmentConfidence ?? 0.85), 0) / words.length) * 100);
+      let activeWi = -1;
+      for (let wi = 0; wi < words.length; wi++) {
+        if (t >= words[wi].start && t <= words[wi].end) { activeWi = wi; break; }
+      }
+      if (S.audio && J.getMomentCoordinationSnapshot) {
+        if (!lastKpMomentSnap || activeWi !== lastKpMomentWordIdx || Math.abs(t - lastKpMomentEvalT) >= 0.08) {
+          lastKpMomentEvalT = t;
+          lastKpMomentWordIdx = activeWi;
+          lastKpMomentSnap = J.getMomentCoordinationSnapshot(S.audio, displayLn, activeWi >= 0 ? words[activeWi] : null, t);
+        }
+      } else {
+        lastKpMomentSnap = null;
+      }
+      const snap = lastKpMomentSnap;
+      const pctScore = snap ? snap.momentScore : Math.round((words.reduce((a, w) => a + (w.alignmentConfidence ?? 0.85), 0) / words.length) * 100);
+      const driftBadge = snap && activeWi >= 0 && snap.hasAudio
+        ? ` · ${snap.driftMs >= 0 ? '+' : ''}${snap.driftMs}ms`
+        : '';
       const spk = (displayLn.meta && displayLn.meta.speaker && displayLn.meta.speaker !== 'Lead')
         ? displayLn.meta.speaker
         : (words[0].speaker && words[0].speaker !== 'Lead' ? words[0].speaker : '');
       const lCode = displayLn.language || (displayLn.meta && displayLn.meta.language) || '';
       const lTag = lCode && J.LANG_LABEL[lCode] ? ` · ${lCode}` : '';
-      baseLbl += ` · ${avgAlign}%${lTag}` + (spk ? ` · ${spk}` : '');
+      baseLbl += ` · ${pctScore}%${driftBadge}${lTag}` + (spk ? ` · ${spk}` : '');
     }
     if (baseLbl !== lastKpBadgeText) {
       lastKpBadgeText = baseLbl;
@@ -77630,19 +78801,430 @@ function syncThemeMeta() {
             : `${T.name} · 全${cnt}スタイル · 現在：${sName}`;
 }
 
-/* Reusable 7-stage Song Lyrics Detection + Forced Alignment + Validation */
+function hideAiVoiceActionBar() {
+  const bar = $('aiVoiceActionBar');
+  if (bar) { bar.hidden = true; bar.innerHTML = ''; }
+}
+
+function showAiVoiceActionBar({
+  message = '',
+  showRetryCloud = false,
+  showLoadAudio = false,
+  showAcousticAlign = false,
+  applyRecognizedLabel = '',
+  onApplyRecognized = null,
+  reformulations = [],
+  unresolvableProblems = [],
+  onApplyReformulations = null,
+  onSeekAudio = null,
+  onReanalyzeProblem = null,
+} = {}) {
+  const bar = $('aiVoiceActionBar');
+  if (!bar) return;
+  const isFr = document.documentElement.lang === 'fr';
+  const isEn = document.documentElement.lang === 'en';
+  const curLang = ($('lyricLang') && $('lyricLang').value) || 'auto';
+  const isAlreadyZh = curLang === 'zh-Hans' || curLang === 'zh-Hant';
+  const btnVoiceLabel = isFr ? '🎙️ Reconnaissance vocale en direct (Micro)' : isEn ? '🎙️ Live Voice Recognition (Mic)' : '🎙️ 即時麥克風人聲辨識';
+  const btnMandarinLabel = isFr ? '🇨🇳 Voix Mandarin (中文普通话)' : isEn ? '🇨🇳 Mandarin Voice (中文)' : '🇨🇳 普通话实时识词';
+  const btnLoadLabel = isFr ? '📁 Choisir une chanson (MP3/WAV)' : isEn ? '📁 Choose Song (MP3/WAV)' : '📁 選擇音樂檔案';
+  const btnRetryLabel = isFr ? '🔄 Réessayer IA Cloud' : isEn ? '🔄 Retry Cloud AI' : '🔄 重試雲端 AI';
+  const btnSyncLabel = isFr ? '⚡ Caler mes paroles sur la voix' : isEn ? '⚡ Sync my lyrics to vocals' : '⚡ 將現有歌詞對齊人聲';
+
+  const refs = Array.isArray(reformulations) ? reformulations : [];
+  const probs = Array.isArray(unresolvableProblems) ? unresolvableProblems : [];
+  const fmtSec = (sec) => {
+    const s = Math.max(0, Number(sec) || 0);
+    const m = Math.floor(s / 60);
+    const r = (s % 60).toFixed(1).padStart(4, '0');
+    return `${String(m).padStart(2, '0')}:${r}`;
+  };
+
+  let diagHtml = '';
+  if (refs.length || probs.length) {
+    const refTitle = isFr
+      ? `🧠 Reformulations IA proposées (${refs.length})`
+      : isEn
+      ? `🧠 AI Lyric Reformulations (${refs.length})`
+      : `🧠 AI 歌詞差異重構建議（${refs.length}）`;
+    const probTitle = isFr
+      ? `⚠️ Points complexes détectés (${probs.length})`
+      : isEn
+      ? `⚠️ Complex Sync Issues Detected (${probs.length})`
+      : `⚠️ 偵測到的困難同步問題（${probs.length}）`;
+
+    const refCards = refs.map((rf, idx) => `
+      <div class="ai-diag-card" data-ref-idx="${idx}">
+        <div class="ai-diag-meta">
+          <span>#${(rf.lineIdx | 0) + 1} · [${fmtSec(rf.start)} – ${fmtSec(rf.end)}] · ${escapeHtml(rf.differenceSummary || rf.differenceType || '')}</span>
+          <span>${Math.round((Number(rf.confidence) || 0.85) * 100)}%</span>
+        </div>
+        <div class="ai-diag-diff">
+          <div class="ai-diag-orig">${escapeHtml(rf.originalText || '')}</div>
+          <div class="ai-diag-next">→ ${escapeHtml(rf.reformulatedText || '')}</div>
+        </div>
+        <div class="ai-diag-actions">
+          <button type="button" class="accent js-apply-ref" data-ref-idx="${idx}">${isFr ? '✨ Appliquer' : isEn ? '✨ Apply' : '✨ 套用'}</button>
+          <button type="button" class="ghost js-seek-sec" data-sec="${Number(rf.start) || 0}">▶ ${fmtSec(rf.start)}</button>
+        </div>
+      </div>
+    `).join('');
+
+    const probCards = probs.map((pr, idx) => `
+      <div class="ai-diag-card ${pr.severity === 'high' ? 'is-high' : 'is-warn'}" data-prob-idx="${idx}">
+        <div class="ai-diag-meta">
+          <span>${pr.severity === 'high' ? '🔴' : '🟡'} ${escapeHtml(pr.title || '')}</span>
+          <span>[${fmtSec(pr.start)} – ${fmtSec(pr.end)}]</span>
+        </div>
+        <div class="ai-diag-desc">${escapeHtml(pr.description || '')}</div>
+        <div class="ai-diag-actions">
+          <button type="button" class="ghost js-seek-sec" data-sec="${Number(pr.start) || 0}">▶ ${fmtSec(pr.start)}</button>
+          ${pr.actionType === 'reanalyze_segment' ? `<button type="button" class="ghost js-reanalyze-prob" data-prob-idx="${idx}">${isFr ? '🔁 Ré-analyser ce passage' : isEn ? '🔁 Re-analyze clip' : '🔁 重新高精度分析'}</button>` : ''}
+          ${pr.actionType === 'mic_dictate' ? `<button type="button" class="ghost js-prob-mic">${isFr ? '🎙️ Dicter au micro' : isEn ? '🎙️ Dictate via Mic' : '🎙️ 麥克風補錄'}</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+
+    diagHtml = `
+      <div class="ai-diag-wrap">
+        ${refs.length ? `<div class="ai-diag-sec-title"><span>${refTitle}</span></div>${refCards}` : ''}
+        ${probs.length ? `<div class="ai-diag-sec-title"><span>${probTitle}</span></div>${probCards}` : ''}
+      </div>
+    `;
+  }
+
+  const applyAllRefLabel = isFr
+    ? `✨ Appliquer les ${refs.length} reformulation${refs.length > 1 ? 's' : ''} IA`
+    : isEn
+    ? `✨ Apply all ${refs.length} AI reformulation${refs.length > 1 ? 's' : ''}`
+    : `✨ 一鍵套用全部 ${refs.length} 處 AI 重構`;
+
+  bar.innerHTML = `
+    <div class="ai-voice-action-msg">${escapeHtml(message)}</div>
+    <div class="ai-voice-action-btns">
+      ${refs.length && typeof onApplyReformulations === 'function' ? `<button type="button" id="avbApplyAllRef" class="accent">${escapeHtml(applyAllRefLabel)}</button>` : ''}
+      ${applyRecognizedLabel && typeof onApplyRecognized === 'function' ? `<button type="button" id="avbApplyRecognized" class="${refs.length ? 'ghost' : 'accent'}">${escapeHtml(applyRecognizedLabel)}</button>` : ''}
+      <button type="button" id="avbStartVoice" class="${(applyRecognizedLabel || refs.length) ? 'ghost' : 'accent'}">${btnVoiceLabel}</button>
+      ${!isAlreadyZh ? `<button type="button" id="avbStartMandarinVoice" class="ghost">${btnMandarinLabel}</button>` : ''}
+      ${showLoadAudio ? `<button type="button" id="avbLoadAudio" class="ghost">${btnLoadLabel}</button>` : ''}
+      ${showRetryCloud ? `<button type="button" id="avbRetryCloud" class="ghost">${btnRetryLabel}</button>` : ''}
+      ${showAcousticAlign ? `<button type="button" id="avbAcousticSync" class="ghost">${btnSyncLabel}</button>` : ''}
+      <button type="button" id="avbDismiss" class="ghost small" aria-label="Fermer">✕</button>
+    </div>
+    ${diagHtml}
+  `;
+  bar.hidden = false;
+
+  const allRefBtn = $('avbApplyAllRef');
+  if (allRefBtn && typeof onApplyReformulations === 'function') {
+    allRefBtn.addEventListener('click', () => {
+      onApplyReformulations(refs);
+      if (!probs.length) hideAiVoiceActionBar();
+      else {
+        allRefBtn.remove();
+        bar.querySelectorAll('.ai-diag-card[data-ref-idx]').forEach(el => el.remove());
+      }
+    });
+  }
+  bar.querySelectorAll('.js-apply-ref').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.getAttribute('data-ref-idx') || '-1', 10);
+      const item = refs[idx];
+      if (!item || typeof onApplyReformulations !== 'function') return;
+      onApplyReformulations([item]);
+      const card = bar.querySelector(`.ai-diag-card[data-ref-idx="${idx}"]`);
+      if (card) card.remove();
+      if (!bar.querySelector('.ai-diag-card')) hideAiVoiceActionBar();
+    });
+  });
+  bar.querySelectorAll('.js-seek-sec').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sec = parseFloat(btn.getAttribute('data-sec') || '0');
+      if (typeof onSeekAudio === 'function') onSeekAudio(sec);
+      else seek(sec);
+    });
+  });
+  bar.querySelectorAll('.js-reanalyze-prob').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const idx = parseInt(btn.getAttribute('data-prob-idx') || '-1', 10);
+      const pr = probs[idx];
+      if (!pr || typeof onReanalyzeProblem !== 'function') return;
+      btn.disabled = true;
+      const orig = btn.textContent;
+      btn.textContent = isFr ? '⏳ Analyse…' : '⏳ Analyzing…';
+      try {
+        const card = bar.querySelector(`.ai-diag-card[data-prob-idx="${idx}"]`);
+        await onReanalyzeProblem(pr, card);
+      } finally {
+        if (btn.isConnected) {
+          btn.disabled = false;
+          btn.textContent = orig;
+        }
+      }
+    });
+  });
+  bar.querySelectorAll('.js-prob-mic').forEach(btn => {
+    btn.addEventListener('click', () => { hideAiVoiceActionBar(); startLiveVoiceDictation(); });
+  });
+
+  const aBtn = $('avbApplyRecognized');
+  if (aBtn && typeof onApplyRecognized === 'function') {
+    aBtn.addEventListener('click', () => { hideAiVoiceActionBar(); onApplyRecognized(); });
+  }
+  const vBtn = $('avbStartVoice');
+  if (vBtn) vBtn.addEventListener('click', () => { hideAiVoiceActionBar(); startLiveVoiceDictation(); });
+  const mBtn = $('avbStartMandarinVoice');
+  if (mBtn) mBtn.addEventListener('click', () => { hideAiVoiceActionBar(); startLiveVoiceDictation('zh-Hans'); });
+  const lBtn = $('avbLoadAudio');
+  if (lBtn) lBtn.addEventListener('click', () => {
+    const fileInput = $('audioFile');
+    if (fileInput) {
+      const onNext = () => {
+        fileInput.removeEventListener('change', onNext);
+        const waitAudio = setInterval(() => {
+          if (S.audio && S.audio.buffer) {
+            clearInterval(waitAudio);
+            hideAiVoiceActionBar();
+            runAiTranscription();
+          }
+        }, 200);
+        setTimeout(() => clearInterval(waitAudio), 12000);
+      };
+      fileInput.addEventListener('change', onNext, { once: true });
+      fileInput.click();
+    }
+  });
+  const rBtn = $('avbRetryCloud');
+  if (rBtn) rBtn.addEventListener('click', () => { hideAiVoiceActionBar(); runAiTranscription(); });
+  const sBtn = $('avbAcousticSync');
+  if (sBtn) sBtn.addEventListener('click', () => {
+    hideAiVoiceActionBar();
+    const bvs = $('btnVocalSync');
+    if (bvs) bvs.click();
+  });
+  const dBtn = $('avbDismiss');
+  if (dBtn) dBtn.addEventListener('click', () => hideAiVoiceActionBar());
+}
+
+let activeVoiceController = null;
+function stopLiveVoiceDictation() {
+  if (activeVoiceController) {
+    try { activeVoiceController.stop(); } catch (e) {}
+    activeVoiceController = null;
+  }
+  const btn = $('btnVoiceDictate');
+  if (btn) {
+    btn.classList.remove('is-listening');
+    btn.setAttribute('aria-pressed', 'false');
+  }
+  if ($('aiVoiceMeterWrap')) $('aiVoiceMeterWrap').hidden = true;
+  if ($('aiVoiceMeterFill')) $('aiVoiceMeterFill').style.width = '0%';
+  if ($('aiLiveTranscript')) { $('aiLiveTranscript').hidden = true; $('aiLiveTranscript').innerHTML = ''; }
+  if ($('aiProgressBox') && !($('btnAiTranscribe') && $('btnAiTranscribe').classList.contains('is-analyzing'))) {
+    $('aiProgressBox').hidden = true;
+  }
+}
+
+function startLiveVoiceDictation(overrideLang = null) {
+  const isFr = document.documentElement.lang === 'fr';
+  const isEn = document.documentElement.lang === 'en';
+  if (activeVoiceController && activeVoiceController.isActive()) {
+    stopLiveVoiceDictation();
+    return false;
+  }
+  if (!J.isVoiceRecognitionSupported || !J.isVoiceRecognitionSupported()) {
+    toast(isFr
+      ? 'Reconnaissance vocale navigateur indisponible ici (utilisez Chrome / Edge avec micro autorisé).'
+      : isEn
+      ? 'Browser voice recognition is not supported here (use Chrome / Edge with microphone access).'
+      : '此瀏覽器不支援即時麥克風語音辨識（請使用 Chrome / Edge 並開啟麥克風權限）。');
+    return false;
+  }
+
+  hideAiVoiceActionBar();
+  if (overrideLang && $('lyricLang')) {
+    $('lyricLang').value = overrideLang;
+    if (S.project) S.project.lang = overrideLang;
+    if (typeof renderFontRoles === 'function') renderFontRoles();
+  }
+  const langCode = overrideLang || ($('lyricLang') ? $('lyricLang').value : 'auto');
+  const isZhMode = String(langCode || '').toLowerCase().startsWith('zh');
+  const locale = J.mapLangToSpeechLocale(langCode);
+  const btn = $('btnVoiceDictate');
+  const box = $('aiProgressBox');
+  const stEl = $('aiProgressStage');
+  const pctEl = $('aiProgressPct');
+  const fillEl = $('aiProgressFill');
+  const meterWrap = $('aiVoiceMeterWrap');
+  const meterFill = $('aiVoiceMeterFill');
+  const locBadge = $('aiVoiceLocaleBadge');
+  const liveBox = $('aiLiveTranscript');
+
+  if (btn) { btn.classList.add('is-listening'); btn.setAttribute('aria-pressed', 'true'); }
+  if (box) box.hidden = false;
+  if (stEl) {
+    stEl.textContent = isZhMode
+      ? '🇨🇳 中文普通话实时语音识别中… 请唱歌或说话'
+      : isFr
+        ? '🎙️ Écoute vocale instantanée active… Chantez ou parlez'
+        : isEn
+          ? '🎙️ Live voice listening… Sing or speak clearly'
+          : '🎙️ 即時人聲辨識中… 請唱歌或說話';
+  }
+  if (pctEl) pctEl.textContent = 'LIVE';
+  if (fillEl) fillEl.style.width = '100%';
+  if (meterWrap) meterWrap.hidden = false;
+  if (locBadge) locBadge.textContent = locale;
+  if (liveBox) {
+    liveBox.hidden = false;
+    liveBox.innerHTML = `<span class="ai-live-interim">${escapeHtml(isZhMode ? '正在聆听中文语音 / 歌声…' : isFr ? 'En attente de votre voix…' : isEn ? 'Listening for your voice…' : '等待語音輸入…')}</span>`;
+  }
+
+  let committedCount = 0;
+  let lastCommittedLine = '';
+  let sessionStartPlaySec = S.audio && S.playing ? Math.max(0, Number(S.t) || 0) : 0;
+
+  const commitVoicePhrase = ({ text, startSec, endSec, confidence, words: whisperWords }) => {
+    const clean = String(text || '').trim();
+    if (!clean) return;
+    const lyricsEl = $('lyrics');
+    const curRaw = String(S.project.lyrics || (lyricsEl ? lyricsEl.value : '') || '').trim();
+    const isSample = curRaw === String(J.SAMPLE_LYRICS || '').trim();
+    const existingLines = (!curRaw || isSample) ? [] : curRaw.split(/\r?\n/).filter(l => l.trim().length > 0);
+    if (isSample) {
+      S.project.timing.lineTimes = {};
+      S.project.timing.wordTimes = {};
+      S.project.timing.lineMeta = {};
+    }
+
+    const lineIdx = existingLines.length;
+    const prevStart = lineIdx > 0 ? (S.project.timing.lineTimes[lineIdx - 1] ?? 0) : -0.4;
+    const realStart = S.audio && S.playing
+      ? Math.max(prevStart + 0.35, Number(S.t) || (sessionStartPlaySec + startSec))
+      : Math.max(prevStart + 0.35, startSec);
+    const estEnd = Math.max(realStart + 0.45, realStart + Math.max(0.8, (endSec - startSec)));
+
+    existingLines.push(clean);
+    const nextLyrics = existingLines.join('\n');
+    S.project.lyrics = nextLyrics;
+    if (lyricsEl) lyricsEl.value = nextLyrics;
+
+    S.project.timing.lineTimes[lineIdx] = +realStart.toFixed(3);
+    const hasHanzi = /[\u4e00-\u9fff]/.test(clean);
+    const resolvedLang = (langCode && langCode !== 'auto' && langCode !== 'multi')
+      ? langCode
+      : (hasHanzi ? (/[愛這為無點發頭東會說時聲風夢聽國體]/.test(clean) && !/[爱这为无点发头东会说时声风梦听国体]/.test(clean) ? 'zh-Hant' : 'zh-Hans') : (document.documentElement.lang || 'fr'));
+    let words = [];
+    if (Array.isArray(whisperWords) && whisperWords.length) {
+      const shift = realStart - startSec;
+      words = whisperWords.map(w => Object.assign({}, w, {
+        start: +Math.max(realStart, (Number(w.start) || startSec) + shift).toFixed(3),
+        end: +Math.max(realStart + 0.03, (Number(w.end) || endSec) + shift).toFixed(3),
+      }));
+    } else if (S.audio && S.audio.buffer && S.playing && J.alignWordsAcoustic) {
+      words = J.alignWordsAcoustic(S.audio, clean, realStart, estEnd, resolvedLang, 'Lead', confidence || 0.9);
+    } else if (J.tokenizeKaraokeWords) {
+      const toks = J.tokenizeKaraokeWords(clean, resolvedLang);
+      const weights = toks.map(t => Math.max(1, t.replace(/[^A-Za-zÀ-ÿ0-9\u4e00-\u9fff\u3040-\u30ff\uac00-\ud7af]/g, '').length));
+      const sumW = weights.reduce((a, b) => a + b, 0) || toks.length || 1;
+      let curT = realStart;
+      words = toks.map((tk, ti) => {
+        const wDur = (weights[ti] / sumW) * (estEnd - realStart);
+        const ws = +curT.toFixed(3);
+        curT += wDur;
+        const we = ti === toks.length - 1 ? +estEnd.toFixed(3) : +Math.max(ws + 0.04, curT).toFixed(3);
+        return { text: tk, start: ws, end: we, recognitionConfidence: confidence || 0.9, alignmentConfidence: 0.88, speaker: 'Lead' };
+      });
+    }
+    if (words.length) S.project.timing.wordTimes[lineIdx] = words;
+    S.project.timing.lineMeta = S.project.timing.lineMeta || {};
+    S.project.timing.lineMeta[lineIdx] = {
+      section: 'verse',
+      vocalType: 'singing',
+      language: resolvedLang,
+      speaker: 'Lead',
+      recognitionConfidence: confidence || 0.91,
+      alignmentConfidence: 0.88,
+    };
+
+    S.project.detection = Object.assign({}, S.project.detection || {}, {
+      audioType: 'singing',
+      language: resolvedLang,
+      detectedLanguages: [resolvedLang],
+      source: 'live_voice',
+    });
+
+    committedCount++;
+    lastCommittedLine = clean;
+    if (liveBox) {
+      liveBox.innerHTML = `<div>${escapeHtml(clean)}</div><div class="ai-live-interim">${escapeHtml(isFr ? 'Parlez ou chantez la phrase suivante…' : isEn ? 'Sing or speak next line…' : '繼續唱出或說出下一句…')}</div>`;
+    }
+    replanSoon(50);
+    autosave();
+  };
+
+  activeVoiceController = J.createLiveVoiceRecognizer({
+    lang: langCode,
+    getClock: () => (S.audio && S.playing ? Number(S.t) || (performance.now() / 1000) : (performance.now() / 1000)),
+    onLevel: (lvl) => {
+      if (meterFill) meterFill.style.width = `${Math.round(Math.min(1, lvl) * 100)}%`;
+    },
+    onInterim: ({ text }) => {
+      if (!liveBox) return;
+      const topHtml = lastCommittedLine ? `<div>${escapeHtml(lastCommittedLine)}</div>` : '';
+      const intText = text || (isFr ? 'Écoute vocale active…' : isEn ? 'Listening…' : '正在聆聽…');
+      liveBox.innerHTML = `${topHtml}<div class="ai-live-interim">${escapeHtml(intText)}</div>`;
+    },
+    onPhrase: (phrase) => commitVoicePhrase(phrase),
+    onStatus: (state, info) => {
+      if (state === 'listening' && info && info.mode === 'whisper_mic' && stEl) {
+        stEl.textContent = isFr ? '🎙️ Studio Whisper Mic actif… Chantez ou parlez' : isEn ? '🎙️ Whisper Studio Mic active… Sing or speak clearly' : '🎙️ Studio Whisper 麥克風即時識詞中…';
+      } else if (state === 'denied') {
+        stopLiveVoiceDictation();
+        toast(isFr ? 'Accès microphone refusé : autorisez le micro dans votre navigateur.' : isEn ? 'Microphone permission denied: allow mic access in browser settings.' : '麥克風權限被拒，請在瀏覽器中允許使用麥克風。');
+      } else if (state === 'unsupported') {
+        stopLiveVoiceDictation();
+        toast(isFr ? 'Reconnaissance vocale navigateur indisponible.' : isEn ? 'Browser speech recognition unavailable.' : '瀏覽器不支援語音辨識。');
+      } else if (state === 'stopped' && committedCount > 0) {
+        flushSave();
+        syncUI();
+        recordWork('live_voice', 'sync', `${committedCount} phrase(s)`);
+        toast(isFr ? `🎙️ ${committedCount} phrase(s) reconnue(s) et synchronisée(s) !` : isEn ? `🎙️ ${committedCount} phrase(s) recognized and synced!` : `🎙️ 已即時辨識並同步 ${committedCount} 句歌詞！`);
+      }
+    },
+  });
+
+  if (S.audio && !S.playing) {
+    sessionStartPlaySec = Math.max(0, Number(S.t) || 0);
+  }
+  activeVoiceController.start(langCode);
+  return true;
+}
+
+function toggleLiveVoiceRecognition() {
+  if (activeVoiceController && activeVoiceController.isActive()) {
+    stopLiveVoiceDictation();
+    return false;
+  }
+  return startLiveVoiceDictation();
+}
+
+/* Reusable 7-stage Song Lyrics Detection + Streaming + Forced Alignment + Validation */
 async function runAiTranscription(opts = {}) {
   const bai = $('btnAiTranscribe');
   const isFr = document.documentElement.lang === 'fr';
   const isEn = document.documentElement.lang === 'en';
   if (!S.audio) return false;
+  if (activeVoiceController && activeVoiceController.isActive()) stopLiveVoiceDictation();
+  hideAiVoiceActionBar();
+
   const origText = bai ? bai.textContent : '';
   const stageLabels = isFr ? {
-    1: '1/7 Prétraitement…',
-    2: '2/7 Séparation vocale…',
-    3: '3/7 Transcription chant…',
-    4: '4/7 Alignement forcé…',
-    5: '5/7 Affinage acoustique…',
+    1: '1/7 Prétraitement audio…',
+    2: '2/7 Isolation vocale…',
+    3: '3/7 Reconnaissance du chant…',
+    4: '4/7 Alignement phonétique…',
+    5: '5/7 Affinage 10 ms…',
     6: '6/7 Validation paroles…',
     7: '7/7 Sous-titres prêts…',
   } : isEn ? {
@@ -77689,18 +79271,48 @@ async function runAiTranscription(opts = {}) {
     setAiProgress(stageNum, lbl);
     if (stageNum >= 7) aiDone = true;
   };
+  const liveBox = $('aiLiveTranscript');
+  const onPartialResult = (partial) => {
+    if (!partial) return;
+    if (partial.stage === 'preview' && Array.isArray(partial.previewLines) && partial.previewLines.length) {
+      if (liveBox) {
+        liveBox.hidden = false;
+        const snippet = partial.previewLines.slice(0, 3).map(l => `<div>${escapeHtml(l)}</div>`).join('');
+        liveBox.innerHTML = snippet;
+      }
+    } else if (partial.stage === 'chunk' && Array.isArray(partial.lines) && partial.lines.length) {
+      const chunkText = partial.lines.map(l => (l.isInstrumentalSection || l.vocalType === 'instrumental') ? '[interlude 3]' : String(l.text || '').trim()).filter(Boolean).join('\n');
+      if (chunkText) {
+        S.project.lyrics = chunkText;
+        if ($('lyrics')) $('lyrics').value = chunkText;
+        S.project.timing.lineTimes = {};
+        partial.lines.forEach((l, idx) => { S.project.timing.lineTimes[idx] = +Number(l.start || 0).toFixed(3); });
+        replanSoon(60);
+      }
+      if (liveBox) {
+        liveBox.hidden = false;
+        const tail = partial.lines.slice(-2).map(l => `<div>${escapeHtml(l.text || '')}</div>`).join('');
+        liveBox.innerHTML = `${tail}<div class="ai-live-interim">${isFr ? `Bloc ${partial.chunkIndex}/${partial.totalChunks} reconnu…` : `Chunk ${partial.chunkIndex}/${partial.totalChunks} recognized…`}</div>`;
+      }
+    }
+  };
+
   if (bai) {
     bai.classList.add('is-analyzing');
     bai.disabled = true;
     onStage(1);
   }
   if (!opts.quiet) {
-    toast(isFr ? '🎙️ Pipeline 7 étapes : prétraitement, séparation vocale, transcription & validation…' : isEn ? '🎙️ Running 7-stage audio, vocal separation, transcription & validation pipeline…' : '🎙️ 启动 7 阶段全曲人声分离、转录、强制对齐与校验流程…');
+    toast(isFr ? '🎙️ Détection IA vocale en direct (prétraitement, isolation, transcription & synchro)…' : isEn ? '🎙️ Running streaming 7-stage vocal recognition & alignment…' : '🎙️ 启动 7 阶段实时歌声识别与高精度对齐…');
   }
 
   try {
-    const lang = $('lyricLang') ? $('lyricLang').value : 'auto';
-    const result = await J.aiTranscribeMusic(S.audio, lang, onStage);
+    let lang = opts.langOverride || ($('lyricLang') ? $('lyricLang').value : 'auto');
+    if (lang === 'auto') {
+      const hintTxt = `${S.project.title || ''} ${S.project.artist || ''} ${(S.audio && S.audio.fileName) || ''}`;
+      if (/[\u4e00-\u9fff]/.test(hintTxt)) lang = 'zh-Hans';
+    }
+    const result = await J.aiTranscribeMusic(S.audio, lang, onStage, onPartialResult);
 
     if (result && result.success && (result.isInstrumental || (result.lines && result.lines.length))) {
       pushEdit();
@@ -77802,7 +79414,7 @@ async function runAiTranscription(opts = {}) {
         validationSummary: result.validationSummary || null,
         pipelineReport: result.pipelineReport || null,
         sections: result.sections || [],
-        source: 'ai',
+        source: result.engine === 'neural_whisper' ? 'neural_whisper' : 'ai',
       };
 
       replan();
@@ -77813,115 +79425,64 @@ async function runAiTranscription(opts = {}) {
 
       if (result.isInstrumental && !resLines.some(l => !l.isInstrumentalSection)) {
         toast(isFr ? '🎹 Audio purement instrumental détecté (aucune fausse parole ajoutée).' : isEn ? '🎹 Purely instrumental track detected.' : '🎹 检测到纯音乐伴奏段落。');
+      } else if (result.engine === 'neural_whisper') {
+        toast(isFr
+          ? `🎤 Paroles générées par Whisper Studio IA (${rows.length} phrases) & synchronisées !`
+          : isEn
+          ? `🎤 Lyrics recognized via Studio Neural Whisper (${rows.length} lines) & word-synced!`
+          : `🎤 已透過 Studio Whisper 類神經語音引擎辨識 ${rows.length} 句歌詞並完成逐詞同步！`);
       } else {
         toast(isFr
-          ? '🎤 Paroles, langue, minutage & validation (7 étapes) prêts ! Modifiez librement si besoin.'
+          ? '🎤 Paroles reconnues, langue & minutage mot par mot prêts !'
           : isEn
-          ? '🎤 7-stage lyrics, language, alignment & validation ready! Edit anytime.'
-          : '🎤 已完成 7 阶段歌词识别、逐词对齐与声学校验！随时可手动编辑。');
+          ? '🎤 Lyrics recognized, language detected & word timings synced!'
+          : '🎤 已完成高精度歌词识别与逐词同步！');
       }
       return true;
     }
 
-    // Local Stage 1–7 acoustic classification & vocal segmentation fallback
-    const segs = (S.audio.vocalSegments && S.audio.vocalSegments.length)
-      ? S.audio.vocalSegments
-      : (S.plan && S.plan.cuts && S.plan.cuts.length)
-      ? S.plan.cuts.map(c => ({ start: c.start, end: c.end }))
-      : [];
+    // Honest acoustic fallback: ONLY align existing real user lyrics (never overwrite with fake placeholders!)
+    const curLyrics = String(S.project.lyrics || '').trim();
+    const isDefault = curLyrics === String(J.SAMPLE_LYRICS || '').trim();
+    const hasRealUserLyrics = curLyrics.length > 0 && !isDefault;
     const acSummary = S.audio.acousticSummary || {};
-    const prep = S.audio.preprocessing || null;
+
     S.project.detection = {
       audioType: acSummary.audioType || 'singing',
       language: S.project.lang || 'auto',
       detectedLanguages: [],
       hasBackingVocals: false,
       hasUnclearSections: false,
-      hasInstrumentalSections: (S.audio.instrumentalSegments && S.audio.instrumentalSegments.length > 0),
+      hasInstrumentalSections: Boolean(S.audio.instrumentalSegments && S.audio.instrumentalSegments.length > 0),
       hasRepeatedChorus: false,
       format: S.audio.format || '',
       duration: S.audio.duration || 0,
       bpm: S.audio.bpm || 0,
-      preprocessing: prep,
+      preprocessing: S.audio.preprocessing || null,
       validationSummary: null,
       pipelineReport: null,
       sections: [],
       source: 'acoustic',
     };
 
-    if (acSummary.audioType === 'instrumental' && (!String(S.project.lyrics || '').trim() || String(S.project.lyrics || '').trim() === String(J.SAMPLE_LYRICS || '').trim())) {
+    if (hasRealUserLyrics) {
       pushEdit();
       pause();
-      const dur = Math.max(4, Math.round((S.audio.duration || 10) * 10) / 10);
-      S.project.lyrics = `[interlude ${dur}]`;
-      $('lyrics').value = S.project.lyrics;
-      S.project.timing.lineTimes = { 0: 0 };
-      S.project.timing.wordTimes = {};
-      S.project.timing.lineMeta = { 0: { section: 'instrumental', vocalType: 'instrumental' } };
-      replan(); flushSave(); syncUI(); seek(0);
-      toast(isFr ? '🎹 Audio acoustiquement instrumental détecté.' : isEn ? '🎹 Instrumental audio detected.' : '🎹 检测到纯伴奏音频。');
-      return true;
-    }
-
-    if (segs.length > 0) {
-      pushEdit();
-      pause();
-      const curLyrics = String(S.project.lyrics || '').trim();
-      const isDefault = curLyrics === String(J.SAMPLE_LYRICS || '').trim();
+      const parsed = J.parseLyrics(curLyrics);
+      const times = J.alignLinesToVocals(S.audio, parsed.lines);
       const valInputLines = [];
-      if (curLyrics.length > 0 && !isDefault) {
-        const parsed = J.parseLyrics(curLyrics);
-        const times = J.alignLinesToVocals(S.audio, parsed.lines);
-        if (times && Object.keys(times).length) {
-          S.project.timing.lineTimes = times;
-          S.project.timing.wordTimes = {};
-          S.project.timing.lineMeta = S.project.timing.lineMeta || {};
-          const langCode = J.resolveLang(S.project);
-          parsed.lines.forEach((ln, i) => {
-            if (ln.interlude) { valInputLines.push({ start: times[i] ?? 0, end: (times[i] ?? 0) + (ln.secs || 2), isInstrumentalSection: true, words: [] }); return; }
-            const s = times[i] ?? 0.4;
-            const e = i < parsed.lines.length - 1 ? (times[i + 1] ?? s + 3.2) : Math.min(S.audio.duration, s + 3.5);
-            const wt = J.alignWordsAcoustic ? J.alignWordsAcoustic(S.audio, ln.text, s, e, langCode) : [];
-            S.project.timing.wordTimes[i] = wt;
-            valInputLines.push({ start: s, end: e, text: ln.text, words: wt });
-          });
-        }
-      } else {
-        const instGaps = S.audio.instrumentalSegments || [];
-        const combined = [];
-        segs.forEach((seg, idx) => combined.push({ kind: 'vocal', start: seg.start, end: seg.end, num: idx + 1 }));
-        instGaps.forEach(gap => combined.push({ kind: 'inst', start: gap.start, end: gap.end }));
-        combined.sort((a, b) => a.start - b.start);
-
-        const rows = combined.map(ev => {
-          if (ev.kind === 'inst') {
-            const d = Math.max(2.0, +(ev.end - ev.start).toFixed(1));
-            return { text: `[interlude ${d}]`, start: ev.start, end: ev.end, isInter: true };
-          }
-          return {
-            text: isFr ? `Phrase chantée ${ev.num}` : isEn ? `Vocal phrase ${ev.num}` : `歌唱分句 ${ev.num}`,
-            start: ev.start,
-            end: ev.end,
-            isInter: false,
-          };
-        });
-        S.project.lyrics = rows.map(r => r.text).join('\n');
-        $('lyrics').value = S.project.lyrics;
-        S.project.timing.lineTimes = {};
+      if (times && Object.keys(times).length) {
+        S.project.timing.lineTimes = times;
         S.project.timing.wordTimes = {};
-        S.project.timing.lineMeta = {};
-        rows.forEach((r, idx) => {
-          const s = +Number(r.start || 0).toFixed(3);
-          const e = +Number(r.end || s + 2.5).toFixed(3);
-          S.project.timing.lineTimes[idx] = s;
-          if (!r.isInter && J.alignWordsAcoustic) {
-            const wt = J.alignWordsAcoustic(S.audio, r.text, s, e, J.resolveLang(S.project));
-            S.project.timing.wordTimes[idx] = wt;
-            valInputLines.push({ start: s, end: e, text: r.text, words: wt });
-          } else if (r.isInter) {
-            S.project.timing.lineMeta[idx] = { section: 'instrumental', vocalType: 'instrumental' };
-            valInputLines.push({ start: s, end: e, isInstrumentalSection: true, words: [] });
-          }
+        S.project.timing.lineMeta = S.project.timing.lineMeta || {};
+        const langCode = J.resolveLang(S.project);
+        parsed.lines.forEach((ln, i) => {
+          if (ln.interlude) { valInputLines.push({ start: times[i] ?? 0, end: (times[i] ?? 0) + (ln.secs || 2), isInstrumentalSection: true, words: [] }); return; }
+          const s = times[i] ?? 0.4;
+          const e = i < parsed.lines.length - 1 ? (times[i + 1] ?? s + 3.2) : Math.min(S.audio.duration, s + 3.5);
+          const wt = J.alignWordsAcoustic ? J.alignWordsAcoustic(S.audio, ln.text, s, e, langCode) : [];
+          S.project.timing.wordTimes[i] = wt;
+          valInputLines.push({ start: s, end: e, text: ln.text, words: wt });
         });
       }
       if (J.validateKaraokeAlignment && valInputLines.length) {
@@ -77929,35 +79490,56 @@ async function runAiTranscription(opts = {}) {
         S.project.detection.validationSummary = val.validationSummary;
         val.lines.forEach((vl, idx) => {
           if (vl && vl.words && vl.words.length) S.project.timing.wordTimes[idx] = vl.words;
-          if (vl && vl.flags && vl.flags.length) {
-            S.project.timing.lineMeta[idx] = Object.assign({}, S.project.timing.lineMeta[idx] || {}, { flags: vl.flags });
-          }
         });
       }
-
       replan(); flushSave(); syncUI(); seek(0);
-      recordWork('ai_transcribe', 'sync', `Segments vocaux (${segs.length})`);
-
-      if (result && result.billingRequired) {
-        toast(isFr
-          ? '💡 Détection acoustique prête ! (Pour la transcription IA Cloud automatique, activez la facturation sur Google AI Studio).'
-          : isEn
-          ? '💡 Acoustic vocal detection ready! (For automatic Cloud AI transcription, enable billing on Google AI Studio).'
-          : '💡 已完成本地声学人声与间奏分段！（开启 Google AI Studio 结算后可启用云端全自动识词）。');
-      } else {
-        toast(isFr
-          ? '💡 Segments vocaux & instrumentaux synchronisés ! Modifiez les paroles si nécessaire.'
-          : isEn
-          ? '💡 Vocal & instrumental segments synchronized! Edit lyrics anytime.'
-          : '💡 已捕捉人声与间奏分段！可随时编辑修改歌词。');
-      }
-      return true;
-    } else if (!opts.auto) {
-      toast(isFr ? 'Aucune voix chantée détectée dans cet extrait audio' : isEn ? 'No singing voice detected in audio' : '音频中未检测到明显的歌唱人声');
+    } else {
+      syncAudioDetectPanel();
     }
-  } catch (err) {
+
+    const isBilling = Boolean(result && (result.billingRequired || result.reason === 'billing_required'));
+    const isUnconf = Boolean(result && (result.notConfigured || result.reason === 'ai_not_configured'));
+    const barMsg = isBilling
+      ? (isFr
+          ? '⚠️ La transcription Cloud Gemini requiert l’activation de la facturation sur votre projet Google AI Studio. Vos paroles existantes restent intactes — utilisez la Reconnaissance Vocale en direct ci-dessous pour dicter/chanter vos paroles instantanément :'
+          : isEn
+          ? '⚠️ Gemini Cloud transcription requires billing enabled on your Google AI Studio project. Your lyrics remain untouched — use Live Voice Recognition below to sing/speak lyrics instantly:'
+          : '⚠️ Gemini 雲端識詞需在 Google AI Studio 專案啟用計費。您可使用下方「即時人聲辨識」透過麥克風即時產生同步歌詞：')
+      : isUnconf
+      ? (isFr
+          ? '⚠️ Clé Gemini absente côté serveur (Settings > Secrets). Utilisez la Reconnaissance Vocale en direct ci-dessous :'
+          : isEn
+          ? '⚠️ Gemini API key not configured in Settings > Secrets. Use Live Voice Recognition below:'
+          : '⚠️ 伺服器尚未設定 Gemini API 金鑰（Settings > Secrets）。請使用下方即時語音辨識：')
+      : (isFr
+          ? `⚠️ Analyse IA Cloud interrompue${result && result.errorMessage ? ' (' + result.errorMessage.slice(0, 70) + ')' : ''}. Essayez à nouveau ou activez la Reconnaissance Vocale en direct :`
+          : isEn
+          ? `⚠️ Cloud AI interrupted${result && result.errorMessage ? ' (' + result.errorMessage.slice(0, 70) + ')' : ''}. Retry or use Live Voice Recognition below:`
+          : '⚠️ 雲端識詞暫時無法完成，請重試或使用即時麥克風語音辨識：');
+
+    showAiVoiceActionBar({
+      message: barMsg,
+      showRetryCloud: true,
+      showAcousticAlign: hasRealUserLyrics,
+    });
     if (!opts.auto) {
-      toast(isFr ? 'Alignement local des paroles effectué.' : isEn ? 'Local vocal alignment applied.' : '已应用本地人声分句对齐。');
+      toast(isBilling
+        ? (isFr ? '💡 IA Cloud : facturation requise — Voix en direct prête ci-dessous.' : isEn ? '💡 Cloud AI requires billing — Live Voice Mic ready below.' : '💡 雲端 AI 需啟用計費 — 可直接使用即時麥克風辨識。')
+        : (isFr ? '🎙️ Utilisez la reconnaissance vocale en direct ou réessayez.' : isEn ? '🎙️ Use Live Voice Recognition or retry.' : '🎙️ 請使用即時人聲辨識或重試。'));
+    }
+    return false;
+  } catch (err) {
+    showAiVoiceActionBar({
+      message: isFr
+        ? '⚠️ Connexion IA Cloud indisponible pour le moment. Utilisez la Reconnaissance Vocale en direct ou réessayez :'
+        : isEn
+        ? '⚠️ Cloud AI connection failed. Use Live Voice Recognition or retry:'
+        : '⚠️ 雲端 AI 連線失敗，請使用即時人聲辨識或重試：',
+      showRetryCloud: true,
+      showAcousticAlign: Boolean(String(S.project.lyrics || '').trim() && String(S.project.lyrics || '').trim() !== String(J.SAMPLE_LYRICS || '').trim()),
+    });
+    if (!opts.auto) {
+      toast(isFr ? '🎙️ Erreur réseau IA — Reconnaissance vocale en direct prête.' : isEn ? '🎙️ Network error — Live Voice Recognition ready.' : '🎙️ 連線錯誤 — 可改用即時麥克風辨識。');
     }
   } finally {
     if (bai) {
@@ -77965,10 +79547,18 @@ async function runAiTranscription(opts = {}) {
       bai.disabled = false;
       bai.textContent = origText;
     }
+    if (liveBox && !(activeVoiceController && activeVoiceController.isActive())) {
+      liveBox.hidden = true;
+      liveBox.innerHTML = '';
+    }
     const pBox = $('aiProgressBox');
-    if (pBox) {
+    if (pBox && !(activeVoiceController && activeVoiceController.isActive())) {
       if (aiDone) {
-        setTimeout(() => { if (!($('btnAiTranscribe') && $('btnAiTranscribe').classList.contains('is-analyzing'))) pBox.hidden = true; }, 650);
+        setTimeout(() => {
+          if (!($('btnAiTranscribe') && $('btnAiTranscribe').classList.contains('is-analyzing')) && !(activeVoiceController && activeVoiceController.isActive())) {
+            pBox.hidden = true;
+          }
+        }, 650);
       } else {
         pBox.hidden = true;
       }
@@ -78128,27 +79718,15 @@ function bind() {
       const isEn = document.documentElement.lang === 'en';
 
       if (!S.audio) {
-        toast(isFr ? "Veuillez sélectionner un fichier audio pour l'analyse IA" : isEn ? "Please select an audio file for AI analysis" : "请选择需要分析的音乐音频文件");
-        const fileInput = $('audioFile');
-        if (fileInput) {
-          const onFocusCleanup = () => {
-            setTimeout(() => fileInput.removeEventListener('change', onNextAudio), 400);
-          };
-          const onNextAudio = () => {
-            window.removeEventListener('focus', onFocusCleanup);
-            fileInput.removeEventListener('change', onNextAudio);
-            const checkReady = setInterval(() => {
-              if (S.audio && S.audio.buffer) {
-                clearInterval(checkReady);
-                runAiTranscription();
-              }
-            }, 250);
-            setTimeout(() => clearInterval(checkReady), 15000);
-          };
-          fileInput.addEventListener('change', onNextAudio, { once: true });
-          window.addEventListener('focus', onFocusCleanup, { once: true });
-          fileInput.click();
-        }
+        showAiVoiceActionBar({
+          message: isFr
+            ? '🎙️ Aucune chanson chargée : importez un morceau pour la détection IA automatique, OU activez dès maintenant la reconnaissance vocale en direct au micro :'
+            : isEn
+            ? '🎙️ No song loaded yet: import an audio track for automatic AI lyrics recognition, OR start Live Voice Recognition with your microphone right now:'
+            : '🎙️ 尚未匯入音樂：請選擇音訊檔案進行 AI 自動識詞，或立即使用「即時人聲辨識」透過麥克風直接錄製同步歌詞：',
+          showLoadAudio: true,
+        });
+        toast(isFr ? 'Importez une chanson ou démarrez la voix en direct ci-dessous !' : isEn ? 'Choose a song or start Live Voice Mic below!' : '請選擇音樂或開啟即時麥克風語音辨識！');
         return;
       }
 
@@ -78156,25 +79734,192 @@ function bind() {
     });
   }
 
+  const bvd = $('btnVoiceDictate');
+  if (bvd) {
+    bvd.addEventListener('click', () => toggleLiveVoiceRecognition());
+  }
+  const bsv = $('btnStopVoiceInline');
+  if (bsv) {
+    bsv.addEventListener('click', () => stopLiveVoiceDictation());
+  }
+
   const bvs = $('btnVocalSync');
   if (bvs) {
     bvs.addEventListener('click', async () => {
       const isFr = document.documentElement.lang === 'fr';
       const isEn = document.documentElement.lang === 'en';
+
+      // Case 1: No audio track loaded yet -> offer instant Live Voice Mic OR audio load right in the panel
       if (!S.audio) {
-        toast(isFr ? "Veuillez d'abord charger un fichier audio" : isEn ? 'Please load an audio file first' : '请先导入音频文件');
+        showAiVoiceActionBar({
+          message: isFr
+            ? '⚡ SYNCRO VOIX ET PAROLE : importez un fichier audio pour coordonner en temps réel vos paroles sur la voix, OU activez la Reconnaissance Vocale en direct au micro :'
+            : isEn
+            ? '⚡ Voice Sync: load an audio file to align lyrics to the singing voice, OR start Live Voice Recognition with your microphone to generate & sync lyrics instantaneously:'
+            : '⚡ 人聲同步：請先匯入音樂檔案進行人聲逐詞對齊，或立即使用「即時麥克風語音辨識」邊唱邊自動產生同步歌詞：',
+          showLoadAudio: true,
+        });
+        toast(isFr ? 'Choisissez une chanson ou démarrez la Voix en direct !' : isEn ? 'Load a song or start Live Voice Mic below!' : '請選擇音樂或開啟即時麥克風！');
         return;
       }
-      if (!S.plan.lines.length) {
-        toast(isFr ? "Veuillez d'abord saisir les paroles" : isEn ? 'Please enter lyrics first' : '请先输入歌词内容');
+
+      // Case 2: Audio loaded, no real custom lyrics yet -> chain straight into AI Voice/Lyrics Detection pipeline!
+      const rawTxt = String(S.project.lyrics || ($('lyrics') && $('lyrics').value) || '').trim();
+      const isDefaultSample = rawTxt === String(J.SAMPLE_LYRICS || '').trim();
+      if (!rawTxt || isDefaultSample || !(S.plan && S.plan.lines && S.plan.lines.length)) {
+        toast(isFr
+          ? '⚡ Aucune parole personnalisée : lancement de la détection vocale IA automatique…'
+          : isEn
+          ? '⚡ No custom lyrics yet: running automatic AI voice & lyrics detection…'
+          : '⚡ 尚未有自訂歌詞：自動啟動 AI 歌聲識詞與同步…');
+        await runAiTranscription();
         return;
       }
-      toast(isFr ? "Synchronisation vocale mot par mot en cours…" : isEn ? 'Aligning lyrics & words with vocal track…' : '正在识别人声歌唱节奏并逐词自动同步…');
+
+      // Case 3: Audio + real lyrics -> Real-Time Streaming SYNCRO VOIX ET PAROLE
+      if (activeVoiceController && activeVoiceController.isActive()) stopLiveVoiceDictation();
+      hideAiVoiceActionBar();
+      const origTxt = bvs.textContent;
+      bvs.classList.add('is-syncing');
+      bvs.disabled = true;
+
+      const stageCopy = isFr
+        ? {
+            1: '1/4 Analyse orthographe & piste vocale…',
+            2: '2/4 Écoute & lien temps réel voix-paroles…',
+            3: '3/4 Coordination acoustique 10 ms instant par instant…',
+            4: '4/4 SYNCRO VOIX ET PAROLE prête !',
+          }
+        : isEn
+        ? { 1: '1/4 Spelling check & vocal stem…', 2: '2/4 Real-time voice-lyric linking…', 3: '3/4 10ms Viterbi tuning…', 4: '4/4 Voice Sync & fixes ready!' }
+        : { 1: '1/4 歌詞拼寫分析與人聲提取…', 2: '2/4 即時歌聲對齊與錯字訂正…', 3: '3/4 10ms 細微校準…', 4: '4/4 人聲同步與錯字修正完成！' };
+
+      const applyCorrectedLinesToProjectLyrics = (rawLyrics, planLines, correctedLines) => {
+        if (!correctedLines || !Object.keys(correctedLines).length) return rawLyrics;
+        const rows = String(rawLyrics || '').replace(/\r/g, '').split('\n');
+        let changed = false;
+        for (const [kStr, nextCleanRaw] of Object.entries(correctedLines)) {
+          const idx = +kStr;
+          const pl = planLines && planLines[idx];
+          const nextClean = String(nextCleanRaw || '').trim();
+          if (!pl || pl.interlude || !nextClean) continue;
+          const rowIdx = typeof pl.src === 'number' ? pl.src : idx;
+          if (rowIdx < 0 || rowIdx >= rows.length) continue;
+          const origRow = rows[rowIdx];
+          const tsMatch = origRow.match(/^((?:\s*\[\d+:\d+(?:[.:]\d+)?\])+)\s*/);
+          const prefix = tsMatch ? tsMatch[1] + ' ' : '';
+          const withoutTs = tsMatch ? origRow.slice(tsMatch[0].length) : origRow;
+          const barIdx = withoutTs.indexOf('|');
+          const suffix = barIdx >= 0 ? ' ' + withoutTs.slice(barIdx).trim() : '';
+          const impactBang = (pl.impact && !/[!！]$/.test(nextClean)) ? '!' : '';
+          const updatedRow = `${prefix}${nextClean}${impactBang}${suffix}`;
+          if (updatedRow !== origRow) {
+            rows[rowIdx] = updatedRow;
+            changed = true;
+          }
+        }
+        return changed ? rows.join('\n') : rawLyrics;
+      };
+
+      const pBox = $('aiProgressBox');
+      const stEl = $('aiProgressStage');
+      const pctEl = $('aiProgressPct');
+      const fillEl = $('aiProgressFill');
+      const stepsEl = $('aiProgressSteps');
+      const liveEl = $('aiLiveTranscript');
+      if (liveEl) { liveEl.hidden = true; liveEl.innerHTML = ''; }
+
+      let lastLiveUiSyncMs = 0;
+      const streamedLineTimes = Object.assign({}, (S.project.timing && S.project.timing.lineTimes) || {});
+      const streamedWordTimes = Object.assign({}, (S.project.timing && S.project.timing.wordTimes) || {});
+
+      const setSyncProg = (st, customLabel = '', meta = null) => {
+        const defaultPct = [18, 45, 78, 100][Math.max(0, Math.min(3, (st | 0) - 1))] || 20;
+        const pct = Math.max(5, Math.min(100, Math.round(Number(meta && meta.pct) || defaultPct)));
+        const uiStep = Math.max(1, Math.min(4, st <= 1 ? 1 : st <= 3 ? 2 : st <= 5 ? 3 : 4));
+        const label = (typeof customLabel === 'string' && customLabel.length > 4 && customLabel !== 'stem' && customLabel !== 'align' && customLabel !== 'optimize' && customLabel !== 'done' && customLabel !== 'acoustic_viterbi')
+          ? customLabel
+          : (stageCopy[uiStep] || stageCopy[1]);
+        if (pBox) pBox.hidden = false;
+        if (stEl) stEl.textContent = label;
+        if (pctEl) pctEl.textContent = `${pct}%`;
+        if (fillEl) fillEl.style.width = `${pct}%`;
+        if (stepsEl) {
+          stepsEl.querySelectorAll('span[data-step]').forEach(sp => {
+            const n = parseInt(sp.dataset.step, 10) || 0;
+            sp.classList.toggle('is-done', n <= Math.round((pct / 100) * 7));
+            sp.classList.toggle('is-cur', n === Math.min(7, Math.max(1, Math.ceil((pct / 100) * 7))));
+          });
+        }
+        bvs.textContent = `⚡ ${pct}%`;
+      };
+
+      const onLiveSyncEvent = (evt) => {
+        if (!evt) return;
+        const origPlanLines = S.plan && S.plan.lines ? S.plan.lines : [];
+        if (evt.refinedLineTimes && evt.refinedWordTimes) {
+          Object.assign(streamedLineTimes, evt.refinedLineTimes);
+          Object.assign(streamedWordTimes, evt.refinedWordTimes);
+          S.project.timing.lineTimes = Object.assign({}, streamedLineTimes);
+          S.project.timing.wordTimes = Object.assign({}, streamedWordTimes);
+          const now = performance.now();
+          if (now - lastLiveUiSyncMs > 180) {
+            lastLiveUiSyncMs = now;
+            replan();
+            syncUI();
+          }
+        }
+        if (liveEl) {
+          const parts = [];
+          if (evt.matchedCount != null && evt.totalTokens) {
+            parts.push(`<div class="ai-live-line"><strong>⚡ ${evt.matchedCount}/${evt.totalTokens} mots ancrés</strong> · Coordination instant par instant</div>`);
+          } else if (Array.isArray(evt.recognizedLines) && evt.recognizedLines.length) {
+            parts.push(`<div class="ai-live-line">${escapeHtml(evt.recognizedLines.slice(0, 3).map(l => l.text).join(' / '))}</div>`);
+          }
+          if (evt.refinedLineTimes) {
+            const keys = Object.keys(evt.refinedLineTimes).map(Number).sort((a, b) => a - b).slice(-3);
+            keys.forEach(li => {
+              const tStart = Number(evt.refinedLineTimes[li] || 0);
+              const lTxt = (origPlanLines[li] && origPlanLines[li].text) || '';
+              if (lTxt) {
+                parts.push(`<div class="ai-live-line"><span class="mono">[${tStart.toFixed(2)}s]</span> ${escapeHtml(lTxt)}</div>`);
+              }
+            });
+          }
+          if (parts.length) {
+            liveEl.hidden = false;
+            liveEl.innerHTML = parts.join('');
+          }
+        }
+      };
+
+      setSyncProg(1, stageCopy[1], { pct: 10 });
+      toast(isFr ? '⚡ SYNCRO VOIX ET PAROLE en temps réel…' : isEn ? '⚡ Real-time Voice Sync running…' : '⚡ 正在即時執行人聲與歌詞精準對齊…');
       pushEdit();
+
+      let syncDone = false;
       try {
-        const aligned = await J.aiAlignVocals(S.audio, S.plan.lines, J.resolveLang(S.project));
+        const origPlanLines = S.plan.lines.slice();
+        let alignLangHint = J.resolveLang(S.project);
+        if ((!alignLangHint || alignLangHint === 'auto') && /[\u4e00-\u9fff]/.test(`${S.project.lyrics || ''} ${S.project.title || ''} ${S.project.artist || ''} ${(S.audio && S.audio.fileName) || ''}`)) {
+          alignLangHint = 'zh-Hans';
+        }
+        const aligned = await J.aiAlignVocals(S.audio, origPlanLines, alignLangHint, setSyncProg, onLiveSyncEvent);
+
+        // Apply automatic orthography & voice-confirmed spelling fixes directly to lyrics editor
+        let appliedLyricsChanged = false;
+        if (aligned && aligned.correctedLines && Object.keys(aligned.correctedLines).length) {
+          const nextLyrics = applyCorrectedLinesToProjectLyrics(S.project.lyrics, origPlanLines, aligned.correctedLines);
+          if (nextLyrics !== S.project.lyrics) {
+            S.project.lyrics = nextLyrics;
+            if ($('lyrics')) $('lyrics').value = nextLyrics;
+            appliedLyricsChanged = true;
+          }
+        }
+
         const times = aligned && aligned.lineTimes ? aligned.lineTimes : aligned;
         if (times && Object.keys(times).length) {
+          syncDone = true;
           S.project.timing.lineTimes = times;
           if (aligned && aligned.wordTimes) S.project.timing.wordTimes = aligned.wordTimes;
           if (aligned && aligned.lineMeta) {
@@ -78183,24 +79928,272 @@ function bind() {
               S.project.timing.lineMeta[k] = Object.assign({}, S.project.timing.lineMeta[k] || {}, m);
             }
           }
-          if (J.validateKaraokeAlignment && S.plan && S.plan.lines) {
-            const valLines = S.plan.lines.map((ln, idx) => ({
+          const detLang = (aligned && aligned.detectedLanguage && aligned.detectedLanguage !== 'auto')
+            ? aligned.detectedLanguage
+            : (alignLangHint && alignLangHint !== 'auto' ? alignLangHint : 'auto');
+          if (!S.project.detection) {
+            S.project.detection = {
+              audioType: (S.audio.acousticSummary && S.audio.acousticSummary.audioType) || 'singing',
+              language: detLang,
+              detectedLanguages: detLang !== 'auto' ? [detLang] : [],
+              format: S.audio.format || '',
+              duration: S.audio.duration || 0,
+              bpm: S.audio.bpm || 0,
+              preprocessing: S.audio.preprocessing || null,
+              source: aligned.engineSource || (aligned.source === 'ai' ? 'ai' : 'vocal_sync'),
+            };
+          } else {
+            if (detLang !== 'auto') S.project.detection.language = detLang;
+            if (aligned.engineSource) S.project.detection.source = aligned.engineSource;
+          }
+          const langSel = $('lyricLang');
+          if (detLang !== 'auto' && langSel && (langSel.value === 'auto' || !S.project.lang || S.project.lang === 'auto')) {
+            const opt = Array.from(langSel.options).find(o => o.value === detLang || (detLang.startsWith(o.value) && o.value !== 'auto'));
+            if (opt) { langSel.value = opt.value; S.project.lang = opt.value; }
+          }
+          const activePlanLines = appliedLyricsChanged ? J.parseLyrics(S.project.lyrics).lines : origPlanLines;
+          if (J.validateKaraokeAlignment && activePlanLines) {
+            const valLines = activePlanLines.map((ln, idx) => ({
               start: times[idx] ?? ln.start,
-              end: idx < S.plan.lines.length - 1 ? (times[idx + 1] ?? ln.end) : ln.end,
+              end: idx < activePlanLines.length - 1 ? (times[idx + 1] ?? ln.end) : ln.end,
               isInstrumentalSection: !!ln.interlude,
               words: (S.project.timing.wordTimes && S.project.timing.wordTimes[idx]) || [],
             }));
             const val = J.validateKaraokeAlignment(S.audio, valLines);
-            if (S.project.detection) S.project.detection.validationSummary = val.validationSummary;
+            S.project.detection.validationSummary = val.validationSummary;
           }
+
           replan(); flushSave(); syncUI();
-          recordWork('vocal_sync', 'sync', `${Object.keys(times).length} lignes alignées`);
-          toast(isFr ? "🎤 Synchronisation vocale et karaoké réussie !" : isEn ? '🎤 Word-level vocal synchronization complete!' : '🎤 已完成人声歌词与逐词卡拉OK精准对齐！');
+          const lineCount = Object.keys(times).length;
+          const cohNote = aligned && aligned.coherenceScore
+            ? ` · ${aligned.coherenceScore}% (±${aligned.avgAbsErrMs || 0}ms)`
+            : '';
+          const isDtw = aligned && String(aligned.engineSource || '').includes('neural_whisper');
+          const fixList = Array.isArray(aligned && aligned.corrections) ? aligned.corrections : [];
+          const fixCount = fixList.length || (aligned && aligned.spellingFixCount) || Object.keys((aligned && aligned.correctedLines) || {}).length;
+          const fixSamples = fixList.slice(0, 3).map(c => `${c.original} → ${c.corrected}`).join(', ');
+          const fixNote = fixCount > 0
+            ? (isFr
+                ? ` · ✨ ${fixCount} faute${fixCount > 1 ? 's' : ''} corrigée${fixCount > 1 ? 's' : ''}${fixSamples ? ' (' + fixSamples + ')' : ''}`
+                : isEn
+                ? ` · ✨ ${fixCount} fix${fixCount > 1 ? 'es' : ''}${fixSamples ? ' (' + fixSamples + ')' : ''}`
+                : ` · ✨ 已自動訂正 ${fixCount} 處錯字${fixSamples ? '（' + fixSamples + '）' : ''}`)
+            : '';
+          recordWork('vocal_sync', 'sync', `${lineCount} lignes${cohNote}${fixCount ? ` · ${fixCount} corrigées` : ''}`);
+
+          toast(isFr
+            ? `🎤 SYNCRO VOIX ET PAROLE${isDtw ? ' Neuronale' : ''} réussie (${lineCount} lignes${cohNote})${fixNote} !`
+            : isEn
+            ? `🎤 ${isDtw ? 'Neural ' : ''}Voice Sync complete (${lineCount} lines${cohNote})${fixNote}!`
+            : `🎤 ${isDtw ? '類神經' : ''}人聲同步完成（${lineCount} 句${cohNote}）${fixNote}！`);
+
+          const reformList = Array.isArray(aligned && aligned.reformulations) ? aligned.reformulations : [];
+          const problemList = Array.isArray(aligned && aligned.unresolvableProblems) ? aligned.unresolvableProblems : [];
+          const hasRecRecovery = aligned && Array.isArray(aligned.recognizedLines) && aligned.recognizedLines.length > 0 && (aligned.source === 'acoustic' || (aligned.matchRatio != null && aligned.matchRatio < 0.35));
+
+          const applyReformItems = (items) => {
+            if (!Array.isArray(items) || !items.length) return;
+            pushEdit();
+            const mapCorr = {};
+            const curPlan = J.parseLyrics(S.project.lyrics).lines;
+            items.forEach(rf => {
+              if (rf && rf.reformulatedText) mapCorr[rf.lineIdx] = rf.reformulatedText;
+            });
+            const nextLyrics = applyCorrectedLinesToProjectLyrics(S.project.lyrics, curPlan, mapCorr);
+            if (nextLyrics !== S.project.lyrics) {
+              S.project.lyrics = nextLyrics;
+              if ($('lyrics')) $('lyrics').value = nextLyrics;
+            }
+            const useLang = (aligned && aligned.detectedLanguage && aligned.detectedLanguage !== 'auto')
+              ? aligned.detectedLanguage
+              : (J.resolveLang(S.project) || 'auto');
+            items.forEach(rf => {
+              const li = rf.lineIdx;
+              const ls = +(Number(S.project.timing.lineTimes[li] ?? rf.start) || 0).toFixed(3);
+              const nextStart = S.project.timing.lineTimes[li + 1];
+              const le = +(Math.max(ls + 0.35, nextStart != null ? nextStart - 0.04 : (Number(rf.end) || ls + 2.8))).toFixed(3);
+              if (J.alignWordsAcoustic) {
+                let words = J.alignWordsAcoustic(S.audio, rf.reformulatedText, ls, le, useLang, 'Lead', rf.confidence || 0.88);
+                if (words.length && J.optimizeLineVocalCoordination) {
+                  words = J.optimizeLineVocalCoordination(S.audio, words, ls, le, useLang, 'Lead');
+                }
+                if (words.length) S.project.timing.wordTimes[li] = words;
+              }
+              S.project.timing.lineMeta = S.project.timing.lineMeta || {};
+              S.project.timing.lineMeta[li] = Object.assign({}, S.project.timing.lineMeta[li] || {}, {
+                recognitionConfidence: rf.confidence || 0.88,
+                alignmentConfidence: 0.88,
+                flags: [],
+                validationNote: 'Reformulation IA appliquée',
+              });
+            });
+            replan(); flushSave(); syncUI();
+            recordWork('vocal_sync', 'reformulate', `${items.length} ligne(s) reformulée(s) par IA`);
+            toast(isFr
+              ? `✨ ${items.length} reformulation${items.length > 1 ? 's' : ''} IA appliquée${items.length > 1 ? 's' : ''} & resynchronisée${items.length > 1 ? 's' : ''} !`
+              : isEn
+              ? `✨ Applied & synced ${items.length} AI reformulation${items.length > 1 ? 's' : ''}!`
+              : `✨ 已套用並重新對齊 ${items.length} 句 AI 重構歌詞！`);
+          };
+
+          const handleReanalyzeProb = async (pr, cardEl) => {
+            if (!J.reanalyzeLineAudio || !S.audio) return;
+            const useLang = (aligned && aligned.detectedLanguage && aligned.detectedLanguage !== 'auto')
+              ? aligned.detectedLanguage
+              : (J.resolveLang(S.project) || 'auto');
+            const existWords = (S.project.timing.wordTimes && S.project.timing.wordTimes[pr.lineIdx]) || [];
+            const res = await J.reanalyzeLineAudio(S.audio, pr.start, pr.end, existWords, useLang);
+            if (res && res.success && Array.isArray(res.lines) && res.lines.length) {
+              const bestLine = res.lines[0];
+              const heardClean = res.lines.map(l => String(l.text || '').trim()).filter(Boolean).join(' ').trim();
+              if (bestLine.words && bestLine.words.length) {
+                pushEdit();
+                S.project.timing.lineTimes[pr.lineIdx] = +(Number(bestLine.start) || pr.start).toFixed(3);
+                S.project.timing.wordTimes[pr.lineIdx] = bestLine.words;
+                S.project.timing.lineMeta = S.project.timing.lineMeta || {};
+                S.project.timing.lineMeta[pr.lineIdx] = Object.assign({}, S.project.timing.lineMeta[pr.lineIdx] || {}, {
+                  alignmentConfidence: bestLine.alignmentConfidence ?? 0.86,
+                  flags: [],
+                  validationNote: 'Ré-analyse ciblée effectuée',
+                });
+                replan(); flushSave(); syncUI();
+              }
+              if (cardEl && heardClean) {
+                const descEl = cardEl.querySelector('.ai-diag-desc');
+                if (descEl) {
+                  descEl.innerHTML = `${escapeHtml(isFr ? 'Voix isolée entendue : ' : 'Isolated voice heard: ')}<strong class="ai-diag-next">« ${escapeHtml(heardClean)} »</strong>`;
+                }
+                const actionsEl = cardEl.querySelector('.ai-diag-actions');
+                if (actionsEl && !actionsEl.querySelector('.js-apply-reanalyzed')) {
+                  const applyBtn = document.createElement('button');
+                  applyBtn.type = 'button';
+                  applyBtn.className = 'accent js-apply-reanalyzed';
+                  applyBtn.textContent = isFr ? '✨ Remplacer par cette phrase' : isEn ? '✨ Replace line' : '✨ 套用此辨識句';
+                  applyBtn.addEventListener('click', () => {
+                    applyReformItems([{
+                      lineIdx: pr.lineIdx,
+                      reformulatedText: heardClean,
+                      start: bestLine.start || pr.start,
+                      end: bestLine.end || pr.end,
+                      confidence: bestLine.recognitionConfidence || 0.88,
+                    }]);
+                    cardEl.remove();
+                  });
+                  actionsEl.prepend(applyBtn);
+                }
+              }
+              toast(isFr ? `🔁 Segment #${pr.lineIdx + 1} ré-analysé avec succès !` : `🔁 Re-analyzed line #${pr.lineIdx + 1}!`);
+            } else {
+              toast(isFr ? 'Aucune nouvelle articulation vocale nette détectée sur ce passage.' : 'No clearer vocal articulation detected here.');
+            }
+          };
+
+          if (reformList.length > 0 || problemList.length > 0 || hasRecRecovery) {
+            const recLines = hasRecRecovery ? aligned.recognizedLines : [];
+            const diagSummaryMsg = (() => {
+              if (reformList.length && problemList.length) {
+                return isFr
+                  ? `🧠 Diagnostic SYNCRO VOIX ET PAROLE : ${reformList.length} différence(s) reformulable(s) par IA et ${problemList.length} passage(s) complexe(s) à vérifier :`
+                  : isEn
+                  ? `🧠 Voice Sync Diagnostic: ${reformList.length} AI reformulation(s) ready and ${problemList.length} complex section(s) flagged:`
+                  : `🧠 人聲同步診斷：發現 ${reformList.length} 處 AI 可重構差異與 ${problemList.length} 處困難片段：`;
+              }
+              if (reformList.length) {
+                return isFr
+                  ? `✨ L’IA a détecté ${reformList.length} passage(s) où vos paroles d’origine diffèrent de la voix chantée et propose une reformulation précise :`
+                  : isEn
+                  ? `✨ AI found ${reformList.length} line(s) differing from the sung voice and prepared accurate reformulations:`
+                  : `✨ AI 偵測到 ${reformList.length} 句歌詞與實際歌聲有差異，並已產生精準重構建議：`;
+              }
+              if (problemList.length) {
+                return isFr
+                  ? `⚠️ ${problemList.length} passage(s) n’ont pas pu être résolus à 100% automatiquement (consultez et ré-analysez en un clic ci-dessous) :`
+                  : isEn
+                  ? `⚠️ ${problemList.length} tricky section(s) could not be fully auto-resolved (inspect or re-analyze below):`
+                  : `⚠️ 偵測到 ${problemList.length} 處困難同步段落（可於下方一鍵重分析或補錄）：`;
+              }
+              return isFr
+                ? `💡 Whisper IA a reconnu ${recLines.length} phrase(s) différente(s) dans l'audio (ex. « ${String(recLines[0].text || '').slice(0, 48)}… »). Voulez-vous remplacer vos paroles par la reconnaissance vocale IA ?`
+                : isEn
+                ? `💡 Neural Whisper heard ${recLines.length} different line(s) in this track (e.g. "${String(recLines[0].text || '').slice(0, 48)}…"). Apply recognized lyrics?`
+                : `💡 Whisper 類神經模型辨識出 ${recLines.length} 句不同歌詞（例如：「${String(recLines[0].text || '').slice(0, 36)}…」），要套用並完成對齊嗎？`;
+            })();
+
+            showAiVoiceActionBar({
+              message: diagSummaryMsg,
+              reformulations: reformList,
+              unresolvableProblems: problemList,
+              onApplyReformulations: applyReformItems,
+              onSeekAudio: (sec) => { seek(sec); },
+              onReanalyzeProblem: handleReanalyzeProb,
+              applyRecognizedLabel: hasRecRecovery
+                ? (isFr
+                    ? `✨ Appliquer les ${recLines.length} paroles IA reconnues`
+                    : isEn
+                    ? `✨ Apply ${recLines.length} recognized lyrics`
+                    : `✨ 套用 ${recLines.length} 句 AI 辨識歌詞`)
+                : '',
+              onApplyRecognized: hasRecRecovery ? () => {
+                pushEdit();
+                const textArr = recLines.map(l => String(l.text || '').trim()).filter(Boolean);
+                const joinedTxt = textArr.join('\n');
+                if (!joinedTxt) return;
+                S.project.lyrics = joinedTxt;
+                if ($('lyrics')) $('lyrics').value = joinedTxt;
+                S.project.timing.lineTimes = {};
+                S.project.timing.wordTimes = {};
+                S.project.timing.lineMeta = {};
+                const useLang = J.resolveLang(S.project) || 'auto';
+                recLines.forEach((l, ri) => {
+                  const s = +Number(l.start || 0).toFixed(3);
+                  const e = +Math.max(s + 0.25, Number(l.end) || (s + 2.5)).toFixed(3);
+                  S.project.timing.lineTimes[ri] = s;
+                  let words = Array.isArray(l.words) ? l.words : [];
+                  if (words.length && J.refineWordTimingsAcoustic) {
+                    words = J.refineWordTimingsAcoustic(S.audio, words, s, e, useLang, l.speaker || 'Lead');
+                  }
+                  if (words.length && J.optimizeLineVocalCoordination) {
+                    words = J.optimizeLineVocalCoordination(S.audio, words, s, e, useLang, l.speaker || 'Lead');
+                  }
+                  if (words.length) S.project.timing.wordTimes[ri] = words;
+                  S.project.timing.lineMeta[ri] = {
+                    section: l.section || 'verse',
+                    vocalType: l.vocalType || 'singing',
+                    language: l.language || useLang,
+                    speaker: l.speaker || 'Lead',
+                    recognitionConfidence: l.recognitionConfidence ?? 0.9,
+                    alignmentConfidence: l.alignmentConfidence ?? 0.88,
+                  };
+                });
+                S.project.detection = Object.assign({}, S.project.detection || {}, { source: 'neural_whisper' });
+                replan(); flushSave(); syncUI(); seek(0);
+                recordWork('ai_transcribe', 'sync', `${recLines.length} lignes (Whisper)`);
+                toast(isFr ? `🎤 ${recLines.length} paroles IA appliquées & synchronisées !` : isEn ? `🎤 Applied & synced ${recLines.length} AI lyrics!` : `🎤 已套用並同步 ${recLines.length} 句 AI 歌詞！`);
+              } : null,
+            });
+          } else if (aligned && aligned.requiresBilling) {
+            showAiVoiceActionBar({
+              message: isFr
+                ? `✅ Calage vocal acoustique appliqué (${lineCount} lignes${cohNote}). Astuce : pour générer ou corriger automatiquement des paroles manquantes, utilisez la Reconnaissance Vocale en direct :`
+                : isEn
+                ? `✅ Acoustic Voice Sync applied (${lineCount} lines${cohNote}). Tip: use Live Voice Mic to dictate/sing new lines instantaneously:`
+                : `✅ 已完成本地人聲聲學逐詞同步（${lineCount} 句${cohNote}）。提示：可用下方即時麥克風補錄歌詞：`,
+              showAcousticAlign: false,
+            });
+          }
         } else {
-          toast(isFr ? "Échec de la synchronisation vocale" : isEn ? 'Could not synchronize vocals' : '未能成功识别人声同步');
+          toast(isFr ? 'Échec de la synchronisation vocale' : isEn ? 'Could not synchronize vocals' : '未能成功识别人声同步');
         }
       } catch (err) {
-        toast((isFr ? 'Erreur de synchro: ' : isEn ? 'Sync error: ' : '同步出错: ') + (err && err.message ? err.message : ''));
+        toast((isFr ? 'Erreur de synchro : ' : isEn ? 'Sync error: ' : '同步出错: ') + (err && err.message ? err.message : ''));
+      } finally {
+        bvs.classList.remove('is-syncing');
+        bvs.disabled = false;
+        bvs.textContent = origTxt;
+        if (liveEl) liveEl.hidden = true;
+        if (pBox && !(activeVoiceController && activeVoiceController.isActive())) {
+          setTimeout(() => { if (!bvs.classList.contains('is-syncing')) pBox.hidden = true; }, syncDone ? 650 : 200);
+        }
       }
     });
   }
@@ -80275,7 +82268,7 @@ function getNoticeContent() {
         ],
         steps: [
           { num: 'Étape 01', title: 'Mettre le son et le texte', desc: 'Importez votre MP3/WAV puis collez vos paroles — ou laissez l’IA écouter la voix et écrire les paroles toute seule.' },
-          { num: 'Étape 02', title: 'Caler sur le chanteur', desc: 'Cliquez sur « Synchro Voix » pour un calage automatique, ou tapez au rythme du chant dans « Synchro au tap ».' },
+          { num: 'Étape 02', title: 'Caler sur le chanteur', desc: 'Cliquez sur « SYNCRO VOIX ET PAROLE » pour une coordination automatique en temps réel, ou tapez au rythme du chant dans « Synchro au tap ».' },
           { num: 'Étape 03', title: 'Choisir le look et exporter', desc: 'Choisissez un Thème (Cinematic, Art & Motion…), appuyez sur Aléatoire (touche R) puis cliquez sur « Exporter en MP4 ».' },
         ],
         subh: 'À quoi sert chaque bouton de la barre du haut ?',
@@ -80365,13 +82358,13 @@ function getNoticeContent() {
         num: '03',
         nav: 'Audio, IA & Synchro au Tap',
         title: '03. Synchroniser parfaitement chaque mot sur la voix du chanteur',
-        lead: 'Pour que les paroles s’allument exactement quand le chanteur chante, Alexura vous donne 3 outils simples : l’IA qui écrit et cale tout, la « Synchro Voix » en 1 clic, ou le studio « Synchro au Tap » très ludique.',
+        lead: 'Pour que les paroles s’allument exactement quand le chanteur chante, Alexura vous donne 3 outils simples : l’IA qui écrit et cale tout, « SYNCRO VOIX ET PAROLE » en temps réel, ou le studio « Synchro au Tap » très ludique.',
         gallery: [
           {
             src: imgs.sync,
-            title: 'Photo 5 — Comment l’IA et « Synchro Voix » repèrent le chant',
+            title: 'Photo 5 — Comment l’IA et « SYNCRO VOIX ET PAROLE » repèrent le chant',
             alt: 'Illustration de l’onde sonore vocale avec détection d’attaques à 10 ms et barres d’alignement de chaque mot',
-            caption: 'Alexura isole la voix (en vert émeraude) du reste des instruments et aligne chaque mot au millième de seconde près.',
+            caption: 'Alexura isole la voix (en vert émeraude) du reste des instruments et coordonne chaque mot en temps réel.',
           },
           {
             src: imgs.tap,
@@ -80394,10 +82387,10 @@ function getNoticeContent() {
             photo: { src: imgs.sync, title: 'Voir l’alignement acoustique sur la Photo 5', caption: 'Chaque mot est calé sur le vrai pic d’énergie de la voix humaine.' },
           },
           {
-            label: '⚡ Synchro Voix',
+            label: '⚡ SYNCRO VOIX ET PAROLE',
             zone: 'Colonne gauche · Audio',
-            desc: 'Vous avez déjà collé vos paroles dans la boîte ? Cliquez simplement sur <strong>⚡ Synchro Voix</strong> : Alexura écoute le morceau et place automatiquement chaque phrase et chaque mot pile sur la voix.',
-            example: '<strong>Quand l’utiliser ?</strong> Juste après avoir importé le MP3 et collé le texte. C’est la méthode la plus rapide pour démarrer proprement en 5 secondes.',
+            desc: 'Vous avez déjà collé vos paroles dans la boîte ? Cliquez simplement sur <strong>⚡ SYNCRO VOIX ET PAROLE</strong> : Alexura analyse en temps réel la voix et vos paroles pour placer automatiquement chaque phrase et chaque mot avec une précision millimétrique à chaque instant.',
+            example: '<strong>Quand l’utiliser ?</strong> Juste après avoir importé le MP3 et collé le texte. La coordination temps réel calibre chaque syllabe sur la voix.',
           },
           {
             label: '🔬 Contrôle Qualité & Éditeur mot à mot',
@@ -80594,7 +82587,7 @@ function getNoticeContent() {
             src: imgs.tap,
             title: 'Étape 2 — Caler au millimètre',
             alt: 'Radar Tap Studio étape 2',
-            caption: 'Synchro Voix ou Tap Studio [Espace], puis ±10 ms à l’oreille.',
+            caption: 'SYNCRO VOIX ET PAROLE ou Tap Studio [Espace], puis ±10 ms à l’oreille.',
           },
           {
             src: imgs.exportImg,
@@ -80611,7 +82604,7 @@ function getNoticeContent() {
           { label: 'Espace · E · P · S · Retour · Tab · Échap', zone: 'Dans Synchro au Tap', desc: '<span class="notice-kbd">Espace</span> = Tapper · <span class="notice-kbd">E</span> = Marquer la fin · <span class="notice-kbd">P</span> = Pause · <span class="notice-kbd">S</span> = Passer · <span class="notice-kbd">Retour</span> = Annuler le dernier tap · <span class="notice-kbd">Tab</span> = Couper un plan · <span class="notice-kbd">Échap</span> = Enregistrer et quitter.' },
         ],
         steps: [
-          { num: 'Parcours 1', title: 'Clip express en 2 minutes', desc: '1. Importez le MP3 → 2. Collez les paroles → 3. Cliquez « Synchro Voix » → 4. Choisissez « Music Video » ou « Art & Motion » → 5. Touche R jusqu’au coup de cœur → 6. Exporter en MP4 1080p.' },
+          { num: 'Parcours 1', title: 'Clip express en 2 minutes', desc: '1. Importez le MP3 → 2. Collez les paroles → 3. Cliquez « SYNCRO VOIX ET PAROLE » → 4. Choisissez « Music Video » ou « Art & Motion » → 5. Touche R jusqu’au coup de cœur → 6. Exporter en MP4 1080p.' },
           { num: 'Parcours 2', title: 'Karaoké ultra précis', desc: '1. Importez l’audio → 2. Cliquez « Détecter les paroles par IA » → 3. Vérifiez les rares mots orange → 4. Ajustez Chant↔Affichage (±10 ms) → 5. Exporter MP4 + Enhanced LRC.' },
           { num: 'Parcours 3', title: 'Montage Reel / TikTok / Chanteur', desc: '1. Format 9:16 → 2. Cochez « Libérer le centre » ou « Fond vert » (ou PNG transparent) → 3. Passez à 60 fps → 4. Posez directement sur votre vidéo dans CapCut ou Premiere.' },
         ],
@@ -81522,6 +83515,87 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 J.ui = S;
 // hooks for hosts that embed the app (the After Effects CEP panel)
 J.uiApi = { toast, replan, syncUI, pause, seek, playRange, selectLyricWord, saveCorrectedLyrics, tlWHandleAt, tlDragWordTo, tlFocusWord, tlWordBoxAt, syncTimelineInspector, syncQualityControlPanel, reanalyzeLowConfidenceUI, jumpToNextLowConfWord, translateAllLyrics, toggleTranslationLayer, clearTranslationLayer, syncTranslationControls, updateTransCfg, saveSyncedLyrics, syncSlidingMenus, nudgeGlobalSyncOffset, alignAllWordsAcousticallyUI, microAlignTapPhrase, shiftTapPhraseWords, toggleTapLoop, assistRemainingTapLines, kpQuickTapCurrentWord, startTap, tapNow, tapEndHold, tapSkip, tapBack, stopTap, openCloudHub, setCloudTab, saveCurrentSongToFirebase, loadCloudSongIntoStudio, downloadCloudSongArtifact, recordWork, testVercelBridge, syncSongToVercel, deployToVercel, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines, openNotice, closeNotice, initWeatherStudio, openWeatherDrawer, closeWeatherDrawer, toggleWeatherDrawer, refreshWeatherGps, wxClassifyUvRisk };
+J.S = S;
+if (typeof window !== 'undefined') window.J = J;
+const modBtn = $('btnModularStudio');
+const bgJobPill = $('bgJobPill');
+const bgJobText = $('bgJobText');
+let bgJobFadeTimer = 0;
+
+function updateBgJobPill(job) {
+  if (!bgJobPill || !bgJobText || !job) return;
+  clearTimeout(bgJobFadeTimer);
+  bgJobPill.classList.remove('is-done', 'is-err');
+  if (job.status === 'queued' || job.status === 'running') {
+    const pct = Math.max(0, Math.min(100, Number(job.progress) || 0));
+    bgJobText.textContent = `IA ${pct}%`;
+    bgJobPill.hidden = false;
+  } else if (job.status === 'completed') {
+    bgJobText.textContent = job.cachedHit ? 'Cache 100%' : 'Prêt 100%';
+    bgJobPill.classList.add('is-done');
+    bgJobPill.hidden = false;
+    bgJobFadeTimer = setTimeout(() => { bgJobPill.hidden = true; }, 12000);
+  } else if (job.status === 'failed') {
+    bgJobText.textContent = 'Échec IA';
+    bgJobPill.classList.add('is-err');
+    bgJobPill.hidden = false;
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('alexura:bg-job', (ev) => {
+    const job = ev && ev.detail;
+    if (job) {
+      updateBgJobPill(job);
+      if (job.status === 'completed' && !job.cachedHit) {
+        toast('Analyse vocale terminée en arrière-plan.');
+      } else if (job.status === 'failed') {
+        toast('Un traitement en arrière-plan a échoué — ouvrez le Studio IA pour relancer.');
+      }
+    }
+  });
+  // Light non-blocking startup check for any in-flight background jobs
+  if (bgJobPill && typeof fetch === 'function') {
+    fetch('/api/v2/jobs').then((r) => r.ok ? r.json() : null).then((d) => {
+      const list = d && d.success && Array.isArray(d.jobs) ? d.jobs : [];
+      const active = list.find((j) => j.status === 'queued' || j.status === 'running');
+      if (active) {
+        updateBgJobPill(active);
+        if (typeof EventSource === 'function') {
+          const es = new EventSource('/api/v2/jobs/events');
+          es.onmessage = (m) => {
+            try {
+              const upd = JSON.parse(m.data);
+              if (upd && upd.id) {
+                updateBgJobPill(upd);
+                if (upd.status === 'completed' || upd.status === 'failed') es.close();
+              }
+            } catch {}
+          };
+          es.onerror = () => es.close();
+        }
+      }
+    }).catch(() => {});
+  }
+}
+
+if (bgJobPill) {
+  bgJobPill.addEventListener('click', () => {
+    if (window.AlexuraReactStudio && typeof window.AlexuraReactStudio.open === 'function') {
+      window.AlexuraReactStudio.open();
+    }
+  });
+}
+
+if (modBtn) {
+  modBtn.addEventListener('click', () => {
+    if (window.AlexuraReactStudio && typeof window.AlexuraReactStudio.open === 'function') {
+      window.AlexuraReactStudio.open();
+    } else {
+      toast('Module Studio React en cours de chargement…');
+    }
+  });
+}
 })();
 
 </script>

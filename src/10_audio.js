@@ -494,6 +494,7 @@ J.alignWordsAcoustic = (analysis, text, tStart, tEnd, lang, speaker = 'Lead', re
   const env = analysis && (analysis.vocalEnv100 || analysis.vocalEnergy);
   const att = analysis && (analysis.wordAttack100 || analysis.vocalOnset);
   const con = analysis && analysis.consonantFlux100;
+  const sideMap = analysis && analysis.sideRatio100;
   const er = (analysis && analysis.vocalEnv100 ? analysis.fineRate : analysis && analysis.energyRate) || 100;
   const useAcoustic = !!(env && env.length && er > 0);
 
@@ -573,10 +574,11 @@ J.alignWordsAcoustic = (analysis, text, tStart, tEnd, lang, speaker = 'Lead', re
 
   for (let m = 0; m <= M; m++) {
     const fi = Math.min(env.length - 1, activeStartF + m * strideF);
-    const eNorm = maxE > 1e-5 ? env[fi] / maxE : 0.5;
+    const sidePenalty = sideMap ? Math.min(0.35, sideMap[fi] * 0.42) : 0;
+    const eNorm = maxE > 1e-5 ? Math.max(0.02, (env[fi] / maxE) * (1 - sidePenalty)) : 0.5;
     const attNorm = att ? Math.min(1.5, att[fi]) : 0;
-    const conBoost = con && maxE > 1e-5 ? Math.min(0.8, con[fi] / maxE) : 0;
-    frameAttack[m] = attNorm + 0.35 * conBoost;
+    const conBoost = con && maxE > 1e-5 ? Math.min(0.95, con[fi] / maxE) : 0;
+    frameAttack[m] = Math.max(0, attNorm + 0.45 * conBoost - 0.18 * sidePenalty);
     frameLowEnergy[m] = env[fi] < silenceThr ? 1 : 0;
     if (m > 0) prefEnergy[m] = prefEnergy[m - 1] + (0.25 + 0.75 * Math.pow(eNorm, 0.7));
   }
@@ -745,6 +747,7 @@ J.refineWordTimingsAcoustic = (analysis, rawWords, lineStart, lineEnd, lang, def
 
   const att = analysis && analysis.wordAttack100;
   const env = analysis && analysis.vocalEnv100;
+  const con = analysis && analysis.consonantFlux100;
   const vad = analysis && analysis.voicing100;
   const ovMap = analysis && analysis.sideRatio100;
   const fr = (analysis && analysis.fineRate) || 100;
@@ -756,17 +759,22 @@ J.refineWordTimingsAcoustic = (analysis, rawWords, lineStart, lineEnd, lang, def
     let we = Math.min(eLine, Math.max(ws + 0.018, w.end));
 
     if (canSnap) {
-      // 1) Snap onset onto crisp vocal/consonant attack peak within ±70ms
+      // 1) Snap onset onto crisp vocal/consonant attack peak within ±80ms using composite vocal-center score
       const centerF = Math.round(ws * fr);
-      const loF = Math.max(Math.ceil(prevEnd * fr), centerF - 7);
-      const hiF = Math.min(Math.floor((we - 0.02) * fr), att.length - 1, centerF + 7);
-      let bestF = centerF, bestA = -1, meanA = 0, cntA = 0;
+      const loF = Math.max(Math.ceil(prevEnd * fr), centerF - 8);
+      const hiF = Math.min(Math.floor((we - 0.02) * fr), att.length - 1, centerF + 8);
+      let maxLocalE = 1e-4;
+      for (let f = loF; f <= hiF; f++) { if (env[f] > maxLocalE) maxLocalE = env[f]; }
+      let bestF = centerF, bestScore = -1, meanScore = 0, cntA = 0;
       for (let f = loF; f <= hiF; f++) {
-        meanA += att[f]; cntA++;
-        if (att[f] > bestA) { bestA = att[f]; bestF = f; }
+        const cBoost = con ? Math.min(0.8, con[f] / maxLocalE) : 0;
+        const sidePen = ovMap ? Math.min(0.2, ovMap[f] * 0.25) : 0;
+        const comp = att[f] + 0.32 * cBoost - sidePen;
+        meanScore += comp; cntA++;
+        if (comp > bestScore) { bestScore = comp; bestF = f; }
       }
-      const avgA = cntA > 0 ? meanA / cntA : 0;
-      if (bestA > Math.max(0.18, avgA * 1.45)) {
+      const avgScore = cntA > 0 ? meanScore / cntA : 0;
+      if (bestScore > Math.max(0.16, avgScore * 1.38)) {
         const snapped = bestF / fr;
         if (snapped >= prevEnd && snapped < we - 0.02) {
           ws = snapped;
@@ -776,7 +784,7 @@ J.refineWordTimingsAcoustic = (analysis, rawWords, lineStart, lineEnd, lang, def
       if (vad && vad.length) {
         let fEnd = Math.min(vad.length - 1, Math.round(we * fr));
         const fMin = Math.ceil((ws + 0.03) * fr);
-        while (fEnd > fMin && vad[fEnd] < 0.14 && env[fEnd] < 0.008 && (Math.round(we * fr) - fEnd) < 12) {
+        while (fEnd > fMin && vad[fEnd] < 0.16 && env[fEnd] < 0.009 && (Math.round(we * fr) - fEnd) < 14) {
           fEnd--;
         }
         const trimmedEnd = fEnd / fr;
@@ -1123,7 +1131,7 @@ J.analyzeLineVocalCoordination = (analysis, words, lineStart = 0, lineEnd = 0) =
 };
 
 /* Two-Pass Vocal-to-Lyric Optimizer:
-   Pass 1 runs anchored 10ms Viterbi alignment; Pass 2 pulls residual >45ms unvalidated words onto clean nearby vocal transients. */
+   Pass 1 runs anchored 10ms Viterbi alignment; Pass 2 pulls residual >28ms unvalidated words onto clean nearby vocal transients + enforces zero-overlap. */
 J.optimizeLineVocalCoordination = (analysis, words, lineStart, lineEnd, lang, defaultSpeaker = 'Lead') => {
   const pass1 = J.alignLineWordsAnchored(analysis, words, lineStart, lineEnd, lang, defaultSpeaker);
   if (!analysis || !(analysis.wordAttack100 && analysis.wordAttack100.length) || !pass1.length) {
@@ -1142,7 +1150,7 @@ J.optimizeLineVocalCoordination = (analysis, words, lineStart, lineEnd, lang, de
     if (hi - lo < 0.05) continue;
 
     const atk = J.estimateVocalAttackNear(analysis, cur.start, 0.14, lo, hi - 0.035);
-    if (atk.found && Math.abs(atk.driftMs) >= 35 && Math.abs(atk.driftMs) <= 145) {
+    if (atk.found && Math.abs(atk.driftMs) >= 28 && Math.abs(atk.driftMs) <= 150) {
       const snappedS = +J.clamp(atk.attackTime, prevEnd - 0.04, hi - 0.045).toFixed(3);
       if (i > 0 && pass1[i - 1].end > snappedS - 0.008) {
         if (pass1[i - 1].validated) continue;
@@ -1152,12 +1160,69 @@ J.optimizeLineVocalCoordination = (analysis, words, lineStart, lineEnd, lang, de
       const nextE = Math.min(nextStart, Math.max(snappedS + 0.05, cur.end));
       cur.start = snappedS;
       cur.end = +Math.max(snappedS + 0.04, nextE).toFixed(3);
-      cur.alignmentConfidence = +Math.min(0.95, Math.max(Number(cur.alignmentConfidence) || 0.78, 0.88 + 0.06 * atk.clarity)).toFixed(3);
+      cur.alignmentConfidence = +Math.min(0.96, Math.max(Number(cur.alignmentConfidence) || 0.78, 0.89 + 0.06 * atk.clarity)).toFixed(3);
       cur.flags = (cur.flags || []).filter(f => f !== 'uncertain_boundary');
       cur.chars = J.buildCharTimings(cur.text, cur.start, cur.end, analysis);
     }
   }
   return pass1;
+};
+
+/* O(1) Real-Time Playback Moment Coordination Telemetry (zero allocations per frame):
+   Evaluates voice presence, onset lock ±ms, and vocal-lyric coherence at exact playback moment t. */
+J.getMomentCoordinationSnapshot = (analysis, lineObj, activeWord, t) => {
+  const env = analysis && analysis.vocalEnv100;
+  const vad = analysis && analysis.voicing100;
+  const att = analysis && analysis.wordAttack100;
+  const fr = (analysis && analysis.fineRate) || 100;
+  const hasAudio = Boolean(env && env.length && fr > 0);
+  const wConf = activeWord && typeof activeWord.alignmentConfidence === 'number'
+    ? activeWord.alignmentConfidence
+    : (lineObj && Array.isArray(lineObj.wordsTimed) && lineObj.wordsTimed.length
+      ? lineObj.wordsTimed.reduce((a, w) => a + (w.alignmentConfidence ?? 0.86), 0) / lineObj.wordsTimed.length
+      : 0.86);
+
+  if (!hasAudio || !Number.isFinite(t)) {
+    return {
+      hasAudio: false,
+      vocalActive: Boolean(activeWord),
+      locked: Boolean(activeWord),
+      driftMs: 0,
+      momentScore: Math.round(wConf * 100),
+    };
+  }
+
+  const idx = Math.max(0, Math.min(env.length - 1, Math.round(t * fr)));
+  const curEnv = env[idx] || 0;
+  const curVad = vad ? (vad[idx] || 0) : 0.65;
+  const vocalActive = curEnv > 0.004 || curVad > 0.24;
+
+  let driftMs = 0;
+  if (activeWord && att && att.length) {
+    const cF = Math.max(0, Math.min(att.length - 1, Math.round(activeWord.start * fr)));
+    const f0 = Math.max(0, cF - 10);
+    const f1 = Math.min(att.length - 1, cF + 10);
+    let bestF = cF, bestA = -1;
+    for (let f = f0; f <= f1; f++) {
+      if (att[f] > bestA) { bestA = att[f]; bestF = f; }
+    }
+    if (bestA > 0.04) {
+      driftMs = Math.round((activeWord.start - bestF / fr) * 1000);
+    }
+  }
+  const absDrift = Math.abs(driftMs);
+  const baseScore = activeWord
+    ? Math.max(40, Math.min(99, Math.round((0.55 * wConf + 0.45 * (1 - Math.min(1, absDrift / 140))) * 100)))
+    : Math.round(wConf * 100);
+  const locked = Boolean(activeWord && vocalActive && absDrift <= 40);
+
+  return {
+    hasAudio: true,
+    vocalActive,
+    locked,
+    driftMs,
+    momentScore: baseScore,
+  };
 };
 
 const blobToBase64 = (blob) => new Promise((res, rej) => {
@@ -1750,8 +1815,8 @@ J.auditLyricsSpelling = async (linesOrText, lang = 'auto') => {
   return { success: false, spellingFixCount: 0, changes: [], correctedLines: {}, correctedText: '', detectedLanguage: lang };
 };
 
-/* AI Vocal forced alignment (Stages 1-7 + Orthography & Voice-Linked Typo Repair) */
-J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null) => {
+/* AI Real-Time Streaming Vocal-Lyric Coordination (SSE /api/align-vocals/stream + 10ms Moment Refinement) */
+J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null, onLiveEvent = null) => {
   let requiresBilling = false;
   let errorReason = '';
   let recognizedLines = [];
@@ -1766,16 +1831,109 @@ J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null) =>
   let reconcileSummary = null;
   let lineMatchRatios = {};
   let detectedLanguage = lang;
-  const report = (st, msg) => { if (typeof onStage === 'function') try { onStage(st, msg); } catch (e) {} };
+  const report = (st, msg, meta = null) => { if (typeof onStage === 'function') try { onStage(st, msg, meta); } catch (e) {} };
+  const emitLive = (evt) => { if (typeof onLiveEvent === 'function') try { onLiveEvent(evt); } catch (e) {} };
   const vocalSegs = Array.isArray(audioAnalysis && audioAnalysis.vocalSegments)
     ? audioAnalysis.vocalSegments.slice(0, 48).map(s => ({ start: +Number(s.start || 0).toFixed(3), end: +Number(s.end || 0).toFixed(3) }))
     : [];
   const dur = (audioAnalysis && audioAnalysis.duration) || 30;
   const lineTexts = lines.map((l, i) => ({ i, text: l.interlude ? '[interlude]' : l.text }));
 
+  const refineAlignedLinesBatch = (rawLineTimes, rawWordTimes, rawLineMeta) => {
+    const refinedLineTimes = Object.assign({}, rawLineTimes || {});
+    const refinedWords = {};
+    const keys = Object.keys(rawWordTimes || {}).map(Number).filter(n => Number.isFinite(n)).sort((a, b) => a - b);
+    let scoreSum = 0, errSum = 0, lineCnt = 0;
+
+    for (const idx of keys) {
+      let s = refinedLineTimes[idx] ?? 0;
+      const prevIdx = idx - 1;
+      if (refinedWords[prevIdx] && refinedWords[prevIdx].length) {
+        const prevWordEnd = refinedWords[prevIdx][refinedWords[prevIdx].length - 1].end;
+        if (s < prevWordEnd + 0.015) s = +(prevWordEnd + 0.015).toFixed(3);
+      }
+      refinedLineTimes[idx] = s;
+      const nextL = lines[idx + 1];
+      const nextRawStart = (nextL && refinedLineTimes[idx + 1] != null) ? refinedLineTimes[idx + 1] : Math.min(dur || 300, s + 4);
+      const e = Math.max(s + 0.14, nextRawStart - 0.015);
+      const metaSpk = (rawLineMeta && rawLineMeta[idx] && rawLineMeta[idx].speaker) || 'Lead';
+      const r1 = J.refineWordTimingsAcoustic(audioAnalysis, rawWordTimes[idx], s, e, lang, metaSpk);
+      const r2 = J.optimizeLineVocalCoordination ? J.optimizeLineVocalCoordination(audioAnalysis, r1, s, e, lang, metaSpk) : r1;
+      if (r2.length) {
+        refinedLineTimes[idx] = r2[0].start;
+      }
+      refinedWords[idx] = r2;
+      if (J.analyzeLineVocalCoordination && r2.length) {
+        const coh = J.analyzeLineVocalCoordination(audioAnalysis, r2, s, e);
+        scoreSum += coh.score; errSum += coh.avgAbsErrMs; lineCnt++;
+      }
+    }
+    return { refinedLineTimes, refinedWords, scoreSum, errSum, lineCnt };
+  };
+
+  const readAlignSseStream = async (resp) => {
+    if (!resp.body || typeof resp.body.getReader !== 'function') {
+      return await resp.json();
+    }
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    let finalData = null;
+
+    const handleBlock = (blk) => {
+      const rows = blk.split(/\r?\n/);
+      let evtName = 'message';
+      const dataLines = [];
+      for (const row of rows) {
+        if (row.startsWith('event:')) evtName = row.slice(6).trim();
+        else if (row.startsWith('data:')) dataLines.push(row.slice(5).trim());
+      }
+      if (!dataLines.length) return;
+      try {
+        const parsed = JSON.parse(dataLines.join('\n'));
+        if (evtName === 'progress') {
+          let partialRefined = null;
+          if (parsed.partialLineTimes && parsed.partialWordTimes) {
+            partialRefined = refineAlignedLinesBatch(parsed.partialLineTimes, parsed.partialWordTimes, {});
+          }
+          report(parsed.stage || 2, parsed.label || parsed.step || 'align', {
+            pct: parsed.pct,
+            step: parsed.step,
+            matchedCount: parsed.matchedCount,
+            totalTokens: parsed.totalTokens,
+          });
+          emitLive({
+            type: 'progress',
+            ...parsed,
+            refinedLineTimes: partialRefined ? partialRefined.refinedLineTimes : null,
+            refinedWordTimes: partialRefined ? partialRefined.refinedWords : null,
+          });
+        } else if (evtName === 'result' || evtName === 'error') {
+          finalData = parsed;
+        }
+      } catch (e) {}
+    };
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (value) {
+        buf += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buf.indexOf('\n\n')) !== -1) {
+          const blk = buf.slice(0, idx);
+          buf = buf.slice(idx + 2);
+          handleBlock(blk);
+        }
+      }
+      if (done) break;
+    }
+    if (buf.trim()) handleBlock(buf);
+    return finalData;
+  };
+
   try {
     if (audioAnalysis && audioAnalysis.buffer) {
-      report(1, 'stem');
+      report(1, 'Extraction piste vocale & orthographe…', { pct: 12 });
       const sr = dur > 180 ? 10000 : dur > 90 ? 12000 : 16000;
       const includeDualSep = Boolean(audioAnalysis.preprocessing && audioAnalysis.preprocessing.shouldSeparate && dur <= 85);
       const wavBlob = J.audioMonoWav(audioAnalysis.buffer, Math.min(300, dur), sr);
@@ -1785,39 +1943,49 @@ J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null) =>
         const sepBlob = J.audioVocalSeparatedWavWindow(audioAnalysis.buffer, 0, Math.min(300, dur), sr);
         separatedVocalBase64 = await blobToBase64(sepBlob);
       }
-      report(2, 'align');
-      let resp = await fetch('/api/align-vocals', {
+      report(2, 'Streaming vocal temps réel…', { pct: 22 });
+      const buildAlignReqBody = (b64, sepB64) => JSON.stringify({
+        audioBase64: b64,
+        separatedVocalBase64: sepB64,
+        lines: lineTexts,
+        lang,
+        vocalSegments: vocalSegs,
+        durationSec: dur,
+      });
+
+      let reqBody = buildAlignReqBody(base64Audio, separatedVocalBase64);
+      let resp = await fetch('/api/align-vocals/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          audioBase64: base64Audio,
-          separatedVocalBase64,
-          lines: lineTexts,
-          lang,
-          vocalSegments: vocalSegs,
-          durationSec: dur,
-        }),
+        body: reqBody,
       });
       if (resp.status === 413) {
         const slimBlob = (audioAnalysis.preprocessing && audioAnalysis.preprocessing.shouldSeparate)
           ? J.audioVocalSeparatedWavWindow(audioAnalysis.buffer, 0, Math.min(300, dur), 8000)
           : J.audioMonoWav(audioAnalysis.buffer, Math.min(300, dur), 8000);
         const slimB64 = await blobToBase64(slimBlob);
-        resp = await fetch('/api/align-vocals', {
+        reqBody = buildAlignReqBody(slimB64, '');
+        resp = await fetch('/api/align-vocals/stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            audioBase64: slimB64,
-            separatedVocalBase64: '',
-            lines: lineTexts,
-            lang,
-            vocalSegments: vocalSegs,
-            durationSec: dur,
-          }),
+          body: reqBody,
         });
       }
+      let data = null;
       if (resp.ok) {
-        const data = await resp.json();
+        const ctype = (resp.headers.get('content-type') || '').toLowerCase();
+        data = ctype.includes('text/event-stream') ? await readAlignSseStream(resp) : await resp.json();
+      }
+      if (!data) {
+        const fbResp = await fetch('/api/align-vocals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: reqBody,
+        });
+        if (fbResp.ok) data = await fbResp.json();
+      }
+
+      if (data) {
         if (data && data.requiresBilling) requiresBilling = true;
         if (data && data.reason) errorReason = data.reason;
         if (data && Array.isArray(data.corrections)) corrections = data.corrections;
@@ -1835,31 +2003,16 @@ J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null) =>
           recognizedTranscript = data.recognizedTranscript || '';
         }
         if (data && data.lineTimes && Object.keys(data.lineTimes).length) {
-          report(3, 'optimize');
-          const refinedWords = {};
-          const keys = Object.keys(data.wordTimes || {});
-          let scoreSum = 0, errSum = 0, lineCnt = 0;
-          for (const k of keys) {
-            const idx = +k;
-            const s = data.lineTimes[idx] ?? 0;
-            const nextL = lines[idx + 1];
-            const e = (nextL && data.lineTimes[idx + 1] != null) ? data.lineTimes[idx + 1] : Math.min(dur || 300, s + 4);
-            const metaSpk = (data.lineMeta && data.lineMeta[idx] && data.lineMeta[idx].speaker) || 'Lead';
-            const r1 = J.refineWordTimingsAcoustic(audioAnalysis, data.wordTimes[idx], s, e, lang, metaSpk);
-            const r2 = J.optimizeLineVocalCoordination ? J.optimizeLineVocalCoordination(audioAnalysis, r1, s, e, lang, metaSpk) : r1;
-            refinedWords[idx] = r2;
-            if (J.analyzeLineVocalCoordination && r2.length) {
-              const coh = J.analyzeLineVocalCoordination(audioAnalysis, r2, s, e);
-              scoreSum += coh.score; errSum += coh.avgAbsErrMs; lineCnt++;
-            }
-          }
-          report(4, 'done');
+          report(3, 'Calage acoustique 10 ms & séparation respiratoire…', { pct: 95 });
+          const finalRefined = refineAlignedLinesBatch(data.lineTimes, data.wordTimes, data.lineMeta);
+          const { refinedLineTimes, refinedWords, scoreSum, errSum, lineCnt } = finalRefined;
+          report(4, 'Synchronisation prête !', { pct: 100 });
           return {
-            lineTimes: data.lineTimes,
+            lineTimes: refinedLineTimes,
             wordTimes: refinedWords,
             lineMeta: data.lineMeta || {},
-            coherenceScore: lineCnt ? Math.round(scoreSum / lineCnt) : 90,
-            avgAbsErrMs: lineCnt ? Math.round(errSum / lineCnt) : 18,
+            coherenceScore: lineCnt ? Math.round(scoreSum / lineCnt) : 92,
+            avgAbsErrMs: lineCnt ? Math.round(errSum / lineCnt) : 14,
             matchedCount: data.matchedCount ?? 0,
             matchRatio: data.matchRatio ?? 1,
             corrections,

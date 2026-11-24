@@ -108,6 +108,7 @@ app.get('/api/health', (_req, res) => {
       '/api/transcribe-voice-clip',
       '/api/audit-lyrics',
       '/api/align-vocals',
+      '/api/align-vocals/stream',
       '/api/reconcile-lyrics',
       '/api/reanalyze-segment',
       '/api/translate-lyrics',
@@ -559,11 +560,14 @@ app.post('/api/reconcile-lyrics', async (req, res) => {
   }
 });
 
-// Stage 4/5/6/7: Singing-Aware Forced Alignment + Orthography Repair + Validation Endpoint
-app.post('/api/align-vocals', async (req, res) => {
-  const { audioBase64, separatedVocalBase64, lines, lang, vocalSegments, durationSec } = req.body || {};
+// Stage 4/5/6/7: Real-Time Streaming + Forced Alignment + Orthography Repair + Validation Pipeline
+async function runVocalSyncPipeline(
+  body: any,
+  onProgress?: (evt: { event: string; payload: any }) => void,
+) {
+  const { audioBase64, separatedVocalBase64, lines, lang, vocalSegments, durationSec } = body || {};
   if (!audioBase64 || !Array.isArray(lines) || !lines.length) {
-    return res.status(200).json({ success: false, reason: 'missing_input' });
+    return { success: false, reason: 'missing_input' };
   }
 
   const runWhisperAlignFallback = async (geminiErrReason?: string) => {
@@ -574,6 +578,9 @@ app.post('/api/align-vocals', async (req, res) => {
         lines,
         lang: lang || 'auto',
         vocalSegments: Array.isArray(vocalSegments) ? vocalSegments : [],
+        onProgress: evt => {
+          onProgress?.({ event: 'progress', payload: evt });
+        },
       });
       const recLinesNorm = Array.isArray(dtwRes.recognizedLines) && dtwRes.recognizedLines.length
         ? normalizeKaraokeLines(dtwRes.recognizedLines, 0)
@@ -595,6 +602,16 @@ app.post('/api/align-vocals', async (req, res) => {
           interlude: /^\[interlude/i.test(String(l?.text || '').trim()),
         };
       });
+      onProgress?.({
+        event: 'progress',
+        payload: {
+          stage: 6,
+          step: 'reformulation',
+          pct: 92,
+          label: 'Diagnostic & validation finale voix-paroles…',
+          matchedCount: dtwRes.matchedCount,
+        },
+      });
       const reconcile = await reconcileAndReformulateLyrics({
         ai,
         userLines: userLinesForReconcile,
@@ -615,7 +632,7 @@ app.post('/api/align-vocals', async (req, res) => {
       });
 
       if (dtwRes.success && Object.keys(dtwRes.lineTimes).length > 0) {
-        return res.json({
+        return {
           success: true,
           source: 'neural_whisper_dtw',
           engine: dtwRes.engine,
@@ -636,9 +653,9 @@ app.post('/api/align-vocals', async (req, res) => {
           detectedLanguage: dtwRes.detectedLanguage,
           recognizedLines: recLinesNorm,
           recognizedTranscript: recLinesNorm.length ? dtwRes.recognizedTranscript : '',
-        });
+        };
       }
-      return res.status(200).json({
+      return {
         success: false,
         reason: geminiErrReason || 'no_vocal_match',
         matchedCount: 0,
@@ -655,14 +672,14 @@ app.post('/api/align-vocals', async (req, res) => {
         recognizedLines: recLinesNorm,
         recognizedTranscript: dtwRes.recognizedTranscript || '',
         requiresBilling: false,
-      });
+      };
     } catch (wErr: any) {
-      return res.status(200).json({
+      return {
         success: false,
         reason: 'alignment_error',
         requiresBilling: false,
         message: (wErr?.message || String(wErr || '')).slice(0, 300),
-      });
+      };
     }
   };
 
@@ -671,6 +688,10 @@ app.post('/api/align-vocals', async (req, res) => {
   }
 
   try {
+    onProgress?.({
+      event: 'progress',
+      payload: { stage: 1, step: 'orthography', pct: 12, label: 'Analyse orthographe & extraction vocale…' },
+    });
     const cleanSegs = Array.isArray(vocalSegments)
       ? vocalSegments
           .slice(0, 48)
@@ -823,12 +844,28 @@ CRITICAL SINGING-AWARE ALIGNMENT & VALIDATION RULES:
         interlude: /^\[interlude/i.test(String(l?.text || '').trim()),
       };
     });
+    onProgress?.({
+      event: 'progress',
+      payload: {
+        stage: 5,
+        step: 'moment_refinement',
+        pct: 76,
+        label: 'Alignement vocal confirmé — coordination instant par instant…',
+        partialLineTimes: lineTimes,
+        partialWordTimes: wordTimes,
+      },
+    });
+
     const gemRecLines = (parsed.alignments || []).map((a: any) => ({
       text: (a.words || []).map((w: any) => w.text).join(' ').trim(),
       start: Number(a.start) || 0,
       end: Number(a.end) || 0,
       recognitionConfidence: Number(a.recognitionConfidence) || 0.88,
     })).filter((r: any) => r.text);
+    onProgress?.({
+      event: 'progress',
+      payload: { stage: 6, step: 'reformulation', pct: 92, label: 'Diagnostic & validation finale voix-paroles…' },
+    });
     const reconcile = await reconcileAndReformulateLyrics({
       ai,
       userLines: userLinesGem,
@@ -841,7 +878,7 @@ CRITICAL SINGING-AWARE ALIGNMENT & VALIDATION RULES:
       matchRatio: 1,
     });
 
-    return res.json({
+    return {
       success: true,
       source: 'gemini_cloud',
       lineTimes,
@@ -856,11 +893,61 @@ CRITICAL SINGING-AWARE ALIGNMENT & VALIDATION RULES:
       reconcileSummary: reconcile.summary,
       recognizedLines: gemRecLines,
       detectedLanguage: preAudit.detectedLanguage,
-    });
+    };
   } catch (err: any) {
     const msg = err?.message || String(err || '');
     const isBilling = msg.includes('billing') || msg.includes('free tier') || err?.status === 'PERMISSION_DENIED' || err?.code === 403;
     return runWhisperAlignFallback(isBilling ? 'billing_fallback_whisper' : 'alignment_fallback_whisper');
+  }
+}
+
+app.post('/api/align-vocals', async (req, res) => {
+  try {
+    const result = await runVocalSyncPipeline(req.body);
+    return res.status(200).json(result);
+  } catch (err: any) {
+    return res.status(200).json({
+      success: false,
+      reason: 'alignment_error',
+      requiresBilling: false,
+      message: (err?.message || String(err || '')).slice(0, 300),
+    });
+  }
+});
+
+// Real-Time SSE Streaming Forced Alignment for SYNCRO VOIX ET PAROLE
+app.post('/api/align-vocals/stream', async (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders?.();
+
+  let closed = false;
+  res.on('close', () => { if (!res.writableEnded) closed = true; });
+
+  try {
+    const result = await runVocalSyncPipeline(req.body, evt => {
+      if (closed) return;
+      sendSseEvent(res, evt.event, evt.payload || {});
+    });
+    if (!closed) {
+      if (result && result.success) {
+        sendSseEvent(res, 'result', result);
+      } else {
+        sendSseEvent(res, 'error', result || { success: false, reason: 'alignment_error' });
+      }
+      res.end();
+    }
+  } catch (err: any) {
+    if (!closed) {
+      sendSseEvent(res, 'error', {
+        success: false,
+        reason: 'alignment_error',
+        requiresBilling: false,
+        message: (err?.message || String(err || '')).slice(0, 300),
+      });
+      res.end();
+    }
   }
 });
 
@@ -1631,15 +1718,19 @@ ${JSON.stringify(payloadLines)}`,
 // ---------------- Real-Time Weather, Air Quality, Pollen & Geocoding Proxy ----------------
 const GMP_SOLUTION_ID = 'gmp_mcp_codeassist_v1_aistudio';
 const weatherCache = new Map<string, { expiresAt: number; payload: any }>();
-const WEATHER_CACHE_TTL_MS = 10 * 60 * 1000;
+const WEATHER_CACHE_TTL_MS = 5 * 60 * 1000;
 
 function getMapsApiKey(): string {
-  return (
+  const raw = (
     process.env.GOOGLE_MAPS_API_KEY ||
     process.env.VITE_GOOGLE_MAPS_API_KEY ||
     process.env.MAPS_API_KEY ||
     ''
-  ).trim();
+  )
+    .replace(/^["']|["']$/g, '')
+    .trim();
+  if (!raw || /^(MY_|YOUR_|PLACEHOLDER|REPLACE_ME)/i.test(raw)) return '';
+  return raw;
 }
 
 function isGmpQuotaError(status: number, body: any): boolean {
@@ -1669,11 +1760,42 @@ async function fetchJsonWithGmp(url: string, init: RequestInit = {}) {
   };
 }
 
+function degreesToCardinal(deg: number): string {
+  if (!Number.isFinite(deg)) return '';
+  const dirs = [
+    'NORTH', 'NORTH_NORTHEAST', 'NORTHEAST', 'EAST_NORTHEAST',
+    'EAST', 'EAST_SOUTHEAST', 'SOUTHEAST', 'SOUTH_SOUTHEAST',
+    'SOUTH', 'SOUTH_SOUTHWEST', 'SOUTHWEST', 'WEST_SOUTHWEST',
+    'WEST', 'WEST_NORTHWEST', 'NORTHWEST', 'NORTH_NORTHWEST',
+  ];
+  const idx = Math.round((((deg % 360) + 360) % 360) / 22.5) % 16;
+  return dirs[idx] || 'NORTH';
+}
+
+function wmoToConditionType(code: number, isDay = true): { type: string; descFr: string; descEn: string } {
+  const c = Math.round(Number(code));
+  if (c === 0) return { type: 'CLEAR', descFr: isDay ? 'Ensoleillé' : 'Ciel dégagé', descEn: isDay ? 'Sunny' : 'Clear night' };
+  if (c === 1) return { type: 'MOSTLY_CLEAR', descFr: isDay ? 'Peu nuageux' : 'Ciel peu nuageux', descEn: isDay ? 'Mostly sunny' : 'Mostly clear' };
+  if (c === 2) return { type: 'PARTLY_CLOUDY', descFr: 'Partiellement nuageux', descEn: 'Partly cloudy' };
+  if (c === 3) return { type: 'OVERCAST', descFr: 'Couvert', descEn: 'Overcast' };
+  if (c === 45 || c === 48) return { type: 'FOG', descFr: 'Brouillard', descEn: 'Fog' };
+  if (c >= 51 && c <= 57) return { type: 'LIGHT_RAIN', descFr: 'Bruine légère', descEn: 'Light drizzle' };
+  if (c === 61 || c === 80) return { type: 'LIGHT_RAIN', descFr: 'Pluie légère', descEn: 'Light rain' };
+  if (c === 63 || c === 81) return { type: 'RAIN', descFr: 'Pluie modérée', descEn: 'Rain' };
+  if (c === 65 || c === 82) return { type: 'HEAVY_RAIN', descFr: 'Forte pluie', descEn: 'Heavy rain' };
+  if (c === 66 || c === 67) return { type: 'WIND_AND_RAIN', descFr: 'Pluie verglaçante', descEn: 'Freezing rain' };
+  if (c === 71 || c === 77 || c === 85) return { type: 'LIGHT_SNOW', descFr: 'Neige légère', descEn: 'Light snow' };
+  if (c === 73) return { type: 'SNOW', descFr: 'Neige', descEn: 'Snow' };
+  if (c === 75 || c === 86) return { type: 'HEAVY_SNOW', descFr: 'Forte neige', descEn: 'Heavy snow' };
+  if (c >= 95 && c <= 99) return { type: 'THUNDERSTORM', descFr: 'Orage', descEn: 'Thunderstorm' };
+  return { type: 'PARTLY_CLOUDY', descFr: 'Temps variable', descEn: 'Partly cloudy' };
+}
+
 function extractLocationSummary(geoData: any, lat: number, lng: number) {
   const results = Array.isArray(geoData?.results) ? geoData.results : [];
   if (!results.length) {
     return {
-      shortName: `${lat.toFixed(3)}, ${lng.toFixed(3)}`,
+      shortName: '',
       locality: '',
       neighborhood: '',
       region: '',
@@ -1711,6 +1833,67 @@ function extractLocationSummary(geoData: any, lat: number, lng: number) {
   };
 }
 
+async function reverseGeocodeFallback(lat: number, lng: number, lang: string) {
+  const locLang = String(lang || 'fr').toLowerCase().startsWith('en') ? 'en' : 'fr';
+  try {
+    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lng)}&localityLanguage=${encodeURIComponent(locLang)}`;
+    const resp = await fetch(url, { signal: AbortSignal.timeout(4500) });
+    if (resp.ok) {
+      const d = await resp.json();
+      const locality = String(d?.city || d?.locality || '').trim();
+      const region = String(d?.principalSubdivision || '').trim();
+      const country = String(d?.countryName || '').trim();
+      const shortName = locality || region || country;
+      if (shortName) {
+        const formattedAddress = [locality, region && region !== locality ? region : '', country].filter(Boolean).join(', ');
+        return {
+          shortName,
+          locality,
+          neighborhood: '',
+          region,
+          country,
+          formattedAddress: formattedAddress || shortName,
+        };
+      }
+    }
+  } catch {}
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&accept-language=${encodeURIComponent(locLang)}`;
+    const resp = await fetch(url, {
+      headers: { 'User-Agent': 'AlexuraMotionStudio/1.0' },
+      signal: AbortSignal.timeout(4500),
+    });
+    if (resp.ok) {
+      const d = await resp.json();
+      const a = d?.address || {};
+      const locality = String(a.city || a.town || a.village || a.municipality || '').trim();
+      const neighborhood = String(a.suburb || a.city_district || a.neighbourhood || '').trim();
+      const region = String(a.state || a.region || '').trim();
+      const country = String(a.country || '').trim();
+      const shortParts = [neighborhood && neighborhood !== locality ? neighborhood : '', locality || region || country].filter(Boolean);
+      const shortName = shortParts.join(' · ') || String(d?.display_name || '').split(',').slice(0, 2).join(',').trim();
+      if (shortName) {
+        return {
+          shortName,
+          locality: locality || region || '',
+          neighborhood,
+          region,
+          country,
+          formattedAddress: String(d?.display_name || shortName),
+        };
+      }
+    }
+  } catch {}
+  return {
+    shortName: `${lat.toFixed(3)}, ${lng.toFixed(3)}`,
+    locality: '',
+    neighborhood: '',
+    region: '',
+    country: '',
+    formattedAddress: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+  };
+}
+
 function pollenGrainsToUpi(grains: number): { value: number; categoryFr: string; categoryEn: string } {
   if (!Number.isFinite(grains) || grains <= 1) return { value: 0, categoryFr: 'Très faible', categoryEn: 'Very Low' };
   if (grains <= 10) return { value: 1, categoryFr: 'Faible', categoryEn: 'Low' };
@@ -1721,15 +1904,148 @@ function pollenGrainsToUpi(grains: number): { value: number; categoryFr: string;
 }
 
 function classifyEaqi(eaqi: number, usAqi: number, isFr: boolean) {
-  const score = Number.isFinite(usAqi) ? Math.round(usAqi) : Math.round(eaqi);
-  if (Number.isFinite(eaqi)) {
+  const hasEaqi = Number.isFinite(eaqi);
+  const hasUs = Number.isFinite(usAqi);
+  const score = hasEaqi ? Math.round(eaqi) : (hasUs ? Math.round(usAqi) : NaN);
+  if (hasEaqi) {
     if (eaqi <= 20) return { score, cat: isFr ? 'Excellente qualité de l’air' : 'Excellent air quality', advice: isFr ? 'Air pur, idéal pour toutes les activités extérieures.' : 'Clean air, ideal for all outdoor activities.' };
     if (eaqi <= 40) return { score, cat: isFr ? 'Bonne qualité de l’air' : 'Good air quality', advice: isFr ? 'Conditions atmosphériques favorables en extérieur.' : 'Good outdoor atmospheric conditions.' };
     if (eaqi <= 60) return { score, cat: isFr ? 'Qualité de l’air modérée' : 'Moderate air quality', advice: isFr ? 'Qualité correcte ; les personnes très sensibles peuvent limiter l’effort prolongé.' : 'Moderate quality; sensitive individuals should moderate prolonged exertion.' };
     if (eaqi <= 80) return { score, cat: isFr ? 'Qualité de l’air médiocre' : 'Poor air quality', advice: isFr ? 'Réduisez les efforts intenses en plein air si vous ressentez une gêne.' : 'Reduce intense outdoor activity if respiratory discomfort occurs.' };
     return { score, cat: isFr ? 'Mauvaise qualité de l’air' : 'Very poor air quality', advice: isFr ? 'Évitez les activités sportives extérieures prolongées.' : 'Avoid prolonged outdoor physical exertion.' };
   }
-  return { score, cat: isFr ? 'Qualité modérée' : 'Moderate air quality', advice: '' };
+  if (hasUs) {
+    if (usAqi <= 50) return { score, cat: isFr ? 'Bonne qualité de l’air' : 'Good air quality', advice: isFr ? 'Air pur, idéal pour les activités extérieures.' : 'Clean air, ideal for outdoor activities.' };
+    if (usAqi <= 100) return { score, cat: isFr ? 'Qualité de l’air modérée' : 'Moderate air quality', advice: isFr ? 'Qualité acceptable pour la plupart des personnes.' : 'Acceptable air quality for most people.' };
+    return { score, cat: isFr ? 'Qualité de l’air dégradée' : 'Unhealthy air quality', advice: isFr ? 'Limitez les efforts prolongés en extérieur.' : 'Limit prolonged outdoor exertion.' };
+  }
+  return { score: NaN, cat: isFr ? 'Qualité modérée' : 'Moderate air quality', advice: '' };
+}
+
+async function fetchOpenMeteoWeatherAndForecast(lat: number, lng: number, lang: string) {
+  const isFr = !String(lang || 'fr').toLowerCase().startsWith('en');
+  try {
+    const url = new URL('https://api.open-meteo.com/v1/forecast');
+    url.searchParams.set('latitude', String(lat));
+    url.searchParams.set('longitude', String(lng));
+    url.searchParams.set(
+      'current',
+      'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,dew_point_2m,precipitation_probability',
+    );
+    url.searchParams.set('hourly', 'uv_index,precipitation_probability');
+    url.searchParams.set(
+      'daily',
+      'weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,uv_index_max,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,relative_humidity_2m_mean',
+    );
+    url.searchParams.set('wind_speed_unit', 'kmh');
+    url.searchParams.set('timezone', 'auto');
+    url.searchParams.set('forecast_days', '7');
+
+    const resp = await fetch(url.toString(), { signal: AbortSignal.timeout(7000) });
+    if (!resp.ok) return { current: null, forecastDays: [] };
+    const om = await resp.json();
+    const curRaw = om?.current || null;
+
+    let current: any = null;
+    if (curRaw && curRaw.temperature_2m != null) {
+      const isDay = curRaw.is_day !== 0;
+      const cond = wmoToConditionType(Number(curRaw.weather_code ?? 2), isDay);
+      let uvVal = curRaw.uv_index != null ? Number(curRaw.uv_index) : NaN;
+      if (!Number.isFinite(uvVal) && Array.isArray(om?.hourly?.time) && Array.isArray(om?.hourly?.uv_index)) {
+        const hourPrefix = String(curRaw.time || '').slice(0, 13);
+        const hIdx = om.hourly.time.findIndex((t: string) => String(t).startsWith(hourPrefix));
+        if (hIdx >= 0 && om.hourly.uv_index[hIdx] != null) {
+          uvVal = Number(om.hourly.uv_index[hIdx]);
+        }
+      }
+      const windDeg = Number(curRaw.wind_direction_10m);
+      const windSpd = Number(curRaw.wind_speed_10m);
+      const windGust = Number(curRaw.wind_gusts_10m);
+      const dewVal = Number(curRaw.dew_point_2m);
+      const rainProb = Number(curRaw.precipitation_probability);
+      const humVal = Number(curRaw.relative_humidity_2m);
+      const feelsVal = Number(curRaw.apparent_temperature);
+      const cloudVal = Number(curRaw.cloud_cover);
+
+      current = {
+        currentTime: curRaw.time || new Date().toISOString(),
+        source: 'open-meteo',
+        timeZone: om?.timezone ? { id: String(om.timezone) } : undefined,
+        isDaytime: isDay,
+        weatherCondition: {
+          type: cond.type,
+          description: { text: isFr ? cond.descFr : cond.descEn, languageCode: lang },
+        },
+        temperature: { degrees: Number(curRaw.temperature_2m), unit: 'CELSIUS' },
+        feelsLikeTemperature: Number.isFinite(feelsVal) ? { degrees: feelsVal, unit: 'CELSIUS' } : undefined,
+        dewPoint: Number.isFinite(dewVal) ? { degrees: dewVal, unit: 'CELSIUS' } : undefined,
+        relativeHumidity: Number.isFinite(humVal) ? humVal : undefined,
+        uvIndex: Number.isFinite(uvVal) ? uvVal : undefined,
+        precipitation: Number.isFinite(rainProb)
+          ? { probability: { percent: rainProb, type: 'RAIN' } }
+          : undefined,
+        wind: {
+          direction: {
+            degrees: Number.isFinite(windDeg) ? windDeg : 0,
+            cardinal: degreesToCardinal(windDeg),
+          },
+          speed: { value: Number.isFinite(windSpd) ? windSpd : 0, unit: 'KILOMETERS_PER_HOUR' },
+          gust: Number.isFinite(windGust)
+            ? { value: windGust, unit: 'KILOMETERS_PER_HOUR' }
+            : undefined,
+        },
+        cloudCover: Number.isFinite(cloudVal) ? cloudVal : undefined,
+      };
+    }
+
+    const daily = om?.daily || {};
+    const dDates: string[] = Array.isArray(daily.time) ? daily.time : [];
+    const forecastDays = dDates.slice(0, 7).map((isoDate, i) => {
+      const [year, month, day] = String(isoDate).split('-').map(Number);
+      const dCond = wmoToConditionType(Number(daily.weather_code?.[i] ?? 2), true);
+      const wDir = Number(daily.wind_direction_10m_dominant?.[i]);
+      const wSpd = Number(daily.wind_speed_10m_max?.[i]);
+      const wGust = Number(daily.wind_gusts_10m_max?.[i]);
+      const humMean = Number(daily.relative_humidity_2m_mean?.[i]);
+      const uvMax = Number(daily.uv_index_max?.[i]);
+      const rainMax = Number(daily.precipitation_probability_max?.[i]);
+      return {
+        source: 'open-meteo',
+        displayDate: { year, month, day },
+        maxTemperature: daily.temperature_2m_max?.[i] != null
+          ? { degrees: Number(daily.temperature_2m_max[i]), unit: 'CELSIUS' }
+          : undefined,
+        minTemperature: daily.temperature_2m_min?.[i] != null
+          ? { degrees: Number(daily.temperature_2m_min[i]), unit: 'CELSIUS' }
+          : undefined,
+        daytimeForecast: {
+          weatherCondition: {
+            type: dCond.type,
+            description: { text: isFr ? dCond.descFr : dCond.descEn, languageCode: lang },
+          },
+          relativeHumidity: Number.isFinite(humMean) ? Math.round(humMean) : undefined,
+          uvIndex: Number.isFinite(uvMax) ? Math.round(uvMax) : undefined,
+          precipitation: {
+            probability: { percent: Number.isFinite(rainMax) ? Math.round(rainMax) : 0, type: 'RAIN' },
+          },
+          wind: {
+            direction: {
+              degrees: Number.isFinite(wDir) ? wDir : 0,
+              cardinal: degreesToCardinal(wDir),
+            },
+            speed: { value: Number.isFinite(wSpd) ? wSpd : 0, unit: 'KILOMETERS_PER_HOUR' },
+            gust: Number.isFinite(wGust)
+              ? { value: wGust, unit: 'KILOMETERS_PER_HOUR' }
+              : undefined,
+          },
+        },
+      };
+    });
+
+    return { current, forecastDays };
+  } catch {
+    return { current: null, forecastDays: [] };
+  }
 }
 
 async function fetchOpenMeteoAtmosphericFallback(lat: number, lng: number, lang: string) {
@@ -1742,17 +2058,17 @@ async function fetchOpenMeteoAtmosphericFallback(lat: number, lng: number, lang:
     url.searchParams.set('hourly', 'alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen');
     url.searchParams.set('forecast_days', '5');
     url.searchParams.set('timezone', 'auto');
-    const resp = await fetch(url.toString());
+    const resp = await fetch(url.toString(), { signal: AbortSignal.timeout(7000) });
     if (!resp.ok) return { aqi: null, pollen: null };
     const om = await resp.json();
     const cur = om?.current || {};
 
-    const pm25 = Number(cur.pm2_5);
-    const pm10 = Number(cur.pm10);
-    const no2 = Number(cur.nitrogen_dioxide);
-    const o3 = Number(cur.ozone);
-    const eaqi = Number(cur.european_aqi);
-    const usAqi = Number(cur.us_aqi);
+    const pm25 = cur.pm2_5 != null ? Number(cur.pm2_5) : NaN;
+    const pm10 = cur.pm10 != null ? Number(cur.pm10) : NaN;
+    const no2 = cur.nitrogen_dioxide != null ? Number(cur.nitrogen_dioxide) : NaN;
+    const o3 = cur.ozone != null ? Number(cur.ozone) : NaN;
+    const eaqi = cur.european_aqi != null ? Number(cur.european_aqi) : NaN;
+    const usAqi = cur.us_aqi != null ? Number(cur.us_aqi) : NaN;
     const pollutantsRaw = [
       { code: 'pm25', ratio: Number.isFinite(pm25) ? pm25 / 15 : 0, val: pm25 },
       { code: 'pm10', ratio: Number.isFinite(pm10) ? pm10 / 45 : 0, val: pm10 },
@@ -1766,10 +2082,10 @@ async function fetchOpenMeteoAtmosphericFallback(lat: number, lng: number, lang:
       source: 'open-meteo',
       indexes: [
         {
-          code: 'eaqi',
+          code: Number.isFinite(eaqi) ? 'eaqi' : 'usa_epa',
           displayName: Number.isFinite(eaqi) ? 'European AQI' : 'US AQI',
-          aqi: Number.isFinite(eaqi) ? Math.round(eaqi) : aqiMeta.score,
-          aqiDisplay: String(Number.isFinite(eaqi) ? Math.round(eaqi) : aqiMeta.score),
+          aqi: aqiMeta.score,
+          aqiDisplay: String(aqiMeta.score),
           category: aqiMeta.cat,
           dominantPollutant,
         },
@@ -1857,6 +2173,48 @@ async function fetchOpenMeteoAtmosphericFallback(lat: number, lng: number, lang:
   }
 }
 
+app.get('/api/weather/locate', async (req, res) => {
+  const fwd = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+  const rawIp = fwd || req.socket?.remoteAddress || '';
+  const cleanIp = rawIp.replace(/^::ffff:/, '');
+  const isPrivate =
+    !cleanIp ||
+    cleanIp === '127.0.0.1' ||
+    cleanIp === '::1' ||
+    /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.)/.test(cleanIp);
+
+  if (!isPrivate) {
+    try {
+      const geoUrl = `https://get.geojs.io/v1/ip/geo/${encodeURIComponent(cleanIp)}.json`;
+      const resp = await fetch(geoUrl, { signal: AbortSignal.timeout(3000) });
+      if (resp.ok) {
+        const d = await resp.json();
+        const lat = Number(d?.latitude);
+        const lng = Number(d?.longitude);
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          return res.json({
+            success: true,
+            source: 'ip',
+            lat,
+            lng,
+            city: d?.city || d?.region || d?.country || '',
+            country: d?.country || '',
+          });
+        }
+      }
+    } catch {}
+  }
+
+  return res.json({
+    success: true,
+    source: 'default',
+    lat: 48.8566,
+    lng: 2.3522,
+    city: 'Paris',
+    country: 'France',
+  });
+});
+
 app.get('/api/weather', async (req, res) => {
   const lat = Number(req.query.lat);
   const lng = Number(req.query.lng);
@@ -1866,131 +2224,148 @@ app.get('/api/weather', async (req, res) => {
     return res.status(400).json({ success: false, reason: 'invalid_coordinates' });
   }
 
-  const mapsKey = getMapsApiKey();
-  if (!mapsKey) {
-    return res.status(200).json({ success: false, reason: 'maps_key_not_configured' });
-  }
-
   const cacheKey = `${lat.toFixed(2)},${lng.toFixed(2)},${lang}`;
   const cached = weatherCache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) {
     return res.json({ ...cached.payload, cached: true });
   }
 
-  const curUrl = new URL('https://weather.googleapis.com/v1/currentConditions:lookup');
-  curUrl.searchParams.set('key', mapsKey);
-  curUrl.searchParams.set('location.latitude', String(lat));
-  curUrl.searchParams.set('location.longitude', String(lng));
-  curUrl.searchParams.set('unitsSystem', 'METRIC');
-
-  const daysUrl = new URL('https://weather.googleapis.com/v1/forecast/days:lookup');
-  daysUrl.searchParams.set('key', mapsKey);
-  daysUrl.searchParams.set('location.latitude', String(lat));
-  daysUrl.searchParams.set('location.longitude', String(lng));
-  daysUrl.searchParams.set('days', '7');
-  daysUrl.searchParams.set('pageSize', '7');
-  daysUrl.searchParams.set('unitsSystem', 'METRIC');
-
-  const aqiUrl = `https://airquality.googleapis.com/v1/currentConditions:lookup?key=${encodeURIComponent(mapsKey)}`;
-
-  const pollenUrl = new URL('https://pollen.googleapis.com/v1/forecast:lookup');
-  pollenUrl.searchParams.set('key', mapsKey);
-  pollenUrl.searchParams.set('location.latitude', String(lat));
-  pollenUrl.searchParams.set('location.longitude', String(lng));
-  pollenUrl.searchParams.set('days', '5');
-  pollenUrl.searchParams.set('plantsDescription', 'false');
-  pollenUrl.searchParams.set('languageCode', lang);
-
-  const geoUrl = new URL('https://geocode.googleapis.com/v4/geocode/location');
-  geoUrl.searchParams.set('location.latitude', String(lat));
-  geoUrl.searchParams.set('location.longitude', String(lng));
-  geoUrl.searchParams.set('languageCode', lang);
+  const mapsKey = getMapsApiKey();
+  let cur: any = null;
+  let forecastDays: any[] = [];
+  let aqi: any = null;
+  let pollen: any = null;
+  let location = {
+    shortName: '',
+    locality: '',
+    neighborhood: '',
+    region: '',
+    country: '',
+    formattedAddress: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+  };
+  let quotaExceeded = false;
 
   try {
-    const [curRes, daysRes, aqiRes, pollenRes, geoRes] = await Promise.all([
-      fetchJsonWithGmp(curUrl.toString()),
-      fetchJsonWithGmp(daysUrl.toString()),
-      fetchJsonWithGmp(aqiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          universalAqi: true,
-          location: { latitude: lat, longitude: lng },
-          extraComputations: [
-            'HEALTH_RECOMMENDATIONS',
-            'DOMINANT_POLLUTANT_CONCENTRATION',
-            'POLLUTANT_CONCENTRATION',
-            'LOCAL_AQI',
-          ],
-          languageCode: lang,
+    if (mapsKey) {
+      const curUrl = new URL('https://weather.googleapis.com/v1/currentConditions:lookup');
+      curUrl.searchParams.set('key', mapsKey);
+      curUrl.searchParams.set('location.latitude', String(lat));
+      curUrl.searchParams.set('location.longitude', String(lng));
+      curUrl.searchParams.set('unitsSystem', 'METRIC');
+
+      const daysUrl = new URL('https://weather.googleapis.com/v1/forecast/days:lookup');
+      daysUrl.searchParams.set('key', mapsKey);
+      daysUrl.searchParams.set('location.latitude', String(lat));
+      daysUrl.searchParams.set('location.longitude', String(lng));
+      daysUrl.searchParams.set('days', '7');
+      daysUrl.searchParams.set('pageSize', '7');
+      daysUrl.searchParams.set('unitsSystem', 'METRIC');
+
+      const aqiUrl = `https://airquality.googleapis.com/v1/currentConditions:lookup?key=${encodeURIComponent(mapsKey)}`;
+
+      const pollenUrl = new URL('https://pollen.googleapis.com/v1/forecast:lookup');
+      pollenUrl.searchParams.set('key', mapsKey);
+      pollenUrl.searchParams.set('location.latitude', String(lat));
+      pollenUrl.searchParams.set('location.longitude', String(lng));
+      pollenUrl.searchParams.set('days', '5');
+      pollenUrl.searchParams.set('plantsDescription', 'false');
+      pollenUrl.searchParams.set('languageCode', lang);
+
+      const geoUrl = new URL('https://geocode.googleapis.com/v4/geocode/location');
+      geoUrl.searchParams.set('location.latitude', String(lat));
+      geoUrl.searchParams.set('location.longitude', String(lng));
+      geoUrl.searchParams.set('languageCode', lang);
+
+      const [curRes, daysRes, aqiRes, pollenRes, geoRes] = await Promise.all([
+        fetchJsonWithGmp(curUrl.toString()),
+        fetchJsonWithGmp(daysUrl.toString()),
+        fetchJsonWithGmp(aqiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            universalAqi: true,
+            location: { latitude: lat, longitude: lng },
+            extraComputations: [
+              'HEALTH_RECOMMENDATIONS',
+              'DOMINANT_POLLUTANT_CONCENTRATION',
+              'POLLUTANT_CONCENTRATION',
+              'LOCAL_AQI',
+            ],
+            languageCode: lang,
+          }),
         }),
-      }),
-      fetchJsonWithGmp(pollenUrl.toString()),
-      fetchJsonWithGmp(geoUrl.toString(), {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Goog-Api-Key': mapsKey,
-          'X-Goog-FieldMask': 'results.placeId,results.formattedAddress,results.addressComponents,results.types,plusCode',
-        },
-      }),
-    ]);
+        fetchJsonWithGmp(pollenUrl.toString()),
+        fetchJsonWithGmp(geoUrl.toString(), {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Goog-Api-Key': mapsKey,
+            'X-Goog-FieldMask': 'results.placeId,results.formattedAddress,results.addressComponents,results.types,plusCode',
+          },
+        }),
+      ]);
 
-    const quotaExceeded = Boolean(
-      curRes.quotaExceeded ||
-      daysRes.quotaExceeded ||
-      aqiRes.quotaExceeded ||
-      pollenRes.quotaExceeded ||
-      geoRes.quotaExceeded,
-    );
+      quotaExceeded = Boolean(
+        curRes.quotaExceeded ||
+        daysRes.quotaExceeded ||
+        aqiRes.quotaExceeded ||
+        pollenRes.quotaExceeded ||
+        geoRes.quotaExceeded,
+      );
 
-    if (quotaExceeded && !curRes.ok && !daysRes.ok) {
-      return res.status(429).json({
-        success: false,
-        quotaExceeded: true,
-        reason: 'quota_exceeded',
-      });
-    }
+      if (curRes.ok && curRes.data) cur = curRes.data;
 
-    // Follow nextPageToken once if Forecast returned < 7 days cleanly
-    let forecastDays: any[] = Array.isArray(daysRes.data?.forecastDays) ? daysRes.data.forecastDays.slice() : [];
-    if (daysRes.ok && daysRes.data?.nextPageToken && forecastDays.length < 7) {
-      const p2Url = new URL(daysUrl.toString());
-      p2Url.searchParams.set('pageToken', String(daysRes.data.nextPageToken));
-      const p2Res = await fetchJsonWithGmp(p2Url.toString());
-      if (p2Res.ok && Array.isArray(p2Res.data?.forecastDays)) {
-        forecastDays = forecastDays.concat(p2Res.data.forecastDays).slice(0, 7);
+      if (daysRes.ok && Array.isArray(daysRes.data?.forecastDays)) {
+        forecastDays = daysRes.data.forecastDays.slice();
+        if (daysRes.data?.nextPageToken && forecastDays.length < 7) {
+          const p2Url = new URL(daysUrl.toString());
+          p2Url.searchParams.set('pageToken', String(daysRes.data.nextPageToken));
+          const p2Res = await fetchJsonWithGmp(p2Url.toString());
+          if (p2Res.ok && Array.isArray(p2Res.data?.forecastDays)) {
+            forecastDays = forecastDays.concat(p2Res.data.forecastDays).slice(0, 7);
+          }
+        }
+      }
+
+      let finalAqiRes = aqiRes;
+      if (!finalAqiRes.ok && !finalAqiRes.quotaExceeded && finalAqiRes.status === 400 && curRes.ok) {
+        finalAqiRes = await fetchJsonWithGmp(aqiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            universalAqi: true,
+            location: { latitude: lat, longitude: lng },
+          }),
+        });
+      }
+      if (finalAqiRes.ok && finalAqiRes.data) aqi = finalAqiRes.data;
+      if (pollenRes.ok && pollenRes.data) pollen = pollenRes.data;
+      if (geoRes.ok && geoRes.data) {
+        location = extractLocationSummary(geoRes.data, lat, lng);
       }
     }
 
-    let finalAqiRes = aqiRes;
-    if (!finalAqiRes.ok && !finalAqiRes.quotaExceeded && finalAqiRes.status === 400) {
-      finalAqiRes = await fetchJsonWithGmp(aqiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          universalAqi: true,
-          location: { latitude: lat, longitude: lng },
-        }),
-      });
-    }
+    // Complete live fallback whenever any atmospheric or geocoding service is unavailable
+    const needsWx = !cur || !forecastDays.length;
+    const needsAtmo = !aqi || !pollen;
+    const needsGeo = !location.shortName;
 
-    const cur = curRes.ok ? curRes.data : null;
-    let aqi = finalAqiRes.ok ? finalAqiRes.data : null;
-    let pollen = pollenRes.ok ? pollenRes.data : null;
-    const location = extractLocationSummary(geoRes.ok ? geoRes.data : null, lat, lng);
+    const [omWx, omAtmo, fbGeo] = await Promise.all([
+      needsWx ? fetchOpenMeteoWeatherAndForecast(lat, lng, lang) : Promise.resolve({ current: null, forecastDays: [] }),
+      needsAtmo ? fetchOpenMeteoAtmosphericFallback(lat, lng, lang) : Promise.resolve({ aqi: null, pollen: null }),
+      needsGeo ? reverseGeocodeFallback(lat, lng, lang) : Promise.resolve(null),
+    ]);
 
-    if ((!aqi || !pollen) && !quotaExceeded) {
-      const fb = await fetchOpenMeteoAtmosphericFallback(lat, lng, lang);
-      if (!aqi && fb.aqi) aqi = fb.aqi;
-      if (!pollen && fb.pollen) pollen = fb.pollen;
-    }
+    if (!cur && omWx.current) cur = omWx.current;
+    if (!forecastDays.length && omWx.forecastDays.length) forecastDays = omWx.forecastDays;
+    if (!aqi && omAtmo.aqi) aqi = omAtmo.aqi;
+    if (!pollen && omAtmo.pollen) pollen = omAtmo.pollen;
+    if (!location.shortName && fbGeo) location = fbGeo;
 
-    if (!cur && !forecastDays.length) {
-      return res.status(200).json({
+    if (!cur && !forecastDays.length && !aqi) {
+      return res.status(quotaExceeded ? 429 : 200).json({
         success: false,
         quotaExceeded,
-        reason: curRes.data?.error?.message || 'weather_unavailable',
-        status: curRes.status,
+        reason: quotaExceeded ? 'quota_exceeded' : 'weather_unavailable',
       });
     }
 
@@ -2032,34 +2407,65 @@ app.get('/api/weather/search', async (req, res) => {
     return res.status(400).json({ success: false, reason: 'missing_query' });
   }
   const mapsKey = getMapsApiKey();
-  if (!mapsKey) {
-    return res.status(200).json({ success: false, reason: 'maps_key_not_configured' });
-  }
+  let quotaExceeded = false;
 
   try {
-    const geoUrl = new URL(`https://geocode.googleapis.com/v4/geocode/address/${encodeURIComponent(q)}`);
-    geoUrl.searchParams.set('languageCode', lang);
-    const geoRes = await fetchJsonWithGmp(geoUrl.toString(), {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': mapsKey,
-        'X-Goog-FieldMask': 'results.placeId,results.location,results.formattedAddress,results.addressComponents',
-      },
-    });
-    if (geoRes.quotaExceeded) {
-      return res.status(429).json({ success: false, quotaExceeded: true, reason: 'quota_exceeded' });
+    if (mapsKey) {
+      const geoUrl = new URL(`https://geocode.googleapis.com/v4/geocode/address/${encodeURIComponent(q)}`);
+      geoUrl.searchParams.set('languageCode', lang);
+      const geoRes = await fetchJsonWithGmp(geoUrl.toString(), {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': mapsKey,
+          'X-Goog-FieldMask': 'results.placeId,results.location,results.formattedAddress,results.addressComponents',
+        },
+      });
+      if (geoRes.quotaExceeded) quotaExceeded = true;
+      const first = Array.isArray(geoRes.data?.results) ? geoRes.data.results[0] : null;
+      if (first?.location && Number.isFinite(first.location.latitude) && Number.isFinite(first.location.longitude)) {
+        const summary = extractLocationSummary(geoRes.data, first.location.latitude, first.location.longitude);
+        return res.json({
+          success: true,
+          quotaExceeded,
+          lat: first.location.latitude,
+          lng: first.location.longitude,
+          location: summary,
+        });
+      }
     }
-    const first = Array.isArray(geoRes.data?.results) ? geoRes.data.results[0] : null;
-    if (!first?.location || !Number.isFinite(first.location.latitude) || !Number.isFinite(first.location.longitude)) {
-      return res.status(200).json({ success: false, reason: 'location_not_found' });
+
+    // Open-Meteo Geocoding fallback
+    const omGeo = new URL('https://geocoding-api.open-meteo.com/v1/search');
+    omGeo.searchParams.set('name', q);
+    omGeo.searchParams.set('count', '1');
+    omGeo.searchParams.set('language', String(lang).startsWith('en') ? 'en' : 'fr');
+    omGeo.searchParams.set('format', 'json');
+    const omResp = await fetch(omGeo.toString(), { signal: AbortSignal.timeout(5000) });
+    if (omResp.ok) {
+      const omData = await omResp.json();
+      const hit = Array.isArray(omData?.results) ? omData.results[0] : null;
+      if (hit && Number.isFinite(Number(hit.latitude)) && Number.isFinite(Number(hit.longitude))) {
+        const name = String(hit.name || q);
+        const region = String(hit.admin1 || '');
+        const country = String(hit.country || '');
+        return res.json({
+          success: true,
+          quotaExceeded,
+          lat: Number(hit.latitude),
+          lng: Number(hit.longitude),
+          location: {
+            shortName: name,
+            locality: name,
+            neighborhood: '',
+            region,
+            country,
+            formattedAddress: [name, region, country].filter(Boolean).join(', '),
+          },
+        });
+      }
     }
-    const summary = extractLocationSummary(geoRes.data, first.location.latitude, first.location.longitude);
-    return res.json({
-      success: true,
-      lat: first.location.latitude,
-      lng: first.location.longitude,
-      location: summary,
-    });
+
+    return res.status(200).json({ success: false, quotaExceeded, reason: 'location_not_found' });
   } catch (err: any) {
     return res.status(502).json({
       success: false,

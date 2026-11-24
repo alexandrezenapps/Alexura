@@ -318,7 +318,7 @@ function buildKaraokeLinesFromWhisperChunks(
     if (subTokens.length === 1) {
       cleanTokens.push({ text: subTokens[0], start: s, end: e, conf: recConf, clarity });
     } else {
-      const weights = subTokens.map(tk => Math.max(1, tk.replace(/[^A-Za-zÀ-ÿ\u0100-\u024f0-9\u4e00-\u9fff\u3040-\u30ff\uac00-\ud7af]/g, '').length));
+      const weights = subTokens.map(tk => estimateTokenAcousticWeight(tk));
       const totW = weights.reduce((a, b) => a + b, 0) || subTokens.length;
       let cur = s;
       subTokens.forEach((tk, idx) => {
@@ -593,6 +593,17 @@ export async function transcribeWithWhisper(params: {
   };
 }
 
+function estimateTokenAcousticWeight(tk: string): number {
+  const clean = String(tk || '').replace(/[^A-Za-zÀ-ÿ\u0100-\u024f\u1e00-\u1eff0-9\u4e00-\u9fff\u3400-\u4dbf\u3040-\u30ff\uac00-\ud7af]/g, '');
+  if (!clean) return 0.35;
+  if (/[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u30ff\uac00-\ud7af]/.test(clean)) {
+    return Math.max(0.95, [...clean].length * 1.25);
+  }
+  const vowels = clean.match(/[aeiouyàâäéèêëîïôöùûüÿæœ]+/gi);
+  const syl = vowels ? vowels.length : 1;
+  return Math.max(0.65, syl * 0.92 + clean.length * 0.14);
+}
+
 function normTok(s: string): string {
   return String(s || '')
     .toLowerCase()
@@ -678,12 +689,30 @@ function tokenSimilarity(a: string, b: string): number {
    1) Pre-analyzes integrated lyrics & repairs spelling/diacritics/contractions FIRST
    2) Links lyrics with vocal audio via Whisper Neural DTW and performs voice-confirmed phonetic repair
    3) Returns aligned timings, corrected lines, change log, and per-line voice divergence diagnostics */
+export interface AlignDtwProgressEvent {
+  stage: number;
+  step: 'orthography' | 'vocal_isolation' | 'asr_decode' | 'dtw_matching' | 'moment_refinement';
+  pct: number;
+  label: string;
+  matchedCount?: number;
+  totalTokens?: number;
+  spellingFixCount?: number;
+  recognizedLines?: Array<{ text: string; start: number; end: number }>;
+  partialLineTimes?: Record<number, number>;
+  partialWordTimes?: Record<number, any[]>;
+}
+
+/* 3-Stage Neural DTW Alignment + Orthography & Voice-Linked Typo Reconciliation for SYNCRO VOIX ET PAROLE:
+   1) Pre-analyzes integrated lyrics & repairs spelling/diacritics/contractions FIRST
+   2) Links lyrics with vocal audio via Whisper Neural DTW and performs voice-confirmed phonetic repair
+   3) Streams moment-by-moment aligned timings, corrected lines, change log, and per-line voice divergence diagnostics */
 export async function alignLyricsWithWhisperDTW(params: {
   audioBase64: string;
   separatedVocalBase64?: string;
   lines: Array<{ i?: number; index?: number; text: string }>;
   lang?: string;
   vocalSegments?: Array<{ start: number; end: number }>;
+  onProgress?: (evt: AlignDtwProgressEvent) => void;
 }): Promise<{
   success: boolean;
   matchedCount: number;
@@ -703,7 +732,7 @@ export async function alignLyricsWithWhisperDTW(params: {
   recognizedTranscript: string;
   engine: string;
 }> {
-  const { audioBase64, separatedVocalBase64, lines, lang = 'auto', vocalSegments = [] } = params;
+  const { audioBase64, separatedVocalBase64, lines, lang = 'auto', vocalSegments = [], onProgress } = params;
 
   // Stage A: Analyze integrated lyrics FIRST to fix orthography, accents, and missing apostrophes
   const inputEntries = lines.map((ln, k) => ({
@@ -715,6 +744,13 @@ export async function alignLyricsWithWhisperDTW(params: {
     ...ch,
     lineIdx: inputEntries[ch.lineIdx]?.lineIdx ?? ch.lineIdx,
   }));
+  onProgress?.({
+    stage: 1,
+    step: 'orthography',
+    pct: 14,
+    label: 'Analyse orthographe & extraction vocale…',
+    spellingFixCount: allCorrections.length,
+  });
   const workingLineTexts = new Map<number, string>();
   inputEntries.forEach((e, k) => {
     if (e.rawText && !/^\[interlude/i.test(e.rawText)) {
@@ -736,12 +772,27 @@ export async function alignLyricsWithWhisperDTW(params: {
     return { correctedLines: correctedLinesObj, correctedText };
   };
 
+  onProgress?.({
+    stage: 2,
+    step: 'vocal_isolation',
+    pct: 28,
+    label: 'Isolation vocale & décodage de la voix chantée…',
+    spellingFixCount: allCorrections.length,
+  });
+
   const recognized = await transcribeWithWhisper({
     audioBase64,
     separatedVocalBase64,
     lang: preAudit.detectedLanguage !== 'auto' ? preAudit.detectedLanguage : lang,
     chunkStartSec: 0,
     chunkDurationSec: 300,
+  });
+  onProgress?.({
+    stage: 3,
+    step: 'asr_decode',
+    pct: 50,
+    label: 'Voix décodée — alignement mot à mot en direct…',
+    recognizedLines: recognized.lines.slice(0, 24).map(rl => ({ text: rl.text, start: rl.start, end: rl.end })),
   });
   const asrWords: WhisperWordToken[] = recognized.lines.flatMap(l => l.words || []);
   if (!asrWords.length) {
@@ -867,6 +918,14 @@ export async function alignLyricsWithWhisperDTW(params: {
 
   const matchedCount = anchorMatch.filter(Boolean).length;
   const matchRatio = +(matchedCount / Math.max(1, M)).toFixed(3);
+  onProgress?.({
+    stage: 4,
+    step: 'dtw_matching',
+    pct: 66,
+    label: `Coordination DTW : ${matchedCount}/${M} mots ancrés sur la voix…`,
+    matchedCount,
+    totalTokens: M,
+  });
   if (matchedCount === 0) {
     const cp = buildCorrectedPayload();
     return {
@@ -992,7 +1051,7 @@ export async function alignLyricsWithWhisperDTW(params: {
     const span = hasRightAnchor
       ? Math.max(0.02 * unanchoredCount, effRight - effLeft)
       : Math.max(0.12 * unanchoredCount, effRight - effLeft);
-    const weights = flatUser.slice(i, j).map(u => Math.max(1, u.text.length));
+    const weights = flatUser.slice(i, j).map(u => estimateTokenAcousticWeight(u.text));
     const sumW = weights.reduce((a, b) => a + b, 0) || unanchoredCount;
     let cur = effLeft;
     for (let u = i; u < j; u++) {
@@ -1033,12 +1092,22 @@ export async function alignLyricsWithWhisperDTW(params: {
   });
 
   const divergences: VoiceDivergence[] = [];
+  const totalPerLines = Math.max(1, perLine.size);
+  let resolvedLineNum = 0;
+  let batchLineTimes: Record<number, number> = {};
+  let batchWordTimes: Record<number, any[]> = {};
+  const batchStride = Math.max(1, Math.min(4, Math.ceil(totalPerLines / 5)));
+
   for (const [lineIdx, wArr] of perLine.entries()) {
     if (!wArr.length) continue;
     const ls = wArr[0].start;
     const le = wArr[wArr.length - 1].end;
     lineTimes[lineIdx] = ls;
     wordTimes[lineIdx] = wArr;
+    batchLineTimes[lineIdx] = ls;
+    batchWordTimes[lineIdx] = wArr;
+    resolvedLineNum++;
+
     const avgC = +(wArr.reduce((s, w) => s + w.alignmentConfidence, 0) / wArr.length).toFixed(3);
     const lineFixes = allCorrections.filter(c => c.lineIdx === lineIdx);
     const hitStat = lineAnchorHits.get(lineIdx) || { hit: 0, total: 1 };
@@ -1056,6 +1125,22 @@ export async function alignLyricsWithWhisperDTW(params: {
           ? 'Whisper DTW (zone instrumentale incertaine)'
           : 'Whisper Neural DTW Alignment',
     };
+
+    if (onProgress && (resolvedLineNum % batchStride === 0 || resolvedLineNum === totalPerLines)) {
+      const pct = Math.min(86, Math.round(68 + (resolvedLineNum / totalPerLines) * 18));
+      onProgress({
+        stage: 5,
+        step: 'moment_refinement',
+        pct,
+        label: `Coordination instant par instant (${resolvedLineNum}/${totalPerLines} phrases)…`,
+        matchedCount,
+        totalTokens: M,
+        partialLineTimes: batchLineTimes,
+        partialWordTimes: batchWordTimes,
+      });
+      batchLineTimes = {};
+      batchWordTimes = {};
+    }
 
     const overlappingRec = recognized.lines
       .filter(rl => {

@@ -1,10 +1,20 @@
 import { initializeApp } from 'firebase/app';
 import {
   getAuth,
+  initializeAuth,
+  indexedDBLocalPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+  inMemoryPersistence,
+  browserPopupRedirectResolver,
+  setPersistence,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   onAuthStateChanged,
+  type Auth,
   type User,
 } from 'firebase/auth';
 import {
@@ -76,8 +86,26 @@ function createFirestoreClient(): Firestore {
   }
   return getFirestore(app, firebaseConfig.firestoreDatabaseId);
 }
+function createAuthClient(): Auth {
+  if (typeof window !== 'undefined') {
+    try {
+      return initializeAuth(app, {
+        persistence: [
+          indexedDBLocalPersistence,
+          browserLocalPersistence,
+          browserSessionPersistence,
+          inMemoryPersistence,
+        ],
+        popupRedirectResolver: browserPopupRedirectResolver,
+      });
+    } catch {
+      // Fallback if Auth was already initialized on this app instance
+    }
+  }
+  return getAuth(app);
+}
 export const db = createFirestoreClient();
-export const auth = getAuth(app);
+export const auth = createAuthClient();
 
 export function handleFirestoreError(
   error: unknown,
@@ -218,10 +246,270 @@ export interface SongSaveInput {
   project: Record<string, unknown>;
 }
 
-async function ensureUserProfile(user: User): Promise<void> {
+export interface FormattedAuthError {
+  code: string;
+  message: string;
+  canRetryRedirect: boolean;
+  shouldOpenNewTab: boolean;
+  isCancelled: boolean;
+}
+
+function extractAuthErrorCode(err: unknown): string {
+  if (!err || typeof err !== 'object') {
+    const s = String(err || '');
+    if (s.includes('AUTH_EMAIL_NOT_VERIFIED')) return 'auth/email-not-verified';
+    if (s.includes('AUTH_REQUIRED')) return 'auth/required';
+    if (s.includes('access_denied')) return 'auth/access-denied';
+    return '';
+  }
+  const code = String((err as { code?: unknown }).code || '').trim();
+  if (code) return code;
+  const msg = String((err as { message?: unknown }).message || '');
+  const m = msg.match(/\((auth\/[a-z0-9-]+)\)/i);
+  if (m) return m[1].toLowerCase();
+  if (msg.includes('AUTH_EMAIL_NOT_VERIFIED')) return 'auth/email-not-verified';
+  if (msg.includes('AUTH_REQUIRED')) return 'auth/required';
+  if (msg.toLowerCase().includes('access_denied')) return 'auth/access-denied';
+  if (msg.toLowerCase().includes('missing or insufficient permissions')) return 'firestore/permission-denied';
+  if (msg.toLowerCase().includes('the client is offline')) return 'firestore/offline';
+  return '';
+}
+
+function isEmbeddedIframe(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
+}
+
+export function formatAuthError(err: unknown, lang = 'fr'): FormattedAuthError {
+  const l = String(lang || 'fr').toLowerCase().startsWith('en')
+    ? 'en'
+    : String(lang || 'fr').toLowerCase().startsWith('ja')
+      ? 'ja'
+      : 'fr';
+  const code = extractAuthErrorCode(err);
+  let rawMsg = err instanceof Error ? err.message : String(err || '');
+  try {
+    const parsed = JSON.parse(rawMsg);
+    if (parsed && parsed.error) {
+      rawMsg = `${parsed.error}${parsed.path ? ` (${parsed.path})` : ''}`;
+    }
+  } catch {
+    // Keep raw message when not JSON
+  }
+
+  const host = typeof window !== 'undefined' ? window.location.hostname : '';
+  const inIframe = isEmbeddedIframe();
+
+  if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+    return {
+      code,
+      isCancelled: true,
+      canRetryRedirect: false,
+      shouldOpenNewTab: false,
+      message:
+        l === 'en'
+          ? 'Google sign-in window was closed before completing login.'
+          : l === 'ja'
+            ? 'ログイン完了前に Google ウィンドウが閉じられました。'
+            : 'La fenêtre de connexion Google a été fermée avant la fin de l’authentification.',
+    };
+  }
+
+  if (
+    code === 'auth/popup-blocked' ||
+    code === 'auth/popup-blocked-iframe' ||
+    code === 'auth/operation-not-supported-in-this-environment'
+  ) {
+    return {
+      code,
+      isCancelled: false,
+      canRetryRedirect: !inIframe,
+      shouldOpenNewTab: inIframe,
+      message:
+        l === 'en'
+          ? inIframe
+            ? 'Popup blocked inside preview frame. Allow popups for this site or open Alexura in a new tab to sign in with any Google account.'
+            : 'Popup blocked by your browser. Allow popups or use Redirect Sign-In below.'
+          : l === 'ja'
+            ? inIframe
+              ? 'プレビュー枠内でポップアップがブロックされました。ポップアップを許可するか、新しいタブで開いて Google ログインしてください。'
+              : 'ブラウザがポップアップをブロックしました。ポップアップを許可するか、リダイレクトログインをお試しください。'
+            : inIframe
+              ? 'La fenêtre Google a été bloquée dans le cadre d’aperçu. Autorisez les pop-ups pour ce site ou ouvrez Alexura dans un nouvel onglet pour connecter n’importe quel compte Google.'
+              : 'La fenêtre pop-up a été bloquée par votre navigateur. Autorisez les pop-ups ou utilisez la connexion par redirection ci-dessous.',
+    };
+  }
+
+  if (code === 'auth/unauthorized-domain') {
+    return {
+      code,
+      isCancelled: false,
+      canRetryRedirect: false,
+      shouldOpenNewTab: false,
+      message:
+        l === 'en'
+          ? `Domain "${host}" is not authorized in Firebase Authentication > Settings > Authorized domains.`
+          : l === 'ja'
+            ? `ドメイン「${host}」が Firebase Authentication の承認済みドメインに登録されていません。`
+            : `Le domaine « ${host} » n’est pas encore autorisé dans Firebase Authentication (Paramètres > Domaines autorisés).`,
+    };
+  }
+
+  if (code === 'auth/web-storage-unsupported') {
+    return {
+      code,
+      isCancelled: false,
+      canRetryRedirect: false,
+      shouldOpenNewTab: inIframe,
+      message:
+        l === 'en'
+          ? 'Browser storage/cookies are blocked (third-party cookie restriction or strict private mode). Open Alexura in a new normal browser tab.'
+          : l === 'ja'
+            ? 'ブラウザのストレージ／Cookieがブロックされています。通常の新しいタブで開いてお試しください。'
+            : 'Le stockage ou les cookies tiers sont bloqués par le navigateur. Ouvrez Alexura dans un nouvel onglet normal pour vous connecter.',
+    };
+  }
+
+  if (code === 'auth/email-not-verified') {
+    return {
+      code,
+      isCancelled: false,
+      canRetryRedirect: false,
+      shouldOpenNewTab: false,
+      message:
+        l === 'en'
+          ? 'This Google account email is not marked as verified yet. Verify the email in your Google account security settings to unlock cloud saves.'
+          : l === 'ja'
+            ? 'この Google アカウントのメールが未確認のためクラウド保存できません。Google アカウント側でメール確認を完了してください。'
+            : 'L’adresse e-mail de ce compte Google n’est pas encore vérifiée. Validez votre e-mail Google pour enregistrer sur Firebase.',
+    };
+  }
+
+  if (code === 'auth/access-denied' || code === 'auth/operation-not-allowed' || code === 'auth/internal-error') {
+    return {
+      code,
+      isCancelled: false,
+      canRetryRedirect: !inIframe && code === 'auth/internal-error',
+      shouldOpenNewTab: inIframe,
+      message:
+        l === 'en'
+          ? 'Google OAuth refused sign-in for this account. If external accounts are blocked (403 access_denied), set the Google Cloud OAuth Consent Screen from "Testing" to "In Production" (or add the account as a Test User).'
+          : l === 'ja'
+            ? 'このアカウントの Google OAuth ログインが拒否されました。他のアカウントが 403 access_denied で弾かれる場合は、Google Cloud の OAuth 同意画面を「テスト」から「本番（公開）」へ切り替えてください。'
+            : 'Google OAuth a refusé la connexion pour ce compte. Si les autres comptes sont bloqués (erreur 403 access_denied), passez l’écran de consentement OAuth Google Cloud de « En phase de test » à « En production » (ou ajoutez le joueur en testeur).',
+    };
+  }
+
+  if (code === 'auth/network-request-failed' || code === 'firestore/offline') {
+    return {
+      code,
+      isCancelled: false,
+      canRetryRedirect: false,
+      shouldOpenNewTab: false,
+      message:
+        l === 'en'
+          ? 'Network connection to Google/Firebase failed. Check your internet connection or VPN and retry.'
+          : l === 'ja'
+            ? 'Google / Firebase への接続に失敗しました。ネットワーク接続を確認して再試行してください。'
+            : 'Impossible de joindre Google / Firebase. Vérifiez votre connexion Internet (ou bloqueur/VPN) puis réessayez.',
+    };
+  }
+
+  if (code === 'firestore/permission-denied') {
+    return {
+      code,
+      isCancelled: false,
+      canRetryRedirect: false,
+      shouldOpenNewTab: false,
+      message:
+        l === 'en'
+          ? `Firestore permission denied (${rawMsg}). Verify you are signed in with a verified Google account.`
+          : l === 'ja'
+            ? `Firestore の権限エラー (${rawMsg})。Google ログイン状態をご確認ください。`
+            : `Accès Firestore refusé (${rawMsg}). Reconnectez votre compte Google puis réessayez.`,
+    };
+  }
+
+  return {
+    code: code || 'auth/unknown',
+    isCancelled: false,
+    canRetryRedirect: false,
+    shouldOpenNewTab: false,
+    message: rawMsg || (l === 'en' ? 'Google authentication error.' : 'Erreur lors de l’authentification Google.'),
+  };
+}
+
+const beforeAuthChangeListeners = new Set<() => void>();
+const authErrorListeners = new Set<(err: Error) => void>();
+let authInFlight: Promise<User> | null = null;
+
+export function subscribeBeforeAuthChange(cb: () => void): Unsubscribe {
+  beforeAuthChangeListeners.add(cb);
+  return () => {
+    beforeAuthChangeListeners.delete(cb);
+  };
+}
+
+export function subscribeAuthError(cb: (err: Error) => void): Unsubscribe {
+  authErrorListeners.add(cb);
+  return () => {
+    authErrorListeners.delete(cb);
+  };
+}
+
+function notifyBeforeAuthChange(): void {
+  for (const cb of beforeAuthChangeListeners) {
+    try {
+      cb();
+    } catch {
+      // Ignore listener teardown errors
+    }
+  }
+}
+
+function notifyAuthError(err: Error): void {
+  for (const cb of authErrorListeners) {
+    try {
+      cb(err);
+    } catch {
+      // Ignore listener notification errors
+    }
+  }
+}
+
+function buildGoogleProvider(): GoogleAuthProvider {
+  const provider = new GoogleAuthProvider();
+  provider.addScope('email');
+  provider.addScope('profile');
+  provider.setCustomParameters({ prompt: 'select_account' });
+  return provider;
+}
+
+async function ensureAuthPersistence(): Promise<void> {
+  const candidates = [
+    indexedDBLocalPersistence,
+    browserLocalPersistence,
+    browserSessionPersistence,
+    inMemoryPersistence,
+  ];
+  for (const p of candidates) {
+    try {
+      await setPersistence(auth, p);
+      return;
+    } catch {
+      // Try next less-restrictive persistence tier
+    }
+  }
+}
+
+async function ensureUserProfile(user: User, throwOnError = true): Promise<void> {
   const path = `users/${user.uid}`;
   const ref = doc(db, 'users', user.uid);
-  try {
+  const writeProfile = async () => {
     const snap = await getDoc(ref);
     if (snap.exists()) {
       await updateDoc(ref, {
@@ -240,20 +528,135 @@ async function ensureUserProfile(user: User): Promise<void> {
         updatedAt: serverTimestamp(),
       });
     }
-  } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, path);
+  };
+
+  try {
+    await writeProfile();
+  } catch (firstErr) {
+    const firstMsg = firstErr instanceof Error ? firstErr.message : String(firstErr);
+    if (
+      firstMsg.includes('offline') ||
+      firstMsg.includes('unavailable') ||
+      firstMsg.includes('Missing or insufficient permissions')
+    ) {
+      try {
+        await user.getIdToken(true).catch(() => {});
+        await enableNetwork(db).catch(() => {});
+        await new Promise((r) => setTimeout(r, 240));
+        await writeProfile();
+        return;
+      } catch (retryErr) {
+        if (!throwOnError) {
+          console.warn('User profile sync deferred after login:', retryErr);
+          return;
+        }
+        handleFirestoreError(retryErr, OperationType.WRITE, path);
+      }
+    }
+    if (!throwOnError) {
+      console.warn('User profile sync deferred after login:', firstErr);
+      return;
+    }
+    handleFirestoreError(firstErr, OperationType.WRITE, path);
   }
 }
 
-export async function signInGoogle(): Promise<User> {
-  const provider = new GoogleAuthProvider();
-  provider.setCustomParameters({ prompt: 'select_account' });
-  const cred = await signInWithPopup(auth, provider);
-  await ensureUserProfile(cred.user);
-  return cred.user;
+async function finalizeAuthenticatedUser(user: User): Promise<User> {
+  try {
+    await user.reload();
+  } catch {
+    // Non-fatal if user reload skips offline
+  }
+  try {
+    await user.getIdToken(true);
+  } catch {
+    // Non-fatal token refresh guard
+  }
+  if (user.emailVerified === false) {
+    throw new Error('AUTH_EMAIL_NOT_VERIFIED');
+  }
+  // Keep login resilient even if initial cold profile write hits offline lag
+  await ensureUserProfile(user, false);
+  return user;
+}
+
+if (typeof window !== 'undefined') {
+  getRedirectResult(auth, browserPopupRedirectResolver)
+    .then(async (cred) => {
+      if (cred?.user) {
+        await finalizeAuthenticatedUser(cred.user);
+      }
+    })
+    .catch((err) => {
+      const code = extractAuthErrorCode(err);
+      if (code && code !== 'auth/no-current-user') {
+        notifyAuthError(err instanceof Error ? err : new Error(String(err)));
+      }
+    });
+}
+
+export async function signInGoogleRedirect(): Promise<void> {
+  await ensureAuthPersistence();
+  if (auth.currentUser) {
+    notifyBeforeAuthChange();
+  }
+  const provider = buildGoogleProvider();
+  await signInWithRedirect(auth, provider, browserPopupRedirectResolver);
+}
+
+export async function signInGoogle(_options?: { forceAccountSelect?: boolean; preferRedirect?: boolean }): Promise<User> {
+  if (authInFlight) {
+    return authInFlight;
+  }
+  const run = async (): Promise<User> => {
+    await ensureAuthPersistence();
+    if (_options?.preferRedirect && !isEmbeddedIframe()) {
+      await signInGoogleRedirect();
+      // signInWithRedirect navigates away; keep type contract satisfied if mocked
+      if (auth.currentUser) return auth.currentUser;
+      throw new Error('AUTH_REDIRECT_STARTED');
+    }
+
+    const hadUser = Boolean(auth.currentUser);
+    if (hadUser) {
+      // Unsubscribe previous account's Firestore snapshot queries cleanly BEFORE swapping Firebase Auth UID
+      notifyBeforeAuthChange();
+    }
+
+    const provider = buildGoogleProvider();
+    try {
+      const cred = await signInWithPopup(auth, provider, browserPopupRedirectResolver);
+      return await finalizeAuthenticatedUser(cred.user);
+    } catch (err) {
+      const code = extractAuthErrorCode(err);
+      if (
+        (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') &&
+        !isEmbeddedIframe()
+      ) {
+        await signInWithRedirect(auth, provider, browserPopupRedirectResolver);
+        throw new Error('AUTH_REDIRECT_STARTED');
+      }
+      if (code === 'auth/popup-blocked' && isEmbeddedIframe()) {
+        const e = new Error('auth/popup-blocked-iframe') as Error & { code?: string };
+        e.code = 'auth/popup-blocked-iframe';
+        throw e;
+      }
+      throw err;
+    }
+  };
+
+  authInFlight = run().finally(() => {
+    authInFlight = null;
+  });
+  return authInFlight;
+}
+
+export async function switchAccountGoogle(): Promise<User> {
+  return signInGoogle({ forceAccountSelect: true });
 }
 
 export async function signOutGoogle(): Promise<void> {
+  notifyBeforeAuthChange();
   await signOut(auth);
 }
 
@@ -328,6 +731,36 @@ export async function saveSongToCloud(
   const finalChunkCount = audioChunks.length > 0 ? audioChunks.length : prevChunkCount;
   const hasAudioChunks = finalChunkCount > 0;
   const cleanProject = toFirestoreClean(input.project || {}) as Record<string, unknown>;
+
+  // Guard against Firestore 1 MiB document size ceiling on large word/char-level projects
+  const estimateBytes = (val: unknown): number => {
+    try {
+      const json = JSON.stringify(val);
+      return typeof TextEncoder !== 'undefined' ? new TextEncoder().encode(json).length : json.length * 2;
+    } catch {
+      return 0;
+    }
+  };
+  if (estimateBytes(cleanProject) > 850000 && cleanProject.timing && typeof cleanProject.timing === 'object') {
+    const timing = { ...(cleanProject.timing as Record<string, unknown>) };
+    delete timing.charTimings;
+    delete timing.debugFrames;
+    delete timing.phonemeFrames;
+    if (timing.wordTimes && typeof timing.wordTimes === 'object') {
+      const compactWords: Record<string, unknown> = {};
+      for (const [k, arr] of Object.entries(timing.wordTimes as Record<string, unknown>)) {
+        if (Array.isArray(arr)) {
+          compactWords[k] = arr.map((w: unknown) => {
+            if (!w || typeof w !== 'object') return w;
+            const wo = w as Record<string, unknown>;
+            return { text: wo.text, start: wo.start, end: wo.end };
+          });
+        }
+      }
+      timing.wordTimes = compactWords;
+    }
+    cleanProject.timing = timing;
+  }
 
   const songPayload: Record<string, unknown> = {
     songId,
@@ -756,11 +1189,16 @@ const AlexuraCloud = {
   },
   OperationType,
   handleFirestoreError,
+  formatAuthError,
   testConnection,
   signInGoogle,
+  switchAccountGoogle,
+  signInGoogleRedirect,
   signOutGoogle,
   getUser: () => auth.currentUser,
   subscribeAuth,
+  subscribeBeforeAuthChange,
+  subscribeAuthError,
   subscribeUserSongs,
   subscribeWorkHistory,
   saveSongToCloud,
