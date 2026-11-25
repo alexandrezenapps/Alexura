@@ -97,6 +97,78 @@ J.THEMES = {
     },
     avoid: { bg: ['seigaiha', 'asanoha', 'wzBgShippo'] },
   },
+  trapsoul: {
+    name: 'TRAP SOUL',
+    moods: ['emotional', 'glitch', 'calm'],
+    styles: [
+      'ts808Velvet', 'tsLateNightDrive', 'tsAmethystHaze', 'tsLeanPurple', 'tsChromeTears',
+      'tsSubBassGold', 'tsRainWindow', 'tsMoodySatin', 'tsNocturneEcho', 'tsGhostHotline',
+    ],
+    koma: [0],
+    extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
+    fxPatch: { motion: [0.68, 0.90], glitch: [0.22, 0.48], chroma: [0.58, 0.90], decor: [0.46, 0.78], density: [0.42, 0.68], texture: [0.38, 0.65], bgSwitch: [0.35, 0.65] },
+    prefers: {
+      layout: ['equalizer', 'neon', 'huge', 'depthStack', 'rain', 'mirror', 'xdKaraoke', 'vinyl', 'vcols', 'lowerThird'],
+      enter: ['mvTrap808Drop', 'mvTrapGlide', 'blurStagger', 'neonOn', 'echoIn', 'iris', 'backlight', 'xgPumpUp'],
+      hold: ['mvTrap808Pump', 'mvTrapFloatDrift', 'heartbeat', 'beatHop', 'focusRack', 'xkBeatBump', 'xkLoudWeight', 'glowFlicker'],
+      exit: ['mvTrapSmokeOut', 'dissolve', 'blurOutStagger', 'zoomThrough', 'echoOut'],
+      cam: ['mvCam808Kick', 'mvCamLateDrive', 'beatPunch', 'xqBeatBreath', 'dollyIn', 'rackFocus', 'xqLoudZoom'],
+      fx: ['mvFx808Shock', 'bloomFlash', 'radialChroma', 'anamorphic', 'rgbSplit', 'chroma'],
+      trans: ['mvTransSilkBlend', 'xqLightLeak', 'xqSoftSweep', 'zoomThrough', 'irisOpen'],
+      treat: ['mvTreatRnbAura', 'glow', 'neonOutline', 'gradientV', 'softShadow', 'karaoke'],
+      bg: ['mvBg808SubRing', 'rainWindow', 'spotlight', 'bokehBg', 'horizonGlow', 'eqBars'],
+      decor: ['mvDecoHhBars', 'beatRing', 'lightLeak', 'bokeh', 'waveform', 'spectrumRing'],
+    },
+    avoid: { bg: ['seigaiha', 'asanoha', 'wzBgShippo', 'polka', 'checker'] },
+  },
+  rnb: {
+    name: 'R&B',
+    moods: ['calm', 'emotional', 'editorial'],
+    styles: [
+      'rnbSilkCandle', 'rnbSilkRose', 'rnbMidnightBath', 'rnbGoldenHour', 'rnbNeoSoulTea',
+      'rnbPearlMist', 'rnbVioletSmooth', 'rnbHoneyAmber', 'rnbDreamyBlue', 'rnbRubyIntimate',
+    ],
+    koma: [0],
+    extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
+    fxPatch: { motion: [0.54, 0.78], glitch: [0.04, 0.18], chroma: [0.28, 0.56], decor: [0.42, 0.74], density: [0.34, 0.56], texture: [0.35, 0.65], bgSwitch: [0.3, 0.58] },
+    prefers: {
+      layout: ['gloss', 'lowerThird', 'frameBox', 'vcols', 'center', 'vinyl', 'quote', 'dropCap', 'xdKaraoke', 'credits'],
+      enter: ['mvRnbSilkSweep', 'mvRnbVelvetRise', 'fadeStagger', 'blurStagger', 'lightLeak', 'glint', 'trackIn', 'riseMask'],
+      hold: ['mvRnbSilkSway', 'mvRnbCandleBreathe', 'breathe', 'shimmer', 'glintSweep', 'xkFocusBreath', 'focusRack', 'drift'],
+      exit: ['mvRnbSilkFade', 'dissolve', 'blurOutStagger', 'trackOutWide', 'drift', 'wipe'],
+      cam: ['mvCamRnbSilkDolly', 'mvCamRnbSway', 'xqBeatBreath', 'dollyIn', 'xqArcSweep', 'pullOut', 'orbitDrift'],
+      fx: ['mvFxRnbWarmBloom', 'lightSweep', 'filmBurn', 'defocus', 'bloomFlash', 'chroma'],
+      trans: ['mvTransSilkBlend', 'xqSoftSweep', 'xqLightLeak', 'irisOpen', 'wipe'],
+      treat: ['mvTreatRnbAura', 'softShadow', 'glow', 'gradientV', 'wide', 'karaoke'],
+      bg: ['mvBgRnbSilkWaves', 'bokehBg', 'auroraRibbons', 'horizonGlow', 'spotlight', 'gradientSweep'],
+      decor: ['mvDecoPopSparks', 'bokeh', 'lightLeak', 'twinkle', 'leaders', 'swatches', 'beatRing'],
+    },
+    avoid: { hold: ['jitter', 'glitchtick', 'glitchJump'], fx: ['block', 'mosaic', 'tvStatic', 'edgeDetect'], bg: ['seigaiha', 'asanoha', 'wzBgShippo'] },
+  },
+  hiphop: {
+    name: 'HIP-HOP',
+    moods: ['pop', 'glitch', 'graphic'],
+    styles: [
+      'hhConcreteRaw', 'hhChromeChain', 'hhBoomBap90', 'hhSubwayGraff', 'hhPlatinumFlex',
+      'hhAlertRed', 'hhTapeDistort', 'hhNightCypher', 'hhStreetPoster', 'hhDrillSteel',
+    ],
+    koma: [0],
+    extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
+    fxPatch: { motion: [0.80, 0.98], glitch: [0.28, 0.65], chroma: [0.55, 0.90], decor: [0.55, 0.88], density: [0.56, 0.84], texture: [0.35, 0.7], bgSwitch: [0.48, 0.85] },
+    prefers: {
+      layout: ['huge', 'equalizer', 'marquee', 'columnsBig', 'stickerBomb', 'diag', 'splitScreen', 'xdFourUp', 'mixed', 'zoomRepeat'],
+      enter: ['mvHhSlamPunch', 'mvHhSliceCut', 'knWordSlam', 'whip', 'stamp', 'stretch', 'glitchIn', 'zoom', 'slice'],
+      hold: ['mvHhHeadNod', 'mvHhBarFlex', 'eqBounce', 'xkBeatBump', 'beatHop', 'knWordPulse', 'stretchPulse', 'xkLoudWeight'],
+      exit: ['mvHhCutSnap', 'whipOut', 'knWordKick', 'scatter', 'glitchDissolve', 'zoomThrough', 'spinOut'],
+      cam: ['mvCamHhBounce', 'mvCamHhSnapZoom', 'beatPunch', 'crashZoom', 'stepZoom', 'whipIn', 'xqWhipSpring', 'knRushIn'],
+      fx: ['mvFxHhImpactCut', 'zoomPunch', 'strobe', 'flash', 'rgbSplit', 'slice', 'xrBandZoom', 'shake', 'chroma'],
+      trans: ['mvTransPopFlashWipe', 'whipPan', 'knStripSlam', 'flashCross', 'pushSlide', 'cubeTurn'],
+      treat: ['mvTreatHhChrome', 'extrude', 'hardShadow', 'outlineFill', 'knWordPlate', 'knWordScale', 'chrome'],
+      bg: ['mvBgHhSubGrid', 'eqBars', 'spotlight', 'squareTunnel', 'particlesBg', 'xpShiftRows'],
+      decor: ['mvDecoHhBars', 'beatRing', 'barcode', 'speedCorner', 'bars', 'knSpeedTrail', 'waveform'],
+    },
+    avoid: { bg: ['seigaiha', 'asanoha', 'wzBgShippo'], decor: ['petals'] },
+  },
   artmotion: {
     name: 'ART & MOTION',
     moods: ['graphic', 'glitch', 'pop'],
@@ -364,8 +436,28 @@ J.THEMES = {
     styles: ['hrRuin', 'hrNightRec', 'hrCurse', 'noir', 'crimson', 'mono', 'hud', 'sumi', 'acid', 'glitchPrism', 'cinVelvetNoir', 'cinMonolith', 'cinAmberNocturne', 'mvDrillDark', 'isoMidnightAxis', 'isoObsidianGlass', 'amBrutalistType', 'futTokyoCyber', 'futPlasmaArc', 'aniShonenFlame'],
   },
   pop: {
-    name: 'ポップ', moods: ['pop'], koma: [0],
-    styles: ['magenta', 'candy', 'popArtBenDay', 'caution', 'transit', 'synth80', 'sunset', 'popRoyComic', 'popWarholSilk', 'popSupernova', 'popBubblegum', 'popSkyAction', 'mvKpopNeon', 'mvHyperPop', 'mvDancefloor', 'aniCelStudio', 'aniCartoonBounce', 'aniComicKawaii', 'amMemphisGroove', 'animePrism'],
+    name: 'POP',
+    moods: ['pop', 'graphic', 'emotional'],
+    styles: [
+      'popStarlight', 'popBubblePink', 'popMirrorball', 'popSolarCitrus', 'popNeonArcade',
+      'popCottonSky', 'popChromeHeart', 'popConfettiBoom', 'popLaserMint', 'popVelvetChart',
+    ],
+    koma: [0],
+    extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
+    fxPatch: { motion: [0.76, 0.96], glitch: [0.10, 0.34], chroma: [0.48, 0.82], decor: [0.62, 0.94], density: [0.52, 0.80], texture: [0.18, 0.45], bgSwitch: [0.50, 0.85] },
+    prefers: {
+      layout: ['mixed', 'pill', 'ring', 'bounceLine', 'wave', 'bubbles', 'stickerBomb', 'equalizer', 'xdKaraoke', 'marquee'],
+      enter: ['mvPopElasticStar', 'mvPopCurtainFlash', 'pop', 'bounceBig', 'rubber', 'squashDrop', 'xgJelly', 'knPushIn'],
+      hold: ['mvPopGrooveBounce', 'mvPopGlossShimmer', 'beatHop', 'jelly', 'wave', 'eqBounce', 'xkBeatBump', 'pulse'],
+      exit: ['mvPopSparkBurst', 'popOut', 'scatter', 'spinOut', 'shrink', 'whipOut'],
+      cam: ['mvCamPopStageHop', 'mvCamPopChorusWide', 'bounce', 'xqWhipSpring', 'beatPunch', 'dollyIn', 'xqBeatBreath'],
+      fx: ['mvFxPopSparkFlash', 'bloomFlash', 'starGlint', 'zoomPunch', 'flash', 'xrSpotlight', 'chroma'],
+      trans: ['mvTransPopFlashWipe', 'flashCross', 'xqRingRipple', 'irisOpen', 'clockWipe', 'whipPan'],
+      treat: ['mvTreatHhChrome', 'rainbow', 'glow', 'sticker', 'outlineFill', 'neonOutline', 'karaoke'],
+      bg: ['mvBgPopMirrorLights', 'auroraRibbons', 'sunburst', 'meshBlobs', 'fireworks', 'gradientSweep', 'eqBars'],
+      decor: ['mvDecoPopSparks', 'sparks', 'confetti', 'twinkle', 'heartsStars', 'beatRing', 'lineBurst'],
+    },
+    avoid: { bg: ['seigaiha', 'asanoha', 'wzBgShippo'] },
   },
   ballad: {
     name: 'バラード', moods: ['calm', 'emotional'], koma: [0],
@@ -374,7 +466,7 @@ J.THEMES = {
 };
 J.THEME_ORDER = Object.keys(J.THEMES);
 
-J.omakase = (project, rnd = Math.random, themeId = null) => {
+J.omakase = (project, rnd = Math.random, themeId = null, audio = null) => {
   const T = themeId && J.THEMES[themeId] ? J.THEMES[themeId] : null;
   const switches = {};
   if (T && T.set) switches[T.set] = true;
@@ -402,7 +494,7 @@ J.omakase = (project, rnd = Math.random, themeId = null) => {
     const hero = T.styles[0];
     const tStyles = T.styles.filter(okStyle);
     const nonRepeat = tStyles.filter(k => k !== project.style);
-    const heroProb = tStyles.length >= 15 ? 0.14 : 0.65;
+    const heroProb = tStyles.length >= 10 ? 0.16 : 0.55;
     if (hero && okStyle(hero) && project.style !== hero && rnd() < heroProb) pool = [hero];
     else if (nonRepeat.length) pool = nonRepeat;
     else if (tStyles.length) pool = tStyles;
@@ -416,8 +508,30 @@ J.omakase = (project, rnd = Math.random, themeId = null) => {
   const fx = Object.assign({}, project.fx);
   const fxRanges = T && T.fxPatch ? Object.assign({}, M.fx, T.fxPatch) : M.fx;
   for (const k of Object.keys(fxRanges)) fx[k] = range(fxRanges[k]);
+  // Adapt motion, cut density & flash intensity dynamically to the loaded song's BPM & energy
+  if (audio && (audio.bpm || (audio.energy && audio.energy.length))) {
+    const bpm = Number(audio.bpm) || (project.timing && Number(project.timing.bpm)) || 108;
+    let avgEn = 0.55;
+    if (audio.energy && audio.energy.length) {
+      let sum = 0; const step = Math.max(1, Math.floor(audio.energy.length / 120)); let cnt = 0;
+      for (let i = 0; i < audio.energy.length; i += step) { sum += audio.energy[i]; cnt++; }
+      avgEn = cnt ? sum / cnt : 0.55;
+    }
+    const tempoK = J.clamp((bpm - 72) / 72, 0, 1);     // 0 around 72 BPM -> 1 around 144+ BPM
+    const enK = J.clamp((avgEn - 0.25) / 0.55, 0, 1);
+    const dynBoost = (tempoK * 0.55 + enK * 0.45 - 0.45);
+    const clampIn = (val, key) => {
+      const r = fxRanges[key] || [0.2, 0.95];
+      return +J.clamp(val, r[0], Math.min(1, r[1])).toFixed(2);
+    };
+    fx.motion = clampIn(fx.motion + dynBoost * 0.16, 'motion');
+    fx.density = clampIn(fx.density + dynBoost * 0.18, 'density');
+    if (fx.chroma != null) fx.chroma = clampIn(fx.chroma + dynBoost * 0.10, 'chroma');
+    if (fx.bgSwitch != null) fx.bgSwitch = clampIn(fx.bgSwitch + dynBoost * 0.12, 'bgSwitch');
+  }
   fx.koma = pick(T && T.koma ? T.koma : { horror: [12, 8, 0], glitch: [12, 12, 8], pop: [12, 12, 8, 0], calm: [0, 0, 12], editorial: [0, 12], emotional: [12, 0], graphic: [12, 12, 0] }[mood] || [12, 8, 0]);
-  fx.onTwos = fx.koma > 0; fx.flash = rnd() < 0.65;
+  fx.onTwos = fx.koma > 0;
+  fx.flash = audio && audio.bpm >= 112 ? rnd() < 0.78 : rnd() < 0.65;
   fx.hud = J.STYLES[style] && J.STYLES[style].hud ? 'on' : pick(['auto', 'auto', 'on', 'off']);
   // technique subset per group: curated theme parts + mood-tagged parts + small sprinkle
   const enabled = {};

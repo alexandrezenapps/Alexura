@@ -2831,23 +2831,15 @@ app.get('/api/weather/search', async (req, res) => {
 });
 
 // Explicit route handlers for language edition directories
-const editions = ['fr', 'en', 'zh-hant', 'zh-hans', 'ko', 'id', 'vi'];
+const editions = ['fr', 'en', 'ja', 'zh-hant', 'zh-hans', 'ko', 'id', 'vi'];
 
-// Route handler for root: intelligently serve French edition (/fr/index.html) as the primary experience
+// Route handler for root: serve French edition by default unless explicit ?lang= override is requested
 app.get('/', (req, res) => {
-  const lang = req.query.lang as string;
+  const lang = String(req.query.lang || '').toLowerCase();
   if (lang && editions.includes(lang)) {
     return res.redirect(`/${lang}/`);
   }
-  const accept = (req.headers['accept-language'] || '').toLowerCase();
-  if (accept.includes('ja')) {
-    return res.sendFile(path.join(__dirname, 'index.html'));
-  }
-  if (accept.includes('zh')) {
-    return res.sendFile(path.join(__dirname, 'zh-hans', 'index.html'));
-  }
-  // Default to French for Alexura
-  res.sendFile(path.join(__dirname, 'fr', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get(['/studio', '/studio/'], (req, res) => {

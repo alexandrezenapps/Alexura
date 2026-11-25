@@ -6,9 +6,9 @@
 <title>JIZURA — 歌词动态视频制作工具</title>
 <meta name="description" content="在浏览器中把歌词做成动态歌词视频，并导出 MP4。">
 <link rel="canonical" href="https://852wa.github.io/JIZURA/zh-hans/">
-<link rel="alternate" hreflang="ja" href="https://852wa.github.io/JIZURA/">
-<link rel="alternate" hreflang="fr" href="https://852wa.github.io/JIZURA/fr/">
+<link rel="alternate" hreflang="fr" href="https://852wa.github.io/JIZURA/">
 <link rel="alternate" hreflang="en" href="https://852wa.github.io/JIZURA/en/">
+<link rel="alternate" hreflang="ja" href="https://852wa.github.io/JIZURA/ja/">
 <link rel="alternate" hreflang="zh-Hant" href="https://852wa.github.io/JIZURA/zh-hant/">
 <link rel="alternate" hreflang="zh-Hans" href="https://852wa.github.io/JIZURA/zh-hans/">
 <link rel="alternate" hreflang="ko" href="https://852wa.github.io/JIZURA/ko/">
@@ -5906,7 +5906,7 @@ dialog.notice-dlg:not([open]) {
       <button id="modePro" aria-pressed="true" title="显示全部设置">详细</button>
       <button id="btnTour" class="ghost tour-btn" title="简易模式使用导览" aria-label="使用导览">？</button>
     </div>
-    <label class="lang-switch"><span class="sr-only">Language</span><select aria-label="Language" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="ja">日本語</option><option value="../fr/index.html" lang="fr">Français</option><option value="../en/index.html" lang="en">English</option><option value="../zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans" selected>简体中文</option><option value="../ko/index.html" lang="ko">한국어</option><option value="../id/index.html" lang="id-ID">Bahasa Indonesia</option><option value="../vi/index.html" lang="vi">Tiếng Việt</option></select></label>
+    <label class="lang-switch"><span class="sr-only">Language</span><select aria-label="Language" onchange="if(this.value)location.href=this.value"><option value="../index.html" lang="fr">Français</option><option value="../en/index.html" lang="en">English</option><option value="../ja/index.html" lang="ja">日本語</option><option value="../zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="../zh-hans/index.html" lang="zh-Hans" selected>简体中文</option><option value="../ko/index.html" lang="ko">한국어</option><option value="../id/index.html" lang="id-ID">Bahasa Indonesia</option><option value="../vi/index.html" lang="vi">Tiếng Việt</option></select></label>
     <div class="acts">
       <button id="btnGoogleAuth" type="button" class="ghost small google-pill" title="Se connecter avec Google pour retrouver vos chansons et votre historique">
         <span class="g-dot" aria-hidden="true">G</span>
@@ -9236,7 +9236,8 @@ J.detectLang = (text) => {
   if (kana >= 2 || (kana > 0 && kana >= han * 0.03)) return 'ja';
   if (han >= 2) return sc > tc ? 'zh-Hans' : 'zh-Hant';
   const perLine = J.detectLanguagesInText(text);
-  return perLine[0] || 'ja';
+  const uiDefault = (typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) ? document.documentElement.lang : 'fr';
+  return perLine[0] || uiDefault;
 };
 
 /* project → primary language code used for fonts & fallback */
@@ -78211,7 +78212,7 @@ function loadLrc(text, sub) {
   else toast(`已读取 LRC（带时间 ${n} 行 · 可用“撤销”恢复）`);
 }
 function applyExportLabels() {
-  const lang = document.documentElement.lang || 'ja';
+  const lang = document.documentElement.lang || 'fr';
   const titleEl = $('lblLyricsExpTitle'), transEl = $('lblExpIncludeTrans');
   if (lang === 'en') {
     if (titleEl) titleEl.textContent = 'Export synchronized lyrics';
@@ -78236,7 +78237,7 @@ function applyExportLabels() {
   if (qChk && qChk.dataset.userTouched !== '1') qChk.checked = chk ? chk.checked : defChecked;
 }
 function syncMainStudioLabels() {
-  const lang = document.documentElement.lang || 'ja';
+  const lang = document.documentElement.lang || 'fr';
   const copy = lang === 'fr' ? {
     audioSec: 'Audio & Minutage',
     dropTitle: 'Importer ou glisser-déposer une chanson',
@@ -78579,8 +78580,8 @@ function drawStyleThumbAccent(x, st, sc) {
 }
 function renderStyleCatBar() {
   const bar = $('styleCatBar'); if (!bar) return;
-  const rawLang = document.documentElement.lang || 'ja';
-  const lang = ['fr', 'en', 'zh-Hans', 'zh-Hant', 'ko', 'id', 'vi', 'ja'].includes(rawLang) ? rawLang : 'ja';
+  const rawLang = document.documentElement.lang || 'fr';
+  const lang = ['fr', 'en', 'zh-Hans', 'zh-Hant', 'ko', 'id', 'vi', 'ja'].includes(rawLang) ? rawLang : 'fr';
   if (!bar.children.length) {
     STYLE_CAT_META.forEach(([cid, labels]) => {
       const btn = document.createElement('button');
@@ -79372,7 +79373,7 @@ function offerShare(boxes, blob, name) {
 
 /* ---------------- studio tap sync ---------------- */
 function tapCopy() {
-  const lang = document.documentElement.lang || 'ja';
+  const lang = document.documentElement.lang || 'fr';
   if (lang === 'fr') {
     return {
       btn: '⏱ Synchro au Tap',
@@ -80523,7 +80524,7 @@ function syncUI() {
 function syncThemeMeta() {
   const note = $('themeMetaNote'); if (!note) return;
   const thId = J.THEMES[S.project.themeId] ? S.project.themeId : '';
-  const lang = document.documentElement.lang || 'ja';
+  const lang = document.documentElement.lang || 'fr';
   if (!thId) {
     note.textContent = lang === 'fr'
       ? 'Choisissez un thème pour explorer ses styles fluides et animations dédiées'
@@ -82568,7 +82569,7 @@ let cloudHistoryUnsub = null;
 let cloudActiveTab = 'songs';
 
 function cloudCopy() {
-  const lang = document.documentElement.lang || 'ja';
+  const lang = document.documentElement.lang || 'fr';
   if (lang === 'fr') {
     return {
       gLogin: 'Connexion Google',

@@ -6,9 +6,9 @@ import importlib, json
 
 # code, output folder, html lang, native name
 EDITIONS = [
-    ('ja', '', 'ja', '日本語'),
-    ('fr', 'fr', 'fr', 'Français'),
+    ('fr', '', 'fr', 'Français'),
     ('en', 'en', 'en', 'English'),
+    ('ja', 'ja', 'ja', '日本語'),
     ('zh-Hant', 'zh-hant', 'zh-Hant', '繁體中文'),
     ('zh-Hans', 'zh-hans', 'zh-Hans', '简体中文'),
     ('ko', 'ko', 'ko', '한국어'),
@@ -85,9 +85,9 @@ def names_js(code):
             '})();\n')
 
 
-def nav(code):
+def nav(code, folder_override=None):
     """language menu (a select, so the editions fit the header), links relative to the edition's folder"""
-    here = dict((c, f) for c, f, _, _ in EDITIONS)[code]
+    here = dict((c, f) for c, f, _, _ in EDITIONS)[code] if folder_override is None else folder_override
     up = '../' if here else ''
     opts = []
     for c, folder, hl, name in EDITIONS:

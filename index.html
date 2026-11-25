@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="ja">
+<html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Alexura — Créateur de vidéos de paroles animées</title>
 <meta name="description" content="Transformez des paroles en vidéos de paroles animées dans votre navigateur et exportez en MP4.">
 <link rel="canonical" href="https://852wa.github.io/JIZURA/">
-<link rel="alternate" hreflang="ja" href="https://852wa.github.io/JIZURA/">
-<link rel="alternate" hreflang="fr" href="https://852wa.github.io/JIZURA/fr/">
+<link rel="alternate" hreflang="fr" href="https://852wa.github.io/JIZURA/">
 <link rel="alternate" hreflang="en" href="https://852wa.github.io/JIZURA/en/">
+<link rel="alternate" hreflang="ja" href="https://852wa.github.io/JIZURA/ja/">
 <link rel="alternate" hreflang="zh-Hant" href="https://852wa.github.io/JIZURA/zh-hant/">
 <link rel="alternate" hreflang="zh-Hans" href="https://852wa.github.io/JIZURA/zh-hans/">
 <link rel="alternate" hreflang="ko" href="https://852wa.github.io/JIZURA/ko/">
@@ -5741,7 +5741,7 @@ dialog.notice-dlg:not([open]) {
     <div class="tour-step mono muted"></div>
     <h3 id="tourTitle" class="tour-title"></h3>
     <p class="tour-text"></p>
-    <div class="tour-nav"><button class="tour-skip ghost small">スキップ</button><span class="tour-sp"></span><button class="tour-prev ghost small">戻る</button><button class="tour-next primary small">次へ</button></div>
+    <div class="tour-nav"><button class="tour-skip ghost small">Passer</button><span class="tour-sp"></span><button class="tour-prev ghost small">Précédent</button><button class="tour-next primary small">Suivant</button></div>
   </div>
 </div>
 <div id="app">
@@ -5895,18 +5895,18 @@ dialog.notice-dlg:not([open]) {
   <header class="bar">
     <div class="brand"><span class="mark" aria-label="Logo Alexura"><svg class="alexura-icon" viewBox="0 0 32 32" width="30" height="30" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="axObsidian" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0b101b"/><stop offset="60%" stop-color="#131e36"/><stop offset="100%" stop-color="#0b285e"/></linearGradient><linearGradient id="axRim" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#d8be86" stop-opacity="0.72"/><stop offset="50%" stop-color="#60a5fa" stop-opacity="0.45"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0.22"/></linearGradient><linearGradient id="axIvory" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#dbe7fb"/></linearGradient><linearGradient id="axWave" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#d8be86"/><stop offset="50%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient></defs><rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="url(#axObsidian)" stroke="url(#axRim)" stroke-width="1.2"/><path d="M16 6.5 L23 24 H19.7 L18.1 19.8 H13.9 L12.3 24 H9 L16 6.5 Z M14.8 17 H17.2 L16 13.2 Z" fill="url(#axIvory)"/><path d="M5.8 16.5 C8.8 13.8 12.2 19.2 16 16.5 C19.8 13.8 23.2 19.2 26.2 16.5" stroke="url(#axWave)" stroke-width="1.75" stroke-linecap="round" fill="none"/></svg></span><span class="word">Alexura</span><span class="tag">motion studio</span><span class="ver">v0.13.0</span></div>
     <div class="proj">
-      <input id="songTitle" type="text" placeholder="曲名（タイトルカード・HUDに表示）" aria-label="曲名">
-      <input id="songArtist" type="text" placeholder="アーティスト" aria-label="アーティスト">
+      <input id="songTitle" type="text" placeholder="Titre du morceau (affiché sur l'écran titre et le HUD)" aria-label="Titre du morceau">
+      <input id="songArtist" type="text" placeholder="Artiste" aria-label="Artiste">
     </div>
-    <button id="btnOmakaseTop" class="primary omk-top" title="スタイル・雰囲気・演出・配色をまるごとランダムに">おまかせ</button>
-    <button id="btnMenu" class="ghost menu-btn" aria-expanded="false" aria-controls="appMenu">メニュー</button>
-    <div class="modes" role="group" aria-label="表示モード">
-      <button id="modeMobile" class="mode-mobile" aria-pressed="false" title="スマホ向けの画面（おまかせを上に固定、行はたたんで表示）">スマホ</button>
-      <button id="modeEasy" aria-pressed="false" title="おまかせボタン中心のシンプルな画面">かんたん</button>
-      <button id="modePro" aria-pressed="true" title="すべての設定を表示">詳細</button>
-      <button id="btnTour" class="ghost tour-btn" title="かんたんモードの使い方を案内します" aria-label="使い方の案内">？</button>
+    <button id="btnOmakaseTop" class="primary omk-top" title="Changer le style, l'ambiance, les effets et la palette">Aléatoire</button>
+    <button id="btnMenu" class="ghost menu-btn" aria-expanded="false" aria-controls="appMenu">Menu</button>
+    <div class="modes" role="group" aria-label="Mode d'affichage">
+      <button id="modeMobile" class="mode-mobile" aria-pressed="false" title="Mobile layout (Aléatoire pinned at the top, lines folded)">Mobile</button>
+      <button id="modeEasy" aria-pressed="false" title="Interface simple centrée sur la création automatique">Facile</button>
+      <button id="modePro" aria-pressed="true" title="Afficher tous les réglages avancés">Avancé</button>
+      <button id="btnTour" class="ghost tour-btn" title="Guide rapide du mode Facile" aria-label="Guide">？</button>
     </div>
-    <label class="lang-switch"><span class="sr-only">Language</span><select aria-label="Language" onchange="if(this.value)location.href=this.value"><option value="index.html" lang="ja" selected>日本語</option><option value="fr/index.html" lang="fr">Français</option><option value="en/index.html" lang="en">English</option><option value="zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="zh-hans/index.html" lang="zh-Hans">简体中文</option><option value="ko/index.html" lang="ko">한국어</option><option value="id/index.html" lang="id-ID">Bahasa Indonesia</option><option value="vi/index.html" lang="vi">Tiếng Việt</option></select></label>
+    <label class="lang-switch"><span class="sr-only">Langue</span><select aria-label="Langue" onchange="if(this.value)location.href=this.value"><option value="index.html" lang="fr" selected>Français</option><option value="en/index.html" lang="en">English</option><option value="ja/index.html" lang="ja">日本語</option><option value="zh-hant/index.html" lang="zh-Hant">繁體中文</option><option value="zh-hans/index.html" lang="zh-Hans">简体中文</option><option value="ko/index.html" lang="ko">한국어</option><option value="id/index.html" lang="id-ID">Bahasa Indonesia</option><option value="vi/index.html" lang="vi">Tiếng Việt</option></select></label>
     <div class="acts">
       <button id="btnGoogleAuth" type="button" class="ghost small google-pill" title="Se connecter avec Google pour retrouver vos chansons et votre historique">
         <span class="g-dot" aria-hidden="true">G</span>
@@ -5915,20 +5915,20 @@ dialog.notice-dlg:not([open]) {
       </button>
       <button id="btnCloudSave" class="accent small" title="Enregistrer la chanson et les données dans Firebase">☁ Sauvegarder</button>
       <button id="btnCloudHub" class="ghost small" title="Mes Enregistrements, Historique &amp; Vercel" aria-expanded="false">📚 Projets &amp; Historique</button>
-      <label class="file" title="保存したプロジェクト(.json)を開く">開く<input id="fileProject" type="file" accept=".json,application/json"></label>
-      <button id="btnSave" title="プロジェクトを .json で保存">保存</button>
-      <button id="btnAE" title="After Effects パネル用の構成データを書き出す">AE用に書き出し</button>
-      <button id="btnReset" class="ghost" title="歌詞・曲・設定・履歴をすべて消して、最初の状態に戻します">初期化</button>
+      <label class="file" title="Ouvrir un projet sauvegardé (.json)">Ouvrir<input id="fileProject" type="file" accept=".json,application/json"></label>
+      <button id="btnSave" title="Enregistrer le projet (.json)">Enregistrer</button>
+      <button id="btnAE" title="Exporter les données pour le panneau After Effects">Exporter AE</button>
+      <button id="btnReset" class="ghost" title="Effacer les paroles, le morceau, les réglages et l'historique pour recommencer">Réinitialiser</button>
       <button id="bgJobPill" type="button" class="ghost small bg-job-btn" hidden title="Traitement audio en cours en arrière-plan — cliquez pour ouvrir le Studio IA React"><span class="bg-job-dot" aria-hidden="true"></span><span id="bgJobText" class="mono">Analyse 0%</span></button>
       <button id="btnModularStudio" type="button" class="accent small" title="Ouvrir le Studio Pipeline Modulaire React/TypeScript (Web Audio, Forme d'onde, Workers asynchrone &amp; Base Timestamps)">🎛 Studio IA React</button>
       <button id="btnNotice" type="button" class="ghost small notice-open" title="Ouvrir la Notice complète d’Alexura Motion Studio — guide illustré de chaque touche et fonctionnement">Notice</button>
-      <button id="btnTerms" class="ghost terms-open" title="出力物の権利とライセンス">利用について</button>
+      <button id="btnTerms" class="ghost terms-open" title="Droits et licences de vos créations">À propos / Droits</button>
     </div>
   </header>
 
   <main class="work">
     <!-- ================= left: lyrics & timing ================= -->
-    <section class="col col-left" aria-label="歌詞とタイミング">
+    <section class="col col-left" aria-label="Paroles et synchronisation">
       <div id="tapPanel" class="tapbox" hidden>
           <div class="tap-head">
             <span id="tapTitle" class="tap-title">⏱ Synchro au Tap Studio</span>
@@ -5984,9 +5984,9 @@ dialog.notice-dlg:not([open]) {
       </div>
       <div class="sec sec-audio">
         <div class="sec-h">
-          <h2 id="lblAudioSecTitle">曲とタイミング</h2>
+          <h2 id="lblAudioSecTitle">Audio et minutage</h2>
           <span class="sec-btns">
-            <button id="btnResetTimes" class="ghost small pro-only" title="手動タイミングを消す">手動タイミングを消す</button>
+            <button id="btnResetTimes" class="ghost small pro-only" title="Effacer le minutage manuel">Effacer le minutage manuel</button>
           </span>
         </div>
         <div id="audioDropzone" class="audio-dropzone" tabindex="0" role="region" aria-label="Importer ou glisser-déposer un fichier audio">
@@ -5996,16 +5996,16 @@ dialog.notice-dlg:not([open]) {
             </span>
             <div class="ad-drop-copy">
               <strong id="lblDropAudioTitle">Importer ou glisser-déposer une chanson</strong>
-              <div id="audioName" class="muted audio-name">曲なし（読み込むと拍を検出してカットを合わせます）</div>
+              <div id="audioName" class="muted audio-name">Aucun audio — glissez un fichier (MP3, WAV…) ou cliquez pour importer</div>
             </div>
           </div>
-          <label class="file audio-upload-cta" title="mp3 / wav / m4a など"><span id="lblUploadAudioBtn">曲を読み込む</span><input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.opus,.webm,.mp4,.aiff,.aif,.wma"></label>
+          <label class="file audio-upload-cta" title="MP3, WAV, M4A, FLAC…"><span id="lblUploadAudioBtn">Importer Audio</span><input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.opus,.webm,.mp4,.aiff,.aif,.wma"></label>
         </div>
         <div class="row audio-ai-row">
-          <button id="btnAiTranscribe" class="accent" title="AI听音识词：自动分析歌曲音频，多语言（中文、法文、英文等）识别人声歌词并即时同步到视频">✨ AI 识词与同步</button>
-          <button id="btnVocalSync" class="ghost" title="根据歌声人声起始瞬间，自动精准同步各行歌词">⚡ 人声同步</button>
-          <button id="btnTap" title="Synchronisation manuelle guidée au rythme de la voix (ligne par ligne ou mot par mot)">⏱ タップで同期</button>
-          <button id="btnVoiceDictate" type="button" class="ghost" aria-pressed="false" title="リアルタイム音声認識：マイクで歌や音声を認識して即座に歌詞化・同期します">🎙️ ライブ音声認識</button>
+          <button id="btnAiTranscribe" class="accent" title="Analyse immédiatement la musique par IA : détecte la langue (français, chinois, anglais…), transcrit les paroles chantées mot par mot et les synchronise en direct avec la vidéo">✨ Détecter les paroles par IA</button>
+          <button id="btnVocalSync" class="ghost" title="SYNCRO VOIX ET PAROLE : analyse en temps réel la voix et vos paroles fournies pour une coordination millimétrique à chaque instant">⚡ SYNCRO VOIX ET PAROLE</button>
+          <button id="btnTap" title="Synchronisation manuelle guidée au rythme de la voix (ligne par ligne ou mot par mot)">⏱ Synchro au tap</button>
+          <button id="btnVoiceDictate" type="button" class="ghost" aria-pressed="false" title="Reconnaissance vocale instantanée au microphone : chantez ou parlez pour générer des paroles synchronisées en direct">🎙️ Voix en direct</button>
         </div>
         <div id="aiProgressBox" class="ai-prog-box" hidden aria-live="polite">
           <div class="ai-prog-head">
@@ -6048,20 +6048,20 @@ dialog.notice-dlg:not([open]) {
           <div id="qcAutoReport" class="qc-auto-report" hidden aria-live="polite"></div>
         </div>
         <div class="fields pro-only">
-          <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="自動"></label>
-          <label class="field">開始(秒)<input id="offset" type="number" min="0" step="0.05"></label>
-          <label class="field">行の長さ<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
+          <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="Auto"></label>
+          <label class="field">Début (s)<input id="offset" type="number" min="0" step="0.05"></label>
+          <label class="field">Durée ligne<input id="lineScale" type="number" min="0.4" max="3" step="0.05"></label>
         </div>
         <div class="row pro-only">
-          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> 拍にスナップ</label>
+          <label class="row" style="gap:6px"><input id="snap" type="checkbox"> Caliper sur le tempo</label>
         </div>
       </div>
 
       <div class="sec sec-lyrics">
-        <div class="sec-h"><h2>歌詞</h2><span class="sec-btns"><label class="file ghost small" title="LRC ファイル（タイムスタンプ付きの歌詞）や字幕ファイル（SRT / VTT）を読み込み、今の歌詞と置き換えます（「元に戻す」で戻せます）。ファイルを画面にドロップしても読み込めます">LRC / SRT を読み込む<input id="fileLrc" type="file" accept=".lrc,.srt,.vtt,.txt,text/plain"></label><button id="btnClearLyrics" class="ghost small" title="歌詞と、行ごとのタイミング・指定・書き出す範囲を消します（「元に戻す」か Ctrl+Z で戻せます）">歌詞を消す</button><button id="btnSyntax" class="ghost small" aria-expanded="false">記法</button></span></div>
-        <textarea id="lyrics" rows="9" spellcheck="false" aria-label="歌詞（1行 = 1フレーズ）"></textarea>
+        <div class="sec-h"><h2>Paroles</h2><span class="sec-btns"><label class="file ghost small" title="Charger un fichier LRC (paroles horodatées) ou sous-titres (SRT / VTT) à la place des paroles actuelles (Annuler permet de revenir en arrière). Vous pouvez aussi glisser-déposer le fichier.">Importer LRC / SRT<input id="fileLrc" type="file" accept=".lrc,.srt,.vtt,.txt,text/plain"></label><button id="btnClearLyrics" class="ghost small" title="Effacer les paroles, leurs minutages et leurs réglages (Annuler ou Ctrl+Z pour restaurer)">Effacer les paroles</button><button id="btnSyntax" class="ghost small" aria-expanded="false">Syntaxe</button></span></div>
+        <textarea id="lyrics" rows="9" spellcheck="false" aria-label="Paroles (1 ligne = 1 phrase)"></textarea>
         <div class="lang-det-wrap">
-          <label class="lang-row">歌詞の言語<select id="lyricLang"><option value="auto">自動判定</option><option value="multi">Multilingue (Mix)</option><option value="en">English</option><option value="fr">Français</option><option value="zh-Hans">简体中文</option><option value="zh-Hant">繁體中文</option><option value="es">Español</option><option value="de">Deutsch</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="it">Italiano</option><option value="pt">Português</option></select><span id="langNote" class="muted"></span></label>
+          <label class="lang-row">Langue des paroles<select id="lyricLang"><option value="auto">Détection auto</option><option value="multi">Multilingue (Mix)</option><option value="en">English</option><option value="fr">Français</option><option value="zh-Hans">简体中文</option><option value="zh-Hant">繁體中文</option><option value="es">Español</option><option value="de">Deutsch</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="it">Italiano</option><option value="pt">Português</option></select><span id="langNote" class="muted"></span></label>
           <div id="detectedLangPills" class="lang-pills" hidden aria-live="polite"></div>
         </div>
         <div id="translationPanel" class="tr-panel">
@@ -6115,20 +6115,20 @@ dialog.notice-dlg:not([open]) {
         </div>
         <div id="syntax" class="syntax" hidden>
           <ul>
-            <li>1行が1フレーズ。空行は少し間を空けます</li>
-            <li><code>夜明けの色を/覚えてる</code> … <code>/</code> でカットの切れ目を指定</li>
-            <li><code>*透明*</code> … 強調（大きく・インパクト寄りの演出）</li>
-            <li>行末の <code>!</code> … フラッシュと揺れを入れる</li>
-            <li><code>歌詞|ruby or note</code> … 注釈レイアウトの小さな文字</li>
-            <li><code>[01:23.45]歌詞</code> … LRC のタイムスタンプをそのまま使用</li>
-            <li><code>[間奏 8]</code> … 8秒の間奏（歌詞は出さず、背景と装飾だけ）。秒数を省くと4秒、タップ同期やマーカーで長さを合わせられます</li>
-            <li><code>#</code> で始まる行 … コメント（無視）</li>
+            <li>Une phrase par ligne. Une ligne vide crée une courte pause.</li>
+            <li><code>Je me souviens de/la couleur de l’aube</code> … <code>/</code> marque une coupure de plan</li>
+            <li><code>*transparent*</code> … emphase (texte agrandi, effet percutant)</li>
+            <li>En fin de ligne <code>!</code> … ajoute un flash et un tremblement</li>
+            <li><code>paroles|note</code> … petit texte en annotation</li>
+            <li><code>[01:23.45]Paroles</code> … utilise l'horodatage LRC</li>
+            <li><code>[interlude 8]</code> … un passage instrumental de 8 secondes (sans paroles, décorations et fond uniquement). Sans chiffre, dure 4 s ; réglable avec la synchronisation au tap ou les marqueurs</li>
+            <li><code>#</code> en début de ligne … commentaire (ignoré)</li>
           </ul>
         </div>
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>行とカット</h2><span class="sec-btns"><button type="button" id="btnAddLyricLine" class="ghost small" title="Ajouter une nouvelle ligne de paroles">+ Ligne</button><span id="linesInfo" class="muted mono"></span></span></div>
+        <div class="sec-h"><h2>Lignes et plans</h2><span class="sec-btns"><button type="button" id="btnAddLyricLine" class="ghost small" title="Ajouter une nouvelle ligne de paroles">+ Ligne</button><span id="linesInfo" class="muted mono"></span></span></div>
         <ol id="lineList"></ol>
       </div>
 
@@ -6201,7 +6201,7 @@ dialog.notice-dlg:not([open]) {
     </section>
 
     <!-- ================= center: stage ================= -->
-    <section class="col col-stage" aria-label="プレビュー">
+    <section class="col col-stage" aria-label="Aperçu">
       <div class="viewport" id="viewport"><canvas id="view" width="1280" height="720"></canvas><div id="kpVisualStage" class="kp-visual-stage" hidden aria-label="Pochette d'album et visualisation audio"><canvas id="kpVizCanvas" width="960" height="540" aria-hidden="true"></canvas><div class="kp-stage-center"><label id="kpStageArtCard" class="kp-stage-art" title="Importer une pochette d'album"><img id="kpStageArtImg" alt="Pochette d'album" hidden><div id="kpStageArtVinyl" class="kp-stage-art-vinyl"><div class="kp-vinyl-grooves"></div><div class="kp-vinyl-label"><span class="kp-vinyl-mark">A</span></div></div><span id="kpStageArtOverlay" class="kp-stage-art-overlay">Pochette</span><input id="kpArtFile" type="file" accept="image/*"></label><div class="kp-stage-meta"><h3 id="kpStageTitle" class="kp-stage-title">Alexura Studio</h3><p id="kpStageArtist" class="kp-stage-artist muted">—</p></div></div></div><div id="viewMsg" class="overlay-msg" hidden></div><div id="keyBadge" class="key-badge" hidden></div><div id="toast" class="toast" role="status" aria-live="polite" hidden></div></div>
       <section id="karaokePlayerDeck" class="kp-deck" aria-label="Lecteur Karaoké">
         <div class="kp-deck-top">
@@ -6254,10 +6254,10 @@ dialog.notice-dlg:not([open]) {
           <span id="kpTimeDur" class="kp-time mono muted">00:00.00</span>
         </div>
       </section>
-      <div id="karaokePrompter" class="karaoke-prompter" data-kmode="progressive" aria-label="カラオケ同期プロンプター">
+      <div id="karaokePrompter" class="karaoke-prompter" data-kmode="progressive" aria-label="Prompteur karaoké en direct">
         <div class="kp-head">
-          <span class="kp-title" id="kpTitle">🎤 カラオケ同期</span>
-          <span id="karaokeModeBadge" class="kp-meta">自動同期</span>
+          <span class="kp-title" id="kpTitle">🎤 Karaoké en direct</span>
+          <span id="karaokeModeBadge" class="kp-meta">Synchro Auto</span>
           <div id="kModeSeg" class="kp-seg" role="group" aria-label="Mode de surbrillance">
             <button type="button" data-kmode="word" aria-pressed="false" title="Mode A : mot par mot">Mot</button>
             <button type="button" data-kmode="progressive" aria-pressed="true" title="Mode B : balayage progressif">Progressif</button>
@@ -6265,7 +6265,7 @@ dialog.notice-dlg:not([open]) {
           </div>
           <button type="button" id="btnKaraokeCfg" class="ghost small kp-cfg-btn" aria-expanded="false" aria-controls="karaokeControls" title="Taille, position, couleurs, transparence">⚙ Réglages</button>
           <button type="button" id="btnKaraokeFs" class="ghost small kp-fs-btn" aria-pressed="false" title="Mode Karaoké Plein Écran">⛶ Plein écran</button>
-          <button type="button" id="btnKaraokeHud" class="ghost small kp-toggle" aria-pressed="true" title="動画内のカラオケ字幕バーを表示／非表示">字幕バー ON</button>
+          <button type="button" id="btnKaraokeHud" class="ghost small kp-toggle" aria-pressed="true" title="Afficher ou masquer la barre karaoké intégrée sur la vidéo">Karaoké ON</button>
         </div>
         <div id="kpSyncBar" class="kp-sync-bar" aria-label="Coordination chant et affichage">
           <span id="lblKpSyncMaster" class="kp-sync-lbl">Synchro Chant↔Affichage</span>
@@ -6328,18 +6328,18 @@ dialog.notice-dlg:not([open]) {
         <div id="karaokeNext" class="kp-next muted"></div>
       </div>
       <div class="transport">
-        <button id="btnPlay" class="play" aria-label="再生">▶</button>
+        <button id="btnPlay" class="play" aria-label="Lecture">▶</button>
         <span id="timeNow" class="tc">00:00.00</span><span class="tc muted">/</span><span id="timeDur" class="tc muted">00:00.00</span>
-        <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="再生位置">
-        <button id="btnLoop" class="ghost small" aria-pressed="true" title="全体を繰り返し">ループ</button>
-        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="クリックで消音／解除（プレビューだけ。書き出しの音量は変わりません）">音量</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="プレビューの音量"></span>
+        <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="Position de lecture">
+        <button id="btnLoop" class="ghost small" aria-pressed="true" title="Répéter tout le morceau">Boucle</button>
+        <span class="vol"><button id="btnMute" class="ghost small" aria-pressed="false" title="Cliquer pour couper ou rétablir le son (aperçu uniquement)">Son</button><input id="vol" type="range" min="0" max="100" value="80" aria-label="Volume de l'aperçu"></span>
         <span class="hist-btns">
-          <button id="btnPrev" class="ghost small icon-txt" title="前の案に戻る" aria-label="前の案">◀</button>
-          <button id="btnNext" class="ghost small icon-txt" title="次の案へ進む" aria-label="次の案">▶</button>
+          <button id="btnPrev" class="ghost small icon-txt" title="Variation précédente" aria-label="Précédent">◀</button>
+          <button id="btnNext" class="ghost small icon-txt" title="Variation suivante" aria-label="Suivant">▶</button>
         </span>
-        <button id="btnShuffle" class="accent" title="設定はそのままで構成だけ再抽選（ロックした行は維持）">シャッフル</button>
-        <select class="themeSel" aria-label="おまかせのテーマ" title="おまかせのテーマ（選ぶと、その方向の中でおまかせします。必要な部品のスイッチもオンになります）"><option value="">テーマなし</option><option value="cinematic">CINEMATIC — 映画・予告編・Blade Runner (20)</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B (20)</option><option value="artmotion">ART &amp; MOTION — Kinetic・Pop Art・3D・Glitch (20)</option><option value="futuristic">FUTURISTIC — Cyberpunk・Sci-Fi・Neon・AI (20)</option><option value="lifestyle">LIFESTYLE — Luxury・Fashion・Travel・Doc (20)</option><option value="animation">ANIMATION — Anime・Cartoon・Fantasy・Surreal (20)</option><option value="guofeng">GUOFENG — 中国風・水墨山水・宮廷古典 (30)</option><option value="bauhaus">BAUHAUS — Kinetic Geometry・Swiss Modular (20)</option><option value="popart">POP ART — Comic Halftone・Ben-Day・CMYK (20)</option><option value="iso3d">3D ISOMETRIC — Wireframe Depth・Stereo (20)</option><option value="compositing">COMPOSITING — Keep Centre Free・Chroma Key (20)</option><option value="lyricpv">文字PV (20)</option><option value="kinetic">キネティック (20)</option><option value="wa">和風 (20)</option><option value="horror">ホラー (20)</option><option value="pop">ポップ (20)</option><option value="ballad">バラード (20)</option></select>
-        <button id="btnOmakase" class="primary" title="スタイル・雰囲気・演出・配色をまるごとランダムに（キー R）">おまかせ</button>
+        <button id="btnShuffle" class="accent" title="Mélanger la mise en scène en conservant les lignes verrouillées">Mélanger</button>
+        <select class="themeSel" aria-label="Thème aléatoire" title="Thème (oriente la génération aléatoire dans cette direction et active les effets requis)"><option value="">Aucun thème</option><option value="cinematic">CINEMATIC — Films, bandes-annonces, Blade Runner (20)</option><option value="musicvideo">MUSIC VIDEO — Pop, Hip-Hop, K-Pop, Trap, R&amp;B (20)</option><option value="artmotion">ART &amp; MOTION — Kinetic, Pop Art, 3D, Glitch (20)</option><option value="futuristic">FUTURISTIC — Cyberpunk, Sci-Fi, Neon, AI (20)</option><option value="lifestyle">LIFESTYLE — Luxury, Fashion, Travel, Documentary (20)</option><option value="animation">ANIMATION — Anime, Cartoon, Fantasy, Surrealism (20)</option><option value="guofeng">GUOFENG — Chinois Classique, Lavis &amp; Palais Impérial (30)</option><option value="bauhaus">BAUHAUS — Géométrie cinétique, Grille Suisse (20)</option><option value="popart">POP ART — Trames Comic, Ben-Day, CMJN (20)</option><option value="iso3d">3D ISOMETRIC — Filaire isométrique, Stéréo (20)</option><option value="compositing">COMPOSITING — Centre Libre, Chroma Key Vert (20)</option><option value="lyricpv">Vidéo typographique (20)</option><option value="kinetic">Cinétique (20)</option><option value="wa">Japonais (20)</option><option value="horror">Horreur (20)</option><option value="pop">Pop (20)</option><option value="ballad">Ballade (20)</option></select>
+        <button id="btnOmakase" class="primary" title="Tout randomiser : style, ambiance, effets et palette (touche R)">Aléatoire</button>
       </div>
       <div class="tl-bar">
         <div class="tl-head-left">
@@ -6354,11 +6354,11 @@ dialog.notice-dlg:not([open]) {
           <label class="tl-chk"><input type="checkbox" id="tlFollow" checked> <span id="lblTlFollow">Suivi</span></label>
         </span>
         <span class="tl-btns">
-          <button id="btnUndoEdit" class="ghost small" title="歌詞・タイミングの変更を元に戻す（Ctrl+Z）" disabled>元に戻す</button>
+          <button id="btnUndoEdit" class="ghost small" title="Annuler les modifications de paroles et de rythme (Ctrl+Z)" disabled>Annuler</button>
           <button id="tlZoomWord" class="ghost small" title="Zoomer exactement sur le mot sélectionné">🔍 Mot</button>
-          <button id="tlOut" class="ghost small icon-txt" title="縮小" aria-label="タイムラインを縮小">−</button>
-          <button id="tlIn" class="ghost small icon-txt" title="拡大（タイムライン上でホイールでも）" aria-label="タイムラインを拡大">＋</button>
-          <button id="tlFit" class="ghost small" title="全体を表示">全体</button>
+          <button id="tlOut" class="ghost small icon-txt" title="Dézoomer" aria-label="Dézoomer la frise">−</button>
+          <button id="tlIn" class="ghost small icon-txt" title="Zoomer (ou molette sur la frise)" aria-label="Zoomer la frise">＋</button>
+          <button id="tlFit" class="ghost small" title="Afficher tout le morceau">Ajuster</button>
         </span>
       </div>
       <canvas id="timeline" aria-label="Timeline audio professionnelle multi-pistes (onde audio, voix, segments, mots, caractères)"></canvas>
@@ -6403,63 +6403,63 @@ dialog.notice-dlg:not([open]) {
       <div class="cutinfo" id="cutInfo"></div>
       <div id="cutPick" class="cut-pick pro-only" hidden>
         <div class="cut-pick-h">
-          <strong id="cutPickTitle">手法</strong>
-          <span class="muted" id="cutPickHint">このカットだけ差し替え</span>
-          <button type="button" id="cutPickAuto" class="ghost small">自動</button>
-          <button type="button" id="cutPickClose" class="ghost small" aria-label="閉じる">✕</button>
+          <strong id="cutPickTitle">Techniques</strong>
+          <span class="muted" id="cutPickHint">Remplacer uniquement ce plan</span>
+          <button type="button" id="cutPickAuto" class="ghost small">Auto</button>
+          <button type="button" id="cutPickClose" class="ghost small" aria-label="Fermer">✕</button>
         </div>
         <div id="cutPickGrid" class="tech-grid checks"></div>
       </div>
     </section>
 
     <!-- ================= right: look & output ================= -->
-    <section class="col col-right" aria-label="スタイルと書き出し">
+    <section class="col col-right" aria-label="Style et export">
       <div id="easyPanel" class="easy" hidden>
         <div class="easy-hero">
-          <button id="btnOmakaseBig" class="omakase">おまかせで作る</button>
-          <label class="theme-row">テーマ<select class="themeSel" aria-label="おまかせのテーマ"><option value="">テーマなし</option><option value="cinematic">CINEMATIC — 映画・予告編・Blade Runner (20)</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B (20)</option><option value="artmotion">ART &amp; MOTION — Kinetic・Pop Art・3D・Glitch (20)</option><option value="futuristic">FUTURISTIC — Cyberpunk・Sci-Fi・Neon・AI (20)</option><option value="lifestyle">LIFESTYLE — Luxury・Fashion・Travel・Doc (20)</option><option value="animation">ANIMATION — Anime・Cartoon・Fantasy・Surreal (20)</option><option value="guofeng">GUOFENG — 中国風・水墨山水・宮廷古典 (30)</option><option value="bauhaus">BAUHAUS — Kinetic Geometry・Swiss Modular (20)</option><option value="popart">POP ART — Comic Halftone・Ben-Day・CMYK (20)</option><option value="iso3d">3D ISOMETRIC — Wireframe Depth・Stereo (20)</option><option value="compositing">COMPOSITING — Keep Centre Free・Chroma Key (20)</option><option value="lyricpv">文字PV (20)</option><option value="kinetic">キネティック (20)</option><option value="wa">和風 (20)</option><option value="horror">ホラー (20)</option><option value="pop">ポップ (20)</option><option value="ballad">バラード (20)</option></select><small class="muted" id="themeMetaNote">選ぶと、その方向の中でおまかせします</small></label>
-          <p class="hint">押すたびに、スタイル・雰囲気・動き・配色・構成がまるごと変わります。キーボードの <span class="kbd">R</span> でも実行できます。</p>
+          <button id="btnOmakaseBig" class="omakase">Créer une variation</button>
+          <label class="theme-row">Thème<select class="themeSel" aria-label="Thème aléatoire"><option value="">Aucun thème</option><option value="cinematic">CINEMATIC — Films, bandes-annonces, Blade Runner (20)</option><option value="musicvideo">MUSIC VIDEO — Pop, Hip-Hop, K-Pop, Trap, R&amp;B (20)</option><option value="artmotion">ART &amp; MOTION — Kinetic, Pop Art, 3D, Glitch (20)</option><option value="futuristic">FUTURISTIC — Cyberpunk, Sci-Fi, Neon, AI (20)</option><option value="lifestyle">LIFESTYLE — Luxury, Fashion, Travel, Documentary (20)</option><option value="animation">ANIMATION — Anime, Cartoon, Fantasy, Surrealism (20)</option><option value="guofeng">GUOFENG — Chinois Classique, Lavis &amp; Palais Impérial (30)</option><option value="bauhaus">BAUHAUS — Géométrie cinétique, Grille Suisse (20)</option><option value="popart">POP ART — Trames Comic, Ben-Day, CMJN (20)</option><option value="iso3d">3D ISOMETRIC — Filaire isométrique, Stéréo (20)</option><option value="compositing">COMPOSITING — Centre Libre, Chroma Key Vert (20)</option><option value="lyricpv">Vidéo typographique (20)</option><option value="kinetic">Cinétique (20)</option><option value="wa">Japonais (20)</option><option value="horror">Horreur (20)</option><option value="pop">Pop (20)</option><option value="ballad">Ballade (20)</option></select><small class="muted" id="themeMetaNote">Choisissez un thème pour explorer ses styles fluides et ses animations dédiées</small></label>
+          <p class="hint">Chaque clic renouvelle le style, l'ambiance, le mouvement, les couleurs et les plans. Touche <span class="kbd">R</span> pour faire de même.</p>
           <div class="hist-row">
-            <button id="btnPrev2" class="ghost">◀ 前の案</button>
+            <button id="btnPrev2" class="ghost">◀ Précédent</button>
             <span id="histPos" class="muted mono"></span>
-            <button id="btnNext2" class="ghost">次の案 ▶</button>
+            <button id="btnNext2" class="ghost">Suivant ▶</button>
           </div>
           <div class="pick-sets">
-            <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>追加分の演出も使う<small>最初の公開版のあとに追加した約350の演出・配色セット12・書体6も、おまかせやシャッフルの候補にします（オフのときは最初の公開版の演出だけ）</small></span></label>
-            <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>和風の演出も使う<small>提灯・はがき・障子・扇・家紋・青海波・桜の花びらなどの和風グラフィック。オフにすると、おまかせやシャッフルで選ばれません</small></span></label>
-            <label class="check"><input class="extra2-toggle" type="checkbox"><span>追加分2の演出も使う<small>v0.12 で追加した部品（「追2」印）。文字PV系・キネティック・ホラー・和風の新しい部品は、それぞれのスイッチもオンのときに使います</small></span></label>
-            <label class="check"><input class="typo-toggle" type="checkbox" checked><span>文字PV系の部品を使う<small>線・数字・字組みだけで見せる、文字PVらしい部品（約50）</small></span></label>
-            <label class="check"><input class="kinetic-toggle" type="checkbox" checked><span>キネティックの部品を使う<small>語ごとに動く・跳ねる・積み上がる、動き重視の部品（約50）</small></span></label>
-            <label class="check"><input class="horror-toggle" type="checkbox"><span>ホラーの演出も使う<small>不気味な雰囲気の部品（約50）と配色セット3。オンにすると、おまかせの雰囲気に「ホラー」が加わります</small></span></label>
-            <label class="check"><input class="unify-toggle" type="checkbox"><span>統一感</span></label>
-            <label class="check"><input class="typeset-toggle" type="checkbox"><span>文字整列</span></label>
+            <label class="check"><input id="eExtra" class="extra-toggle" type="checkbox"><span>Inclure les effets bonus<small>Inclut environ 350 effets supplémentaires, 12 styles et 6 polices dans le tirage aléatoire.</small></span></label>
+            <label class="check"><input id="eWa" class="wa-toggle" type="checkbox" checked><span>Inclure les motifs japonais<small>Inclut les motifs japonais (lanternes, éventails, shoji, cerisiers, vagues…) dans le tirage aléatoire.</small></span></label>
+            <label class="check"><input class="extra2-toggle" type="checkbox"><span>Inclure les effets bonus 2<small>Composants ajoutés dans la v0.12 (marqués E2). Les nouveaux composants typographiques, cinétiques, horreur et japonais s'activent lorsque leur option dédiée est aussi cochée.</small></span></label>
+            <label class="check"><input class="typo-toggle" type="checkbox" checked><span>Composants typographiques<small>Environ 50 composants basés sur les lignes, chiffres et typographie</small></span></label>
+            <label class="check"><input class="kinetic-toggle" type="checkbox" checked><span>Composants cinétiques<small>Environ 50 composants axés sur le mouvement : mots qui bondissent, s'empilent et glissent</small></span></label>
+            <label class="check"><input class="horror-toggle" type="checkbox"><span>Inclure les effets d'horreur<small>Environ 50 composants sombres et 3 styles dédiés. Ajoute l'ambiance Horreur au mode aléatoire.</small></span></label>
+            <label class="check"><input class="unify-toggle" type="checkbox"><span>Harmonie visuelle</span></label>
+            <label class="check"><input class="typeset-toggle" type="checkbox"><span>Typographie soignée</span></label>
           </div>
         </div>
         <div class="easy-sec">
-          <h3>いまの案</h3>
+          <h3>Variation actuelle</h3>
           <div id="easyNow" class="now"></div>
         </div>
         <div class="easy-sec">
-          <h3>ここだけ変える</h3>
+          <h3>Ajuster un élément</h3>
           <div class="easy-grid">
-            <button id="eStyle" title="スタイルだけ別のものに">スタイル</button>
-            <button id="ePalette" title="アクセント・ズレ色A/Bをランダムに">配色</button>
-            <button id="eMood" title="動き・グリッチ・使う手法の雰囲気だけ">雰囲気</button>
-            <button id="eCut" title="レイアウトと動きの組み合わせだけ">構成</button>
+            <button id="eStyle" title="Changer uniquement le style">Style</button>
+            <button id="ePalette" title="Randomiser la couleur d'accent et le décalage RVB">Palette</button>
+            <button id="eMood" title="Changer uniquement l'ambiance et les mouvements">Ambiance</button>
+            <button id="eCut" title="Changer uniquement les plans et animations">Plans</button>
           </div>
         </div>
         <div class="easy-sec">
-          <h3>書き出し</h3>
+          <h3>Exporter</h3>
           <div class="fields">
-            <label class="field">画面比<select id="eAspect"><option value="16:9">16:9</option><option value="9:16">9:16 縦</option><option value="4:3">4:3</option><option value="3:4">3:4 縦</option><option value="1:1">1:1</option><option value="4:5">4:5 縦</option><option value="21:9">21:9</option></select></label>
-            <label class="field">解像度<select id="eRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
+            <label class="field">Format d'image<select id="eAspect"><option value="16:9">16:9</option><option value="9:16">9:16 vertical</option><option value="4:3">4:3</option><option value="3:4">3:4 vertical</option><option value="1:1">1:1</option><option value="4:5">4:5 vertical</option><option value="21:9">21:9</option></select></label>
+            <label class="field">Résolution<select id="eRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
             <label class="field">fps<select id="eFps"><option>24</option><option>30</option><option>60</option></select></label>
-            <label class="field field-wide">背景<select id="eKey"><option value="off">通常（スタイルの背景）</option><option value="green">グリーンバック（合成用）</option><option value="black">ブラックバック（合成用）</option></select></label>
+            <label class="field field-wide">Arrière-plan<select id="eKey"><option value="off">Fond du style</option><option value="green">Fond vert (incrustation)</option><option value="black">Fond noir (incrustation)</option></select></label>
           </div>
-          <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>中央を空ける（キャラクター用）<small>中央にキャラクターなどを重ねる前提で、文字と演出を横長の画面では左右、縦長の画面では上下に、行ごとに交互に置きます。背景と画面効果は全体のままです（プレビューには空ける範囲を点線で表示）</small></span></label>
-          <label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>
-          <div class="rng-row"><span class="rng-lab">書き出す範囲</span><select class="rngFrom" aria-label="書き出す範囲の最初の行"></select><span class="muted">〜</span><select class="rngTo" aria-label="書き出す範囲の最後の行"></select><span class="rngInfo muted mono"></span></div>
-          <div class="outbtns"><button id="eMP4" class="primary">MP4 を書き出す</button><button id="eMP4File" class="ghost mp4file" hidden title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">大きな動画用（ファイルに直接保存）</button><button id="eLRC" class="ghost" title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">LRC を書き出す</button></div>
+          <label class="check center-free"><input id="eCenter" class="center-toggle" type="checkbox"><span>Libérer le centre (pour un personnage)<small>Idéal pour incruster un personnage ou une vidéo au centre : les textes et effets se placent à gauche / droite sur écran large et en haut / bas sur écran vertical, en alternant ligne par ligne. Les fonds et effets couvrent tout le cadre (l'espace libre est marqué en pointillés).</small></span></label>
+          <label class="row center-dir" hidden>Sur écrans verticaux<select class="centerDirSel" aria-label="Disposition sur écrans verticaux"><option value="tb">Haut / bas</option><option value="lr">Gauche / droite</option></select></label>
+          <div class="rng-row"><span class="rng-lab">Plage d'export</span><select class="rngFrom" aria-label="Première ligne à exporter"></select><span class="muted">〜</span><select class="rngTo" aria-label="Dernière ligne à exporter"></select><span class="rngInfo muted mono"></span></div>
+          <div class="outbtns"><button id="eMP4" class="primary">Exporter en MP4</button><button id="eMP4File" class="ghost mp4file" hidden title="Sélectionnez d'abord le fichier de destination ; la vidéo y sera directement enregistrée. Recommandé pour les morceaux longs ou le 1080p+ si la mémoire du navigateur sature (Chrome / Edge)">Pour grandes vidéos (enregistrement direct)</button><button id="eLRC" class="ghost" title="Enregistre les paroles avec l'horodatage de chaque ligne (.lrc). Si une plage est définie, n'exporte que ces lignes.">Exporter LRC</button></div>
           <div class="lyrics-exp-sub">
             <button type="button" id="eSRT" class="ghost small">SRT</button>
             <button type="button" id="eVTT" class="ghost small">VTT</button>
@@ -6467,100 +6467,100 @@ dialog.notice-dlg:not([open]) {
             <button type="button" id="eJSON" class="ghost small" title="JSON complet avec minutage par segment, mot et caractère">JSON</button>
             <button type="button" id="eTXT" class="ghost small" title="Paroles en texte brut (.txt)">TXT</button>
           </div>
-          <div class="outbtns out-png"><button id="ePNG" class="ghost">連番PNG（ZIP）</button><button id="ePNGA" class="ghost">透過PNG（ZIP・背景なし）</button><button id="ePNGL" class="ghost" title="後景（背景のグラフィックと歌詞の後ろの装飾）と前景（歌詞とその装飾・ゴースト）を、別々のフォルダ（back / front）に透過PNGで書き出します。画面全体の演出は両方にかかるので、前景を後景の上に重ねると通常の見た目になります">透過PNG 前景／後景（ZIP）</button></div>
-          <button class="terms-open linkish">書き出した動画の権利について</button>
+          <div class="outbtns out-png"><button id="ePNG" class="ghost">Séquence PNG (ZIP)</button><button id="ePNGA" class="ghost">PNG transparent (ZIP)</button><button id="ePNGL" class="ghost" title="PNG transparents dans deux dossiers : back/ (arrière-plan et décorations arrière) et front/ (paroles et effets avant). Superposez front/ sur back/ pour retrouver le rendu complet.">Calques PNG transparents (ZIP)</button></div>
+          <button class="terms-open linkish">Droits des vidéos exportées</button>
           <div class="exp-box" hidden>
-            <button class="exp-share primary" hidden>共有して保存</button>
+            <button class="exp-share primary" hidden>Partager / enregistrer</button>
             <div class="progress"><i class="exp-bar"></i></div>
-            <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">中止</button></div>
+            <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">Annuler</button></div>
           </div>
         </div>
       </div>
       <nav class="tabs" role="tablist">
-        <button role="tab" data-tab="style" aria-selected="true">スタイル</button>
-        <button role="tab" data-tab="fx" aria-selected="false">演出</button>
-        <button role="tab" data-tab="tech" aria-selected="false">手法</button>
-        <button role="tab" data-tab="out" aria-selected="false">書き出し</button>
+        <button role="tab" data-tab="style" aria-selected="true">Style</button>
+        <button role="tab" data-tab="fx" aria-selected="false">Effets</button>
+        <button role="tab" data-tab="tech" aria-selected="false">Techniques</button>
+        <button role="tab" data-tab="out" aria-selected="false">Exporter</button>
       </nav>
 
       <div class="tabpane" data-pane="style">
-        <div id="styleCatBar" class="style-cat-bar" role="toolbar" aria-label="カテゴリー"></div>
+        <div id="styleCatBar" class="style-cat-bar" role="toolbar" aria-label="Catégories"></div>
         <div id="styleGrid" class="style-grid"></div>
-        <h3>フォントの役割</h3>
+        <h3>Rôles des polices</h3>
         <div id="fontRoles"></div>
         <div class="row" style="margin-top:8px">
-          <input id="localFont" type="text" placeholder="PCのフォント名（例: 游明朝）" style="flex:1">
-          <button id="btnAddFont">追加</button>
+          <input id="localFont" type="text" placeholder="Nom d'une police locale (ex. Arial)" style="flex:1">
+          <button id="btnAddFont">Ajouter</button>
         </div>
-        <div class="row" style="margin-top:8px"><label class="file">フォントファイル（.ttf/.otf）<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
-        <h3>アクセント・ズレ色</h3>
-        <label class="check"><input id="accentOn" type="checkbox"><span>自分の色で上書き<small>全シーンに適用。背景に合わせて明るさを自動調整します</small></span></label>
+        <div class="row" style="margin-top:8px"><label class="file">Fichier de police (.ttf/.otf)<input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2"></label></div>
+        <h3>Accent et décalages</h3>
+        <label class="check"><input id="accentOn" type="checkbox"><span>Utiliser mes couleurs<small>Appliqué à toutes les scènes ; la luminosité s'adapte au fond.</small></span></label>
         <div class="color-row" id="colorRowAccent"></div>
         <div class="row" style="margin-top:10px">
-          <button id="btnRandPalette" class="accent">ランダムに配色</button>
+          <button id="btnRandPalette" class="accent">Palette aléatoire</button>
           <div id="paletteSwatch" class="swatches" aria-hidden="true"></div>
         </div>
-        <h3>背景・文字色</h3>
-        <label class="check"><input id="colorOn" type="checkbox"><span>メインの背景と文字を自分の色にする</span></label>
+        <h3>Couleurs d'arrière-plan et du texte</h3>
+        <label class="check"><input id="colorOn" type="checkbox"><span>Personnaliser le fond principal et le texte</span></label>
         <div class="color-row" id="colorRow"></div>
       </div>
 
       <div class="tabpane" data-pane="fx" hidden>
         <div class="unify-box">
-          <label class="check"><input class="unify-toggle" type="checkbox"><span>統一感</span></label>
-          <label class="check"><input class="typeset-toggle" type="checkbox"><span>文字整列</span></label>
+          <label class="check"><input class="unify-toggle" type="checkbox"><span>Harmonie visuelle</span></label>
+          <label class="check"><input class="typeset-toggle" type="checkbox"><span>Typographie soignée</span></label>
         </div>
         <div id="fxSliders"></div>
         <div class="row" style="margin-top:6px">
-          <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> フラッシュ</label>
-          <label class="row" style="gap:6px">コマ打ち <select id="fxKoma" title="動きを何枚/秒で描くか（出力fpsとは別）"><option value="0">フル（出力fpsのまま）</option><option value="12">2コマ打ち（12枚/秒）</option><option value="8">3コマ打ち（8枚/秒）</option></select></label>
+          <label class="row" style="gap:6px"><input id="fxFlash" type="checkbox"> Flash</label>
+          <label class="row" style="gap:6px">Cadence <select id="fxKoma" title="Cadence de dessin de l'animation (indépendante des fps d'export)"><option value="0">Complète (fps d'export)</option><option value="12">À deux (12 im/s)</option><option value="8">À trois (8 im/s)</option></select></label>
         </div>
         <div class="row" style="margin-top:6px">
-          <label class="row" style="gap:6px" title="レイアウトや装飾が添える「No.01」「#03」のような数字を描きません（歌詞に含まれる数字はそのまま）"><input id="fxHideNo" type="checkbox"> 飾りの数字を消す</label>
-          <label class="row" style="gap:6px" title="レイアウトや装飾が添える「00:12.34」のような時刻を描きません（歌詞に含まれる時刻はそのまま）"><input id="fxHideTime" type="checkbox"> 飾りの時刻を消す</label>
+          <label class="row" style="gap:6px" title="Masque les numéros décoratifs ajoutés par les mises en page (ex. « No.01 », « #03 »), sans toucher aux chiffres de vos paroles"><input id="fxHideNo" type="checkbox"> Masquer les numéros décoratifs</label>
+          <label class="row" style="gap:6px" title="Masque les horodatages décoratifs ajoutés par les mises en page (ex. « 00:12.34 »)"><input id="fxHideTime" type="checkbox"> Masquer les horodatages décoratifs</label>
         </div>
         <div class="fields" style="margin-top:12px">
-          <label class="field">HUD<select id="fxHud"><option value="auto">スタイル次第</option><option value="on">常に表示</option><option value="off">表示しない</option></select></label>
-          <label class="field">シード<input id="seed" type="number" step="1"></label>
-          <label class="field">&nbsp;<button id="btnSeed" class="ghost">新しいシード</button></label>
+          <label class="field">HUD<select id="fxHud"><option value="auto">Auto (selon style)</option><option value="on">Toujours afficher</option><option value="off">Masquer</option></select></label>
+          <label class="field">Graine<input id="seed" type="number" step="1"></label>
+          <label class="field">&nbsp;<button id="btnSeed" class="ghost">Nouvelle graine</button></label>
         </div>
-        <p class="note">同じシードなら同じ構成になります。行ごとの「再抽選」「ロック」は左の行リストから。</p>
+        <p class="note">La même graine produit la même mise en scène. Verrouillez ou relancez une ligne à gauche.</p>
       </div>
 
       <div class="tabpane" data-pane="tech" hidden>
         <div class="pick-sets">
-          <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>追加分の演出も使う<small>「追加」印の手法・スタイル・書体。オフのときは、おまかせやシャッフルで最初の公開版の演出だけを使います</small></span></label>
-          <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>和風の演出も使う<small>「和」印の手法とスタイル。オフにすると、おまかせやシャッフルでは選ばれません（追加分の判定のあとに適用。行ごとに手動で指定した場合は使えます）</small></span></label>
-          <label class="check"><input class="extra2-toggle" type="checkbox"><span>追加分2の演出も使う<small>v0.12 で追加した部品（「追2」印）。文字PV系・キネティック・ホラー・和風の新しい部品は、それぞれのスイッチもオンのときに使います</small></span></label>
-          <label class="check"><input class="typo-toggle" type="checkbox" checked><span>文字PV系の部品を使う<small>「文」印の手法。オフにすると、おまかせやシャッフルでは選ばれません</small></span></label>
-          <label class="check"><input class="kinetic-toggle" type="checkbox" checked><span>キネティックの部品を使う<small>「キ」印の手法。オフにすると、おまかせやシャッフルでは選ばれません</small></span></label>
-          <label class="check"><input class="horror-toggle" type="checkbox"><span>ホラーの演出も使う<small>「ホ」印の手法とスタイル。おまかせでは雰囲気が「ホラー」のときだけ使います</small></span></label>
+          <label class="check"><input id="tExtra" class="extra-toggle" type="checkbox"><span>Inclure les effets bonus<small>Inclut les techniques, styles et polices marqués Nouveau dans le tirage automatique.</small></span></label>
+          <label class="check"><input id="tWa" class="wa-toggle" type="checkbox" checked><span>Inclure les motifs japonais<small>Inclut les techniques et styles marqués JP dans le tirage automatique.</small></span></label>
+          <label class="check"><input class="extra2-toggle" type="checkbox"><span>Inclure les effets bonus 2<small>Composants ajoutés dans la v0.12 (marqués E2). Les nouveaux composants typographiques, cinétiques, horreur et japonais s'activent lorsque leur option dédiée est aussi cochée.</small></span></label>
+          <label class="check"><input class="typo-toggle" type="checkbox" checked><span>Composants typographiques<small>Techniques marquées T. Ignorées par Aléatoire et Mélanger lorsqu'elles sont décochées.</small></span></label>
+          <label class="check"><input class="kinetic-toggle" type="checkbox" checked><span>Composants cinétiques<small>Techniques marquées K. Ignorées par Aléatoire et Mélanger lorsqu'elles sont décochées.</small></span></label>
+          <label class="check"><input class="horror-toggle" type="checkbox"><span>Inclure les effets d'horreur<small>Techniques et styles marqués H. Utilisés par Aléatoire uniquement en ambiance Horreur.</small></span></label>
         </div>
-        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="手法を名前で絞り込み" style="flex:1" aria-label="手法を名前で絞り込み"><span id="techTotal" class="muted mono"></span></div>
-        <p class="note">画面に見えているプレビューは自動でループします。</p>
+        <div class="row" style="margin-bottom:10px"><input id="techFilter" type="text" placeholder="Filtrer les techniques par nom" style="flex:1" aria-label="Filtrer les techniques par nom"><span id="techTotal" class="muted mono"></span></div>
+        <p class="note">Les vignettes visibles s'animent en boucle automatiquement.</p>
         <div id="techLists"></div>
       </div>
 
       <div class="tabpane" data-pane="out" hidden>
         <div class="fields">
-          <label class="field">画面比<select id="outAspect"><option value="16:9">16:9</option><option value="9:16">9:16 縦</option><option value="4:3">4:3</option><option value="3:4">3:4 縦</option><option value="1:1">1:1</option><option value="4:5">4:5 縦</option><option value="21:9">21:9</option></select></label>
-          <label class="field">解像度<select id="outRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
+          <label class="field">Format d'image<select id="outAspect"><option value="16:9">16:9</option><option value="9:16">9:16 vertical</option><option value="4:3">4:3</option><option value="3:4">3:4 vertical</option><option value="1:1">1:1</option><option value="4:5">4:5 vertical</option><option value="21:9">21:9</option></select></label>
+          <label class="field">Résolution<select id="outRes"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select></label>
           <label class="field">fps<select id="outFps"><option>24</option><option>30</option><option>60</option></select></label>
-          <label class="field">画質<select id="outQuality"><option value="standard">標準</option><option value="high">高</option><option value="max">最高</option></select></label>
-          <label class="field field-wide">背景<select id="outKey"><option value="off">通常（スタイルの背景）</option><option value="green">グリーンバック（合成用）</option><option value="black">ブラックバック（合成用）</option></select></label>
+          <label class="field">Qualité<select id="outQuality"><option value="standard">Standard</option><option value="high">Haute</option><option value="max">Maximale</option></select></label>
+          <label class="field field-wide">Arrière-plan<select id="outKey"><option value="off">Fond du style</option><option value="green">Fond vert (incrustation)</option><option value="black">Fond noir (incrustation)</option></select></label>
         </div>
-        <p class="note key-note">グリーンバック／ブラックバックにすると、白い文字と演出だけを単色の背景の上に描きます（背景の模様・紙の質感・粒子・周辺減光は入りません）。プレビューにもそのまま反映されます。グリーンバックは動画編集ソフトのクロマキーで、ブラックバックは「スクリーン」合成や輝度キーで抜いて、別の映像の上に重ねられます。</p>
-        <label class="check center-free"><input id="outCenter" class="center-toggle" type="checkbox"><span>中央を空ける（キャラクター用）<small>中央にキャラクターなどを重ねる前提で、文字と演出を横長の画面では左右、縦長の画面では上下に、行ごとに交互に置きます。背景と画面効果は全体のままです（プレビューには空ける範囲を点線で表示）</small></span></label>
-          <label class="row center-dir" hidden>縦長のとき<select class="centerDirSel" aria-label="縦長の画面での分け方"><option value="tb">上下に分ける</option><option value="lr">左右に分ける</option></select></label>
-        <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> 曲を動画に含める</label>
-        <div class="rng-row"><span class="rng-lab">書き出す範囲</span><select class="rngFrom" aria-label="書き出す範囲の最初の行"></select><span class="muted">〜</span><select class="rngTo" aria-label="書き出す範囲の最後の行"></select><span class="rngInfo muted mono"></span></div>
+        <p class="note key-note">Le fond vert ou noir affiche uniquement les textes et effets en blanc sur une couleur unie (sans texture ni vignettage) pour faciliter l'incrustation chroma ou en mode Écran.</p>
+        <label class="check center-free"><input id="outCenter" class="center-toggle" type="checkbox"><span>Libérer le centre (pour un personnage)<small>Idéal pour incruster un personnage ou une vidéo au centre : les textes et effets se placent à gauche / droite sur écran large et en haut / bas sur écran vertical, en alternant ligne par ligne. Les fonds et effets couvrent tout le cadre (l'espace libre est marqué en pointillés).</small></span></label>
+          <label class="row center-dir" hidden>Sur écrans verticaux<select class="centerDirSel" aria-label="Disposition sur écrans verticaux"><option value="tb">Haut / bas</option><option value="lr">Gauche / droite</option></select></label>
+        <label class="row" style="gap:6px;margin-top:10px"><input id="outAudio" type="checkbox" checked> Inclure l'audio dans la vidéo</label>
+        <div class="rng-row"><span class="rng-lab">Plage d'export</span><select class="rngFrom" aria-label="Première ligne à exporter"></select><span class="muted">〜</span><select class="rngTo" aria-label="Dernière ligne à exporter"></select><span class="rngInfo muted mono"></span></div>
         <div class="outbtns">
-          <button id="btnMP4" class="primary">MP4 を書き出す</button>
-          <button id="btnMP4File" class="mp4file" hidden title="保存先のファイルを先に選び、そこへ直接書き込みます。長い曲・1080p 以上でブラウザのメモリが足りずに失敗するときに使ってください（Chrome / Edge）">MP4（大きな動画用・ファイルに直接保存）</button>
-          <button id="btnPNG">連番PNG（ZIP）</button>
-          <button id="btnPNGA">透過PNG（ZIP・背景なし）</button>
-          <button id="btnLRC" title="各行の開始時刻を付けた歌詞（.lrc）を書き出します。書き出す範囲を選んでいるときは、その行だけを動画の頭からの時刻で書き出します">歌詞（LRC）</button>
-          <button id="btnPNGL" title="後景（背景のグラフィックと歌詞の後ろの装飾）と前景（歌詞とその装飾・ゴースト）を、別々のフォルダ（back / front）に透過PNGで書き出します。画面全体の演出は両方にかかるので、前景を後景の上に重ねると通常の見た目になります">透過PNG 前景／後景（ZIP）</button>
+          <button id="btnMP4" class="primary">Exporter en MP4</button>
+          <button id="btnMP4File" class="mp4file" hidden title="Sélectionnez d'abord le fichier de destination ; la vidéo y sera directement enregistrée. Recommandé pour les morceaux longs ou le 1080p+ si la mémoire du navigateur sature (Chrome / Edge)">MP4 (grandes vidéos, enregistrement direct)</button>
+          <button id="btnPNG">Séquence PNG (ZIP)</button>
+          <button id="btnPNGA">PNG transparent (ZIP)</button>
+          <button id="btnLRC" title="Enregistre les paroles avec l'horodatage de chaque ligne (.lrc). Si une plage est définie, n'exporte que ces lignes.">Paroles (LRC)</button>
+          <button id="btnPNGL" title="PNG transparents dans deux dossiers : back/ (arrière-plan et décorations arrière) et front/ (paroles et effets avant). Superposez front/ sur back/ pour retrouver le rendu complet.">Calques PNG transparents (ZIP)</button>
         </div>
         <div id="lyricsExportBox" class="lyrics-exp-box">
           <div class="lyrics-exp-head">
@@ -6576,12 +6576,12 @@ dialog.notice-dlg:not([open]) {
           </div>
         </div>
         <div class="exp-box" hidden style="margin-top:12px">
-          <button class="exp-share primary" hidden>共有して保存</button>
+          <button class="exp-share primary" hidden>Partager / enregistrer</button>
           <div class="progress"><i class="exp-bar"></i></div>
-          <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">中止</button></div>
+          <div class="row" style="justify-content:space-between;margin-top:6px"><span class="exp-text muted mono">—</span><button class="exp-cancel ghost small">Annuler</button></div>
         </div>
-        <button class="terms-open linkish" style="margin-top:10px">書き出した動画・画像の権利とライセンスについて</button>
-        <p class="note" id="codecNote">書き出しはこのブラウザの中で行われます（Chrome / Edge 推奨）。</p>
+        <button class="terms-open linkish" style="margin-top:10px">Droits et licences des vidéos et images exportées</button>
+        <p class="note" id="codecNote">L'export s'exécute directement dans votre navigateur (Chrome / Edge recommandés).</p>
       </div>
     </section>
   </main>
@@ -6589,33 +6589,33 @@ dialog.notice-dlg:not([open]) {
 
 <dialog id="resetDlg" class="terms" aria-labelledby="resetTitle">
   <form method="dialog">
-    <h2 id="resetTitle">初期化</h2>
-    <p>次のものをすべて消して、最初の状態に戻します。<strong>元に戻すことはできません。</strong></p>
+    <h2 id="resetTitle">Réinitialiser</h2>
+    <p>Ceci effacera tout le projet et réinitialisera l'application. <strong>Cette action est irréversible.</strong></p>
     <ul class="reset-list">
-      <li>歌詞・曲名・アーティスト</li>
-      <li>読み込んだ曲（このブラウザに残していた分も）</li>
-      <li>タイミング・行ごとの指定・書き出す範囲</li>
-      <li>スタイル・演出・配色・書体などの設定</li>
-      <li>案の履歴（◀ ▶）と、歌詞・タイミングの「元に戻す」の履歴</li>
+      <li>Paroles, titre de la chanson et artiste</li>
+      <li>Le morceau chargé (y compris la copie locale enregistrée)</li>
+      <li>Rythme, réglages par ligne et plage d'exportation</li>
+      <li>Style, animation, palette, polices et autres paramètres</li>
+      <li>Historique des variations (◀ ▶) et de l'annulation</li>
     </ul>
-    <p class="terms-sub">表示モード（かんたん／詳細）・プレビューの音量・画面の言語はそのままです。保存したプロジェクトファイル（.json）も消えません。</p>
-    <div class="terms-foot"><span></span><span class="row"><button value="cancel" class="ghost">やめる</button><button value="reset" class="danger">初期化する</button></span></div>
+    <p class="terms-sub">Le mode d'affichage (Facile / Avancé), le volume de l'aperçu et la langue de l'interface sont conservés. Vos fichiers de projet (.json) ne sont pas supprimés.</p>
+    <div class="terms-foot"><span></span><span class="row"><button value="cancel" class="ghost">Annuler</button><button value="reset" class="danger">Réinitialiser</button></span></div>
   </form>
 </dialog>
 <dialog id="termsDlg" class="terms" aria-labelledby="termsTitle">
   <form method="dialog">
-    <h2 id="termsTitle">利用について</h2>
+    <h2 id="termsTitle">À propos / Droits</h2>
     <div class="terms-main">
-      <p class="terms-big">このツールで作った<strong>動画や画像（出力物）の権利は、作った人</strong>に帰属します。</p>
-      <p class="terms-sub">※ 使った歌詞や曲の権利は、それぞれの権利者に帰属します。</p>
+      <p class="terms-big">Vous détenez les droits des <strong>vidéos et images créées</strong>.</p>
+      <p class="terms-sub">Les paroles et musiques utilisées restent la propriété de leurs ayants droit.</p>
     </div>
-    <p>ツール本体は <strong>MIT ライセンス</strong>で公開しています。詳細なライセンスはこちら：</p>
+    <p>Cet outil est publié sous  <strong>MIT licence</strong>. Détails de la licence :</p>
     <p><a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener">https://github.com/852wa/JIZURA</a></p>
-    <p class="muted terms-note">入力した歌詞や曲は、このブラウザの中だけで処理され、サーバーには送信されません。</p>
-    <details class="terms-oss"><summary>使用しているオープンソース</summary>
-      <p>MP4 書き出し：mp4-muxer（MIT License）<br>フォント：Google Fonts 配布の各書体（SIL Open Font License 1.1）</p>
+    <p class="muted terms-note">Vos paroles et musiques sont traitées localement dans votre navigateur.</p>
+    <details class="terms-oss"><summary>Logiciels open source utilisés</summary>
+      <p>Export MP4 : mp4-muxer（MIT License）<br>Polices : Google Fonts polices distribuées（SIL Open Font License 1.1）</p>
     </details>
-    <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>閉じる</button></div>
+    <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>Fermer</button></div>
   </form>
 </dialog>
 <dialog id="cloudDlg" class="terms cloud-dlg" aria-labelledby="cloudTitle">
@@ -6756,7 +6756,7 @@ dialog.notice-dlg:not([open]) {
     <p id="noticeLbCaption" class="notice-lb-caption"></p>
   </div>
 </dialog>
-<div id="dropHint" class="drop-hint" hidden><div><strong>ここにドロップして読み込み</strong><span>曲（mp3 / wav など）・歌詞（LRC / SRT / テキスト）・プロジェクト（.json）</span></div></div>
+<div id="dropHint" class="drop-hint" hidden><div><strong>Glissez-déposez pour charger</strong><span>Un morceau (mp3, wav…), des paroles (LRC / SRT / texte) ou un projet (.json)</span></div></div>
 
 <script>
 /*! mp4-muxer v5.2.2 | MIT License | (c) 2023 Vanilagy | see THIRD_PARTY_NOTICES.md */
@@ -9236,7 +9236,8 @@ J.detectLang = (text) => {
   if (kana >= 2 || (kana > 0 && kana >= han * 0.03)) return 'ja';
   if (han >= 2) return sc > tc ? 'zh-Hans' : 'zh-Hant';
   const perLine = J.detectLanguagesInText(text);
-  return perLine[0] || 'ja';
+  const uiDefault = (typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) ? document.documentElement.lang : 'fr';
+  return perLine[0] || uiDefault;
 };
 
 /* project → primary language code used for fonts & fallback */
@@ -17832,7 +17833,7 @@ J.lrcText = (project, lines, range, opts = {}) => {
     const L = parsed.lines[i];
     const startSec = Array.isArray(lines) && lines[i] && isFinite(lines[i].start) ? lines[i].start : tm.starts[i];
     let txt = clean(rows[L.src]);
-    if (L.interlude && !/^\[/.test(txt)) txt = '[間奏]';
+    if (L.interlude && !/^\[/.test(txt)) txt = '[interlude]';
     const ts = fmtLrcTs(startSec - t0, '[]');
     out.push(ts + txt);
     if (!L.interlude && (includeTrans || (opts.includeTranslation === undefined && trEnabled && trMap[i]))) {
@@ -17907,7 +17908,7 @@ J.srtToLyrics = (text, gap = 1) => {
     .replace(/^[♪♫\s]+|[♪♫\s]+$/g, '').replace(/^#/, '＃').replace(/^\[/, '［');     // a row may not read as a comment or a tag
   const list = cues.filter(c => isFinite(c.start) && isFinite(c.end)).map(c => ({ start: c.start, end: Math.max(c.start, c.end), text: body(c) })).filter(c => c.text).sort((a, b) => a.start - b.start);
   if (!list.length) return null;
-  const out = [], IL = '[間奏]'; let gaps = 0;
+  const out = [], IL = '[interlude]'; let gaps = 0;
   list.forEach((c, i) => {
     out.push(stamp(c.start) + c.text);
     const next = list[i + 1];
@@ -17942,22 +17943,22 @@ J.exportMP4 = async (o) => {
   const [w, h] = J.outputSize(project);
   const fps = plan.fps, bitrate = J.videoBitrate(w, h, fps, quality);
   const attempts = await J.videoAttempts(w, h, fps, bitrate);
-  if (!attempts.length) throw new Error('このブラウザは動画エンコード（WebCodecs）に対応していません。Chrome か Edge の最新版で開いてください。');
+  if (!attempts.length) throw new Error('Encodage vidéo (WebCodecs) indisponible. Ouvrez dans Chrome ou Edge récent.');
   const tried = [];
   for (let k = 0; k < attempts.length; k++) {
     const vc = attempts[k];
     try {
       if (file && k > 0) { await file.seek(0); await file.truncate(0); }
-      const r = await encodeMP4(Object.assign({}, o, { w, h, vc, note: k > 0 ? `（${vc.label}・ソフトウェアで再試行 ${k}）` : '' }));
+      const r = await encodeMP4(Object.assign({}, o, { w, h, vc, note: k > 0 ? ` (${vc.label}, nouvelle tentative logicielle ${k})` : '' }));
       r.tried = tried; return r;
     } catch (e) {
-      if (signal && signal.aborted) throw new Error('キャンセルしました');
+      if (signal && signal.aborted) throw new Error('Annulé');
       if (e && e.jzFatal) throw e;
       tried.push(`${vc.label}/${vc.hw}: ${e && e.message ? e.message : e}`);
       console.warn('MP4 export attempt failed', vc.codec, vc.hw, e);
     }
   }
-  const err = new Error('MP4 を書き出せませんでした。' + (file ? '' : '「大きな動画用（ファイルに直接保存）」か、') + '解像度・fps・画質を下げて試してください。詳細：' + tried.join(' ／ '));
+  const err = new Error('Impossible d\'exporter en MP4 : ' + (file ? '' : 'utilisez « Enregistrement direct (grandes vidéos) », ou ') + 'essayez une résolution, cadence ou qualité inférieure. Détails : ' + tried.join(' ／ '));
   err.detail = tried; throw err;
 };
 async function encodeMP4({ plan, project, audio, onProgress, signal, range, file, w, h, vc, note }) {
@@ -17983,27 +17984,27 @@ async function encodeMP4({ plan, project, audio, onProgress, signal, range, file
   const closeEnc = () => { try { if (venc.state !== 'closed') venc.close(); } catch (e) {} };
   try {
     for (let i = 0; i < total; i++) {
-      if (signal && signal.aborted) { closeEnc(); throw new Error('キャンセルしました'); }
+      if (signal && signal.aborted) { closeEnc(); throw new Error('Annulé'); }
       if (err) throw err;
-      if (venc.state === 'closed') throw new Error('エンコーダーが停止しました');
+      if (venc.state === 'closed') throw new Error('L\'encodeur s\'est arrêté');
       R.frame(ctx, plan, span.t0 + i / fps, { scale });
       const vf = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
       try { venc.encode(vf, { keyFrame: i % (fps * 2) === 0 }); } finally { vf.close(); }
       let spins = 0;
       // (time in the background doesn't count: a phone pauses the encoder while the page is hidden)
-      while (venc.encodeQueueSize > 4 && !err) { await new Promise(r => setTimeout(r, 2)); if (!document.hidden && ++spins > 15000) throw new Error('エンコーダーが応答しません'); }
+      while (venc.encodeQueueSize > 4 && !err) { await new Promise(r => setTimeout(r, 2)); if (!document.hidden && ++spins > 15000) throw new Error('L\'encodeur ne répond plus'); }
       // an encoder that accepts frames but never returns any has failed silently (seen with some GPU drivers)
-      if (i === Math.min(total - 1, fps * 3) && outFrames === 0) { await venc.flush(); if (!outFrames) throw new Error('エンコーダーが出力を返しません'); }
-      if (i % 3 === 0) { onProgress && onProgress(i / total, `フレーム ${i + 1}/${total}${note || ''}`); await new Promise(r => setTimeout(r, 0)); }
+      if (i === Math.min(total - 1, fps * 3) && outFrames === 0) { await venc.flush(); if (!outFrames) throw new Error('L\'encodeur n\'a renvoyé aucune sortie'); }
+      if (i % 3 === 0) { onProgress && onProgress(i / total, `Image ${i + 1}/${total}${note || ''}`); await new Promise(r => setTimeout(r, 0)); }
     }
     await venc.flush();
     if (err) throw err;
   } catch (e) { closeEnc(); throw e; }
   finally { J.glyphs.maxRes = prevRes; }
   closeEnc();
-  if (outFrames < total * 0.98) throw new Error(`動画のフレームが足りません（${outFrames}/${total}）`);
+  if (outFrames < total * 0.98) throw new Error(`Images manquantes (${outFrames}/${total})`);
   if (ac) {
-    onProgress && onProgress(0.99, '音声をエンコード中');
+    onProgress && onProgress(0.99, 'Encodage audio');
     const rs = await resample(audio.buffer, ac.sr, span.dur, span.t0);
     const chn = rs.numberOfChannels;
     let aChunks = 0, aEnd = 0, aErr = null;
@@ -18021,22 +18022,22 @@ async function encodeMP4({ plan, project, audio, onProgress, signal, range, file
     }
     await aenc.flush(); aenc.close();
     const fatal = m => { const e = new Error(m); e.jzFatal = true; return e; };    // audio problems: another video encoder won't help
-    if (aErr) throw fatal('音声のエンコードに失敗しました: ' + (aErr.message || aErr));
+    if (aErr) throw fatal('Échec de l\'encodage audio : ' + (aErr.message || aErr));
     // the encoder must have produced the whole soundtrack — otherwise report it instead of writing a silent file
-    if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw fatal('音声のエンコードが途中で止まりました（' + aChunks + '）。もう一度書き出してください');
+    if (!aChunks || aEnd < (Math.min(span.dur, audio.buffer.duration - span.t0) - 0.5) * 1e6) throw fatal('L\'encodage audio s\'est interrompu (' + aChunks + '). Réessayez l\'export.');
   }
-  onProgress && onProgress(0.995, 'ファイルを仕上げ中');
+  onProgress && onProgress(0.995, 'Finalisation du fichier');
   muxer.finalize();
   if (file) await file.close();
-  onProgress && onProgress(1, '完了');
+  onProgress && onProgress(1, 'Terminé');
   const size = file ? null : store.end;
-  return { blob: file ? null : store.blob('video/mp4'), size, codec: vc.label + (vc.hw === 'prefer-software' ? '（ソフトウェア）' : ''), audio: ac ? ac.mux : null, audioWanted: !!(audio && audio.buffer && project.includeAudio !== false), width: w, height: h, toFile: !!file };
+  return { blob: file ? null : store.blob('video/mp4'), size, codec: vc.label + (vc.hw === 'prefer-software' ? ' (logiciel)' : ''), audio: ac ? ac.mux : null, audioWanted: !!(audio && audio.buffer && project.includeAudio !== false), width: w, height: h, toFile: !!file };
 }
 
 /* ---------- PNG sequence as ZIP (store, no compression) ---------- */
 const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
 const crc32 = (u8) => { let c = 0xffffffff; for (let i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
-const ZIP_TOO_BIG = 'ZIP が大きくなりすぎます（65,535 ファイル・4GB まで）。書き出す範囲を狭めるか、解像度を下げてください';
+const ZIP_TOO_BIG = 'L\'archive ZIP dépasserait la limite (65 535 fichiers / 4 Go). Réduisez la plage ou la résolution.';
 class ZipWriter {
   constructor() { this.parts = []; this.central = []; this.offset = 0; }
   add(name, u8) {
@@ -18080,7 +18081,7 @@ J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal
   const zip = new ZipWriter();
   const scale = w / plan.W;
   for (let i = 0; i < total; i += every) {
-    if (signal && signal.aborted) throw new Error('キャンセルしました');
+    if (signal && signal.aborted) throw new Error('Annulé');
     const name = `jizura_${String(i).padStart(5, '0')}.png`;
     for (const layer of layers ? ['back', 'front'] : [null]) {
       R.frame(ctx, plan, span.t0 + i / fps, { scale, transparent: transparent || !!layers, layer });
@@ -18089,7 +18090,7 @@ J.exportPNGZip = async ({ plan, project, transparent, layers, onProgress, signal
     }
     onProgress && onProgress(i / total, `PNG ${i + 1}/${total}`);
   }
-  onProgress && onProgress(1, '完了');
+  onProgress && onProgress(1, 'Terminé');
   return zip.finish();
 };
 
@@ -73846,6 +73847,268 @@ J.randomOk = (project, g, k) => {
 };
 })();
 
+/* English labels are applied after all expression packs register, before the editor starts.
+   Internal IDs and project JSON remain language independent. */
+(() => {
+  'use strict';
+  const titles = {
+    layout: {
+      vcols: 'Vertical text', marquee: 'Scrolling banner', tile: 'Tiled text',
+      huge: 'Oversized text', gloss: 'Annotation', diag: 'Diagonal band',
+      stack: 'Echo stack', lowerThird: 'Lower third', corners: 'Opposite corners',
+      arcTop: 'Rainbow arc', gridCells: 'Grid cells', dropCap: 'Drop cap',
+      frameBox: 'Picture frame', subtitleBar: 'Subtitle bar',
+      sideways: 'Sideways text', edgeFrame: 'Edge frame', hanko: 'Signature seal',
+      genkou: 'Manuscript paper', panels: 'Comic panels', ruler: 'Dimension lines',
+      rain: 'Letter rain', bounceLine: 'Bouncing line', crossBands: 'Crossing bands',
+      stickerBomb: 'Sticker collage', credits: 'End credits',
+      columnsBig: 'Contrasting columns', circleWords: 'Concentric words',
+      typeSpecimen: 'Type specimen', kanjiFocus: 'Character focus',
+      halfVertical: 'Mixed vertical type', magazine: 'Magazine spread',
+      headlineDeck: 'Headline and deck', proofread: 'Proof sheet',
+      ema: 'Ema wish plaque', ransom: 'Cutout letters', vinyl: 'Vinyl record',
+      bookSpine: 'Book spine', stampSheet: 'Stamp sheet',
+      chochin: 'Paper lantern', noren: 'Noren curtain',
+      tanzaku: 'Wish strip', omikuji: 'Fortune slip',
+      kakejiku: 'Hanging scroll', shoji: 'Shoji screen',
+      clapper: 'Clapperboard', karuta: 'Karuta card',
+      flipCards: 'Flipping cards', pile: 'Letter pile', balloons: 'Letter balloons',
+      tiles: 'Letter tiles', bulbs: 'Marquee bulbs', ledScroll: 'LED ticker',
+      crowdBubbles: 'Speech bubble crowd', wordSearch: 'Word search',
+      shadowPlay: 'Shadow puppets', kaleido: 'Kaleidoscope',
+      fisheye: 'Fisheye lens', wall: 'Perspective wall',
+      sliceStack: 'Sliced layers', maskReveal: 'Text window',
+      halftoneBig: 'Oversized halftone text'
+    },
+    enter: {
+      assemble: 'Break apart and assemble', riseMask: 'Reveal from below',
+      dropMask: 'Reveal from above', slideL: 'Slide from left', slideR: 'Slide from right',
+      slideWhole: 'Slide in together', flipX: 'Flip on vertical axis',
+      flipY: 'Flip on horizontal axis', strokeDraw: 'Draw outlines, then fill',
+      outlineFill: 'Outline to fill', splitJoin: 'Join from top and bottom',
+      vSlice: 'Vertical slices', diagWipe: 'Diagonal wipe',
+      randomOrder: 'Random letter order', bounceBig: 'Big bounce',
+      squashDrop: 'Squash landing', echoIn: 'Echoes converge',
+      trackIn: 'Tighten letter spacing', trackOut: 'Expand letter spacing',
+      blurStagger: 'Staggered blur', fadeStagger: 'Letter by letter fade',
+      spiralIn: 'Spiral assembly', zoomOut: 'Oversized to normal',
+      cursorSweep: 'Cursor sweep', rockSettle: 'Wobble to rest',
+      snapRail: 'Snap into alignment', fanOpen: 'Folding fan opens',
+      stickerPeel: 'Apply sticker', crumple: 'Uncrumple',
+      noteUnfold: 'Unfold letter', tornJoin: 'Join torn pieces',
+      splitFlap: 'Split flap display', crtOn: 'CRT powers on',
+      odometer: 'Rolling number drum', matrixRain: 'Data rain',
+      brushReveal: 'Brush reveal', quarters: 'Converge from four sides',
+      printRegister: 'Color plates align', echoCount: 'Count in',
+      liquidFill: 'Liquid rises', strokeOrder: 'Stroke by stroke',
+      shadowFirst: 'Shadow first', tokoroten: 'Extruded noodles'
+    },
+    hold: {
+      still: 'Still', breathe: 'Breathe', glitchtick: 'Glitch tick',
+      colorRun: 'Traveling color', trackBreathe: 'Breathing letter spacing',
+      beatHop: 'Hop to the beat', hWave: 'Horizontal wave',
+      orbitSmall: 'Small orbit', scanBand: 'Scanning band',
+      noiseDrift: 'Drifting noise', zoomSlow: 'Slow push',
+      stretchPulse: 'Stretch to the beat', glitchJump: 'Occasional glitch jump',
+      echoTrail: 'Echo trail', glowFlicker: 'Flickering glow',
+      windGust: 'Wind gust', eqBounce: 'Audio level bounce',
+      flashBox: 'Invert to the beat', glintSweep: 'Passing highlight',
+      flipSwap: 'Occasional flip', shadowSway: 'Swaying shadow',
+      typeRattle: 'Typewriter rattle', focusRack: 'Rack focus',
+      pluckString: 'Plucked string'
+    },
+    exit: {
+      fall: 'Crumble and fall', drift: 'Drift away', sinkMask: 'Sink out',
+      riseOut: 'Rise out', slideOutL: 'Slide left', slideOutR: 'Slide right',
+      flipOutX: 'Doors close', flipOutY: 'Flip down',
+      trackOutWide: 'Spread letter spacing', collapse: 'Collapse inward',
+      zoomThrough: 'Zoom through', zoomFar: 'Recede into distance',
+      spinOut: 'Spin away', blurOutStagger: 'Blur letters in sequence',
+      undraw: 'Return to outlines', outlineOut: 'Fill fades to outline',
+      irisClose: 'Iris closes', splitApart: 'Split top and bottom',
+      vSliceDrop: 'Vertical slices fall', dissolve: 'Crumble away',
+      scrambleOut: 'Become symbols', glitchDissolve: 'Glitch into blocks',
+      gravity: 'Fall with gravity', burn: 'Burn away',
+      sweepCover: 'Covered by a bar', shatterLite: 'Shatter into quarters',
+      peelOff: 'Peel off sticker', crumpleOut: 'Crumple and toss',
+      tearOut: 'Tear away', scorchOut: 'Scorch away',
+      overexposeOut: 'Blow out to white', scanOut: 'Scanline erase',
+      halftoneOut: 'Dissolve to halftone', eraserOut: 'Chalkboard erase',
+      vacuumOut: 'Vacuum to a point', sandOut: 'Scatter as sand',
+      hingeOut: 'Loose hinge', rocketOff: 'Rocket away',
+      balloonOff: 'Float off like a balloon', deflateOut: 'Deflate and fly',
+      glassBreak: 'Break like glass', clapShut: 'Close at center',
+      lampOff: 'Lights out', matrixOut: 'Digital rain',
+      tornadoOut: 'Tornado', snakeOut: 'Leave in a line',
+      flutterOut: 'Flutter down', fanClose: 'Folding fan closes',
+      rgbSplitOut: 'Split into RGB', shockOut: 'Shockwave',
+      floodOut: 'Submerge', slashOut: 'Sliced in two',
+      scribbleOut: 'Scribble away', candleOut: 'Blow out'
+    },
+    decor: {
+      brackets: 'Corner marks', rings: 'Coordinate rings', dots: 'Dotted ring',
+      leaders: 'Leader lines', blobs: 'Ink stains', bars: 'Rough bands',
+      counter: 'Large numbers', cropMarks: 'Crop marks',
+      indexNum: 'Sequence number', dateStamp: 'Photo date stamp',
+      qrBlock: 'QR inspired blocks', guides: 'Guide lines',
+      checkerStrip: 'Checker strip', beatRing: 'Beat ring',
+      speedCorner: 'Speed lines', risingParticles: 'Rising particles',
+      brushStroke: 'Brush stroke', tapePieces: 'Masking tape',
+      scribbleUnder: 'Hand drawn underline', crossOut: 'Editorial marks',
+      watermarkKanji: 'Large watermark character',
+      verticalStrip: 'Vertical text strip', romajiLine: 'Romanized line',
+      bracketsJP: 'Japanese corner brackets', seal: 'Red seal',
+      kamon: 'Family crest', seigaiha: 'Seigaiha wave pattern',
+      asanoha: 'Asanoha hemp leaf pattern', hanabi: 'Fireworks',
+      chochin: 'Paper lantern', shimenawa: 'Sacred rope', sensu: 'Folding fan',
+      tsukiKumo: 'Moon and clouds', momiji: 'Maple leaves',
+      namiGashira: 'Wave crest', kasumi: 'Mist',
+      registration: 'Registration marks', ruledLines: 'Ruled notebook',
+      indexTabs: 'Index tabs', moonPhases: 'Moon phases',
+      dandelion: 'Dandelion seeds', tally: 'Tally marks',
+      windowChrome: 'Window frame', notifBell: 'Notification bell',
+      likeCounter: 'Like counter', mediaControls: 'Playback controls'
+    },
+    treat: {
+      none: 'None', outline: 'Hollow letters', outlineFill: 'Outlined text',
+      doubleOutline: 'Double outline', extrude: 'Extruded text',
+      marker: 'Marker highlight', strike: 'Strikethrough',
+      boxed: 'Boxed text', gradientV: 'Vertical gradient',
+      splitColor: 'Two tone split', halftone: 'Halftone',
+      dotted: 'Dotted outline', alternate: 'Alternating colors',
+      wide: 'Wide letters', tall: 'Tall letters',
+      echoOutline: 'Echoed outline', emphasisDots: 'Emphasis dots',
+      neonOutline: 'Neon tubing', glitchSplit: 'Misregistered colors',
+      stencilGap: 'Stencil gaps', sizeWave: 'Rhythmic letter sizes',
+      rotateAlt: 'Alternating angles', baselineShift: 'Staggered baseline',
+      fauxBold: 'Extra bold', circled: 'Circled letters',
+      bracketsQuote: 'Quotation marks', reflection: 'Reflection',
+      sticker: 'Sticker outline', kerningWide: 'Wide letter spacing',
+      monoGrid: 'Manuscript grid', outlineOffset: 'Offset outline',
+      toneShadow: 'Halftone shadow', fadeChars: 'Fading letters',
+      cutShift: 'Offset cut', focusPull: 'Focus shift',
+      spotChar: 'Highlighted character', ransom: 'Cutout letters'
+    },
+    bg: {
+      none: 'Solid color', seigaiha: 'Seigaiha waves',
+      asanoha: 'Asanoha pattern', topoLines: 'Contour lines',
+      ridgePlot: 'Mountain ridges', nightMoon: 'Moonlit night',
+      filmStrip: 'Filmstrip', vhsBand: 'VHS noise band',
+      godRays: 'Light rays', vignettePulse: 'Pulsing vignette',
+      paperCut: 'Paper cutout', bigChar: 'Oversized letters',
+      splitV: 'Vertical color split', splitH: 'Horizontal color split',
+      splitDiag: 'Diagonal color split', tvBars: 'TV color bars',
+      speedLines: 'Speed lines', bokehBg: 'Bokeh',
+      particlesBg: 'Floating particles', eqBars: 'Equalizer bars',
+      letterbox: 'Cinema letterbox', noiseField: 'Moving noise'
+    },
+    cam: {
+      push: 'Slow push in', rackFocus: 'Rack focus',
+      floatNoise: 'Floating camera', vertigo: 'Dolly zoom',
+      spiralIn: 'Spiral zoom', jelly: 'Elastic wobble',
+      pullOut: 'Pull out', panL: 'Pan left', panR: 'Pan right',
+      dutch: 'Dutch angle', beatPunch: 'Zoom on beat',
+      driftDiag: 'Diagonal drift', shakeHard: 'Strong shake',
+      stepZoom: 'Stepped zoom'
+    },
+    fx: {
+      chroma: 'Chromatic jump', slice: 'Slice glitch', block: 'Block glitch',
+      zoom: 'Zoom blur', radialChroma: 'Radial color fringing',
+      bulge: 'Fisheye distortion', macroBlock: 'Compression blocks',
+      ditherBit: '1 bit dither', rotateSnap: 'Angle snap',
+      echoFrames: 'Frame echoes', kaleido: 'Kaleidoscope',
+      bandInvert: 'Inverted band', anamorphic: 'Anamorphic flare',
+      tvStatic: 'TV static', dustScratches: 'Film scratches',
+      filmAdvance: 'Film advance', perspectiveTilt: 'Perspective tilt',
+      focusLines: 'Focus lines', starGlint: 'Star glint',
+      negativeRing: 'Inverted ring', shatter: 'Glass shatter',
+      defocus: 'Out of focus', rgbSplit: 'RGB separation',
+      vhsRoll: 'VHS roll', trackingNoise: 'Tracking noise',
+      posterize: 'Posterization', filmBurn: 'Film burn',
+      crtOff: 'CRT powers off'
+    },
+    trans: {
+      wipe: 'Edge wipe', diagonalWipe: 'Diagonal band wipe',
+      irisOpen: 'Iris opens', pushSlide: 'Push',
+      doorsOpen: 'Double doors', checker: 'Checkerboard',
+      blockDissolve: 'Block dissolve', inkBlob: 'Ink blot',
+      shatterTiles: 'Shattering tiles', sliceShift: 'Sliding strips',
+      cubeTurn: 'Cube turn', flashCross: 'Flash cut', pixelate: 'Pixel transition'
+    }
+  };
+  const acronym = { rgb: 'RGB', crt: 'CRT', vhs: 'VHS', qr: 'QR', tv: 'TV', led: 'LED', hud: 'HUD', jp: 'JP' };
+  const label = key => key.replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/([A-Za-z])([0-9])/g, '$1 $2')
+    .replace(/([0-9])([A-Za-z])/g, '$1 $2')
+    .replace(/_/g, ' ').split(' ').map((part, i) => acronym[part.toLowerCase()] || (i ? part.toLowerCase() : part.charAt(0).toUpperCase() + part.slice(1))).join(' ');
+  for (const group of J.GROUP_KEYS) {
+    for (const key of J.order(group)) {
+      const item = J.registry(group)[key];
+      if (item) item.name = (titles[group] || {})[key] || label(key);
+    }
+  }
+  const styles = {
+    noir: ['Noir Chroma', 'Black and white with cyan and amber color offsets'],
+    crimson: ['Crimson Signal', 'Deep red, monochrome type and damaged data'],
+    caution: ['Caution', 'Yellow, red and blue with instrument graphics'],
+    magenta: ['Pop Magenta', 'Hot pink, round bold type and callout lines'],
+    paper: ['Paper and Ink', 'Paper texture, indigo, magenta and serif echoes'],
+    hud: ['Dark HUD', 'Charcoal, fine frames, orange accents and eclipses'],
+    mint: ['Mint Terminal', 'Black, teal and lime with scan effects'],
+    specimen: ['Type Specimen', 'Ink colored background with serif annotations'],
+    transit: ['Transit', 'Olive and yellow with signage and halftone'],
+    blueprint: ['Blueprint', 'Blue, white and black graphic collage'],
+    rouge: ['Rouge Gradient', 'Light gray and red gradients with capsules'],
+    mono: ['Mono RGB', 'Gray space, white serif and bold RGB separation'],
+    sakura: ['Sakura', 'Soft cherry pink and plum with rounded and serif type'],
+    ocean: ['Deep Sea', 'Navy, glowing cyan, bubbles and light sans type'],
+    sunset: ['Sunset Gradient', 'Orange to violet, bold serif and backlight'],
+    forest: ['Forest Notebook', 'Moss, natural paper and pencil lettering'],
+    vapor: ['Vaporwave', 'Pastel pink and blue with VHS bloom'],
+    newsprint: ['Newsprint', 'Gray paper, black and red with halftone registration'],
+    synth80: ['Synth 80s', 'Black with neon magenta, cyan and scanlines'],
+    kraft: ['Kraft Paper', 'Warm paper, red and indigo stamps and washi tape'],
+    candy: ['Candy', 'Mint and fruit pastel colors with bouncing letters'],
+    acid: ['Acid', 'Black, acid green and magenta with distressed type'],
+    sumi: ['Ink and Vermilion', 'Japanese paper, brush lettering and red seals'],
+    gold: ['Golden Night', 'Deep black, gold foil, ivory serif and glints'],
+    bladeCinema: ['Cinema Blade Runner', 'Anamorphic amber & cyan optical glow, film grain and fluid tracking'],
+    stagePrism: ['Music Video Prism', 'Pop/Trap/K-Pop stage spotlights, beat punch and choreographed kinetics'],
+    kineticPop: ['Art & Motion 3D', 'Geometric Pop Art, isometric 3D cubes, kinetic spin and glitch'],
+    bauhausKinetic: ['Bauhaus Kinetic', 'Primary geometry, Swiss kinetic typography and architectural motion'],
+    popArtBenDay: ['Pop Art Ben-Day', 'Halftone Ben-Day comic matrix, CMYK offset plates and kinetic punch'],
+    stereo3D: ['Stereo 3D Prism', 'Anaglyph cyan & red 3D depth, isometric cubes and dimensional perspective'],
+    glitchPrism: ['Glitch Prism', 'Radical RGB slice-tears, brutalist typography and acid chromatic aberration'],
+    cyberAi: ['Futuristic Cyber AI', 'Cyan and UV holograms, HUD telemetry matrix, radar and neon glitch'],
+    atelierLux: ['Atelier Lifestyle', 'Editorial champagne and ivory, silk light sweeps and documentary framing'],
+    animePrism: ['Anime Fantasy Prism', 'Luminous cel layers, fluid wave warps, petals and surreal motion']
+  };
+  for (const [key, [name, desc]] of Object.entries(styles)) {
+    if (J.STYLES[key]) { J.STYLES[key].name = name; J.STYLES[key].desc = desc; }
+  }
+  for (const [key, name] of Object.entries({glitch:'Glitch', calm:'Gentle', pop:'Pop', graphic:'Graphic', editorial:'Editorial', emotional:'Emotional', chaos:'Anything goes'})) J.MOODS[key].name = name;
+  J.SAMPLE_LYRICS = 'I remember/the color of dawn\nA voice faded into the distance\nCan we still make it in time?\n*Transparent* is not how this ends!';
+})();
+
+/* part sets (horror / typo / kinetic): names, styles and the horror mood */
+(() => {
+  'use strict';
+  const P = {"layout": {"hrFlashlight": "Flashlight", "hrDoorGap": "Door Gap", "hrWallScrawl": "Wall Scrawl", "hrCctv": "CCTV Monitor", "hrOuija": "Spirit Board", "hrMissing": "Missing Poster", "hrWrongOne": "The Wrong Glyph", "hrRisingDark": "Out of the Dark", "hrRedacted": "Redacted File", "hrStaticTv": "Static TV", "hrSpiritPhoto": "Spirit Photo", "hrWrongShadow": "Wrong Shadow", "tyKeySplit": "Key Glyph Split", "tyCropGiant": "Cropped Giant", "tyCross": "Cross Setting", "tyBandHide": "Band Cover", "tyRuby": "Ruby Notes", "tyBaseline": "Ruled Lines", "tyScaleSteps": "Size Crescendo", "tyJustify": "Justified Stack", "tyIndexTable": "Glyph Table", "tySplitType": "Split Type", "tyErode": "Eroding Repeat", "tyVRuler": "Vertical Scale", "tyFullTrack": "Full-Width Tracking", "tyStatCount": "Glyph Count", "tyMargin": "White Space", "tyRotBlock": "Rotated Block", "tySquare": "Square Setting", "tyLineFocus": "Line Highlight", "knSlamStack": "Slam Stack", "knQuarterTurn": "Quarter Turn", "knSwapCenter": "Word Swap", "knZoomDive": "Dive Into Letter", "knFlowSnap": "Flow and Snap", "knSeesaw": "Seesaw", "knTypeSlam": "Type then Slam", "knRhythmCuts": "Word Jump Cuts", "knPathRide": "Loop Track", "knGearWords": "Gears", "knCollide": "Head-on Crash", "knTumble": "Tumbling Boxes", "knReflow": "Vertical to Line", "knPadGrid": "Drum Pads"}, "enter": {"hrBlinkCreep": "Between Blinks", "hrJumpScare": "Jump Scare", "hrUneasy": "Uneasy Timing", "hrVhold": "Vertical Hold", "hrMirrorSnap": "Mirror Writing", "hrManifest": "Manifest", "hrClawReveal": "Claw Marks", "tyKeyFirst": "Key Glyph First", "tyLineWipe": "Line-by-Line Wipe", "tyZoomOne": "One by One Zoom", "tyUnderLift": "Rise from Underline", "tyDotGrow": "Dot to Glyph", "tyBracketOpen": "Brackets Open", "tyRetype": "Retype", "tyRubyDrop": "From Ruby", "knWordSlam": "Word Slam", "knTypeToSlam": "Type and Grow", "knReplaceIn": "Swap In", "knHingeDrop": "Hinge Drop", "knLoopIn": "Loop In", "knPushIn": "Push In", "knInertia": "Hard Brake", "knWordSpin": "Word Spin", "knDiveIn": "Words From Camera", "knStretchOut": "Tape Stretch"}, "exit": {"hrPulledDown": "Pulled Under", "hrLookBack": "One Remains", "hrTurnAway": "Turn Away", "hrShiver": "Shiver Out", "hrSwallow": "Swallowed", "hrFlickerDie": "Dying Flicker", "hrDrain": "Drain", "tyStrike": "Strike Out", "tyToDot": "Back to Dots", "tyLineFeed": "Line Feed", "tyBracketClose": "Brackets Close", "tyToIndex": "Turn to Numbers", "tyKeyLast": "Key Glyph Last", "tyUnderSink": "Sink into Underline", "tyFoldVert": "Fold to Vertical", "knWordKick": "Word Kick", "knPushOut": "Push Out", "knDiveGlyph": "Dive Into Letter", "knLaunch": "Launch", "knWordBlink": "Words Blink Out", "knCloseGap": "Close the Gaps", "knJumpCutOut": "Jump Cut", "knStackAway": "Stack and Drop"}, "hold": {"hrTwitch": "Twitch", "hrStare": "Staring Glyph", "hrLagOne": "The Late One", "hrFlickerLight": "Failing Light", "tyKeyPulse": "Key Glyph Pulse", "tyReadCursor": "Reading Cursor", "tyOutlineBlink": "Outline Blink", "tyTrackStep": "Tracking Steps", "knWordPulse": "Word Pulse", "knCounterRock": "Counter Rock", "knWordRide": "Word Surf", "knTickShift": "Tick Shift", "knBeatLean": "Beat Lean", "knGapBreath": "Breathing Gaps"}, "decor": {"hrScratches": "Claw Scratches", "hrSigil": "Sigil", "hrWatchEye": "Watching Eye", "hrStaticPatch": "Static Patches", "hrDustBeam": "Dusty Light Beam", "hrDrips": "Ink Drips", "hrCracks": "Cracks", "tyColophon": "Colophon", "tyRunningHead": "Running Head & Folio", "tyGlyphBody": "Glyph Body Lines", "tyTextRule": "Text Rule", "tyTypeScale": "Type Scale", "tyBigPunct": "Big Quote Marks", "knSpeedTrail": "Trailing Speed Lines", "knWordTicks": "Word Counter"}, "treat": {"hrInkBleed": "Bleeding Ink", "hrEroded": "Eroded", "hrRedact": "Redacted", "hrDoubleExp": "Double Exposure", "tyHollowKey": "Hollow Key Glyph", "tyHeadRules": "Head & Foot Rules", "tyHeadBig": "Large Initial", "tyIndexSup": "Glyph Numbers", "knWordScale": "Big and Small Words", "knWordPlate": "Word Knockout"}, "bg": {"hrFailingLamp": "Failing Lamp", "hrCorridor": "Dark Corridor", "hrMold": "Spreading Stains", "hrDeadTrees": "Dead Forest"}, "cam": {"hrNervous": "Frightened Handheld", "hrDutchSnap": "Sudden Tilt", "knReadPan": "Reading Pan", "knTiltKick": "Tilt Kick", "knCardFlip": "Card Flip", "knShearKick": "Shear Kick", "knJumpCut": "Jump Cut", "knRushIn": "Rush In"}, "fx": {"hrSubliminal": "Subliminal", "hrSignalLoss": "Signal Loss", "hrPassingShadow": "Passing Shadow"}, "trans": {"hrStaticCut": "Static Cut", "hrBlink": "Blink", "tyRuleWipe": "Ruled Line Wipe", "tyGridCells": "Grid Cell Fill", "knCornerSwing": "Corner Swing", "knStutterCut": "Stutter Cut", "knStripSlam": "Strip Slam"}};
+  for (const [g, m] of Object.entries(P)) { const t = J.registry(g) || {}; for (const [k, n] of Object.entries(m)) if (t[k]) t[k].name = n; }
+  for (const g of J.GROUP_KEYS) { const t = J.registry(g) || {}; for (const k of J.order(g)) if (t[k] && t[k].en) t[k].name = t[k].en; }
+  const S = {"hrRuin": ["Ruins", "Faded green-grey, rust red and echoing serif type"], "hrNightRec": ["Midnight Recording", "Pitch-black frames, CCTV white and red, static"], "hrCurse": ["Cursed Letter", "Yellowed paper, faded ink and dark red handwriting"]};
+  for (const [k, [n, d]] of Object.entries(S)) if (J.STYLES[k]) { J.STYLES[k].name = n; J.STYLES[k].desc = d; }
+  if (J.MOODS.horror) J.MOODS.horror.name = "Horror";
+})();
+
+(() => {
+  const S = {"hrRuin": ["Ruines", "Gris-vert délavé, rouge rouille et empattements réverbérants"], "hrNightRec": ["Enregistrement Nocturne", "Écran noir profond, blanc et rouge de caméra de surveillance, bruit statique"], "hrCurse": ["Lettre Maudite", "Papier jauni, encre délavée et écriture rouge sombre"], "noir": ["Noir Chromatique", "Noir et blanc avec décalages cyan et ambre"], "crimson": ["Signal Carmin", "Rouge profond, polices monochromes et données corrompues"], "caution": ["Avertissement", "Jaune, rouge, bleu et graphismes de tableau de bord"], "magenta": ["Pop Magenta", "Rose vif, polices rondes et épaisses, lignes indicatrices"], "paper": ["Papier & Encre", "Texture papier, indigo, magenta et ombres à empattement"], "hud": ["HUD Sombre", "Anthracite, bordures fines, accents orange et éclipse"], "mint": ["Terminal Menthe", "Noir, sarcelle, citron vert et balayage radar"], "specimen": ["Spécimen Typo", "Fond encré avec annotations à empattements"], "transit": ["Transit", "Olive et jaune, panneaux directionnels et demi-teintes"], "blueprint": ["Plan Bleu", "Collage graphique bleu, blanc et noir"], "rouge": ["Dégradé Rouge", "Dégradé gris clair et rouge avec capsules géométriques"], "mono": ["Mono RVB", "Espace gris, empattements blancs et forte séparation RVB"], "sakura": ["Sakura", "Rose cerisier doux et prune, polices arrondies et serif"], "ocean": ["Abysses", "Bleu marine, cyan lumineux, bulles et sans-serif épuré"], "sunset": ["Coucher de Soleil", "Dégradé orange à violet, serif gras et contre-jour"], "forest": ["Notes Sylvestres", "Vert mousse, papier naturel et traits de crayon"], "vapor": ["Vaporwave", "Rose et bleu pastel avec lueur nostalgique VHS"], "newsprint": ["Papier Journal", "Papier grisâtre, noir et rouge, trames et coquilles"], "synth80": ["Synthwave 80s", "Fond noir, néons magenta et cyan avec lignes de scan"], "kraft": ["Papier Kraft", "Papier chaud, tampons rouge et indigo, ruban adhésif"], "candy": ["Bonbon", "Menthe et pastels fruités avec typographie rebondissante"], "acid": ["Acid", "Noir, vert acide et magenta avec polices brutes et abrasives"], "sumi": ["Encre & Vermillon", "Papier washi japonais, calligraphie au pinceau et sceau rouge"], "gold": ["Nuit Dorée", "Noir profond, dorure à la feuille, serif ivoire et étincelles"], "bladeCinema": ["Cinéma Blade Runner", "Noir profond cinéma, ambre et cyan anamorphique, grain filmique et travelling fluide"], "stagePrism": ["Clip Musical Prisme", "Projecteurs néon K-Pop/Trap, punch rythmique et typographie chorégraphiée"], "kineticPop": ["Art & Motion 3D", "Pop Art géométrique, cubes isométriques 3D, rebond cinétique et glitch"], "bauhausKinetic": ["Bauhaus Cinétique", "Couleurs primaires, géométrie suisse et mouvements architecturaux"], "popArtBenDay": ["Pop Art Ben-Day", "Trames comic rétro, surimpression CMJN décalée et punch graphique"], "stereo3D": ["Prisme 3D Stéréo", "Anaglyphe cyan & rouge, cubes isométriques et relief dimensionnel"], "glitchPrism": ["Glitch Prisme", "Déchirures RVB acides, bruit chromatique et typographie brutale"], "cyberAi": ["Cyberpunk IA", "Hologramme cyan et ultraviolet, matrices HUD, scan neuronal et néons"], "atelierLux": ["Atelier Lifestyle", "Champagne et ivoire éditorial, lumière soyeuse et cadrage documentaire"], "animePrism": ["Animation Prisme", "Céluloïds lumineux, ondes fantastiques, pétales et mouvements surréalistes"]};
+  for (const [k, [n, d]] of Object.entries(S)) if (J.STYLES[k]) { J.STYLES[k].name = n; J.STYLES[k].desc = d; }
+  const M = {"glitch": "Glitch", "calm": "Calme", "pop": "Pop", "graphic": "Graphique", "editorial": "Éditorial", "emotional": "Émotionnel", "chaos": "Chaos", "horror": "Horreur"};
+  for (const [k, n] of Object.entries(M)) if (J.MOODS[k]) J.MOODS[k].name = n;
+  J.SAMPLE_LYRICS = "Je me souviens de/la couleur de l’aube\nUne voix lointaine a résonné dans la nuit\nDis-moi, est-il encore temps ?\nOn ne peut pas finir en restant *transparent* !";
+})();
+
 /* ============================================================
    JIZURA — editor UI
    ============================================================ */
@@ -73855,7 +74118,7 @@ if (!document.getElementById('app')) return;          // engine-only pages (test
 const $ = id => document.getElementById(id);
 const setT = (id, t) => { const el = $(id); if (el) el.textContent = t; };
 const LS_KEY = 'jizura.project.v1';
-const HUD_CHARS = '0123456789:./-_()【】・No.LYRICRECUNTITLEDXYlinebpminterlude—─／ ';
+const HUD_CHARS = '0123456789:./-_()【】 · No.LYRICRECUNTITLEDXYlinebpminterlude—─／ ';
 const ICON = {
   dice: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="12" height="12" rx="2"/><circle cx="5.5" cy="5.5" r="1" fill="currentColor"/><circle cx="10.5" cy="10.5" r="1" fill="currentColor"/><circle cx="10.5" cy="5.5" r="1" fill="currentColor"/><circle cx="5.5" cy="10.5" r="1" fill="currentColor"/></svg>',
   lock: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>',
@@ -73867,10 +74130,10 @@ const ICON = {
 const S = { project: null, plan: null, audio: null, audioFile: null, cloudSongId: null, cloudSongs: [], cloudHistory: [], cloudUser: null, renderer: new J.Renderer(), playing: false, playbackRate: 1, kpStageMode: 'video', kpArtworkUrl: '', t: 0, t0: 0, playStopAt: null, loop: 'all', loopHold: null, need: true, exporting: null, tap: null, slow: false, lineEls: [], curLine: -2 };
 const LOOP_CYCLE = ['all', 'line', 'cut', false];
 const LOOP_COPY = {
-  all:  { ja: 'ループ', en: 'Loop', titleJa: '全体を繰り返し', titleEn: 'Loop the whole piece' },
-  line: { ja: '行ループ', en: 'Line loop', titleJa: 'この行を繰り返し', titleEn: 'Loop this line' },
-  cut:  { ja: 'カットループ', en: 'Cut loop', titleJa: 'このカットを繰り返し', titleEn: 'Loop this cut' },
-  off:  { ja: 'ループ', en: 'Loop', titleJa: '繰り返しなし', titleEn: 'No loop' },
+  all:  { ja: 'Boucle', en: 'Loop', titleJa: 'Répéter tout le morceau', titleEn: 'Loop the whole piece' },
+  line: { ja: 'Boucle ligne', en: 'Line loop', titleJa: 'Répéter cette ligne', titleEn: 'Loop this line' },
+  cut:  { ja: 'Boucle plan', en: 'Cut loop', titleJa: 'Répéter ce plan', titleEn: 'Loop this cut' },
+  off:  { ja: 'Boucle', en: 'Loop', titleJa: 'Sans boucle', titleEn: 'No loop' },
 };
 const isEn = () => document.documentElement.lang === 'en';
 function cutAround(t) {
@@ -73978,7 +74241,7 @@ function initVolume() {
     const pct = Math.round(AP.vol * 100);
     const isMuted = AP.muted || AP.vol === 0;
     if (el) { el.value = pct; el.title = 'Volume ' + pct + '%'; }
-    if (mb) { mb.textContent = isMuted ? '消音' : '音量'; mb.setAttribute('aria-pressed', String(AP.muted)); }
+    if (mb) { mb.textContent = isMuted ? 'Muet' : 'Son'; mb.setAttribute('aria-pressed', String(AP.muted)); }
     if (kpEl) { kpEl.value = pct; kpEl.title = pct + '%'; }
     if (kpMb) { kpMb.textContent = isMuted ? '🔇' : '🔊'; kpMb.setAttribute('aria-pressed', String(AP.muted)); }
   };
@@ -74088,9 +74351,9 @@ function migrateOrder(o, p) {
     o.exportRange = idx.length ? { from: Math.min(...idx), to: Math.max(...idx) } : null;
   }
 }
-const SET_UI = { horror: { name: 'ホラー', badge: 'ホ' }, typo: { name: '文字PV系', badge: '文' }, kinetic: { name: 'キネティック', badge: 'キ' }, extra2: { name: '追加分2', badge: '追2' } };
+const SET_UI = { horror: { name: 'Horreur', badge: 'H' }, typo: { name: 'Typo', badge: 'T' }, kinetic: { name: 'Cinétique', badge: 'K' }, extra2: { name: 'Bonus 2', badge: 'E2' } };
 function setBadges(d) {
-  return (d && d.extra ? '<span class="set-badge ex" title="最初の公開版のあとに追加">追加</span>' : '') + (d && d.wa ? '<span class="set-badge" title="和風の演出">和</span>' : '')
+  return (d && d.extra ? '<span class="set-badge ex" title="Ajouté après la version initiale">Nouveau</span>' : '') + (d && d.wa ? '<span class="set-badge" title="Motifs japonais">JP</span>' : '')
     + (d && d.set && SET_UI[d.set] ? `<span class="set-badge set-${d.set}" title="${SET_UI[d.set].name}">${SET_UI[d.set].badge}</span>` : '')
     + (d && d.x2 && d.set !== 'extra2' ? `<span class="set-badge set-extra2" title="${SET_UI.extra2.name}">${SET_UI.extra2.badge}</span>` : '');
 }
@@ -74121,7 +74384,7 @@ function audioLike() {
   if (T.bpm > 0) return { beats: J.beatGrid(T.bpm, T.beatOffset || 0, 600) };
   return null;
 }
-/* 自動判定・多言語のとき、判定結果を言語欄の横に出す */
+/* Auto判定 · 多言語のとき、判定結果を言語欄の横に出す */
 function langNote() {
   const el = $('langNote');
   const pillsEl = $('detectedLangPills');
@@ -74203,14 +74466,14 @@ async function ensureFonts() {
   const key = txt + '|' + keys.join(',') + '|' + Object.keys(J.FONTS).length + '|' + J.lang;   // the lyric language changes the faces
   if (key === fontKey) return;
   fontKey = key;
-  showMsg('フォントを読み込み中…');
+  showMsg('Chargement des polices…');
   try { await J.ensureFonts(txt, keys); } catch (e) {}
   showMsg(null); S.need = true; drawStyleGrid(); loadThumbFonts();
 }
 // style thumbnails need two glyphs of every style's display face — fetched only once the style grid is actually shown
 function loadThumbFonts() {
   if (thumbFonts || !$('styleGrid').offsetParent) return;
-  thumbFonts = J.ensureFonts('字面', [...new Set(J.STYLE_ORDER.map(k => J.STYLES[k].fonts.display[0]))]).then(() => drawStyleGrid()).catch(() => {});
+  thumbFonts = J.ensureFonts('Alexura', [...new Set(J.STYLE_ORDER.map(k => J.STYLES[k].fonts.display[0]))]).then(() => drawStyleGrid()).catch(() => {});
 }
 function showMsg(m) { const el = $('viewMsg'); if (!m) { el.hidden = true; return; } el.textContent = m; el.hidden = false; }
 
@@ -74392,10 +74655,10 @@ function applyKaraokeLabels() {
     syncMaster: 'Đồng bộ Giọng↔Lời', tapWord: '⏱ Khớp từ tại đây', autoAlign: '⚡ Tự khớp giọng hát',
     stageVid: 'Video', stageAud: 'Âm thanh', speed: 'Tốc độ', wordsCfg: '⚙ Tô từ', coverBtn: 'Ảnh bìa',
   } : {
-    title: '🎤 カラオケ同期', word: '単語別', prog: 'プログレッシブ', char: '文字別', cfg: '⚙ 設定',
-    fsOn: '✕ 全画面終了', fsOff: '⛶ 全画面', size: '文字サイズ', pos: '表示位置', bg: '背景透過',
-    base: '通常色', active: '強調色', scroll: '自動スクロール', top: '上', mid: '中央', bot: '下',
-    syncMaster: 'ボーカル↔表示補正', tapWord: '⏱ 今の単語を固定', autoAlign: '⚡ 声に自動フィット',
+    title: '🎤 カラオケ同期', word: '単語別', prog: 'プログレッシブ', char: 'Texte別', cfg: '⚙ 設定',
+    fsOn: '✕ 全画面終了', fsOff: '⛶ 全画面', size: 'Texteサイズ', pos: '表示位置', bg: 'Arrière-plan透過',
+    base: '通常色', active: '強調色', scroll: 'Autoスクロール', top: '上', mid: '中央', bot: '下',
+    syncMaster: 'ボーカル↔表示補正', tapWord: '⏱ 今の単語を固定', autoAlign: '⚡ 声にAutoフィット',
     stageVid: '動画', stageAud: '波形/アート', speed: '速度', wordsCfg: '⚙ ハイライト', coverBtn: 'ジャケット',
   };
   const setT = (id, t) => { const el = $(id); if (el) el.textContent = t; };
@@ -74555,16 +74818,16 @@ function transCopy() {
       fontSize: '翻訳サイズ',
       pos: '配置',
       posY: '縦位置 Y',
-      bgAlpha: '翻訳背景',
-      color: '文字色',
+      bgAlpha: '翻訳Arrière-plan',
+      color: 'Texte色',
       italic: '斜体',
       prompter: 'プロンプター',
       video: '動画内',
-      noLines: '翻訳する歌詞行がありません。',
-      translatedMsg: (n, l) => `${n}行を ${l} に翻訳しました（元の歌詞と時刻は変更されません）。`,
-      clearedMsg: '翻訳レイヤーを消去しました（元の歌詞は保持）。',
-      billingMsg: '自動翻訳APIには課金有効化が必要です。歌詞エディタから手動翻訳も入力できます。',
-      failMsg: '翻訳エラー：下の歌詞エディタから行ごとに手動翻訳を入力できます。',
+      noLines: '翻訳する歌詞ligne がありません。',
+      translatedMsg: (n, l) => `${n}ligne を ${l} に翻訳しました（元の歌詞と時刻は変更されません). `,
+      clearedMsg: '翻訳レイヤーを消去しました（元の歌詞はMaintien). ',
+      billingMsg: 'Auto翻訳APIには課金有効化が必要です。歌詞エディタから手動翻訳も入力できます。',
+      failMsg: '翻訳エラー：下の歌詞エディタからligne ごとに手動翻訳を入力できます。',
     };
   }
   return {
@@ -74953,7 +75216,7 @@ function syncAudioDetectPanel() {
     pills.push(`<span class="ad-pill is-chorus">${isFr ? '↻ Refrains détectés' : isEn ? '↻ Choruses' : '↻ 副歌重复'}</span>`);
   }
   if (det && det.hasBackingVocals) {
-    pills.push(`<span class="ad-pill is-harmony">${isFr ? '🎙️ Chœurs / Harmonies' : isEn ? '🎙️ Backing / Harmonies' : '🎙️ 和声 / 伴唱'}</span>`);
+    pills.push(`<span class="ad-pill is-harmony">${isFr ? '🎙️ Chœurs / Harmonies' : isEn ? '🎙️ Backing / Harmonies' : '🎙️ JP声 / 伴唱'}</span>`);
   }
   if (det && det.hasInstrumentalSections) {
     pills.push(`<span class="ad-pill is-inst">${isFr ? '🎼 Pauses instrumentales' : isEn ? '🎼 Instrumental breaks' : '🎼 间奏段落'}</span>`);
@@ -75029,12 +75292,12 @@ function qcCopy() {
     high: '高信頼', highDesc: '強い音響証拠に基づく単語とタイミング',
     med: '中信頼', medDesc: '単語は認識済み\u30fb境界の目視確認推奨',
     low: '低信頼', lowDesc: '不確実 — 手動確認と再解析を推奨',
-    noisy: '⚠ 背景ノイズ検出',
+    noisy: '⚠ Arrière-planノイズ検出',
     distorted: '⚠ 音割れ\u30fb歪み検出',
     reverb: '⚠ 強い残響 (リバーブ)',
     overlap: '⚠ 重複ボーカル検出',
     reanalyzeAll: '🔬 低信頼区間を再解析',
-    reanalyzing: '⏳ 高精度で再解析中…',
+    reanalyzing: '⏳ 高精度で再Analyse audio en cours…',
     nextLow: '⚠ 次の低信頼単語',
     reanalyzeDone: (n, up) => n ? `✓ ${n}区間を再解析 \u30fb ${up}語を改善` : '再解析が必要な低信頼区間はありません',
     trLbl: '認識', alLbl: '整合', clLbl: '明瞭度', ovLbl: '重複', unLbl: '不確実性',
@@ -75042,11 +75305,11 @@ function qcCopy() {
     honestCap: '推定上限 <100%',
     autoBtn: 'AI\u81ea\u52d5解析\u30fb精度最適化',
     autoTitle: '声と動画字幕の同期誤差を解析し、低信頼箇所の\u81ea\u52d5修復と滑らかな表示を最適化します',
-    autoRunning: 'AI同期解析\u30fb最適化を実行中…',
+    autoRunning: 'AI同期解析\u30fb最適化を実ligne 中…',
     coordLbl: '声 ↔ 動画',
     tightSyncLbl: '同期率 ±45ms',
-    stageAudit: '1/3 声と動画字幕の座標\u30fb信頼度を解析中…',
-    stageAi: '2/3 AI再解析と10msアタック補正を実行中…',
+    stageAudit: '1/3 声と動画字幕の座標\u30fb信頼度をAnalyse audio en cours…',
+    stageAi: '2/3 AI再解析と10msアタック補正を実ligne 中…',
     stageSmooth: '3/3 カラオケ表示の平滑化と最終検証…',
     repTitleDone: 'AI最適化完了',
     repTitleWarn: 'ローカル精密補正完了（AI警告あり）',
@@ -75058,7 +75321,7 @@ function qcCopy() {
     aiWarnBilling: '⚠ Gemini課金または割り当て上限のため、ローカル音響補正を適用しました。',
     aiWarnKey: '⚠ Gemini APIキー未設定/無効のため、ローカル音響補正を適用しました。',
     aiWarnDegraded: '⚠ クラウドAI応答エラーのため、ローカル音響エンジンで同期を最適化しました。',
-    noAudioNote: '音声未読込のため、字幕のオーバーラップ解消と表記チェックを実行しました。',
+    noAudioNote: '音声未読込のため、字幕のオーバーラップ解消と表記チェックを実ligne しました。',
     autoToast: (bPct, aPct, fixed) => `✓ AI最適化完了：信頼度 ${bPct}% → ${aPct}%（${fixed}語改善）`,
   };
   return {
@@ -75569,7 +75832,7 @@ function renderLineTagsHtml(ln) {
   if (m.vocalType === 'speech' || m.section === 'speech') {
     tags.push(`<span class="ln-tag is-speech">${isFr ? 'Parlé' : isEn ? 'Spoken' : '念白'}</span>`);
   } else if (m.backingText || m.vocalType === 'harmony' || m.vocalType === 'backing' || m.vocalType === 'overlapping') {
-    const lbl = m.vocalType === 'overlapping' ? (isFr ? 'Superposé' : isEn ? 'Overlap' : '重叠人声') : (isFr ? 'Chœur' : isEn ? 'Harmony' : '和声');
+    const lbl = m.vocalType === 'overlapping' ? (isFr ? 'Superposé' : isEn ? 'Overlap' : '重叠人声') : (isFr ? 'Chœur' : isEn ? 'Harmony' : 'JP声');
     tags.push(`<span class="ln-tag is-harmony" title="${escapeHtml(m.backingText || '')}">${lbl}</span>`);
   }
   const lf = Array.isArray(m.flags) ? m.flags : [];
@@ -75872,7 +76135,7 @@ function updateKaraokePrompter() {
         ? `♪ 准备开唱 ${diff.toFixed(1)}s`
         : l === 'ko'
         ? `♪ 보컬 시작 ${diff.toFixed(1)}초 전`
-        : `♪ 歌い出しまで ${diff.toFixed(1)}秒`;
+        : `♪ 歌い出しまで ${diff.toFixed(1)}s`;
       const pct = J.clamp((1 - diff / 2.8) * 100, 4, 100);
       leadFill.style.width = pct.toFixed(1) + '%';
     } else {
@@ -75906,7 +76169,7 @@ function alignAllWordsAcousticallyUI() {
       ? "Chargez un fichier audio pour aligner automatiquement les mots sur la voix."
       : lang === 'en'
       ? 'Load an audio file first to align words with vocals.'
-      : '请先加载音频文件后再执行声学词对齐。');
+      : '请先加载音频文件后再执ligne 声学词对齐。');
     return { linesAligned: 0, wordsAligned: 0 };
   }
   pushEdit();
@@ -75938,7 +76201,7 @@ function alignAllWordsAcousticallyUI() {
     ? `⚡ Auto-calage vocal terminé : ${linesAligned} phrases alignées (mots verrouillés conservés).`
     : lang === 'en'
     ? `⚡ Auto vocal word alignment finished: ${linesAligned} lines synced.`
-    : `⚡ 人声逐词自动对齐完成：已校准 ${linesAligned} 行（已锁定词保持不变）。`);
+    : `⚡ 人声逐词自动对齐完成：已校准 ${linesAligned} ligne （已锁定词Maintien不变). `);
   return { linesAligned, wordsAligned };
 }
 
@@ -76083,7 +76346,7 @@ function tlInspCopy() {
     manualVal: '手動確定済み',
     secVocal: 'ボーカル区間', secInst: 'インスト区間', secOverlap: '重複ボーカル', secMix: '解析済み',
     disclaimer: 'HH:MM:SS.mmm表示はフレーム単位の精密編集用であり、AI音声認識が1ms精度を保証するものではありません。実際のアライメント信頼度を上に明示しています。',
-    chars: '文字', noAudio: '音声未読み込み',
+    chars: 'Texte', noAudio: '音声未読み込み',
   };
   return {
     waveLbl: 'Audio', vocalLbl: 'Vocals', followLbl: 'Follow', zoomWord: '🔍 Word', playWord: '▶ Word',
@@ -76579,8 +76842,8 @@ function bindFollow() {
 
 /* ---------------- cut info ---------------- */
 const CHIP_GROUPS = [
-  ['layout', 'l', 'レイアウト'], ['enter', 'e', '登場'], ['hold', 'h', '保持'], ['exit', 'x', '退場'],
-  ['decor', '', '装飾'], ['treat', 't', '加工'], ['bg', 'b', '背景'], ['cam', 'c', 'カメラ'], ['trans', 'c', 'つなぎ'],
+  ['layout', 'l', 'Mise en page'], ['enter', 'e', 'Entrée'], ['hold', 'h', 'Maintien'], ['exit', 'x', 'Sortie'],
+  ['decor', '', 'Décoration'], ['treat', 't', 'Traitement'], ['bg', 'b', 'Arrière-plan'], ['cam', 'c', 'Caméra'], ['trans', 'c', 'Transition'],
 ];
 const cutPick = { g: null, line: -1, k: -1 };
 let lastCutIdx = -2;
@@ -76630,7 +76893,7 @@ function cutGroupVal(cut, g) {
   return '';
 }
 function groupName(g, k) {
-  if (!k) return 'なし';
+  if (!k) return 'Aucun';
   const tbl = J.registry(g);
   return (tbl && tbl[k] && tbl[k].name) || k;
 }
@@ -76658,7 +76921,7 @@ function rerollCurrentCut(kind) {
   if (S.exporting || S.tap) return;
   const cut = J.cutAt(S.plan, S.t);
   const k = lyricCutK(cut);
-  if (!cut || k < 0) { toast('この位置のカットは抽選できません'); return; }
+  if (!cut || k < 0) { toast('Aucun plan à relancer à cette position'); return; }
   remember();
   const n = [...String(cut.text || '').replace(/\s+/g, '')].length;
   const groups = kind === 'omakase'
@@ -76675,7 +76938,7 @@ function rerollCurrentCut(kind) {
   replan();
   commit();
   seek(t0);
-  toast(kind === 'omakase' ? 'このカットをおまかせ' : 'このカットをシャッフル');
+  toast(kind === 'omakase' ? 'Aléatoire sur ce plan' : 'Mélanger ce plan');
 }
 function updateCutInfo() {
   const cut = J.cutAt(S.plan, S.t);
@@ -76688,19 +76951,19 @@ function updateCutInfo() {
   document.querySelectorAll('.cut-lay.playing').forEach(x => x.classList.remove('playing'));
   if (cut && S.lineEls[li]) { const kk = lyricCutK(cut), cs = kk >= 0 && S.lineEls[li].querySelector(`.cut-lay[data-k="${kk}"]`); if (cs) cs.classList.add('playing'); }
   const el = $('cutInfo');
-  if (!cut) { el.innerHTML = '<span class="hint">この位置にカットはありません</span>'; closeCutPick(); return; }
+  if (!cut) { el.innerHTML = '<span class="hint">Aucun plan à cette position</span>'; closeCutPick(); return; }
   if (S.mode !== 'pro') {          // かんたん／スマホは本家と同じ静的なチップ表示
     closeCutPick();
     const chip = (cls, k, v) => `<span class="chip ${cls}"><b>${k}</b>${v}</span>`;
     const n = (tbl, k) => (tbl[k] ? tbl[k].name : k);
     el.innerHTML = [
       `<span class="chip mono">#${String(cut.index + 1).padStart(2, '0')}</span>`,
-      chip('l', 'レイアウト', n(J.LAYOUTS, cut.layout)), chip('e', '登場', n(J.ENTER, cut.enter)), chip('h', '保持', n(J.HOLD, cut.hold)), chip('x', '退場', n(J.EXIT, cut.exit)),
-      cut.decor && cut.decor.length ? chip('', '装飾', cut.decor.map(d => n(J.DECOR, d.id)).join('・')) : '',
-      cut.treat && cut.treat !== 'none' ? chip('t', '加工', n(J.TREAT, cut.treat)) : '',
-      cut.bg && cut.bg !== 'none' ? chip('b', '背景', n(J.BG, cut.bg)) : '',
-      cut.cam && cut.cam !== 'push' ? chip('c', 'カメラ', n(J.CAMERA, cut.cam)) : '',
-      cut.trans ? chip('c', 'つなぎ', n(J.TRANS, cut.trans)) : '',
+      chip('l', 'Mise en page', n(J.LAYOUTS, cut.layout)), chip('e', 'Entrée', n(J.ENTER, cut.enter)), chip('h', 'Maintien', n(J.HOLD, cut.hold)), chip('x', 'Sortie', n(J.EXIT, cut.exit)),
+      cut.decor && cut.decor.length ? chip('', 'Décoration', cut.decor.map(d => n(J.DECOR, d.id)).join(' · ')) : '',
+      cut.treat && cut.treat !== 'none' ? chip('t', 'Traitement', n(J.TREAT, cut.treat)) : '',
+      cut.bg && cut.bg !== 'none' ? chip('b', 'Arrière-plan', n(J.BG, cut.bg)) : '',
+      cut.cam && cut.cam !== 'push' ? chip('c', 'Caméra', n(J.CAMERA, cut.cam)) : '',
+      cut.trans ? chip('c', 'Transition', n(J.TRANS, cut.trans)) : '',
     ].join('');
     return;
   }
@@ -76712,8 +76975,8 @@ function updateCutInfo() {
     const forced = slot[g] != null && slot[g] !== '' && !quiet[g];
     bits.push(`<button type="button" class="chip ${cls}${forced ? ' is-forced' : ''}" data-g="${g}" aria-pressed="${cutPick.g === g ? 'true' : 'false'}" ${k < 0 ? 'disabled' : ''}><b>${label}</b>${escapeHtml(groupName(g, cutGroupVal(cut, g)))}</button>`);
   });
-  bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="このカットだけ構成を再抽選">シャッフル</button>`);
-  bits.push(`<button type="button" class="ghost small cut-roll accent" data-roll="omakase" ${k < 0 ? 'disabled' : ''} title="このカットだけ手法をランダムに">おまかせ</button>`);
+  bits.push(`<button type="button" class="ghost small cut-roll" data-roll="shuffle" ${k < 0 ? 'disabled' : ''} title="Relancer uniquement ce plan">Mélanger</button>`);
+  bits.push(`<button type="button" class="ghost small cut-roll accent" data-roll="omakase" ${k < 0 ? 'disabled' : ''} title="Changer aléatoirement la technique de ce plan">Aléatoire</button>`);
   el.innerHTML = bits.join('');
   if (k >= 0) {
     el.querySelectorAll('button.chip[data-g]').forEach(b => b.addEventListener('click', () => toggleCutPick(b.dataset.g, cut, k)));
@@ -76761,7 +77024,7 @@ function fillCutPick() {
     const none = document.createElement('button');
     none.type = 'button';
     none.className = 'tcard' + (forced === 'none' ? ' is-on' : '');
-    none.innerHTML = '<span class="tcard-name" style="padding:16px 6px"><span>なし</span></span>';
+    none.innerHTML = '<span class="tcard-name" style="padding:16px 6px"><span>Aucun</span></span>';
     none.addEventListener('click', () => { setCutTech(cutPick.line, cutPick.k, g, 'none'); replan(); });
     grid.appendChild(none);
   }
@@ -76788,33 +77051,33 @@ function fillCutPick() {
 function renderLines() {
   const ol = $('lineList'); ol.innerHTML = ''; S.lineEls = []; S.curLine = -2;
   const ov = S.project.overrides, R = exportRangeLines();
-  const layoutOpts = '<option value="">自動</option>' + J.LAYOUT_ORDER.map(k => `<option value="${k}">${J.LAYOUTS[k].name}</option>`).join('');
+  const layoutOpts = '<option value="">Auto</option>' + J.LAYOUT_ORDER.map(k => `<option value="${k}">${J.LAYOUTS[k].name}</option>`).join('');
   // layout menus hold only their current choice until they are used: a long song has hundreds of them
   // (with ~180 options each, building them all made every replan slow)
   const lazyLay = (sel, v) => {
-    sel.innerHTML = '<option value="">自動</option>' + (v && J.LAYOUTS[v] ? `<option value="${v}">${J.LAYOUTS[v].name}</option>` : '');
+    sel.innerHTML = '<option value="">Auto</option>' + (v && J.LAYOUTS[v] ? `<option value="${v}">${J.LAYOUTS[v].name}</option>` : '');
     sel.value = v || '';
     const fill = () => { if (sel.dataset.full) return; const cur = sel.value; sel.innerHTML = layoutOpts; sel.value = cur; sel.dataset.full = '1'; };
     for (const ev of ['pointerdown', 'mousedown', 'focus', 'keydown', 'touchstart']) sel.addEventListener(ev, fill, { capture: true, passive: true });
   };
-  const cutOpts = '<option value="">カット 自動</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">カット ${n}</option>`).join('');
+  const cutOpts = '<option value="">Plans : auto</option>' + [1, 2, 3, 4, 5, 6].map(n => `<option value="${n}">Plans : ${n}</option>`).join('');
   S.plan.lines.forEach((ln, i) => {
     const o = ov[i] || {};
     const li = document.createElement('li'); li.className = 'ln' + (ln.interlude ? ' is-inter' : '') + (R && i >= R.from && i <= R.to ? ' in-range' : '');
     const manual = S.project.timing.lineTimes && S.project.timing.lineTimes[i] != null;
-    const label = ln.interlude ? `〔間奏${ln.secs ? ' ' + ln.secs + '秒' : ''}〕` : ln.text;
+    const label = ln.interlude ? `[interlude${ln.secs ? ' ' + ln.secs + ' s' : ''}]` : ln.text;
     li.innerHTML = `<span class="no">${String(i + 1).padStart(2, '0')}</span>
-      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="開始（秒）${manual ? '・手動' : '・自動'}" aria-label="${i + 1}行目の開始秒" style="${manual ? 'border-color:var(--cyan)' : ''}">
+      <input class="time mono" type="number" step="0.01" min="0" value="${ln.start.toFixed(2)}" title="Début (s)${manual ? ' · manuel' : ' · auto'}" aria-label="Début ligne ${i + 1} (s)" style="${manual ? 'border-color:var(--cyan)' : ''}">
       <span class="txt" title="${escapeHtml(label)}">${escapeHtml(label)}${renderLineTagsHtml(ln)}</span>
       <div class="meta"><span class="cuts"></span>
       <span class="tools">
-        <button class="icon ghost edit" title="この行の歌詞を直す" aria-label="${i + 1}行目の歌詞を直す">${ICON.pen}</button>
-        ${ln.interlude ? '' : `<select class="ncut" aria-label="${i + 1}行目のカット数">${cutOpts}</select>`}
-        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="レイアウト指定"></select>`}
-        <button class="icon ghost tapfrom" title="この行からタップで同期し直す" aria-label="${i + 1}行目からタップ">${ICON.tap}</button>
-        <button class="icon ghost rng" title="書き出す範囲にする（Shift+クリックで範囲を広げる）" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="${i + 1}行目を書き出す範囲に">${ICON.range}</button>
-        ${ln.interlude ? '' : `<button class="icon ghost dice" title="この行を再抽選（再生位置の行は D キー）">${ICON.dice}</button>`}
-        ${ln.interlude ? '' : `<button class="icon ghost lock" title="この行の構成をロック（再生位置の行は L キー）" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
+        <button class="icon ghost edit" title="Modifier les paroles de cette ligne" aria-label="Modifier la ligne ${i + 1}">${ICON.pen}</button>
+        ${ln.interlude ? '' : `<select class="ncut" aria-label="Nombre de plans de la ligne ${i + 1}">${cutOpts}</select>`}
+        ${ln.interlude ? '' : `<select class="lay pro-only" aria-label="Choisir la mise en page"></select>`}
+        <button class="icon ghost tapfrom" title="Resynchroniser au tap depuis cette ligne" aria-label="Synchro tap depuis la ligne ${i + 1}">${ICON.tap}</button>
+        <button class="icon ghost rng" title="Définir comme plage d'export (Maj+clic pour étendre)" aria-pressed="${R && i >= R.from && i <= R.to ? 'true' : 'false'}" aria-label="Exporter la ligne ${i + 1}">${ICON.range}</button>
+        ${ln.interlude ? '' : `<button class="icon ghost dice" title="Relancer cette ligne (touche D pour la ligne en cours)">${ICON.dice}</button>`}
+        ${ln.interlude ? '' : `<button class="icon ghost lock" title="Verrouiller cette ligne (touche L pour la ligne en cours)" aria-pressed="${o.lock ? 'true' : 'false'}">${ICON.lock}</button>`}
       </span></div>`;
     const q = sel => li.querySelector(sel);
     if (q('.lay')) lazyLay(q('.lay'), o.layout || '');
@@ -76831,7 +77094,7 @@ function renderLines() {
         for (let j = i - 1; j >= 0; j--) { const f = fix(j); if (f != null) { lo = f + 0.05; break; } }
         for (let j = i + 1; j < L.length; j++) { const f = fix(j); if (f != null) { hi = f - 0.05; break; } }
         let w = Math.max(0, v);
-        if (hi >= lo && (w < lo || w > hi)) { w = J.clamp(w, lo, hi); toast(`前後の行と順番が入れ替わらないよう ${w.toFixed(2)} 秒にしました`); }
+        if (hi >= lo && (w < lo || w > hi)) { w = J.clamp(w, lo, hi); toast(`Ajusté à ${w.toFixed(2)} s pour préserver l\'ordre des lignes`); }
         lt[i] = +w.toFixed(3);
       } else delete S.project.timing.lineTimes[i];
       replan();
@@ -76852,18 +77115,18 @@ function renderLines() {
       sel.className = 'cut-lay pro-only' + (forced ? ' is-forced' : '');
       lazyLay(sel, forced || c.layout);
       sel.title = `${c.text}｜${J.ENTER[c.enter].name} → ${J.EXIT[c.exit].name}`;
-      sel.setAttribute('aria-label', `${i + 1}行目 カット${k + 1}のレイアウト`);
+      sel.setAttribute('aria-label', `Mise en page du plan ${k + 1}, ligne ${i + 1}`);
       sel.style.borderColor = `hsla(${layoutHue(c.layout)},70%,58%,0.7)`;
       sel.addEventListener('pointerdown', () => seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)));
       sel.addEventListener('change', e => { setCutLayout(i, k, e.target.value); replan(); seek(c.start + Math.min(c.dur * 0.5, c.inDur + 0.05)); });
       sel.dataset.k = String(k);
-      // カットの開始時刻 (詳細モード): the first cut starts with the line; the others can be typed (empty = automatic)
+      // plansの開始時刻 (詳細モード): the first cut starts with the line; the others can be typed (empty = automatic)
       if (k > 0) {
         const tIn = document.createElement('input');
         const own = o.cutTime && o.cutTime[k] != null;
         tIn.type = 'number'; tIn.step = '0.01'; tIn.min = '0'; tIn.className = 'cut-time pro-only mono' + (own ? ' is-forced' : '');
-        tIn.value = c.start.toFixed(2); tIn.title = own ? 'このカットの開始時刻（手動）。空にすると自動に戻ります' : 'このカットの開始時刻（自動）。数値を入れると固定します';
-        tIn.setAttribute('aria-label', `${i + 1}行目 カット${k + 1}の開始時刻`);
+        tIn.value = c.start.toFixed(2); tIn.title = own ? 'Début de ce plan (manuel). Videz le champ pour revenir en automatique' : 'Début de ce plan (automatique). Saisissez une durée pour le fixer';
+        tIn.setAttribute('aria-label', `Ligne ${i + 1}, début du plan ${k + 1}`);
         tIn.addEventListener('change', e => {
           const v = parseFloat(e.target.value);
           pushEdit();
@@ -76885,11 +77148,11 @@ function renderLines() {
     });
     ol.appendChild(li); S.lineEls.push(li);
   });
-  $('linesInfo').textContent = `${S.plan.lines.length}行 / ${S.plan.cuts.length}カット`;
+  $('linesInfo').textContent = `${S.plan.lines.length} lignes / ${S.plan.cuts.length} plans`;
   syncRangeUI();
 }
 
-/* ---------------- 行から歌詞を直す ---------------- */
+/* ---------------- ligne から歌詞を直す ---------------- */
 // the lyrics text is the source: a plan line knows the row it came from (ln.src); LRC time tags on that row are kept
 const LRC_PREFIX = /^\s*(?:\[\d+:\d+(?:[.:]\d+)?\])*/;
 function editLine(li, ln) {
@@ -76897,8 +77160,8 @@ function editLine(li, ln) {
   const rows = S.project.lyrics.replace(/\r/g, '').split('\n'), row = rows[ln.src] || '';
   const pre = (row.match(LRC_PREFIX) || [''])[0], body = row.slice(pre.length).trim();
   const txt = li.querySelector('.txt'), inp = document.createElement('input');
-  inp.type = 'text'; inp.className = 'txt-edit'; inp.value = body; inp.setAttribute('aria-label', `${ln.index + 1}行目の歌詞`);
-  inp.title = '記法（/ 区切り・*強調*・行末の ! ・| 注釈・[間奏 8]）もそのまま使えます。Enter で確定、Esc で取り消し';
+  inp.type = 'text'; inp.className = 'txt-edit'; inp.value = body; inp.setAttribute('aria-label', `Paroles de la ligne ${ln.index + 1}`);
+  inp.title = 'Syntaxe supportée (/ plan, *emphase*, !, | note, [interlude 8]). Entrée pour valider, Échap pour annuler';
   txt.replaceWith(inp); inp.focus(); inp.select();
   let done = false;
   const finish = ok => {
@@ -76920,7 +77183,7 @@ function editLine(li, ln) {
       } else {
         delete S.project.timing.wordTimes[ln.index];
       }
-      replan(); flushSave(); toast(`${ln.index + 1}行目の歌詞を直しました`);
+      replan(); flushSave(); toast(`Ligne ${ln.index + 1} mise à jour`);
     } else renderLines();
   };
   inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
@@ -76959,28 +77222,28 @@ function leCopy() {
   };
   if (l.startsWith('zh')) return {
     title: '歌词与逐词时间戳精修编辑器', recalc: '↻ 重新对齐', save: '✓ 保存修正版',
-    playLine: '▶ 复听整句', addLine: '+ 加一行', delLine: '✕ 删此行',
-    lStart: '句起时间 (秒)', lEnd: '句止时间 (秒)', words: '本句分词列表',
+    playLine: '▶ 复听整句', addLine: '+ 加一ligne ', delLine: '✕ 删此ligne ',
+    lStart: '句起时间 (s)', lEnd: '句止时间 (s)', words: '本句分词列表',
     insPh: '输入漏词…', addBefore: '+ 前插', addAfter: '+ 后插',
     wordPh: '修改当前词…', apply: '应用并重对齐', playWord: '▶ 复听此词', delWord: '✕ 删词',
     valid: '已校对锁定（后续重对齐时保留此词时间戳）',
-    wStart: '词起时间 (秒)', wEnd: '词止时间 (秒)', chars: '单字字符与毫秒级时间戳', addChar: '+ 加字',
+    wStart: '词起时间 (s)', wEnd: '词止时间 (s)', chars: '单字字符与毫s级时间戳', addChar: '+ 加字',
     defWord: '新词', defLine: '新增歌词句',
     savedMsg: '✓ 已保存修正版本并更新校验结果。',
-    recalcMsg: '↻ 已根据人声重新对齐（保留已锁定的准确时间戳）。',
+    recalcMsg: '↻ 已根据人声重新对齐（保留已锁定的准确时间戳). ',
     realignWordMsg: '✓ 已修改词文本并自动重对齐相邻未锁定词。',
   };
   return {
-    title: '歌詞・単語・文字タイムスタンプ詳細エディタ', recalc: '↻ 再計算', save: '✓ 修正を保存',
-    playLine: '▶ 行を再生', addLine: '+ 行追加', delLine: '✕ 行削除',
-    lStart: '行開始 (秒)', lEnd: '行終了 (秒)', words: '単語トークン',
-    insPh: '不足語句…', addBefore: '+ 前に追加', addAfter: '+ 後に追加',
-    wordPh: '選択中の単語…', apply: '適用・再整列', playWord: '▶ 単語再生', delWord: '✕ 削除',
-    valid: '確定ロック（自動再整列から保護）',
-    wStart: '開始 (秒)', wEnd: '終了 (秒)', chars: '1文字ごとの時刻調整', addChar: '+ 文字追加',
-    defWord: '語', defLine: '新しい歌詞行',
+    title: '歌詞 · 単語 · Texteタイムスタンプ詳細エディタ', recalc: '↻ 再計算', save: '✓ 修正を保存',
+    playLine: '▶ ligne をLecture', addLine: '+ ligne Nouveau', delLine: '✕ ligne 削除',
+    lStart: 'ligne 開始 (s)', lEnd: 'ligne 終了 (s)', words: '単語トークン',
+    insPh: '不足語句…', addBefore: '+ 前にNouveau', addAfter: '+ 後にNouveau',
+    wordPh: '選択中の単語…', apply: '適用 · 再整列', playWord: '▶ 単語Lecture', delWord: '✕ 削除',
+    valid: '確定ロック（Auto再整列から保護）',
+    wStart: '開始 (s)', wEnd: '終了 (s)', chars: '1Texteごとの時刻調整', addChar: '+ TexteNouveau',
+    defWord: '語', defLine: '新しい歌詞ligne ',
     savedMsg: '✓ 修正内容を保存し検証を更新しました。',
-    recalcMsg: '↻ 確定済み単語を保持したまま再整列しました。',
+    recalcMsg: '↻ 確定済み単語をMaintienしたまま再整列しました。',
     realignWordMsg: '✓ 単語を変更し周辺単語を声学的に再整列しました。',
   };
 }
@@ -77727,7 +77990,7 @@ function bindLyricsEditor() {
   }
 }
 
-/* ---------------- 歌詞・タイミングの取り消し（Ctrl+Z） ---------------- */
+/* ---------------- 歌詞 · タイミングの取り消し（Ctrl+Z） ---------------- */
 // separate from the ◀ ▶ history of looks: lyric edits, dragged / typed / tapped line times
 const ED = { undo: [], redo: [] };
 const edSnap = () => JSON.stringify({ lyrics: S.project.lyrics, lineTimes: S.project.timing.lineTimes || {}, lineEnds: S.project.timing.lineEnds || {}, wordTimes: S.project.timing.wordTimes || {}, lineMeta: S.project.timing.lineMeta || {}, detection: S.project.detection || null, translation: S.project.translation || null });
@@ -77743,7 +78006,7 @@ function edGo(d) {
   if ('ov' in o) { S.project.overrides = o.ov || {}; S.project.exportRange = o.range || null; }
   clearQcAutoReport();
   replan(); syncTranslationControls(); syncAudioDetectPanel(); flushSave(); updateEditBtns();
-  toast(d < 0 ? '元に戻しました' : 'やり直しました');
+  toast(d < 0 ? 'Annulé' : 'Rétabli');
 }
 // LRC を読み込む: replaces the lyrics (and everything tied to line numbers, like 歌詞を消す); undoable
 function loadLrc(text, sub) {
@@ -77757,11 +78020,11 @@ function loadLrc(text, sub) {
   clearQcAutoReport();
   replan(); flushSave(); updateEditBtns(); seek(0);
   const n = J.parseLyrics(P.lyrics).lines.filter(l => l.lrc != null).length;
-  if (sub) toast(`字幕ファイルを読み込みました（${sub.lines} 行・間奏 ${sub.gaps} か所・「元に戻す」で戻せます）`);
-  else toast(`LRC を読み込みました（時刻付き ${n} 行・「元に戻す」で戻せます）`);
+  if (sub) toast(`Sous-titres chargés (${sub.lines} lignes, ${sub.gaps} interlude(s) · Annuler restaure les paroles précédentes)`);
+  else toast(`LRC chargé (${n} lignes horodatées · Annuler restaure les paroles précédentes)`);
 }
 function applyExportLabels() {
-  const lang = document.documentElement.lang || 'ja';
+  const lang = document.documentElement.lang || 'fr';
   const titleEl = $('lblLyricsExpTitle'), transEl = $('lblExpIncludeTrans');
   if (lang === 'en') {
     if (titleEl) titleEl.textContent = 'Export synchronized lyrics';
@@ -77776,7 +78039,7 @@ function applyExportLabels() {
   } else {
     if (titleEl) titleEl.textContent = '同期歌詞エクスポート';
     if (transEl) transEl.textContent = '翻訳を含める';
-    if ($('btnExpJSON')) $('btnExpJSON').textContent = 'JSON (語・文字)';
+    if ($('btnExpJSON')) $('btnExpJSON').textContent = 'JSON (語 · Texte)';
     if ($('btnExpELRC')) $('btnExpELRC').textContent = 'Enhanced LRC';
   }
   const chk = $('expIncludeTrans');
@@ -77786,7 +78049,7 @@ function applyExportLabels() {
   if (qChk && qChk.dataset.userTouched !== '1') qChk.checked = chk ? chk.checked : defChecked;
 }
 function syncMainStudioLabels() {
-  const lang = document.documentElement.lang || 'ja';
+  const lang = document.documentElement.lang || 'fr';
   const copy = lang === 'fr' ? {
     audioSec: 'Audio & Minutage',
     dropTitle: 'Importer ou glisser-déposer une chanson',
@@ -77833,7 +78096,7 @@ function syncMainStudioLabels() {
     audioSec: '曲とタイミング',
     dropTitle: '曲をアップロード／ドラッグ＆ドロップ',
     uploadBtn: '曲を読み込む',
-    noAudio: '曲なし（MP3 / WAV / FLAC 等をドロップまたはクリック）',
+    noAudio: '曲Aucun（MP3 / WAV / FLAC 等をドロップまたはクリック）',
     quickExpTitle: '同期歌詞を書き出す',
     quickExpTrans: '翻訳',
   };
@@ -77904,7 +78167,7 @@ function clearLyrics() {
   P.lyrics = ''; P.timing.lineTimes = {}; P.timing.lineEnds = {}; P.timing.wordTimes = {}; P.timing.lineMeta = {}; P.overrides = {}; P.exportRange = null; $('lyrics').value = '';
   clearQcAutoReport();
   replan(); flushSave(); updateEditBtns(); seek(0);
-  toast('歌詞を消しました（「元に戻す」か Ctrl+Z で戻せます）');
+  toast('Paroles effacées (Annuler ou Ctrl+Z pour restaurer)');
 }
 // 初期化: back to a blank project — song (also the copy kept in this browser), settings and both histories go
 let audioNameDefault = '';
@@ -77925,11 +78188,11 @@ async function resetAll() {
   $('lyrics').value = ''; fontKey = '';
   clearQcAutoReport();
   syncUI(); replan(); commit(); updateEditBtns(); flushSave(); seek(0);
-  toast('初期化しました');
+  toast('Réinitialisation effectuée');
 }
 function updateEditBtns() { const u = $('btnUndoEdit'); if (u) u.disabled = !ED.undo.length; }
 
-/* ---------------- 書き出す範囲（選んだ行だけ） ---------------- */
+/* ---------------- 書き出す範囲（選んだligne だけ） ---------------- */
 function exportRangeLines() {
   const r = S.project.exportRange, n = S.plan ? S.plan.lines.length : 0;
   if (!r || !n || !(r.from >= 0)) return null;
@@ -77951,15 +78214,15 @@ function setExportRange(i, extend) {
   else S.project.exportRange = { from: i, to: i };
   flushSave(); renderLines();
   const R2 = exportRangeLines();
-  toast(R2 ? `書き出す範囲：${R2.from + 1}${R2.to > R2.from ? '〜' + (R2.to + 1) : ''}行目` : '書き出す範囲：全体');
+  toast(R2 ? `Plage d'export : ligne ${R2.from + 1}${R2.to > R2.from ? '–' + (R2.to + 1) : ''}` : 'Plage d\'export : morceau entier');
 }
 function syncRangeUI() {
   const R = exportRangeLines(), n = S.plan.lines.length;
-  const opts = (sel, first) => `<option value="-1">${first}</option>` + S.plan.lines.map((ln, i) => `<option value="${i}">${String(i + 1).padStart(2, '0')} ${escapeHtml((ln.interlude ? '〔間奏〕' : ln.text).slice(0, 14))}</option>`).join('');
-  document.querySelectorAll('.rngFrom').forEach(el => { el.innerHTML = opts(el, '全体'); el.value = R ? String(R.from) : '-1'; });
+  const opts = (sel, first) => `<option value="-1">${first}</option>` + S.plan.lines.map((ln, i) => `<option value="${i}">${String(i + 1).padStart(2, '0')} ${escapeHtml((ln.interlude ? '[interlude]' : ln.text).slice(0, 14))}</option>`).join('');
+  document.querySelectorAll('.rngFrom').forEach(el => { el.innerHTML = opts(el, 'Tout le morceau'); el.value = R ? String(R.from) : '-1'; });
   document.querySelectorAll('.rngTo').forEach(el => { el.innerHTML = opts(el, '—'); el.value = R ? String(R.to) : '-1'; el.disabled = !R; });
   const r = exportRange();
-  document.querySelectorAll('.rngInfo').forEach(el => { el.textContent = r ? `${J.fmtTime(r.t0)} 〜 ${J.fmtTime(r.t1)}（${(r.t1 - r.t0).toFixed(1)}秒）` : `全体（${S.plan.duration.toFixed(1)}秒）`; });
+  document.querySelectorAll('.rngInfo').forEach(el => { el.textContent = r ? `${J.fmtTime(r.t0)} – ${J.fmtTime(r.t1)} (${(r.t1 - r.t0).toFixed(1)} s)` : `Tout (${S.plan.duration.toFixed(1)} s)`; });
 }
 function bindRangeUI() {
   document.querySelectorAll('.rngFrom').forEach(el => el.addEventListener('change', () => {
@@ -77973,7 +78236,7 @@ function bindRangeUI() {
     flushSave(); renderLines();
   }));
 }
-/* この行を再抽選 / ロック: each is one step of 前の案 / 次の案, so a reroll can be taken back */
+/* Relancer cette ligne / ロック: each is one step of 前の案 / 次の案, so a reroll can be taken back */
 function rerollLine(i) {
   const ln = S.plan.lines[i]; if (!ln || ln.interlude || S.exporting || S.tap) return;
   const cur = (S.project.overrides || {})[i] || {};
@@ -78027,7 +78290,7 @@ function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp
 let styleCatFilter = 'all';
 const STYLE_CAT_META = [
   ['all', { fr: 'Tous', en: 'All', ja: 'すべて', 'zh-Hans': '全部', 'zh-Hant': '全部', ko: '전체', id: 'Semua', vi: 'Tất cả' }],
-  ['guofeng', { fr: 'Chinois Classique', en: 'Classical Chinese', ja: '中国風・国風', 'zh-Hans': '国风古典', 'zh-Hant': '國風古典', ko: '중국 고풍', id: 'Tiongkok Klasik', vi: 'Cổ Phong' }],
+  ['guofeng', { fr: 'Chinois Classique', en: 'Classical Chinese', ja: '中国風 · 国風', 'zh-Hans': '国风古典', 'zh-Hant': '國風古典', ko: '중국 고풍', id: 'Tiongkok Klasik', vi: 'Cổ Phong' }],
   ['bauhaus', { fr: 'Bauhaus', en: 'Bauhaus', ja: 'Bauhaus' }],
   ['popart', { fr: 'Pop Art', en: 'Pop Art', ja: 'Pop Art' }],
   ['iso3d', { fr: '3D Iso', en: '3D Iso', ja: '3D Iso' }],
@@ -78129,8 +78392,8 @@ function drawStyleThumbAccent(x, st, sc) {
 }
 function renderStyleCatBar() {
   const bar = $('styleCatBar'); if (!bar) return;
-  const rawLang = document.documentElement.lang || 'ja';
-  const lang = ['fr', 'en', 'zh-Hans', 'zh-Hant', 'ko', 'id', 'vi', 'ja'].includes(rawLang) ? rawLang : 'ja';
+  const rawLang = document.documentElement.lang || 'fr';
+  const lang = ['fr', 'en', 'zh-Hans', 'zh-Hant', 'ko', 'id', 'vi', 'ja'].includes(rawLang) ? rawLang : 'fr';
   if (!bar.children.length) {
     STYLE_CAT_META.forEach(([cid, labels]) => {
       const btn = document.createElement('button');
@@ -78169,7 +78432,7 @@ function drawStyleGrid() {
     b.setAttribute('aria-pressed', S.project.style === k ? 'true' : 'false');
     const off = !J.randomOk(S.project, 'style', k);
     b.classList.toggle('set-off', off);
-    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? '（追加分がオフのため、おまかせでは選ばれません）' : st.set && !J.setOn(S.project, st.set) ? '（このセットがオフのため、おまかせでは選ばれません）' : '（和風の演出がオフのため、おまかせでは選ばれません）') : '');
+    b.title = st.desc + (off ? (st.extra && S.project.extra !== true ? ' (effets bonus désactivés)' : st.set && !J.setOn(S.project, st.set) ? ' (cet ensemble est désactivé pour le mode aléatoire)' : ' (motifs japonais désactivés)') : '');
     if (cv.dataset.drawn === k) return;
     cv.dataset.drawn = k;
     const x = cv.getContext('2d');
@@ -78177,7 +78440,7 @@ function drawStyleGrid() {
     drawStyleThumbAccent(x, st, sc);
     st.schemes.slice(1, 4).forEach((s2, i) => { x.fillStyle = s2.bg; x.fillRect(192 - 14 * (i + 1), 0, 14, 10); });
     const f = (st.fonts && st.fonts.display && st.fonts.display[0]) || 'gothic_black';
-    const glyph = st.cat === 'compositing' ? 'Aa' : st.cat === 'guofeng' ? '古風' : '字面';
+    const glyph = st.cat === 'compositing' ? 'Aa' : st.cat === 'guofeng' ? '古風' : 'Alexura';
     x.font = J.fontCSS(f, 44); x.textAlign = 'center'; x.textBaseline = 'middle';
     x.fillStyle = sc.ghostB; x.fillText(glyph, 96 - 3, 52 - 1);
     x.fillStyle = sc.ghostA; x.fillText(glyph, 96 + 3, 52 + 2);
@@ -78188,7 +78451,7 @@ function drawStyleGrid() {
 }
 function fontSelectOptions(sel) {
   const isMix = Array.isArray(sel);
-  let html = '<option value="">スタイルの既定</option>';
+  let html = '<option value="">Par défaut du style</option>';
   if (isMix) html += `<option value="__mix__" selected>Mix (${sel.length})</option>`;
   const groups = new Map();
   for (const [k, f] of Object.entries(J.FONTS)) {
@@ -78209,9 +78472,9 @@ function fontSelectOptions(sel) {
 }
 function renderFontRoles() {
   const box = $('fontRoles'); box.innerHTML = '';
-  [['display', '見出し'], ['serif', '明朝枠'], ['body', '小さな文字']].forEach(([role, label]) => {
+  [['display', 'Titre'], ['serif', 'Cadre serif'], ['body', 'Petit texte']].forEach(([role, label]) => {
     const row = document.createElement('div'); row.className = 'font-row';
-    row.innerHTML = `<span class="muted">${label}</span><select aria-label="${label}のフォント">${fontSelectOptions(S.project.fonts[role])}</select>`;
+    row.innerHTML = `<span class="muted">${label}</span><select aria-label="${label} — police">${fontSelectOptions(S.project.fonts[role])}</select>`;
     row.querySelector('select').addEventListener('change', e => {
       if (e.target.value === '__mix__') return;
       if (e.target.value) S.project.fonts[role] = e.target.value; else delete S.project.fonts[role];
@@ -78220,8 +78483,8 @@ function renderFontRoles() {
     box.appendChild(row);
   });
 }
-const BASE_KEYS = [['bg', '背景'], ['fg', '文字'], ['sub', '補助']];
-const ACCENT_KEYS = [['accent', 'アクセント'], ['ghostA', 'ズレ色A'], ['ghostB', 'ズレ色B']];
+const BASE_KEYS = [['bg', 'Arrière-plan'], ['fg', 'Texte'], ['sub', 'Secondaire']];
+const ACCENT_KEYS = [['accent', 'Accent'], ['ghostA', 'Décalage A'], ['ghostB', 'Décalage B']];
 function renderColors() {
   const st = J.STYLES[S.project.style] || J.STYLES.noir, sc = st.schemes[0];
   const c = S.project.colors;
@@ -78260,7 +78523,7 @@ function randomPalette() {
   do { p = J.randomPalette(bg); } while (guard++ < 6 && p.ghostA === c.ghostA && p.ghostB === c.ghostB);
   Object.assign(c, { accent: p.accent, ghostA: p.ghostA, ghostB: p.ghostB, accentOn: true });
   renderColors(); replan(); commit();
-  toast('配色：アクセント・ズレ色A/Bを変更', [p.accent, p.ghostA, p.ghostB]);
+  toast('Palette : couleur d’accent et décalages modifiés', [p.accent, p.ghostA, p.ghostB]);
 }
 
 /* ---------------- history of looks (◀ ▶) ---------------- */
@@ -78286,7 +78549,7 @@ function histGo(d) {
   H.i = j;
   Object.assign(S.project, JSON.parse(H.list[j]));
   fontKey = ''; syncUI(); replan(); updateHist();
-  toast(`${j + 1} / ${H.list.length} 案目`);
+  toast(`${j + 1} / ${H.list.length} variation`);
   restartPreview();
 }
 function updateHist() {
@@ -78303,9 +78566,9 @@ function updateHist() {
            this does not pin one technique in place.
    params: freezes the current value of the effects sliders, on-twos and flash.
    Neither goes into J.plan: they only bracket the places that rewrite the look (Randomize, mood reroll). */
-const LOCK_TITLE_ON = 'おまかせ／シャッフルで変えないようにロック';
-const TECH_LOCK_ON = 'おまかせでON／OFFを変えないようにロック';
-const LOCK_TITLE_OFF = 'ロック中。クリックで解除';
+const LOCK_TITLE_ON = 'Verrouiller ce paramètre';
+const TECH_LOCK_ON = 'Verrouiller ce groupe pour le mode Aléatoire';
+const LOCK_TITLE_OFF = 'Verrouillé — cliquer pour déverrouiller';
 function locksOf() {
   const P = S.project;
   if (!P.locks) P.locks = { tech: {}, params: {} };
@@ -78322,15 +78585,15 @@ function groupLabel(g) { const m = GROUPS.find(x => x[0] === g); return m ? m[1]
 function toggleTechLock(g) {
   const L = locksOf();
   remember();
-  if (L.tech[g]) { delete L.tech[g]; toast('ロック解除：' + groupLabel(g)); }
-  else { L.tech[g] = true; toast('ロック：' + groupLabel(g)); }
+  if (L.tech[g]) { delete L.tech[g]; toast('Déverrouillé : ' + groupLabel(g)); }
+  else { L.tech[g] = true; toast('Verrouillé : ' + groupLabel(g)); }
   commit(); autosave(); renderTech();
 }
 function toggleParamLock(k) {
   const L = locksOf();
   remember();
-  if (L.params[k]) { delete L.params[k]; toast('ロック解除：' + lockName(k)); }
-  else { L.params[k] = true; toast('ロック：' + lockName(k)); }
+  if (L.params[k]) { delete L.params[k]; toast('Déverrouillé : ' + lockName(k)); }
+  else { L.params[k] = true; toast('Verrouillé : ' + lockName(k)); }
   commit(); autosave(); renderFx();
 }
 function lockedEnabled() {                        // ON/OFF selection of every locked group, as it is now
@@ -78372,7 +78635,7 @@ function lockBtn(k, anchor) {                     // lock button for effects tha
   return b;
 }
 
-/* ---------------- おまかせ ---------------- */
+/* ---------------- Aléatoire ---------------- */
 function restartPreview() { seek(0); if (!S.playing && S.mode !== 'pro') play(); }
 const themeName = th => { const o = document.querySelector(`.themeSel option[value="${th}"]`); return o ? o.textContent : th; };
 function omakase() {
@@ -78384,7 +78647,7 @@ function omakase() {
   Object.assign(S.project, r);
   restoreEnabled(keepE); restoreParams(keepP);
   fontKey = ''; syncUI(); replan(); commit();
-  toast((th ? `おまかせ（${themeName(th)}）：` : 'おまかせ：') + `${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
+  toast((th ? `Aléatoire (${themeName(th)}) : ` : 'Aléatoire : ') + `${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
 }
 // change just one aspect of the current look
@@ -78402,7 +78665,7 @@ function rerollPart(part) {
     if (!pool.length) pool = J.STYLE_ORDER.filter(k => k !== P.style);
     P.style = pool[Math.floor(Math.random() * pool.length)];
     P.colors.enabled = false;
-    msg = `スタイル：${J.STYLES[P.style].name}`;
+    msg = `Style：${J.STYLES[P.style].name}`;
   } else if (part === 'mood') {
     const keepE = lockedEnabled(), keepP = lockedParams();
     const th = J.THEMES[P.themeId] ? P.themeId : null;
@@ -78410,10 +78673,10 @@ function rerollPart(part) {
     Object.assign(P, { mood: r.mood, fx: r.fx, enabled: r.enabled });
     for (const k of ['wa', 'extra', ...J.SET_ORDER]) if (r[k] === true) P[k] = true;     // switches the theme needs
     restoreEnabled(keepE); restoreParams(keepP);
-    msg = `雰囲気：${J.MOODS[r.mood].name}`;
+    msg = `Ambiance：${J.MOODS[r.mood].name}`;
   } else if (part === 'cut') {
     P.seed = (Math.random() * 1e9) | 0;
-    msg = '構成：レイアウトと動きを再抽選';
+    msg = 'Plans : mise en page et animation relancées';
   }
   fontKey = ''; syncUI(); replan(); commit();
   toast(msg);
@@ -78422,7 +78685,7 @@ function rerollPart(part) {
 function showNow() {
   const el = $('easyNow'); if (!el || !S.plan || el.closest('[hidden]')) return;
   const P = S.project, sc = S.plan.style.schemes[0];
-  const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : 'カスタム';
+  const moodName = P.mood && J.MOODS[P.mood] ? J.MOODS[P.mood].name : 'Personnalisé';
   const dList = (S.plan.style.fonts && S.plan.style.fonts.display) || [];
   const fk = dList[0];
   const fontBase = J.FONTS[fk] ? (J.faceOf ? J.faceOf(fk) : J.FONTS[fk]).label : fk;   // the face actually drawn for the lyric language
@@ -78430,12 +78693,12 @@ function showNow() {
   const cuts = S.plan.cuts.filter(c => c.line >= 0 && c.layout !== 'interlude');
   const kinds = new Set(cuts.map(c => c.layout)).size;
   const row = (k, v) => `<div class="now-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
-  el.innerHTML = row('スタイル', `<b>${escapeHtml(J.STYLES[P.style].name)}</b>`)
-    + row('雰囲気', escapeHtml(moodName))
-    + row('配色', `<span class="swatches">${swatchHTML([sc.bg, sc.fg, sc.accent, sc.ghostA, sc.ghostB])}</span>${P.colors.accentOn ? '<span class="tagl">ランダム</span>' : ''}`)
-    + row('見出し書体', escapeHtml(fontName))
-    + row('構成', `${cuts.length} カット・レイアウト ${kinds} 種`)
-    + row('演出', `加工 ${cuts.filter(c => c.treat && c.treat !== 'none').length}・背景 ${new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size}種・カメラ ${cuts.filter(c => c.cam && c.cam !== 'push').length}`);
+  el.innerHTML = row('Style', `<b>${escapeHtml(J.STYLES[P.style].name)}</b>`)
+    + row('Ambiance', escapeHtml(moodName))
+    + row('Palette', `<span class="swatches">${swatchHTML([sc.bg, sc.fg, sc.accent, sc.ghostA, sc.ghostB])}</span>${P.colors.accentOn ? '<span class="tagl">Aléatoire</span>' : ''}`)
+    + row('Police de titre', escapeHtml(fontName))
+    + row('Plans', `${cuts.length} plans · Mise en page ${kinds} types`)
+    + row('Effets', `Traitement ${cuts.filter(c => c.treat && c.treat !== 'none').length} · Arrière-plan ${new Set(cuts.map(c => c.bg).filter(b => b && b !== 'none')).size} types · Caméra ${cuts.filter(c => c.cam && c.cam !== 'push').length}`);
 }
 let toastTimer = 0;
 function toast(m, cols) {
@@ -78643,7 +78906,7 @@ function mobileInit() {
 }
 
 /* ---------------- fx tab ---------------- */
-const FX = [['motion', '動きの強さ'], ['glitch', 'グリッチ'], ['chroma', '色ズレ'], ['decor', '装飾の量'], ['density', 'カットの細かさ'], ['texture', '質感'], ['bgSwitch', '背景の切替']];
+const FX = [['motion', 'Intensité du mouvement'], ['glitch', 'Glitch'], ['chroma', 'Décalage RVB'], ['decor', 'Quantité de décors'], ['density', 'Densité des plans'], ['texture', 'Texture'], ['bgSwitch', 'Changements d’arrière-plan']];
 function renderFx() {
   const box = $('fxSliders'); box.innerHTML = '';
   FX.forEach(([k, label]) => {
@@ -78667,7 +78930,7 @@ function renderFx() {
 }
 
 /* ---------------- technique tab ---------------- */
-const GROUPS = [['layout', 'レイアウト'], ['enter', '登場'], ['hold', '保持'], ['exit', '退場'], ['decor', '装飾'], ['treat', '文字の加工'], ['bg', '背景'], ['cam', 'カメラ'], ['fx', '画面効果'], ['trans', 'カット間のつなぎ']];
+const GROUPS = [['layout', 'Mise en page'], ['enter', 'Entrée'], ['hold', 'Maintien'], ['exit', 'Sortie'], ['decor', 'Décoration'], ['treat', 'Traitement du texte'], ['bg', 'Arrière-plan'], ['cam', 'Caméra'], ['fx', 'Effets d’écran'], ['trans', 'Transitions']];
 const openGroups = new Set();
 function techItems(g) { return J.order(g).filter(k => J.registry(g)[k] && !J.registry(g)[k].special); }
 
@@ -78776,7 +79039,7 @@ function renderTech() {
     d.addEventListener('toggle', () => { if (d.open) { openGroups.add(g); build(); queueThumbs(list); } else openGroups.delete(g); });
     const lked = !!locksOf().tech[g];
     d.innerHTML = `<summary><span class="tg-name">${label}</span><span class="tg-cnt mono">${onN}/${items.length}</span>`
-      + `<button type="button" class="icon ghost lk pro-only" data-lk="${g}" aria-pressed="${lked}" title="${lked ? LOCK_TITLE_OFF : TECH_LOCK_ON}">${ICON.lock}</button></summary><div class="tg-tools"><button class="ghost small" data-a="on">すべてON</button><button class="ghost small" data-a="off">すべてOFF</button><button class="ghost small" data-a="flip">反転</button></div>`;
+      + `<button type="button" class="icon ghost lk pro-only" data-lk="${g}" aria-pressed="${lked}" title="${lked ? LOCK_TITLE_OFF : TECH_LOCK_ON}">${ICON.lock}</button></summary><div class="tg-tools"><button class="ghost small" data-a="on">Tout activer</button><button class="ghost small" data-a="off">Tout désactiver</button><button class="ghost small" data-a="flip">Inverser</button></div>`;
     const [tw, th] = (() => {
       const [W, H] = J.designSize(S.project.aspect || '16:9');
       const h = 90; return [Math.max(80, Math.round(h * W / H)), h];
@@ -78785,8 +79048,8 @@ function renderTech() {
     const fillCards = () => shown.forEach(k => {
       const l = document.createElement('label');
       l.className = 'tcard';
-      l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join('・') + '）' : '');
-      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? '（追加分がオフのため、自動では選ばれません）' : tbl[k].set && !J.setOn(S.project, tbl[k].set) ? '（このセットがオフのため、自動では選ばれません）' : '（和風の演出がオフのため、自動では選ばれません）'; }
+      l.title = k + (tbl[k].tags && tbl[k].tags.length ? '（' + tbl[k].tags.map(t => (J.MOODS[t] ? J.MOODS[t].name : t)).join(' · ') + '）' : '');
+      if (!J.randomOk(S.project, g, k)) { l.classList.add('set-off'); l.title += tbl[k].extra && S.project.extra !== true ? ' (effets bonus désactivés)' : tbl[k].set && !J.setOn(S.project, tbl[k].set) ? ' (cet ensemble est désactivé pour la sélection auto)' : ' (motifs japonais désactivés)'; }
       l.innerHTML = `<canvas width="${tw}" height="${th}" data-g="${g}" data-k="${k}"></canvas><span class="tcard-name"><input type="checkbox" ${en[k] !== false ? 'checked' : ''}> <span>${escapeHtml(tbl[k].name)}</span>${setBadges(tbl[k])}</span>`;
       const cv = l.querySelector('canvas');
       l.querySelector('input').addEventListener('change', e => { en[k] = e.target.checked; S.project.mood = null; d.querySelector('.tg-cnt').textContent = `${items.filter(x => en[x] !== false).length}/${items.length}`; replanSoon(60); });
@@ -78821,17 +79084,17 @@ function syncOut() {
   document.querySelectorAll('.centerDirSel').forEach(el => { el.value = S.project.centerDir === 'lr' ? 'lr' : 'tb'; });
   const kb = $('keyBadge');
   kb.hidden = k === 'off';
-  if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'グリーンバック' : 'ブラックバック'}`;
+  if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'Fond vert' : 'Fond noir'}`;
 }
 // the codec check is slow in some browsers: at start-up, let the first preview frames paint before asking
 function codecNoteSoon() { (window.requestIdleCallback || (f => setTimeout(f, 400)))(() => codecNote(), { timeout: 1500 }); }
 async function codecNote() {
   const [w, h] = J.outputSize(S.project);
   const vc = await J.pickVideoCodec(w, h, S.project.fps, 12e6);
-  $('codecNote').textContent = vc ? `このブラウザでは ${vc.label} で書き出します（${w}×${h} / ${S.project.fps}fps）。書き出し中はタブを開いたままにしてください。` : 'このブラウザは動画エンコード（WebCodecs）に対応していません。Chrome / Edge の最新版で開くか、連番PNGを使ってください。';
+  $('codecNote').textContent = vc ? `Ce navigateur exporte avec ${vc.label} exportés (${w}×${h} / ${S.project.fps}fps). Gardez cet onglet ouvert pendant l’export.` : 'Encodage vidéo (WebCodecs) indisponible. Utilisez Chrome/Edge récent ou la séquence PNG.';
   $('btnMP4').disabled = !vc; $('eMP4').disabled = !vc;
   ['btnMP4File', 'eMP4File'].forEach(id => { $(id).hidden = !vc || !canPickFile(); });
-  if (!vc) $('eMP4').title = 'このブラウザは MP4 書き出しに対応していません（Chrome / Edge 推奨）';
+  if (!vc) $('eMP4').title = 'Export MP4 indisponible (Chrome / Edge recommandés)';
 }
 const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4', 'btnMP4File', 'eMP4File', 'ePNG', 'ePNGA', 'ePNGL'];
 function baseName() {
@@ -78847,7 +79110,7 @@ async function runExport(kind) {
     try {
       const hnd = await window.showSaveFilePicker({ suggestedName: baseName() + rangeSuffix() + '.mp4', types: [{ description: 'MP4', accept: { 'video/mp4': ['.mp4'] } }] });
       file = await hnd.createWritable(); fileName = hnd.name;
-    } catch (e) { if (e && e.name === 'AbortError') return; toast('保存先を開けませんでした: ' + (e && e.message ? e.message : e)); return; }
+    } catch (e) { if (e && e.name === 'AbortError') return; toast('Impossible d\'ouvrir le fichier : ' + (e && e.message ? e.message : e)); return; }
   }
   pause();
   const ac = new AbortController(); S.exporting = ac;
@@ -78855,7 +79118,7 @@ async function runExport(kind) {
   const setText = m => boxes.forEach(b => { b.querySelector('.exp-text').textContent = m; });
   const txt = { set textContent(m) { setText(m); }, get textContent() { return boxes[0].querySelector('.exp-text').textContent; } };
   boxes.forEach(b => { b.hidden = false; b.querySelector('.exp-bar').style.width = '0%'; });
-  setText('準備中…');
+  setText('Préparation…');
   EXP_BTNS.forEach(id => { $(id).disabled = true; });
   const onProgress = (p, m) => { boxes.forEach(b => { b.querySelector('.exp-bar').style.width = (p * 100).toFixed(1) + '%'; }); setText(m); };
   const t0 = performance.now();
@@ -78864,41 +79127,41 @@ async function runExport(kind) {
   let wake = null; try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (e) { wake = null; }
   // スマホ: at most 1080p (phones run out of memory / encoder time at 1440p and 4K)
   const proj = S.mode === 'mobile' && (S.project.res || 1080) > 1080 ? Object.assign({}, S.project, { res: 1080 }) : S.project;
-  if (proj !== S.project) toast('スマホの画面では 1080p で書き出します');
+  if (proj !== S.project) toast('En mode Mobile, l\'export est limité à 1080p');
   try {
     await J.ensureFonts(S.project.lyrics + (S.project.title || '') + (S.project.artist || '') + HUD_CHARS, J.fontsOfPlan(S.plan));
     const lost = J.missingUserFonts(J.fontsOfPlan(S.plan).concat(Object.values(S.project.fonts || {})));
-    if (lost.length) throw new Error(`読み込んだ書体（${[...new Set(lost)].join('・')}）がこのブラウザにないため、書き出しを止めました。「フォント」から同じファイルを読み込み直すか、別の書体を選んでください`);
+    if (lost.length) throw new Error(`La police importée (${[...new Set(lost)].join(', ')}) est absente de ce navigateur : export interrompu. Rechargez le fichier ou choisissez une autre police.`);
     if (kind === 'mp4' || kind === 'mp4file') {
       const plan = S.plan, range = exportRange(), span = J.exportSpan(plan, range);
       const r = await J.exportMP4({ plan, project: proj, audio: S.project.includeAudio !== false ? S.audio : null, quality: S.project.quality || 'high', onProgress, signal: ac.signal, range, file });
       file = null;
-      txt.textContent = `完成 ${r.blob ? (r.blob.size / 1048576).toFixed(1) + 'MB・' : ''}${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''}・${((performance.now() - t0) / 1000).toFixed(0)}秒`;
+      txt.textContent = `Terminé : ${r.blob ? (r.blob.size / 1048576).toFixed(1) + 'MB · ' : ''}${r.codec}${r.audio ? ' + ' + r.audio.toUpperCase() : ''} · ${((performance.now() - t0) / 1000).toFixed(0)}s`;
       if (r.blob) {
         const name = baseName() + rangeSuffix() + '.mp4';
         const res = await J.saveFile(name, r.blob);
-        if (res === 'declined') txt.textContent += '（保存はキャンセルされました）';
+        if (res === 'declined') txt.textContent += ' (enregistrement annulé)';
         else recordWork('export_mp4', 'export', `${name} (${(r.blob.size / 1048576).toFixed(1)} MB)`);
         offerShare(boxes, r.blob, name);
       } else {
-        txt.textContent += `・「${fileName}」に保存しました`;
+        txt.textContent += ` · enregistré sous « ${fileName} »`;
         recordWork('export_mp4', 'export', fileName || 'MP4');
       }
-      if (r.tried && r.tried.length) txt.textContent += '（最初の方法では失敗したため、別のエンコーダーで書き出しました）';
+      if (r.tried && r.tried.length) txt.textContent += ' (exporté via un encodeur de secours)';
       // audio that some players cannot play (Opus), or none at all: save the soundtrack as WAV next to it
       if (r.audioWanted && r.audio !== 'aac') {
         await J.saveFile(baseName() + rangeSuffix() + '_audio.wav', J.audioWav(S.audio.buffer, span.dur, span.t0));
-        txt.textContent += r.audio ? '。このブラウザでは音声が Opus になり、iPhone・QuickTime などでは音が出ないことがあるため、音声を WAV でも保存しました' : '。このブラウザは音声を書き出せないため、音声を WAV で別に保存しました（動画編集ソフトで重ねてください）';
-      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '。曲が読み込まれていないため音声なしです（「曲を読み込む」から読み込み直してください）';
+        txt.textContent += r.audio ? '. Ce navigateur encode l\'audio en Opus (souvent muet sur iPhone/QuickTime), l\'audio a aussi été sauvegardé en WAV' : '. Audio exporté séparément en WAV';
+      } else if (S.project.includeAudio !== false && !S.audio && S.project.audioName) txt.textContent += '. Aucune piste audio chargée : la vidéo est muette.';
     } else {
       const blob = await J.exportPNGZip({ plan: S.plan, project: proj, transparent: kind === 'pnga', layers: kind === 'pngl', onProgress, signal: ac.signal, range: exportRange() });
-      txt.textContent = `完成 ${(blob.size / 1048576).toFixed(1)}MB`;
+      txt.textContent = `Terminé : ${(blob.size / 1048576).toFixed(1)}MB`;
       const zname = baseName() + rangeSuffix() + (kind === 'pnga' ? '_alpha' : kind === 'pngl' ? '_layers' : '') + '_png.zip';
       await J.saveFile(zname, blob);
       recordWork('export_png', 'export', `${zname} (${(blob.size / 1048576).toFixed(1)} MB)`);
     }
   } catch (e) {
-    txt.textContent = 'エラー: ' + (e && e.message ? e.message : e);
+    txt.textContent = 'Erreur : ' + (e && e.message ? e.message : e);
     console.error(e);
     if (file) { try { await file.abort(); } catch (e2) {} }
   } finally {
@@ -78922,7 +79185,7 @@ function offerShare(boxes, blob, name) {
 
 /* ---------------- studio tap sync ---------------- */
 function tapCopy() {
-  const lang = document.documentElement.lang || 'ja';
+  const lang = document.documentElement.lang || 'fr';
   if (lang === 'fr') {
     return {
       btn: '⏱ Synchro au Tap',
@@ -79024,14 +79287,14 @@ function tapCopy() {
       btn: '⏱ 節拍點擊同步',
       title: '⏱ 專業點擊對軌同步',
       mode: '模式',
-      mLine: '逐行同步',
+      mLine: '逐ligne 同步',
       mWord: '逐詞精準同步',
-      mCut: '行 + 切分鏡頭 [Tab]',
+      mCut: 'ligne  + 切分鏡頭 [Tab]',
       rate: '速度',
       snap: '對齊',
       sVocal: '人聲起音 (±90ms)',
       sBeat: '節拍網格 (BPM)',
-      sFree: '自由毫秒',
+      sFree: '自由毫s',
       latency: '延遲補償',
       autoMicro: '人聲逐詞微對齊',
       microBtn: '✨ 微對齊本句',
@@ -79044,7 +79307,7 @@ function tapCopy() {
       earlyHit: '偏早',
       lateHit: '偏晚',
       loopLine: '🔁 單句循環',
-      assistRest: '⚡ AI 自動對齊後續',
+      assistRest: '⚡ AI Auto對齊後續',
       coherenceLbl: '人聲協調度',
       syncedWords: '詞已對齊',
       tapBtn: '點擊 TAP [Space]',
@@ -79058,7 +79321,7 @@ function tapCopy() {
       stop: '✓ 完成',
       guideLine: '聽到歌手開口唱出目前歌詞時，立即按下 <span class="kbd">Space</span> 或 <b>TAP</b>。',
       guideWord: '<b>逐詞模式</b>：請依序在每個藍色標記詞彙發音起點點擊。',
-      guideCut: '用 <span class="kbd">Space</span> 標記行首，用 <span class="kbd">Tab</span> 標記行內切分點。',
+      guideCut: '用 <span class="kbd">Space</span> 標記ligne 首，用 <span class="kbd">Tab</span> 標記ligne 內切分點。',
       guideHold: ' 按住並放開可精準記錄結束時間。',
       doneAll: '已完成點擊同步',
       exactNote: '精準',
@@ -79069,19 +79332,19 @@ function tapCopy() {
   }
   return {
     btn: 'タップで同期',
-    title: '⏱ スタジオ・タップ同期',
+    title: '⏱ スタジオ · タップ同期',
     mode: 'モード',
-    mLine: '行ごと（フレーズ）',
+    mLine: 'ligne ごと（フレーズ）',
     mWord: '単語ごと（高精度）',
-    mCut: '行＋カット区切り [Tab]',
-    rate: '再生速度',
+    mCut: 'ligne ＋plans区切り [Tab]',
+    rate: 'Lecture速度',
     snap: 'スナップ',
     sVocal: 'ボーカル発音 (±90ms)',
     sBeat: '拍グリッド (BPM)',
     sFree: 'フリー (ms単位)',
     latency: '遅延補正',
-    autoMicro: '単語を声に自動微調整',
-    microBtn: '✨ 行内の単語を自動整列',
+    autoMicro: '単語を声にAuto微調整',
+    microBtn: '✨ ligne 内の単語をAuto整列',
     holdEnd: '長押し＝終了 [E]',
     count: '3·2·1 カウント',
     click: 'クリック音',
@@ -79090,22 +79353,22 @@ function tapCopy() {
     perfectHit: '完璧',
     earlyHit: '早め',
     lateHit: '遅め',
-    loopLine: '🔁 この行をループ',
-    assistRest: '⚡ 残りをAI声頭自動同期',
+    loopLine: '🔁 このligne をBoucle',
+    assistRest: '⚡ 残りをAI声頭Auto同期',
     coherenceLbl: '一致度',
     syncedWords: '語同期済',
     tapBtn: 'TAP [Space]',
     tapWordBtn: '単語TAP [Space]',
     markEnd: '⏹ 終了 [E]',
-    pause: '⏸ 一時停止 [P]',
-    play: '▶ 再生 [P]',
-    rew: '⟲ -2秒',
+    pause: '⏸ Pause [P]',
+    play: '▶ Lecture [P]',
+    rew: '⟲ -2s',
     back: '↶ 1つ戻る',
     skip: '⏭ スキップ [S]',
     stop: '✓ 完了',
     guideLine: '歌い出しに合わせて <span class="kbd">Space</span> または <b>TAP</b> を押してください。',
     guideWord: '<b>単語ごとモード</b>：青い単語の発音頭に合わせて順番にタップします。',
-    guideCut: '行の頭を <span class="kbd">Space</span>、途中のカットを <span class="kbd">Tab</span> で合わせます。',
+    guideCut: 'ligne の頭を <span class="kbd">Space</span>、途中のplansを <span class="kbd">Tab</span> で合わせます。',
     guideHold: ' 押したまま離すと正確な終了時刻を記録します。',
     doneAll: 'タップ同期を反映しました',
     exactNote: '直接記録',
@@ -79683,7 +79946,7 @@ function startTap(from = 0, wordFrom = 0) {
       ? `Synchro au Tap depuis la ligne ${from + 1} (${J.fmtTime(t0)})`
       : isEn
       ? `Tap Sync from line ${from + 1} (${J.fmtTime(t0)})`
-      : `${from + 1}行目からタップで同期します（${J.fmtTime(t0)} から再生）`);
+      : `Synchro tap depuis la ligne ${from + 1} (lecture à ${J.fmtTime(t0)})`);
   }
   const tap = S.tap;
   if (opt.count) {
@@ -79885,7 +80148,7 @@ function tapCut() {
   const n = S.plan.cuts.filter(c => c.line === li && J.LAYOUTS[c.layout] && !J.LAYOUTS[c.layout].special).length;
   if (!ln || k < 1 || k >= n) {
     const isFr = document.documentElement.lang === 'fr';
-    toast(isFr ? 'Plus aucune coupe disponible sur cette ligne' : 'この行にはこれ以上カットがありません');
+    toast(isFr ? 'Plus aucune coupe disponible sur cette ligne' : 'Cette ligne n\'a pas d\'autres plans');
     return;
   }
   const cur = S.project.overrides[li] || {}, ct = Object.assign({}, cur.cutTime || {});
@@ -80054,7 +80317,7 @@ function syncUI() {
   $('songTitle').value = S.project.title || ''; $('songArtist').value = S.project.artist || '';
   $('lyrics').value = S.project.lyrics;
   $('bpm').value = S.project.timing.bpm > 0 ? S.project.timing.bpm : '';
-  $('bpm').placeholder = S.audio ? `自動 ${S.audio.bpm}` : 'なし';
+  $('bpm').placeholder = S.audio ? `Auto ${S.audio.bpm}` : 'Aucun';
   $('offset').value = S.project.timing.offset ?? 0.4;
   $('lineScale').value = S.project.timing.lineScale ?? 1;
   $('snap').checked = !!S.project.timing.snap;
@@ -80073,19 +80336,19 @@ function syncUI() {
 function syncThemeMeta() {
   const note = $('themeMetaNote'); if (!note) return;
   const thId = J.THEMES[S.project.themeId] ? S.project.themeId : '';
-  const lang = document.documentElement.lang || 'ja';
+  const lang = document.documentElement.lang || 'fr';
   if (!thId) {
     note.textContent = lang === 'fr'
       ? 'Choisissez un thème pour explorer ses styles fluides et animations dédiées'
       : lang === 'en'
         ? 'Pick a theme to explore its curated fluid styles and dedicated motions'
         : lang === 'zh-Hans'
-          ? '选择主题后，将在专属流畅国风/艺术风格库中生成演出'
+          ? '选择主题后，将在专属流畅国风/艺术风格库中生成Effets'
           : lang === 'zh-Hant'
-            ? '選擇主題後，將在專屬流暢國風/藝術風格庫中生成演出'
+            ? '選擇主題後，將在專屬流暢國風/藝術風格庫中生成Effets'
             : lang === 'ko'
               ? '테마를 선택하면 전용 유려한 스타일과 모션으로 자동 생성합니다'
-              : '選ぶと、その方向の中でおまかせします';
+              : '選ぶと、その方向の中でAléatoireします';
     return;
   }
   const T = J.THEMES[thId], cnt = (T.styles && T.styles.length) || 20, cur = J.STYLES[S.project.style];
@@ -80100,7 +80363,7 @@ function syncThemeMeta() {
           ? `${T.name} · 共${cnt}款專屬風格 · 目前：${sName}`
           : lang === 'ko'
             ? `${T.name} · 전용 ${cnt}종 스타일 · 현재: ${sName}`
-            : `${T.name} · 全${cnt}スタイル · 現在：${sName}`;
+            : `${T.name} · 全${cnt}Style · 現在：${sName}`;
 }
 
 function hideAiVoiceActionBar() {
@@ -80339,7 +80602,7 @@ function startLiveVoiceDictation(overrideLang = null) {
       ? 'Reconnaissance vocale navigateur indisponible ici (utilisez Chrome / Edge avec micro autorisé).'
       : isEn
       ? 'Browser voice recognition is not supported here (use Chrome / Edge with microphone access).'
-      : '此瀏覽器不支援即時麥克風語音辨識（請使用 Chrome / Edge 並開啟麥克風權限）。');
+      : '此瀏覽器不支援即時麥克風語音辨識（請使用 Chrome / Edge 並開啟麥克風權限). ');
     return false;
   }
 
@@ -80812,7 +81075,7 @@ async function runAiTranscription(opts = {}) {
           ? '⚠️ Clé Gemini absente côté serveur (Settings > Secrets). Utilisez la Reconnaissance Vocale en direct ci-dessous :'
           : isEn
           ? '⚠️ Gemini API key not configured in Settings > Secrets. Use Live Voice Recognition below:'
-          : '⚠️ 伺服器尚未設定 Gemini API 金鑰（Settings > Secrets）。請使用下方即時語音辨識：')
+          : '⚠️ 伺服器尚未設定 Gemini API 金鑰（Settings > Secrets). 請使用下方即時語音辨識：')
       : (isFr
           ? `⚠️ Analyse IA Cloud interrompue${result && result.errorMessage ? ' (' + result.errorMessage.slice(0, 70) + ')' : ''}. Essayez à nouveau ou activez la Reconnaissance Vocale en direct :`
           : isEn
@@ -80975,7 +81238,7 @@ function bind() {
     S.project.lang = e.target.value; replan(); renderFontRoles(); commit(); flushSave();
     const info = J.resolveLangInfo ? J.resolveLangInfo(S.project) : { primary: J.resolveLang(S.project), detectedLanguages: [], isMixed: false };
     const lbl = S.project.lang === 'auto'
-      ? ('自動判定 → ' + (info.isMixed ? info.detectedLanguages.map(c => J.LANG_LABEL[c] || c).join(' + ') : (J.LANG_LABEL[info.primary] || info.primary)))
+      ? ('Auto判定 → ' + (info.isMixed ? info.detectedLanguages.map(c => J.LANG_LABEL[c] || c).join(' + ') : (J.LANG_LABEL[info.primary] || info.primary)))
       : (J.LANG_LABEL[S.project.lang] || J.LANG_LABEL[info.primary]);
     toast('Langue : ' + lbl);
   });
@@ -81026,7 +81289,7 @@ function bind() {
             ? '🎙️ Aucune chanson chargée : importez un morceau pour la détection IA automatique, OU activez dès maintenant la reconnaissance vocale en direct au micro :'
             : isEn
             ? '🎙️ No song loaded yet: import an audio track for automatic AI lyrics recognition, OR start Live Voice Recognition with your microphone right now:'
-            : '🎙️ 尚未匯入音樂：請選擇音訊檔案進行 AI 自動識詞，或立即使用「即時人聲辨識」透過麥克風直接錄製同步歌詞：',
+            : '🎙️ 尚未匯入音樂：請選擇音訊檔案進ligne  AI Auto識詞，或立即使用「即時人聲辨識」透過麥克風直接錄製同步歌詞：',
           showLoadAudio: true,
         });
         toast(isFr ? 'Importez une chanson ou démarrez la voix en direct ci-dessous !' : isEn ? 'Choose a song or start Live Voice Mic below!' : '請選擇音樂或開啟即時麥克風語音辨識！');
@@ -81059,7 +81322,7 @@ function bind() {
             ? '⚡ SYNCRO VOIX ET PAROLE : importez un fichier audio pour coordonner en temps réel vos paroles sur la voix, OU activez la Reconnaissance Vocale en direct au micro :'
             : isEn
             ? '⚡ Voice Sync: load an audio file to align lyrics to the singing voice, OR start Live Voice Recognition with your microphone to generate & sync lyrics instantaneously:'
-            : '⚡ 人聲同步：請先匯入音樂檔案進行人聲逐詞對齊，或立即使用「即時麥克風語音辨識」邊唱邊自動產生同步歌詞：',
+            : '⚡ 人聲同步：請先匯入音樂檔案進ligne 人聲逐詞對齊，或立即使用「即時麥克風語音辨識」邊唱邊Auto產生同步歌詞：',
           showLoadAudio: true,
         });
         toast(isFr ? 'Choisissez une chanson ou démarrez la Voix en direct !' : isEn ? 'Load a song or start Live Voice Mic below!' : '請選擇音樂或開啟即時麥克風！');
@@ -81074,7 +81337,7 @@ function bind() {
           ? '⚡ Aucune parole personnalisée : lancement de la détection vocale IA automatique…'
           : isEn
           ? '⚡ No custom lyrics yet: running automatic AI voice & lyrics detection…'
-          : '⚡ 尚未有自訂歌詞：自動啟動 AI 歌聲識詞與同步…');
+          : '⚡ 尚未有自訂歌詞：Auto啟動 AI 歌聲識詞與同步…');
         await runAiTranscription();
         return;
       }
@@ -81197,7 +81460,7 @@ function bind() {
       };
 
       setSyncProg(1, stageCopy[1], { pct: 10 });
-      toast(isFr ? '⚡ SYNCRO VOIX ET PAROLE en temps réel…' : isEn ? '⚡ Real-time Voice Sync running…' : '⚡ 正在即時執行人聲與歌詞精準對齊…');
+      toast(isFr ? '⚡ SYNCRO VOIX ET PAROLE en temps réel…' : isEn ? '⚡ Real-time Voice Sync running…' : '⚡ 正在即時執ligne 人聲與歌詞精準對齊…');
       pushEdit();
 
       let syncDone = false;
@@ -81280,7 +81543,7 @@ function bind() {
                 ? ` · ✨ ${fixCount} faute${fixCount > 1 ? 's' : ''} corrigée${fixCount > 1 ? 's' : ''}${fixSamples ? ' (' + fixSamples + ')' : ''}`
                 : isEn
                 ? ` · ✨ ${fixCount} fix${fixCount > 1 ? 'es' : ''}${fixSamples ? ' (' + fixSamples + ')' : ''}`
-                : ` · ✨ 已自動訂正 ${fixCount} 處錯字${fixSamples ? '（' + fixSamples + '）' : ''}`)
+                : ` · ✨ 已Auto訂正 ${fixCount} 處錯字${fixSamples ? '（' + fixSamples + '）' : ''}`)
             : '';
           recordWork('vocal_sync', 'sync', `${lineCount} lignes${cohNote}${fixCount ? ` · ${fixCount} corrigées` : ''}`);
 
@@ -81480,7 +81743,7 @@ function bind() {
                 ? `✅ Calage vocal acoustique appliqué (${lineCount} lignes${cohNote}). Astuce : pour générer ou corriger automatiquement des paroles manquantes, utilisez la Reconnaissance Vocale en direct :`
                 : isEn
                 ? `✅ Acoustic Voice Sync applied (${lineCount} lines${cohNote}). Tip: use Live Voice Mic to dictate/sing new lines instantaneously:`
-                : `✅ 已完成本地人聲聲學逐詞同步（${lineCount} 句${cohNote}）。提示：可用下方即時麥克風補錄歌詞：`,
+                : `✅ 已完成本地人聲聲學逐詞同步（${lineCount} 句${cohNote}). 提示：可用下方即時麥克風補錄歌詞：`,
               showAcousticAlign: false,
             });
           }
@@ -81740,14 +82003,14 @@ function bind() {
     renderTech(); drawStyleGrid(); replan(); commit(); flushSave();
     toast(e.target.checked ? msgOn : msgOff);
   }));
-  setSwitch('extra-toggle', 'extra', true, '追加分の演出：使う', '追加分の演出：使わない（最初の公開版の演出だけ）');
-  setSwitch('wa-toggle', 'wa', true, '和風の演出：使う', '和風の演出：使わない（おまかせ・シャッフルで選ばれません）');
-  setSwitch('typo-toggle', 'typo', true, '文字PV系の部品：使う', '文字PV系の部品：使わない（おまかせ・シャッフルで選ばれません）');
-  setSwitch('kinetic-toggle', 'kinetic', true, 'キネティックの部品：使う', 'キネティックの部品：使わない（おまかせ・シャッフルで選ばれません）');
-  setSwitch('extra2-toggle', 'extra2', true, '追加分2の演出：使う', '追加分2の演出：使わない');
-  setSwitch('horror-toggle', 'horror', true, 'ホラーの演出：使う（おまかせの雰囲気に「ホラー」が加わります）', 'ホラーの演出：使わない');
-  setSwitch('unify-toggle', 'unify', true, '統一感：オン（パートごとにそろえ、キメ・モーフ・太さも使います）', '統一感：オフ');
-  setSwitch('typeset-toggle', 'typeset', true, '文字整列：オン（字間・助詞・英字・0.2秒先・効果控えめ）', '文字整列：オフ');
+  setSwitch('extra-toggle', 'extra', true, 'Effets bonus : activés', 'Effets bonus : désactivés');
+  setSwitch('wa-toggle', 'wa', true, 'Motifs japonais : activés', 'Motifs japonais : désactivés');
+  setSwitch('typo-toggle', 'typo', true, 'Composants typographiques : activés', 'Composants typographiques : désactivés');
+  setSwitch('kinetic-toggle', 'kinetic', true, 'Composants cinétiques : activés', 'Composants cinétiques : désactivés');
+  setSwitch('extra2-toggle', 'extra2', true, 'Effets bonus 2 : activés', 'Effets bonus 2 : désactivés');
+  setSwitch('horror-toggle', 'horror', true, 'Effets d\'horreur : activés (l\'ambiance Horreur est ajoutée)', 'Effets d\'horreur : désactivés');
+  setSwitch('unify-toggle', 'unify', true, 'Harmonie visuelle : activée', 'Harmonie visuelle : désactivée');
+  setSwitch('typeset-toggle', 'typeset', true, 'Typographie soignée : activée', 'Typographie soignée : désactivée');
   $('fxKoma').addEventListener('change', e => { const k = +e.target.value; S.project.fx.koma = k; S.project.fx.onTwos = k > 0; S.project.mood = null; replan(); });
   $('fxHud').addEventListener('change', e => { S.project.fx.hud = e.target.value; replan(); });
   $('fxHideNo').addEventListener('change', e => { remember(); S.project.fx.hideNo = e.target.checked; replan(); commit(); });
@@ -81767,8 +82030,8 @@ function bind() {
     const name = $('localFont').value.trim(); if (!name) return;
     const key = 'local_' + name.replace(/\s+/g, '_');
     const weight = /bold|太|black|heavy|w[6-9]|[6-9]00/i.test(name) ? 700 : 400;
-    J.addUserFont(key, name + '（PC）', name, weight);
-    S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + '（PC）', family: name, weight }]);
+    J.addUserFont(key, name + ' (installée)', name, weight);
+    S.project.userFonts = (S.project.userFonts || []).filter(u => u.key !== key).concat([{ key, label: name + ' (installée)', family: name, weight }]);
     S.project.fonts.display = key; $('localFont').value = '';
     fontKey = ''; renderFontRoles(); replan();
   });
@@ -81779,7 +82042,7 @@ function bind() {
       S.project.userFonts = (S.project.userFonts || []).filter(x => x.key !== uf.key).concat([uf]);
       S.project.fonts.display = uf.key; fontKey = ''; renderFontRoles(); replan(); flushSave();
     }
-    catch (err) { showMsg('フォントを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
+    catch (err) { showMsg('Impossible de charger la police'); setTimeout(() => showMsg(null), 2500); }
   });
   ['outAspect', 'eAspect'].forEach(id => $(id).addEventListener('change', e => { S.project.aspect = e.target.value; syncOut(); replan(); codecNote(); }));
   ['outRes', 'eRes'].forEach(id => $(id).addEventListener('change', e => { S.project.res = +e.target.value; syncOut(); autosave(); codecNote(); }));
@@ -81788,17 +82051,17 @@ function bind() {
   ['outKey', 'eKey'].forEach(id => $(id).addEventListener('change', e => {
     S.project.keyBg = e.target.value; syncOut(); replan(); flushSave();
     const k = J.keyMode(S.project);
-    toast(k ? `背景：${k === 'green' ? 'グリーンバック' : 'ブラックバック'}（白い文字と演出だけ）` : '背景：通常（スタイルの配色）');
+    toast(k ? `Arrière-plan：${k === 'green' ? 'Fond vert' : 'Fond noir'}（texte et effets blancs uniquement）` : 'Arrière-plan：Couleurs du style');
   }));
   $('outAudio').addEventListener('change', e => { S.project.includeAudio = e.target.checked; autosave(); });
   document.querySelectorAll('.centerDirSel').forEach(el => el.addEventListener('change', e => {
     S.project.centerDir = e.target.value; syncOut(); replan(); flushSave();
-    toast(e.target.value === 'lr' ? '縦長の画面：左右に分けます' : '縦長の画面：上下に分けます');
+    toast(e.target.value === 'lr' ? 'Cadres verticaux : division gauche / droite' : 'Cadres verticaux : division haut / bas');
   }));
   ['outCenter', 'eCenter'].forEach(id => $(id).addEventListener('change', e => {
     S.project.centerFree = e.target.checked; syncOut(); replan(); flushSave();
     const tall = S.plan.H > S.plan.W * 1.1 && S.project.centerDir !== 'lr';
-    toast(e.target.checked ? `中央を空けました：文字と演出を${tall ? '上下' : '左右'}に置きます` : '中央を空けるのをやめました');
+    toast(e.target.checked ? `Centre dégagé : les paroles sont placées ${tall ? 'en haut et en bas' : 'à gauche et à droite'}` : 'Centre libéré désactivé');
   }));
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
   ['btnMP4File', 'eMP4File'].forEach(id => $(id).addEventListener('click', () => runExport('mp4file')));
@@ -81832,7 +82095,7 @@ function bind() {
   $('eMood').addEventListener('click', () => rerollPart('mood'));
   $('eCut').addEventListener('click', () => rerollPart('cut'));
   $('ePalette').addEventListener('click', () => { randomPalette(); restartPreview(); });
-  // 利用について（出力物の権利・ライセンス）
+  // 利用について（出力物の権利 · ライセンス）
   const dlg = $('termsDlg');
   const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
@@ -81877,7 +82140,7 @@ function bind() {
   ['btnExpTXT', 'eTXT'].forEach(id => { if ($(id)) $(id).addEventListener('click', () => saveSyncedLyrics('txt')); });
   $('btnReset').addEventListener('click', () => {
     const dlg = $('resetDlg');
-    if (!dlg || typeof dlg.showModal !== 'function') { if (window.confirm('歌詞・曲・設定・履歴をすべて消して、最初の状態に戻します。元に戻すことはできません。')) resetAll(); return; }
+    if (!dlg || typeof dlg.showModal !== 'function') { if (window.confirm('Tout effacer et réinitialiser l\'application ? Cette action est irréversible.')) resetAll(); return; }
     dlg.returnValue = ''; dlg.showModal();
   });
   $('resetDlg').addEventListener('close', () => { if ($('resetDlg').returnValue === 'reset') resetAll(); });
@@ -81924,13 +82187,13 @@ function bind() {
 /* lyric file (.lrc / .txt, or .srt / .vtt subtitles): from the file input or dropped on the window */
 async function openLyricFile(f) {
   if (!f || S.tap || S.exporting) return;
-  if (f.size > 2e6) { toast('LRC ファイルが大きすぎます'); return; }
+  if (f.size > 2e6) { toast('Le fichier LRC est trop volumineux'); return; }
   let text = '';
   try { const buf = await f.arrayBuffer(); try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e2) { text = new TextDecoder('shift_jis').decode(buf); } }
-  catch (err) { toast('LRC を読み込めませんでした'); return; }
-  if (S.project.lyrics.trim() && !window.confirm('今の歌詞を LRC の内容に置き換えます（行ごとの時刻・指定・書き出す範囲も消えます。「元に戻す」で戻せます）。よろしいですか？')) return;
+  catch (err) { toast('Impossible de lire le fichier LRC'); return; }
+  if (S.project.lyrics.trim() && !window.confirm('Remplacer les paroles actuelles par celles du fichier LRC ? (Les minutages, réglages et la plage d\'export seront réinitialisés. Annuler permet de revenir en arrière.)')) return;
   // SRT / WebVTT subtitles: each block becomes a timed line, and a pause after a block's end time becomes an interlude
-  if (J.isSubtitleText(text)) { const sub = J.srtToLyrics(text); if (!sub) { toast('LRC を読み込めませんでした'); return; } loadLrc(sub.lyrics, sub); }
+  if (J.isSubtitleText(text)) { const sub = J.srtToLyrics(text); if (!sub) { toast('Impossible de lire le fichier LRC'); return; } loadLrc(sub.lyrics, sub); }
   else loadLrc(text);
 }
 /* saved project (.json) */
@@ -81949,7 +82212,7 @@ async function openProjectFile(f) {
     clearQcAutoReport();
     syncUI(); replan(); restoreFonts(); commit(); updateEditBtns(); flushSave();
   }
-  catch (err) { showMsg('プロジェクトを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
+  catch (err) { showMsg('Impossible d’ouvrir le projet'); setTimeout(() => showMsg(null), 2500); }
 }
 /* files dropped anywhere on the window: a song, lyrics (LRC / SRT / VTT / text) or a saved project */
 function bindDrop() {
@@ -81969,7 +82232,7 @@ function bindDrop() {
     const proj = files.find(f => ext(f) === 'json');
     const lyr = files.find(f => ['lrc', 'srt', 'vtt', 'txt'].includes(ext(f)));
     if (proj) { openProjectFile(proj); return; }            // a project brings its own lyrics
-    if (!song && !lyr) { toast('読み込めるのは 曲・歌詞（LRC / SRT）・プロジェクト（.json）です'); return; }
+    if (!song && !lyr) { toast('Fichiers acceptés : audio, paroles (LRC / SRT) ou projet (.json)'); return; }
     (async () => { if (lyr) await openLyricFile(lyr); if (song) loadAudioFile(song); })();
   });
 }
@@ -81978,7 +82241,7 @@ function bindDrop() {
 let audioSeq = 0;
 async function loadAudioFile(f, restored) {
   const my = ++audioSeq;                      // only the latest choice may win (an earlier, slower analysis is dropped)
-  $('audioName').textContent = '解析中…';
+  $('audioName').textContent = 'Analyse audio en cours…';
   try {
     pause();
     const a = await J.analyzeAudio(f);
@@ -81986,7 +82249,7 @@ async function loadAudioFile(f, restored) {
     S.audio = a;
     S.audioFile = f || null;
     if (!restored) clearQcAutoReport();
-    $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)}・約${S.audio.bpm}BPM）` + (restored ? '・前回の曲' : '');
+    $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)} · environ ${S.audio.bpm}BPM）` + (restored ? ' · morceau précédent' : '');
     S.project.audioName = f.name;
     if (!restored && J.saveSong) J.saveSong(f);             // kept in this browser: a reload does not drop the song from exports
     S.project.timing.snap = true;
@@ -82035,17 +82298,17 @@ async function loadAudioFile(f, restored) {
     }
     syncUI(); replan();
     return true;
-  } catch (err) { if (my !== audioSeq) return false; $('audioName').textContent = '読み込めませんでした: ' + err.message; S.audio = null; syncAudioDetectPanel(); return false; }
+  } catch (err) { if (my !== audioSeq) return false; $('audioName').textContent = 'Impossible de charger : ' + err.message; S.audio = null; syncAudioDetectPanel(); return false; }
 }
 
 /* ---------------- かんたんモードの案内ツアー ---------------- */
 const TOUR = [
-  { t: () => $('lyrics'), title: '1. 歌詞を入れる', text: '1行が1フレーズになります。空行で少し間が空き、[間奏 8] と書くと8秒の間奏（背景と装飾だけ）になります。' },
-  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. 曲を読み込む', text: 'mp3 などを読み込むと拍を検出して、カットの切り替わりを合わせます。曲がなくても作れます。「タップで同期」で行の頭を合わせることもできます。' },
-  { t: () => $('btnOmakaseBig'), title: '3. おまかせで作る', text: 'スタイル・雰囲気・動き・配色・構成をまるごと決めます。押すたびに別の案になり、「◀ 前の案」で戻れます。' },
-  { t: () => $('btnPlay'), title: '4. 再生して確認する', text: '再生して見てみましょう。下のタイムラインでは、行の区切りをドラッグして動かせます（＋−で拡大）。' },
-  { t: () => $('lineList'), title: '5. 気になる行だけ直す', text: '行ごとに、歌詞を直す（✎）、カット数を決める、この行からタップし直す（◎）、この行だけ作り直す（サイコロ）ができます。' },
-  { t: () => $('eMP4').closest('.easy-sec') || $('eMP4'), title: '6. 書き出す', text: '画面比（縦長 9:16 など）と解像度を選んで MP4 を書き出します。「書き出す範囲」で選んだ行だけを書き出すこともできます。' },
+  { t: () => $('lyrics'), title: '1. Saisir les paroles', text: 'Une ligne par phrase. Une ligne vide marque une pause ; [interlude 8] crée une pause musicale de 8 secondes.' },
+  { t: () => $('audioFile').closest('label') || $('audioFile'), title: '2. Importer un morceau', text: 'Importez un mp3 ou wav : Alexura détecte le tempo ou extrait les paroles automatiquement par IA.' },
+  { t: () => $('btnOmakaseBig'), title: '3. Créer une variation', text: 'Le style, l\'ambiance, les mouvements et les couleurs sont générés automatiquement. Revenez en arrière avec « ◀ Précédent ».' },
+  { t: () => $('btnPlay'), title: '4. Prévisualiser', text: 'Lancez la lecture et ajustez les marqueurs sur la frise chronologique ci-dessous.' },
+  { t: () => $('lineList'), title: '5. Ajuster chaque ligne', text: 'Modifiez le texte (✎), le nombre de plans, resynchronisez (◎) ou relancez une ligne.' },
+  { t: () => $('eMP4').closest('.easy-sec') || $('eMP4'), title: '6. Exporter', text: 'Choisissez le format (16:9, 9:16…) et la résolution, puis exportez directement en MP4.' },
 ];
 const TR = { i: -1 };
 function tourShow(i) {
@@ -82058,7 +82321,7 @@ function tourShow(i) {
   el.querySelector('.tour-title').textContent = st.title;
   el.querySelector('.tour-text').textContent = st.text;
   el.querySelector('.tour-prev').disabled = i === 0;
-  el.querySelector('.tour-next').textContent = i === n - 1 ? 'はじめる' : '次へ';
+  el.querySelector('.tour-next').textContent = i === n - 1 ? 'Commencer' : 'Suivant';
   if (tg && tg.scrollIntoView) tg.scrollIntoView({ block: 'center', behavior: 'auto' });
   requestAnimationFrame(() => tourPlace(tg));
   el.querySelector('.tour-next').focus();
@@ -82106,7 +82369,7 @@ async function restoreFonts() {
   if (!list.length) return;
   const missing = await J.restoreUserFonts(list);
   fontKey = ''; renderFontRoles(); replan();
-  if (missing.length) toast(`読み込んだ書体（${missing.join('・')}）がこのブラウザにありません。「フォント」から同じファイルを読み込み直してください（それまでは近い書体で表示します）`);
+  if (missing.length) toast(`La police importée (${missing.join(', ')}) est absente. Rechargez le fichier dans Polices.`);
 }
 
 /* ---------------- Google Auth, Personal Library, Work History & Vercel Hub ---------------- */
@@ -82118,7 +82381,7 @@ let cloudHistoryUnsub = null;
 let cloudActiveTab = 'songs';
 
 function cloudCopy() {
-  const lang = document.documentElement.lang || 'ja';
+  const lang = document.documentElement.lang || 'fr';
   if (lang === 'fr') {
     return {
       gLogin: 'Connexion Google',
@@ -82306,22 +82569,22 @@ function cloudCopy() {
   return {
     gLogin: 'Googleログイン',
     btnTop: '☁ 保存',
-    btnHub: '📚 曲・履歴',
-    title: '☁ Google アカウント — 保存済みの曲・作業履歴',
+    btnHub: '📚 曲 · 履歴',
+    title: '☁ Google アカウント — 保存済みの曲 · 作業履歴',
     fbSec: '🔐 Google ログイン & Firebase 保存',
     signedOut: '未ログイン',
     signedIn: '接続済み',
     signIn: 'Googleでログイン',
     switchAcc: 'アカウント切替',
-    signInHint: 'Googleアカウントでログインすると、すべての曲・音声・履歴を保存・検索・ダウンロードできます。',
+    signInHint: 'Googleアカウントでログインすると、すべての曲 · 音声 · 履歴を保存 · 検索 · ダウンロードできます。',
     signOut: 'ログアウト',
     saveSong: '☁ この曲を保存',
     saveNew: '+ 別名で新規保存',
-    autoSave: '自動保存',
+    autoSave: 'Auto保存',
     tabSongs: '保存済みの曲',
     tabHistory: '作業履歴',
     tabVercel: 'Vercel連携',
-    searchSongsPh: '曲名・アーティスト・歌詞で検索…',
+    searchSongsPh: '曲名 · アーティスト · 歌詞で検索…',
     searchHistPh: '履歴を検索…',
     clearHist: '🗑 履歴を消去',
     histCleared: '🗑 履歴を消去しました。',
@@ -82339,11 +82602,11 @@ function cloudCopy() {
     syncBtn: 'Vercel',
     delBtn: '削除',
     findSongBtn: '曲を開く',
-    vSec: '▲ Vercel — 連携・デプロイ',
+    vSec: '▲ Vercel — 連携 · デプロイ',
     vProj: 'Vercel プロジェクト名',
     vUrl: 'Vercel アプリURL',
     vHook: 'Vercel Deploy Hook URL（任意）',
-    vAuto: 'Firebase保存時にVercelへ自動同期する',
+    vAuto: 'Firebase保存時にVercelへAuto同期する',
     vSave: '💾 Vercel設定を保存',
     vTest: '🔌 接続テスト',
     vSync: '📤 Vercelへ同期',
@@ -82351,21 +82614,21 @@ function cloudCopy() {
     vOpen: '↗ Vercelを開く',
     saving: 'Firebaseに保存中…',
     savedOk: '☁ 曲とデータをFirebaseに保存しました！',
-    savedNoAudio: '☁ プロジェクトをFirebaseに保存しました（大容量音声はローカル保持）。',
-    savedPartialAudio: '☁ 歌詞とプロジェクトをFirebaseに保存しました（音声のアップロードが一部未完了です）。',
+    savedNoAudio: '☁ プロジェクトをFirebaseに保存しました（大容量音声はローカルMaintien). ',
+    savedPartialAudio: '☁ 歌詞とプロジェクトをFirebaseに保存しました（音声のアップロードが一部未完了です). ',
     loadedOk: '☁ Googleアカウントから曲を読み込みました！',
     deletedOk: '🗑 Firebaseから削除しました。',
     dlOk: '⬇ ダウンロード開始:',
-    dlNoAudio: 'この曲にはクラウド音声が保存されていません（LRC / SRT / VTT / JSON / TXT はダウンロード可能）。',
+    dlNoAudio: 'この曲にはクラウド音声が保存されていません（LRC / SRT / VTT / JSON / TXT はダウンロード可能). ',
     verifiedBadge: '✓ 認証済み',
-    retryPopup: '↻ 再試行',
+    retryPopup: '↻ 再試ligne ',
     refreshSession: '↻ 状態を再確認',
     signingIn: '接続中…',
     savingBtn: '⏳ 保存中…',
     authCancelledToast: 'Googleログインがキャンセルされました。',
     vSavedOk: '✓ Vercel設定を保存しました。',
     vTestOk: '✓ Vercelアプリへ接続できました',
-    vTestLocal: '✓ ローカル /api/* 準備完了（デプロイ先URLを入力すると疎通確認できます）。',
+    vTestLocal: '✓ ローカル /api/* 準備完了（デプロイ先URLを入力すると疎通確認できます). ',
     vSyncOk: '📤 Vercelへ同期しました！',
     vDeployOk: '🚀 Vercelデプロイを開始しました！',
     vNeedUrl: '有効な HTTPS Vercel URL を入力してください。',
@@ -82373,7 +82636,7 @@ function cloudCopy() {
     actLabels: {
       cloud_save: '☁ クラウド保存',
       cloud_load: '📂 曲を読み込み',
-      ai_transcribe: '✨ AI識詞・同期',
+      ai_transcribe: '✨ AI識詞 · 同期',
       vocal_sync: '⚡ ボーカル同期',
       tap_sync: '⏱ タップ同期',
       lyrics_edit: '✏ 歌詞編集',
@@ -82391,7 +82654,7 @@ function cloudCopy() {
       vercel_sync: '▲ Vercel同期',
       vercel_deploy: '🚀 Vercelデプロイ',
     },
-    catLabels: { save: '保存', sync: 'AI・同期', export: '書き出し', vercel: 'Vercel' },
+    catLabels: { save: '保存', sync: 'AI · 同期', export: '書き出し', vercel: 'Vercel' },
   };
 }
 function syncHeaderGoogleAuth(user) {

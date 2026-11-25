@@ -3913,7 +3913,7 @@ function loadLrc(text, sub) {
   else toast(`LRC を読み込みました（時刻付き ${n} 行・「元に戻す」で戻せます）`);
 }
 function applyExportLabels() {
-  const lang = document.documentElement.lang || 'ja';
+  const lang = document.documentElement.lang || 'fr';
   const titleEl = $('lblLyricsExpTitle'), transEl = $('lblExpIncludeTrans');
   if (lang === 'en') {
     if (titleEl) titleEl.textContent = 'Export synchronized lyrics';
@@ -3938,7 +3938,7 @@ function applyExportLabels() {
   if (qChk && qChk.dataset.userTouched !== '1') qChk.checked = chk ? chk.checked : defChecked;
 }
 function syncMainStudioLabels() {
-  const lang = document.documentElement.lang || 'ja';
+  const lang = document.documentElement.lang || 'fr';
   const copy = lang === 'fr' ? {
     audioSec: 'Audio & Minutage',
     dropTitle: 'Importer ou glisser-déposer une chanson',
@@ -4186,6 +4186,10 @@ const STYLE_CAT_META = [
   ['compositing', { fr: 'Compositing', en: 'Compositing', ja: 'Compositing' }],
   ['cinematic', { fr: 'Cinéma', en: 'Cinematic', ja: 'Cinematic' }],
   ['musicvideo', { fr: 'Music Video', en: 'Music Video', ja: 'Music Video' }],
+  ['trapsoul', { fr: 'Trap Soul', en: 'Trap Soul', ja: 'Trap Soul' }],
+  ['rnb', { fr: 'R&B', en: 'R&B', ja: 'R&B' }],
+  ['hiphop', { fr: 'Hip-Hop', en: 'Hip-Hop', ja: 'Hip-Hop' }],
+  ['pop', { fr: 'Pop', en: 'Pop', ja: 'Pop' }],
   ['artmotion', { fr: 'Art & Motion', en: 'Art & Motion', ja: 'Art & Motion' }],
   ['futuristic', { fr: 'Futuristic', en: 'Futuristic', ja: 'Futuristic' }],
   ['lifestyle', { fr: 'Lifestyle', en: 'Lifestyle', ja: 'Lifestyle' }],
@@ -4271,6 +4275,36 @@ function drawStyleThumbAccent(x, st, sc) {
     x.moveTo(22, 18); x.lineTo(22, 26);
     x.moveTo(18, 26); x.lineTo(26, 26);
     x.stroke();
+  } else if (cat === 'trapsoul') {
+    x.strokeStyle = sc.accent; x.lineWidth = 1.4; x.globalAlpha = 0.55;
+    x.beginPath(); x.arc(96, 54, 34, 0, Math.PI * 2); x.stroke();
+    x.globalAlpha = 0.3; x.strokeStyle = sc.accent2 || sc.fg;
+    x.beginPath(); x.arc(96, 54, 44, 0, Math.PI * 2); x.stroke();
+    x.globalAlpha = 0.7; x.fillStyle = sc.accent;
+    for (let i = 0; i < 6; i++) x.fillRect(14 + i * 7, 22 - (i % 3) * 4, 4, 8 + (i % 3) * 4);
+  } else if (cat === 'rnb') {
+    x.strokeStyle = sc.accent; x.lineWidth = 1.6; x.globalAlpha = 0.5;
+    for (let w = 0; w < 2; w++) {
+      x.beginPath();
+      for (let px = 8; px <= 184; px += 8) {
+        const py = (w ? 80 : 26) + Math.sin(px * 0.05 + w * 1.4) * 5;
+        x[px === 8 ? 'moveTo' : 'lineTo'](px, py);
+      }
+      x.stroke();
+    }
+    x.fillStyle = sc.accent2 || sc.accent; x.globalAlpha = 0.55;
+    x.beginPath(); x.arc(166, 26, 4, 0, Math.PI * 2); x.fill();
+  } else if (cat === 'hiphop') {
+    x.fillStyle = sc.accent; x.globalAlpha = 0.78;
+    const heights = [18, 10, 24, 14, 20];
+    heights.forEach((h, i) => x.fillRect(14 + i * 8, 92 - h, 5, h));
+    x.strokeStyle = sc.accent2 || sc.fg; x.lineWidth = 2; x.globalAlpha = 0.55;
+    x.beginPath(); x.moveTo(154, 14); x.lineTo(176, 36); x.stroke();
+  } else if (cat === 'pop') {
+    x.fillStyle = sc.accent; x.globalAlpha = 0.75;
+    x.beginPath(); x.arc(24, 24, 5, 0, Math.PI * 2); x.arc(166, 24, 4, 0, Math.PI * 2); x.fill();
+    x.fillStyle = sc.accent2 || sc.accent; x.globalAlpha = 0.75;
+    x.beginPath(); x.arc(160, 82, 5.5, 0, Math.PI * 2); x.arc(32, 78, 3, 0, Math.PI * 2); x.fill();
   } else if (cat === 'animation' || cat === 'musicvideo') {
     x.fillStyle = sc.accent; x.globalAlpha = 0.75;
     x.beginPath(); x.arc(24, 24, 4, 0, Math.PI * 2); x.arc(166, 28, 3, 0, Math.PI * 2); x.fill();
@@ -4281,8 +4315,8 @@ function drawStyleThumbAccent(x, st, sc) {
 }
 function renderStyleCatBar() {
   const bar = $('styleCatBar'); if (!bar) return;
-  const rawLang = document.documentElement.lang || 'ja';
-  const lang = ['fr', 'en', 'zh-Hans', 'zh-Hant', 'ko', 'id', 'vi', 'ja'].includes(rawLang) ? rawLang : 'ja';
+  const rawLang = document.documentElement.lang || 'fr';
+  const lang = ['fr', 'en', 'zh-Hans', 'zh-Hant', 'ko', 'id', 'vi', 'ja'].includes(rawLang) ? rawLang : 'fr';
   if (!bar.children.length) {
     STYLE_CAT_META.forEach(([cid, labels]) => {
       const btn = document.createElement('button');
@@ -4532,8 +4566,9 @@ function omakase() {
   remember();
   const keepE = lockedEnabled(), keepP = lockedParams();
   const th = J.THEMES[S.project.themeId] ? S.project.themeId : null;
-  const r = th ? J.omakase(S.project, Math.random, th) : J.omakase(S.project);
+  const r = J.omakase(S.project, Math.random, th, S.audio);
   Object.assign(S.project, r);
+  if (S.audio && S.audio.beats && S.audio.beats.length && S.project.timing) S.project.timing.snap = true;
   restoreEnabled(keepE); restoreParams(keepP);
   fontKey = ''; syncUI(); replan(); commit();
   toast((th ? `おまかせ（${themeName(th)}）：` : 'おまかせ：') + `${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
@@ -4558,8 +4593,9 @@ function rerollPart(part) {
   } else if (part === 'mood') {
     const keepE = lockedEnabled(), keepP = lockedParams();
     const th = J.THEMES[P.themeId] ? P.themeId : null;
-    const r = th ? J.omakase(P, Math.random, th) : J.omakase(P);
+    const r = J.omakase(P, Math.random, th, S.audio);
     Object.assign(P, { mood: r.mood, fx: r.fx, enabled: r.enabled });
+    if (S.audio && S.audio.beats && S.audio.beats.length && P.timing) P.timing.snap = true;
     for (const k of ['wa', 'extra', ...J.SET_ORDER]) if (r[k] === true) P[k] = true;     // switches the theme needs
     restoreEnabled(keepE); restoreParams(keepP);
     msg = `雰囲気：${J.MOODS[r.mood].name}`;
@@ -5074,7 +5110,7 @@ function offerShare(boxes, blob, name) {
 
 /* ---------------- studio tap sync ---------------- */
 function tapCopy() {
-  const lang = document.documentElement.lang || 'ja';
+  const lang = document.documentElement.lang || 'fr';
   if (lang === 'fr') {
     return {
       btn: '⏱ Synchro au Tap',
@@ -6225,7 +6261,7 @@ function syncUI() {
 function syncThemeMeta() {
   const note = $('themeMetaNote'); if (!note) return;
   const thId = J.THEMES[S.project.themeId] ? S.project.themeId : '';
-  const lang = document.documentElement.lang || 'ja';
+  const lang = document.documentElement.lang || 'fr';
   if (!thId) {
     note.textContent = lang === 'fr'
       ? 'Choisissez un thème pour explorer ses styles fluides et animations dédiées'
@@ -6242,7 +6278,17 @@ function syncThemeMeta() {
   }
   const T = J.THEMES[thId], cnt = (T.styles && T.styles.length) || 20, cur = J.STYLES[S.project.style];
   const sName = cur ? cur.name : '';
-  note.textContent = lang === 'fr'
+  const hasSong = !!(S.audio && (S.audio.bpm || (S.audio.beats && S.audio.beats.length)));
+  const bpmTxt = hasSong && S.audio.bpm ? `${Math.round(S.audio.bpm)} BPM` : '';
+  const songTag = hasSong
+    ? (lang === 'fr' ? ` · ♪ Sync chanson${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
+      : lang === 'en' ? ` · ♪ Song-synced${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
+      : lang === 'zh-Hans' ? ` · ♪ 已适配歌曲节拍${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
+      : lang === 'zh-Hant' ? ` · ♪ 已適配歌曲節拍${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
+      : lang === 'ko' ? ` · ♪ 곡 비트 동기화${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
+      : ` · ♪ 曲と同期${bpmTxt ? ' (' + bpmTxt + ')' : ''}`)
+    : '';
+  note.textContent = (lang === 'fr'
     ? `${T.name} · ${cnt} styles exclusifs · Actif : ${sName}`
     : lang === 'en'
       ? `${T.name} · ${cnt} bespoke styles · Active: ${sName}`
@@ -6252,7 +6298,7 @@ function syncThemeMeta() {
           ? `${T.name} · 共${cnt}款專屬風格 · 目前：${sName}`
           : lang === 'ko'
             ? `${T.name} · 전용 ${cnt}종 스타일 · 현재: ${sName}`
-            : `${T.name} · 全${cnt}スタイル · 現在：${sName}`;
+            : `${T.name} · 全${cnt}スタイル · 現在：${sName}`) + songTag;
 }
 
 function hideAiVoiceActionBar() {
@@ -8270,7 +8316,7 @@ let cloudHistoryUnsub = null;
 let cloudActiveTab = 'songs';
 
 function cloudCopy() {
-  const lang = document.documentElement.lang || 'ja';
+  const lang = document.documentElement.lang || 'fr';
   if (lang === 'fr') {
     return {
       gLogin: 'Connexion Google',

@@ -132,7 +132,8 @@ J.detectLang = (text) => {
   if (kana >= 2 || (kana > 0 && kana >= han * 0.03)) return 'ja';
   if (han >= 2) return sc > tc ? 'zh-Hans' : 'zh-Hant';
   const perLine = J.detectLanguagesInText(text);
-  return perLine[0] || 'ja';
+  const uiDefault = (typeof document !== 'undefined' && document.documentElement && document.documentElement.lang) ? document.documentElement.lang : 'fr';
+  return perLine[0] || uiDefault;
 };
 
 /* project → primary language code used for fonts & fallback */

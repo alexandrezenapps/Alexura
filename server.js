@@ -7933,20 +7933,13 @@ app.get("/api/weather/search", async (req, res) => {
     });
   }
 });
-var editions = ["fr", "en", "zh-hant", "zh-hans", "ko", "id", "vi"];
+var editions = ["fr", "en", "ja", "zh-hant", "zh-hans", "ko", "id", "vi"];
 app.get("/", (req, res) => {
-  const lang = req.query.lang;
+  const lang = String(req.query.lang || "").toLowerCase();
   if (lang && editions.includes(lang)) {
     return res.redirect(`/${lang}/`);
   }
-  const accept = (req.headers["accept-language"] || "").toLowerCase();
-  if (accept.includes("ja")) {
-    return res.sendFile(path9.join(__dirname, "index.html"));
-  }
-  if (accept.includes("zh")) {
-    return res.sendFile(path9.join(__dirname, "zh-hans", "index.html"));
-  }
-  res.sendFile(path9.join(__dirname, "fr", "index.html"));
+  res.sendFile(path9.join(__dirname, "index.html"));
 });
 app.get(["/studio", "/studio/"], (req, res) => {
   if (!req.path.endsWith("/")) {

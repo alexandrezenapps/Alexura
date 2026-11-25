@@ -15,11 +15,13 @@
     }
   ],
   "rewrites": [
-    { "source": "/", "destination": "/fr/index.html" },
+    { "source": "/", "destination": "/index.html" },
     { "source": "/fr", "destination": "/fr/index.html" },
     { "source": "/fr/", "destination": "/fr/index.html" },
     { "source": "/en", "destination": "/en/index.html" },
     { "source": "/en/", "destination": "/en/index.html" },
+    { "source": "/ja", "destination": "/ja/index.html" },
+    { "source": "/ja/", "destination": "/ja/index.html" },
     { "source": "/zh-hant", "destination": "/zh-hant/index.html" },
     { "source": "/zh-hant/", "destination": "/zh-hant/index.html" },
     { "source": "/zh-hans", "destination": "/zh-hans/index.html" },

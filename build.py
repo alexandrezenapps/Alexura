@@ -12,15 +12,15 @@ sources = sorted(glob.glob('src/*.js'))
 js = '\n'.join(read(f) for f in sources)
 mux = '/*! mp4-muxer v5.2.2 | MIT License | (c) 2023 Vanilagy | see THIRD_PARTY_NOTICES.md */\n' + read('vendor/mp4-muxer.min.js')
 fb_bridge = read('vendor/firebase-bridge.js') if os.path.exists('vendor/firebase-bridge.js') else ''
-def build(lang):
+def build(lang, folder_override=None):
     english = lang == 'en'
     local = lang in i18n.MODULES
     m = i18n.module(lang) if local else None
     title = 'Alexura — Lyric Motion Video Maker' if english else m.TITLE if local else 'Alexura — Créateur de vidéos de paroles animées'
     description = ('Turn lyrics into animated lyric videos in your browser and export MP4.' if english else m.DESCRIPTION if local else 'Transformez des paroles en vidéos de paroles animées dans votre navigateur et exportez en MP4.')
-    folder = dict((c, f) for c, f, _, _ in i18n.EDITIONS)[lang]
+    folder = dict((c, f) for c, f, _, _ in i18n.EDITIONS)[lang] if folder_override is None else folder_override
     canonical = i18n.BASE + (folder + '/' if folder else '')
-    language_nav = i18n.nav(lang)
+    language_nav = i18n.nav(lang, folder_override=folder_override)
     body = read('app/body.html').replace('@VERSION@', VERSION).replace('    <div class="acts">', '    ' + language_nav + '\n    <div class="acts">', 1)
     if english: body = localize_body(body)
     elif local: body = i18n.localize_body(lang, body)
@@ -78,6 +78,7 @@ for code, _, _, _ in i18n.EDITIONS:
     if code in i18n.MODULES and not i18n.has_module(code):
         print('skip', code, '(no translation module yet)'); continue
     build(code)
+build('fr', folder_override='fr')
 # sitemap.xml for search engines: every edition, with its language alternates
 import datetime
 alts = ''.join(f'\n    <xhtml:link rel="alternate" hreflang="{hl}" href="{i18n.BASE}{f + "/" if f else ""}"/>' for c, f, hl, _ in i18n.EDITIONS)
