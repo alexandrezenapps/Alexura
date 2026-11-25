@@ -178,15 +178,33 @@ function clampStr(raw: unknown, maxLen: number): string {
   return String(raw ?? '').slice(0, maxLen);
 }
 
-// Strip undefined/functions/NaN cleanly so Firestore native Maps never reject payload
-function toFirestoreClean(value: unknown, depth = 0): unknown {
+// Strip undefined/functions/NaN/TypedArrays/nested arrays cleanly so Firestore native Maps never reject payload
+function toFirestoreClean(value: unknown, depth = 0, insideArray = false): unknown {
   if (depth > 14) return null;
   if (value === null || value === undefined) return null;
   if (typeof value === 'boolean') return value;
   if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
   if (typeof value === 'string') return value.slice(0, 60000);
+  if (value instanceof Date) return value.toISOString();
+  if (ArrayBuffer.isView(value)) {
+    const arr = Array.from(value as unknown as ArrayLike<number>).slice(0, 2000).map((n) => (Number.isFinite(Number(n)) ? Number(n) : 0));
+    return insideArray ? { _items: arr } : arr;
+  }
+  if (value instanceof Set) {
+    const arr = Array.from(value).slice(0, 2000).map((item) => toFirestoreClean(item, depth + 1, true));
+    return insideArray ? { _items: arr } : arr;
+  }
+  if (value instanceof Map) {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of value.entries()) {
+      const ck = String(k).slice(0, 128);
+      if (ck) out[ck] = toFirestoreClean(v, depth + 1, false);
+    }
+    return out;
+  }
   if (Array.isArray(value)) {
-    return value.slice(0, 2000).map((item) => toFirestoreClean(item, depth + 1));
+    const cleaned = value.slice(0, 2000).map((item) => toFirestoreClean(item, depth + 1, true));
+    return insideArray ? { _items: cleaned } : cleaned;
   }
   if (typeof value === 'object') {
     const out: Record<string, unknown> = {};
@@ -194,7 +212,7 @@ function toFirestoreClean(value: unknown, depth = 0): unknown {
       if (v === undefined || typeof v === 'function' || typeof v === 'symbol') continue;
       const cleanKey = String(k).slice(0, 128);
       if (!cleanKey) continue;
-      out[cleanKey] = toFirestoreClean(v, depth + 1);
+      out[cleanKey] = toFirestoreClean(v, depth + 1, false);
     }
     return out;
   }
@@ -248,30 +266,51 @@ export interface SongSaveInput {
 
 export interface FormattedAuthError {
   code: string;
+  severity: 'info' | 'warn' | 'error';
   message: string;
+  hint?: string;
+  canRetryPopup: boolean;
   canRetryRedirect: boolean;
   shouldOpenNewTab: boolean;
   isCancelled: boolean;
+  isRedirecting?: boolean;
+}
+
+function unwrapErrorMessage(err: unknown): { code: string; rawMsg: string } {
+  if (!err) return { code: '', rawMsg: '' };
+  let code = typeof err === 'object' ? String((err as { code?: unknown }).code || '').trim() : '';
+  let rawMsg = err instanceof Error ? err.message : typeof err === 'string' ? err : String(err || '');
+  try {
+    const parsed = JSON.parse(rawMsg);
+    if (parsed && typeof parsed === 'object' && parsed.error) {
+      rawMsg = `${parsed.error}${parsed.path ? ` (${parsed.path})` : ''}`;
+    }
+  } catch {
+    // Keep raw message when not JSON
+  }
+  if (!code) {
+    const m = rawMsg.match(/\((auth\/[a-z0-9-]+)\)/i);
+    if (m) code = m[1].toLowerCase();
+  }
+  return { code, rawMsg };
 }
 
 function extractAuthErrorCode(err: unknown): string {
-  if (!err || typeof err !== 'object') {
-    const s = String(err || '');
-    if (s.includes('AUTH_EMAIL_NOT_VERIFIED')) return 'auth/email-not-verified';
-    if (s.includes('AUTH_REQUIRED')) return 'auth/required';
-    if (s.includes('access_denied')) return 'auth/access-denied';
-    return '';
-  }
-  const code = String((err as { code?: unknown }).code || '').trim();
+  const { code, rawMsg } = unwrapErrorMessage(err);
   if (code) return code;
-  const msg = String((err as { message?: unknown }).message || '');
-  const m = msg.match(/\((auth\/[a-z0-9-]+)\)/i);
-  if (m) return m[1].toLowerCase();
-  if (msg.includes('AUTH_EMAIL_NOT_VERIFIED')) return 'auth/email-not-verified';
-  if (msg.includes('AUTH_REQUIRED')) return 'auth/required';
-  if (msg.toLowerCase().includes('access_denied')) return 'auth/access-denied';
-  if (msg.toLowerCase().includes('missing or insufficient permissions')) return 'firestore/permission-denied';
-  if (msg.toLowerCase().includes('the client is offline')) return 'firestore/offline';
+  const lower = rawMsg.toLowerCase();
+  if (rawMsg.includes('AUTH_REDIRECT_STARTED')) return 'auth/redirect-started';
+  if (rawMsg.includes('AUTH_EMAIL_NOT_VERIFIED')) return 'auth/email-not-verified';
+  if (rawMsg.includes('AUTH_REQUIRED')) return 'auth/required';
+  if (rawMsg.includes('AUTH_POPUP_TIMEOUT')) return 'auth/popup-timeout';
+  if (lower.includes('access_denied') || lower.includes('403')) return 'auth/access-denied';
+  if (lower.includes('unauthorized-domain') || lower.includes('unauthorized domain')) return 'auth/unauthorized-domain';
+  if (lower.includes('quota exceeded')) return 'firestore/quota-exceeded';
+  if (lower.includes('missing or insufficient permissions') || lower.includes('permission-denied')) return 'firestore/permission-denied';
+  if (lower.includes('the client is offline') || lower.includes('unavailable') || lower.includes('failed to get document because the client is offline')) return 'firestore/offline';
+  if (lower.includes('exceeds the maximum allowed size') || lower.includes('resource-exhausted')) return 'firestore/resource-exhausted';
+  if (lower.includes('nested arrays') || lower.includes('unsupported field value') || lower.includes('invalid-argument')) return 'firestore/invalid-argument';
+  if (lower.includes('unauthenticated')) return 'firestore/unauthenticated';
   return '';
 }
 
@@ -291,31 +330,48 @@ export function formatAuthError(err: unknown, lang = 'fr'): FormattedAuthError {
       ? 'ja'
       : 'fr';
   const code = extractAuthErrorCode(err);
-  let rawMsg = err instanceof Error ? err.message : String(err || '');
-  try {
-    const parsed = JSON.parse(rawMsg);
-    if (parsed && parsed.error) {
-      rawMsg = `${parsed.error}${parsed.path ? ` (${parsed.path})` : ''}`;
-    }
-  } catch {
-    // Keep raw message when not JSON
-  }
-
+  const { rawMsg } = unwrapErrorMessage(err);
   const host = typeof window !== 'undefined' ? window.location.hostname : '';
   const inIframe = isEmbeddedIframe();
 
-  if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+  if (code === 'auth/redirect-started') {
     return {
       code,
-      isCancelled: true,
+      severity: 'info',
+      isCancelled: false,
+      isRedirecting: true,
+      canRetryPopup: false,
       canRetryRedirect: false,
       shouldOpenNewTab: false,
       message:
         l === 'en'
-          ? 'Google sign-in window was closed before completing login.'
+          ? 'Redirecting to Google Sign-In…'
           : l === 'ja'
-            ? 'ログイン完了前に Google ウィンドウが閉じられました。'
-            : 'La fenêtre de connexion Google a été fermée avant la fin de l’authentification.',
+            ? 'Google ログイン画面へ移動しています…'
+            : 'Redirection vers la page de connexion Google…',
+    };
+  }
+
+  if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request' || code === 'auth/popup-timeout') {
+    return {
+      code,
+      severity: 'info',
+      isCancelled: true,
+      canRetryPopup: true,
+      canRetryRedirect: !inIframe,
+      shouldOpenNewTab: inIframe,
+      message:
+        l === 'en'
+          ? 'Google sign-in did not complete (window closed).'
+          : l === 'ja'
+            ? 'Google ログインが完了する前にウィンドウが閉じられました。'
+            : 'La connexion Google ne s’est pas terminée (fenêtre fermée).',
+      hint:
+        l === 'en'
+          ? 'If Google displayed "Error 403: access_denied" for another account, the project owner must publish the OAuth Consent Screen to "In Production" in Google Cloud Console (or add players as Test Users).'
+          : l === 'ja'
+            ? '他のアカウントで Google 側に「403 access_denied」が表示された場合は、Google Cloud コンソールの OAuth 同意画面を「テスト」から「本番（公開）」へ切り替えてください。'
+            : 'Si Google a affiché « Erreur 403 : access_denied » avec un autre compte, le propriétaire du projet doit publier l’écran de consentement OAuth (« En production ») dans Google Cloud Console (ou ajouter les joueurs en testeurs).',
     };
   }
 
@@ -326,126 +382,226 @@ export function formatAuthError(err: unknown, lang = 'fr'): FormattedAuthError {
   ) {
     return {
       code,
+      severity: 'warn',
       isCancelled: false,
+      canRetryPopup: true,
       canRetryRedirect: !inIframe,
       shouldOpenNewTab: inIframe,
       message:
         l === 'en'
           ? inIframe
-            ? 'Popup blocked inside preview frame. Allow popups for this site or open Alexura in a new tab to sign in with any Google account.'
-            : 'Popup blocked by your browser. Allow popups or use Redirect Sign-In below.'
+            ? 'Browser blocked the Google popup inside the preview frame.'
+            : 'Popup blocked by your browser.'
           : l === 'ja'
             ? inIframe
-              ? 'プレビュー枠内でポップアップがブロックされました。ポップアップを許可するか、新しいタブで開いて Google ログインしてください。'
-              : 'ブラウザがポップアップをブロックしました。ポップアップを許可するか、リダイレクトログインをお試しください。'
+              ? 'プレビュー枠内で Google ポップアップがブロックされました。'
+              : 'ブラウザがポップアップをブロックしました。'
             : inIframe
-              ? 'La fenêtre Google a été bloquée dans le cadre d’aperçu. Autorisez les pop-ups pour ce site ou ouvrez Alexura dans un nouvel onglet pour connecter n’importe quel compte Google.'
-              : 'La fenêtre pop-up a été bloquée par votre navigateur. Autorisez les pop-ups ou utilisez la connexion par redirection ci-dessous.',
+              ? 'Votre navigateur a bloqué la fenêtre Google dans le cadre d’aperçu.'
+              : 'La fenêtre pop-up Google a été bloquée par votre navigateur.',
+      hint:
+        l === 'en'
+          ? inIframe
+            ? 'Open Alexura in a new browser tab or allow popups for this site to connect any Google account smoothly.'
+            : 'Allow popups for this site or click Redirect Sign-In below.'
+          : l === 'ja'
+            ? inIframe
+              ? '下のボタンから新しいタブで開くか、ポップアップを許可して再試行してください。'
+              : 'ポップアップを許可するか、リダイレクトログインをご利用ください。'
+            : inIframe
+              ? 'Cliquez sur « Ouvrir dans un nouvel onglet » ci-dessous ou autorisez les pop-ups pour ce site.'
+              : 'Autorisez les pop-ups ou utilisez la connexion par redirection ci-dessous.',
     };
   }
 
   if (code === 'auth/unauthorized-domain') {
     return {
       code,
+      severity: 'error',
       isCancelled: false,
+      canRetryPopup: false,
       canRetryRedirect: false,
       shouldOpenNewTab: false,
       message:
         l === 'en'
-          ? `Domain "${host}" is not authorized in Firebase Authentication > Settings > Authorized domains.`
+          ? `Domain "${host}" is not authorized in Firebase Authentication.`
           : l === 'ja'
             ? `ドメイン「${host}」が Firebase Authentication の承認済みドメインに登録されていません。`
-            : `Le domaine « ${host} » n’est pas encore autorisé dans Firebase Authentication (Paramètres > Domaines autorisés).`,
+            : `Le domaine « ${host} » n’est pas autorisé dans Firebase Authentication.`,
+      hint:
+        l === 'en'
+          ? 'Add this hostname under Firebase Console > Authentication > Settings > Authorized domains.'
+          : l === 'ja'
+            ? 'Firebase Console > Authentication > 設定 > 承認済みドメイン にこのドメインを追加してください。'
+            : 'Ajoutez ce domaine dans Firebase Console > Authentication > Paramètres > Domaines autorisés.',
     };
   }
 
   if (code === 'auth/web-storage-unsupported') {
     return {
       code,
+      severity: 'warn',
       isCancelled: false,
+      canRetryPopup: false,
       canRetryRedirect: false,
       shouldOpenNewTab: inIframe,
       message:
         l === 'en'
-          ? 'Browser storage/cookies are blocked (third-party cookie restriction or strict private mode). Open Alexura in a new normal browser tab.'
+          ? 'Browser storage or third-party cookies are blocked in this context.'
           : l === 'ja'
-            ? 'ブラウザのストレージ／Cookieがブロックされています。通常の新しいタブで開いてお試しください。'
-            : 'Le stockage ou les cookies tiers sont bloqués par le navigateur. Ouvrez Alexura dans un nouvel onglet normal pour vous connecter.',
+            ? 'ブラウザのストレージまたはサードパーティ Cookie がブロックされています。'
+            : 'Le stockage ou les cookies tiers sont bloqués dans ce contexte.',
+      hint:
+        l === 'en'
+          ? 'Open Alexura in a normal new browser tab to sign in with Google.'
+          : l === 'ja'
+            ? '通常の新しいタブで開いて Google ログインしてください。'
+            : 'Ouvrez Alexura dans un nouvel onglet normal pour vous connecter avec Google.',
     };
   }
 
   if (code === 'auth/email-not-verified') {
     return {
       code,
+      severity: 'warn',
       isCancelled: false,
+      canRetryPopup: true,
       canRetryRedirect: false,
       shouldOpenNewTab: false,
       message:
         l === 'en'
-          ? 'This Google account email is not marked as verified yet. Verify the email in your Google account security settings to unlock cloud saves.'
+          ? 'This Google account email is not marked as verified yet.'
           : l === 'ja'
-            ? 'この Google アカウントのメールが未確認のためクラウド保存できません。Google アカウント側でメール確認を完了してください。'
-            : 'L’adresse e-mail de ce compte Google n’est pas encore vérifiée. Validez votre e-mail Google pour enregistrer sur Firebase.',
+            ? 'この Google アカウントのメールアドレスが未確認です。'
+            : 'L’adresse e-mail de ce compte Google n’est pas encore vérifiée.',
+      hint:
+        l === 'en'
+          ? 'Verify your email in Google Account settings, then sign in again.'
+          : l === 'ja'
+            ? 'Google アカウント設定でメール確認を完了してから再試行してください。'
+            : 'Validez votre e-mail dans votre compte Google puis reconnectez-vous pour enregistrer sur Firebase.',
     };
   }
 
   if (code === 'auth/access-denied' || code === 'auth/operation-not-allowed' || code === 'auth/internal-error') {
     return {
       code,
+      severity: 'error',
       isCancelled: false,
+      canRetryPopup: true,
       canRetryRedirect: !inIframe && code === 'auth/internal-error',
       shouldOpenNewTab: inIframe,
       message:
         l === 'en'
-          ? 'Google OAuth refused sign-in for this account. If external accounts are blocked (403 access_denied), set the Google Cloud OAuth Consent Screen from "Testing" to "In Production" (or add the account as a Test User).'
+          ? 'Google OAuth refused sign-in for this account.'
           : l === 'ja'
-            ? 'このアカウントの Google OAuth ログインが拒否されました。他のアカウントが 403 access_denied で弾かれる場合は、Google Cloud の OAuth 同意画面を「テスト」から「本番（公開）」へ切り替えてください。'
-            : 'Google OAuth a refusé la connexion pour ce compte. Si les autres comptes sont bloqués (erreur 403 access_denied), passez l’écran de consentement OAuth Google Cloud de « En phase de test » à « En production » (ou ajoutez le joueur en testeur).',
+            ? 'このアカウントの Google OAuth ログインが拒否されました。'
+            : 'Google OAuth a refusé la connexion pour ce compte.',
+      hint:
+        l === 'en'
+          ? 'For external player accounts (403 access_denied), publish the Google Cloud OAuth Consent Screen from "Testing" to "In Production" or add them to Test Users.'
+          : l === 'ja'
+            ? '外部アカウントが 403 access_denied で拒否される場合は、Google Cloud の OAuth 同意画面を「本番（公開）」に切り替えてください。'
+            : 'Pour autoriser tous les joueurs (erreur 403 access_denied), passez l’écran de consentement OAuth Google Cloud de « En phase de test » à « En production » (ou ajoutez le joueur en testeur).',
     };
   }
 
   if (code === 'auth/network-request-failed' || code === 'firestore/offline') {
     return {
       code,
+      severity: 'warn',
       isCancelled: false,
+      canRetryPopup: true,
       canRetryRedirect: false,
       shouldOpenNewTab: false,
       message:
         l === 'en'
-          ? 'Network connection to Google/Firebase failed. Check your internet connection or VPN and retry.'
+          ? 'Connection to Google / Firebase is currently unavailable.'
           : l === 'ja'
-            ? 'Google / Firebase への接続に失敗しました。ネットワーク接続を確認して再試行してください。'
-            : 'Impossible de joindre Google / Firebase. Vérifiez votre connexion Internet (ou bloqueur/VPN) puis réessayez.',
+            ? 'Google / Firebase への接続に失敗しました。'
+            : 'Impossible de joindre Google / Firebase pour le moment.',
+      hint:
+        l === 'en'
+          ? 'Check your internet connection, VPN, or ad-blocker and retry.'
+          : l === 'ja'
+            ? 'インターネット接続・VPN・広告ブロッカーをご確認のうえ再試行してください。'
+            : 'Vérifiez votre connexion Internet, VPN ou bloqueur de scripts puis réessayez.',
     };
   }
 
-  if (code === 'firestore/permission-denied') {
+  if (code === 'firestore/quota-exceeded') {
     return {
       code,
+      severity: 'error',
       isCancelled: false,
+      canRetryPopup: false,
       canRetryRedirect: false,
       shouldOpenNewTab: false,
       message:
         l === 'en'
-          ? `Firestore permission denied (${rawMsg}). Verify you are signed in with a verified Google account.`
+          ? 'Firestore daily free-tier quota exceeded. Quota resets tomorrow.'
           : l === 'ja'
-            ? `Firestore の権限エラー (${rawMsg})。Google ログイン状態をご確認ください。`
-            : `Accès Firestore refusé (${rawMsg}). Reconnectez votre compte Google puis réessayez.`,
+            ? 'Firestore の無料枠クォータ上限に達しました。翌日にリセットされます。'
+            : 'Le quota journalier gratuit de Firestore est atteint (réinitialisation demain).',
+    };
+  }
+
+  if (code === 'firestore/resource-exhausted' || code === 'firestore/invalid-argument') {
+    return {
+      code,
+      severity: 'error',
+      isCancelled: false,
+      canRetryPopup: false,
+      canRetryRedirect: false,
+      shouldOpenNewTab: false,
+      message:
+        l === 'en'
+          ? 'Project data exceeded Firestore limits or contained an invalid structure.'
+          : l === 'ja'
+            ? 'プロジェクトデータが Firestore の容量・形式制限を超えました。'
+            : 'Les données du projet dépassent la taille maximale Firestore ou contiennent un format invalide.',
+      hint: rawMsg,
+    };
+  }
+
+  if (code === 'firestore/permission-denied' || code === 'firestore/unauthenticated') {
+    return {
+      code,
+      severity: 'error',
+      isCancelled: false,
+      canRetryPopup: true,
+      canRetryRedirect: false,
+      shouldOpenNewTab: false,
+      message:
+        l === 'en'
+          ? 'Firestore access denied for this session.'
+          : l === 'ja'
+            ? '現在のセッションでは Firestore へのアクセスが拒否されました。'
+            : 'Accès Firebase refusé pour cette session.',
+      hint:
+        l === 'en'
+          ? 'Reconnect with a verified Google account and retry saving.'
+          : l === 'ja'
+            ? '認証済みの Google アカウントで再ログインしてから保存をお試しください。'
+            : 'Reconnectez votre compte Google vérifié puis relancez la sauvegarde.',
     };
   }
 
   return {
     code: code || 'auth/unknown',
+    severity: 'error',
     isCancelled: false,
+    canRetryPopup: true,
     canRetryRedirect: false,
-    shouldOpenNewTab: false,
+    shouldOpenNewTab: inIframe,
     message: rawMsg || (l === 'en' ? 'Google authentication error.' : 'Erreur lors de l’authentification Google.'),
   };
 }
 
 const beforeAuthChangeListeners = new Set<() => void>();
 const authErrorListeners = new Set<(err: Error) => void>();
-let authInFlight: Promise<User> | null = null;
+let authInFlight: Promise<User | null> | null = null;
+const readyUsers = new Map<string, Promise<User>>();
 
 export function subscribeBeforeAuthChange(cb: () => void): Unsubscribe {
   beforeAuthChangeListeners.add(cb);
@@ -562,22 +718,40 @@ async function ensureUserProfile(user: User, throwOnError = true): Promise<void>
 }
 
 async function finalizeAuthenticatedUser(user: User): Promise<User> {
+  const existing = readyUsers.get(user.uid);
+  if (existing) return existing;
+
+  const task = (async (): Promise<User> => {
+    try {
+      await user.reload();
+    } catch {
+      // Non-fatal if user reload skips offline
+    }
+    try {
+      await user.getIdToken(true);
+    } catch {
+      // Non-fatal token refresh guard
+    }
+    if (user.emailVerified === false) {
+      throw new Error('AUTH_EMAIL_NOT_VERIFIED');
+    }
+    await ensureUserProfile(user, false);
+    return user;
+  })();
+
+  readyUsers.set(user.uid, task);
   try {
-    await user.reload();
-  } catch {
-    // Non-fatal if user reload skips offline
+    return await task;
+  } catch (err) {
+    readyUsers.delete(user.uid);
+    throw err;
   }
-  try {
-    await user.getIdToken(true);
-  } catch {
-    // Non-fatal token refresh guard
-  }
-  if (user.emailVerified === false) {
-    throw new Error('AUTH_EMAIL_NOT_VERIFIED');
-  }
-  // Keep login resilient even if initial cold profile write hits offline lag
-  await ensureUserProfile(user, false);
-  return user;
+}
+
+export async function ensureUserReady(user?: User | null): Promise<User | null> {
+  const target = user || auth.currentUser;
+  if (!target) return null;
+  return finalizeAuthenticatedUser(target);
 }
 
 if (typeof window !== 'undefined') {
@@ -604,37 +778,45 @@ export async function signInGoogleRedirect(): Promise<void> {
   await signInWithRedirect(auth, provider, browserPopupRedirectResolver);
 }
 
-export async function signInGoogle(_options?: { forceAccountSelect?: boolean; preferRedirect?: boolean }): Promise<User> {
+export async function reloadUserSession(): Promise<User | null> {
+  const user = auth.currentUser;
+  if (!user) return null;
+  readyUsers.delete(user.uid);
+  return finalizeAuthenticatedUser(user);
+}
+
+export async function signInGoogle(_options?: { forceAccountSelect?: boolean; preferRedirect?: boolean }): Promise<User | null> {
   if (authInFlight) {
     return authInFlight;
   }
-  const run = async (): Promise<User> => {
-    await ensureAuthPersistence();
+  const provider = buildGoogleProvider();
+  const run = async (): Promise<User | null> => {
     if (_options?.preferRedirect && !isEmbeddedIframe()) {
       await signInGoogleRedirect();
-      // signInWithRedirect navigates away; keep type contract satisfied if mocked
-      if (auth.currentUser) return auth.currentUser;
-      throw new Error('AUTH_REDIRECT_STARTED');
+      return auth.currentUser;
     }
 
-    const hadUser = Boolean(auth.currentUser);
-    if (hadUser) {
-      // Unsubscribe previous account's Firestore snapshot queries cleanly BEFORE swapping Firebase Auth UID
-      notifyBeforeAuthChange();
-    }
-
-    const provider = buildGoogleProvider();
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     try {
-      const cred = await signInWithPopup(auth, provider, browserPopupRedirectResolver);
+      // Invoke signInWithPopup synchronously with user click gesture (no preceding await) to avoid browser popup blocking
+      const popupPromise = signInWithPopup(auth, provider, browserPopupRedirectResolver);
+      popupPromise.catch(() => {});
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('AUTH_POPUP_TIMEOUT')), 90000);
+      });
+      const cred = await Promise.race([popupPromise, timeoutPromise]);
+      if (timeoutId) clearTimeout(timeoutId);
+      readyUsers.delete(cred.user.uid);
       return await finalizeAuthenticatedUser(cred.user);
     } catch (err) {
+      if (timeoutId) clearTimeout(timeoutId);
       const code = extractAuthErrorCode(err);
       if (
         (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') &&
         !isEmbeddedIframe()
       ) {
-        await signInWithRedirect(auth, provider, browserPopupRedirectResolver);
-        throw new Error('AUTH_REDIRECT_STARTED');
+        await signInGoogleRedirect();
+        return auth.currentUser;
       }
       if (code === 'auth/popup-blocked' && isEmbeddedIframe()) {
         const e = new Error('auth/popup-blocked-iframe') as Error & { code?: string };
@@ -651,11 +833,12 @@ export async function signInGoogle(_options?: { forceAccountSelect?: boolean; pr
   return authInFlight;
 }
 
-export async function switchAccountGoogle(): Promise<User> {
+export async function switchAccountGoogle(): Promise<User | null> {
   return signInGoogle({ forceAccountSelect: true });
 }
 
 export async function signOutGoogle(): Promise<void> {
+  if (auth.currentUser) readyUsers.delete(auth.currentUser.uid);
   notifyBeforeAuthChange();
   await signOut(auth);
 }
@@ -663,9 +846,18 @@ export async function signOutGoogle(): Promise<void> {
 export async function saveSongToCloud(
   input: SongSaveInput,
   audioFile?: File | Blob | null
-): Promise<{ songId: string; chunkCount: number; audioSaved: boolean; audioTooLarge?: boolean }> {
+): Promise<{ songId: string; chunkCount: number; audioSaved: boolean; audioTooLarge?: boolean; audioPartialError?: boolean }> {
   const user = auth.currentUser;
   if (!user) throw new Error('AUTH_REQUIRED');
+  if (user.emailVerified === false) {
+    try {
+      await user.reload();
+      await user.getIdToken(true);
+    } catch {
+      // Ignore reload failure before verified check
+    }
+    if (user.emailVerified === false) throw new Error('AUTH_EMAIL_NOT_VERIFIED');
+  }
 
   const isNewSongId = !input.songId;
   const rawSlug = String(input.title || input.audioName || 'track')
@@ -706,18 +898,20 @@ export async function saveSongToCloud(
 
   let existingCreatedAt: unknown = null;
   let prevChunkCount = 0;
+  let prevHasAudioChunks = false;
   if (!isNewSongId) {
     try {
       const existingSnap = await getDoc(songRef);
       if (existingSnap.exists()) {
         const ed = existingSnap.data();
-        if (ed.ownerId && ed.ownerId !== user.uid) {
+        if ((ed.ownerId && ed.ownerId !== user.uid) || !ed.createdAt) {
           songId = sanitizeId(`song_${rawSlug}_${Date.now().toString(36)}`);
           path = `songs/${songId}`;
           songRef = doc(db, 'songs', songId);
         } else {
-          existingCreatedAt = ed.createdAt || null;
+          existingCreatedAt = ed.createdAt;
           prevChunkCount = Number(ed.chunkCount || 0);
+          prevHasAudioChunks = Boolean(ed.hasAudioChunks && prevChunkCount > 0);
         }
       }
     } catch {
@@ -728,39 +922,10 @@ export async function saveSongToCloud(
     }
   }
 
-  const finalChunkCount = audioChunks.length > 0 ? audioChunks.length : prevChunkCount;
-  const hasAudioChunks = finalChunkCount > 0;
   const cleanProject = toFirestoreClean(input.project || {}) as Record<string, unknown>;
-
-  // Guard against Firestore 1 MiB document size ceiling on large word/char-level projects
-  const estimateBytes = (val: unknown): number => {
-    try {
-      const json = JSON.stringify(val);
-      return typeof TextEncoder !== 'undefined' ? new TextEncoder().encode(json).length : json.length * 2;
-    } catch {
-      return 0;
-    }
-  };
-  if (estimateBytes(cleanProject) > 850000 && cleanProject.timing && typeof cleanProject.timing === 'object') {
-    const timing = { ...(cleanProject.timing as Record<string, unknown>) };
-    delete timing.charTimings;
-    delete timing.debugFrames;
-    delete timing.phonemeFrames;
-    if (timing.wordTimes && typeof timing.wordTimes === 'object') {
-      const compactWords: Record<string, unknown> = {};
-      for (const [k, arr] of Object.entries(timing.wordTimes as Record<string, unknown>)) {
-        if (Array.isArray(arr)) {
-          compactWords[k] = arr.map((w: unknown) => {
-            if (!w || typeof w !== 'object') return w;
-            const wo = w as Record<string, unknown>;
-            return { text: wo.text, start: wo.start, end: wo.end };
-          });
-        }
-      }
-      timing.wordTimes = compactWords;
-    }
-    cleanProject.timing = timing;
-  }
+  const safeDur = Number.isFinite(Number(input.duration)) ? Math.max(0, Math.min(7200, Number(input.duration))) : 0;
+  const safeBpm = Number.isFinite(Number(input.bpm)) ? Math.max(0, Math.min(400, Number(input.bpm))) : 0;
+  const safeAudioSize = Number.isFinite(rawAudioSize) ? Math.max(0, Math.min(104857600, Math.trunc(rawAudioSize))) : 0;
 
   const songPayload: Record<string, unknown> = {
     songId,
@@ -774,11 +939,11 @@ export async function saveSongToCloud(
       260
     ),
     audioMime: safeAudioMime,
-    audioSize: Math.max(0, Math.min(104857600, Math.round(rawAudioSize || 0))),
-    duration: Math.max(0, Math.min(7200, Number(input.duration) || 0)),
-    bpm: Math.max(0, Math.min(400, Number(input.bpm) || 0)),
-    hasAudioChunks,
-    chunkCount: Math.max(0, Math.min(MAX_CHUNKS, finalChunkCount)),
+    audioSize: safeAudioSize,
+    duration: safeDur,
+    bpm: safeBpm,
+    hasAudioChunks: prevHasAudioChunks,
+    chunkCount: Math.max(0, Math.min(MAX_CHUNKS, prevChunkCount)),
     project: cleanProject,
     createdAt: existingCreatedAt || serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -787,58 +952,170 @@ export async function saveSongToCloud(
     songPayload.vercelSyncedUrl = clampStr(input.vercelSyncedUrl, 500);
   }
 
+  // Progressive 1 MiB ceiling compaction on complete songPayload
+  const estimateBytes = (val: unknown): number => {
+    try {
+      const json = JSON.stringify(val);
+      return typeof TextEncoder !== 'undefined' ? new TextEncoder().encode(json).length : json.length * 2;
+    } catch {
+      return 0;
+    }
+  };
+  if (estimateBytes(songPayload) > 760000 && cleanProject.timing && typeof cleanProject.timing === 'object') {
+    const timing = { ...(cleanProject.timing as Record<string, unknown>) };
+    delete timing.charTimings;
+    delete timing.debugFrames;
+    delete timing.phonemeFrames;
+    if (timing.wordTimes && typeof timing.wordTimes === 'object') {
+      const compactWords: Record<string, unknown> = {};
+      for (const [k, arr] of Object.entries(timing.wordTimes as Record<string, unknown>)) {
+        if (Array.isArray(arr)) {
+          compactWords[k] = arr.map((w: unknown) => {
+            if (!w || typeof w !== 'object') return w;
+            const wo = w as Record<string, unknown>;
+            const outW: Record<string, unknown> = { text: wo.text, start: wo.start, end: wo.end };
+            if (wo.validated) outW.validated = true;
+            return outW;
+          });
+        }
+      }
+      timing.wordTimes = compactWords;
+    }
+    cleanProject.timing = timing;
+    songPayload.project = cleanProject;
+  }
+  if (estimateBytes(songPayload) > 760000 && cleanProject.detection && typeof cleanProject.detection === 'object') {
+    const det = cleanProject.detection as Record<string, unknown>;
+    cleanProject.detection = {
+      source: det.source || 'auto',
+      audioType: det.audioType || 'vocal',
+      detectedLanguages: Array.isArray(det.detectedLanguages) ? det.detectedLanguages.slice(0, 12) : [],
+      detectedSpeakers: Array.isArray(det.detectedSpeakers) ? det.detectedSpeakers.slice(0, 12) : [],
+      hasUnclearSections: Boolean(det.hasUnclearSections),
+      validationSummary: det.validationSummary || null,
+    };
+    songPayload.project = cleanProject;
+  }
+  if (estimateBytes(songPayload) > 820000 && cleanProject.overrides && typeof cleanProject.overrides === 'object') {
+    const compOv: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(cleanProject.overrides as Record<string, unknown>)) {
+      if (v && typeof v === 'object') {
+        const copyOv = { ...(v as Record<string, unknown>) };
+        delete copyOv.lockedCuts;
+        compOv[k] = copyOv;
+      }
+    }
+    cleanProject.overrides = compOv;
+    songPayload.project = cleanProject;
+  }
+  if (estimateBytes(songPayload) > 880000) {
+    for (const [k, v] of Object.entries(cleanProject)) {
+      if (typeof v === 'string' && v.length > 24000) {
+        cleanProject[k] = v.slice(0, 24000);
+      }
+    }
+    songPayload.project = cleanProject;
+  }
+  if (estimateBytes(songPayload) > 930000 && cleanProject.timing && typeof cleanProject.timing === 'object') {
+    const t = { ...(cleanProject.timing as Record<string, unknown>) };
+    delete t.wordTimes;
+    cleanProject.timing = t;
+    songPayload.project = cleanProject;
+  }
+
+  const writeParentSong = async () => {
+    try {
+      await setDoc(songRef, songPayload);
+    } catch (firstErr) {
+      const code = extractAuthErrorCode(firstErr);
+      if (code === 'firestore/offline' || code === 'firestore/permission-denied') {
+        await user.getIdToken(true).catch(() => {});
+        await enableNetwork(db).catch(() => {});
+        await new Promise((r) => setTimeout(r, 260));
+        await setDoc(songRef, songPayload);
+        return;
+      }
+      throw firstErr;
+    }
+  };
+
   try {
-    await setDoc(songRef, songPayload);
+    await writeParentSong();
   } catch (error) {
     handleFirestoreError(error, existingCreatedAt ? OperationType.UPDATE : OperationType.CREATE, path);
   }
 
-  // Write audio chunks after parent document exists (Master Gate security compliance)
+  // Write audio chunks in bounded parallel batches after parent document exists (Master Gate security compliance)
+  let audioSaved = false;
+  let audioPartialError = false;
+  let finalChunkCount = prevChunkCount;
+
   if (audioChunks.length > 0) {
-    for (let idx = 0; idx < audioChunks.length; idx++) {
-      const chunkId = `c_${idx}`;
-      const cPath = `${path}/audioChunks/${chunkId}`;
-      const cRef = doc(db, 'songs', songId, 'audioChunks', chunkId);
-      let chunkCreatedAt: unknown = null;
-      if (existingCreatedAt && idx < prevChunkCount) {
+    try {
+      const uploadChunk = async (idx: number) => {
+        const chunkId = `c_${idx}`;
+        const cRef = doc(db, 'songs', songId, 'audioChunks', chunkId);
+        const writeOne = async () => {
+          const prevSnap = await getDoc(cRef);
+          if (prevSnap.exists()) {
+            await updateDoc(cRef, {
+              index: idx,
+              data: audioChunks[idx],
+              updatedAt: serverTimestamp(),
+            });
+          } else {
+            await setDoc(cRef, {
+              chunkId,
+              songId,
+              ownerId: user.uid,
+              index: idx,
+              data: audioChunks[idx],
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+            });
+          }
+        };
         try {
-          const prevChunkSnap = await getDoc(cRef);
-          if (prevChunkSnap.exists()) chunkCreatedAt = prevChunkSnap.data().createdAt || null;
-        } catch (error) {
-          handleFirestoreError(error, OperationType.GET, cPath);
+          await writeOne();
+        } catch {
+          await new Promise((r) => setTimeout(r, 250));
+          await writeOne();
         }
+      };
+
+      const CHUNK_BATCH = 3;
+      for (let i = 0; i < audioChunks.length; i += CHUNK_BATCH) {
+        const batch = [];
+        for (let j = i; j < Math.min(audioChunks.length, i + CHUNK_BATCH); j++) {
+          batch.push(uploadChunk(j));
+        }
+        await Promise.all(batch);
       }
-      try {
-        await setDoc(cRef, {
-          chunkId,
-          songId,
-          ownerId: user.uid,
-          index: idx,
-          data: audioChunks[idx],
-          createdAt: chunkCreatedAt || serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-      } catch (error) {
-        handleFirestoreError(error, chunkCreatedAt ? OperationType.UPDATE : OperationType.CREATE, cPath);
+
+      // Clean up excess trailing chunks if replaced by shorter song
+      for (let idx = audioChunks.length; idx < prevChunkCount; idx++) {
+        await deleteDoc(doc(db, 'songs', songId, 'audioChunks', `c_${idx}`)).catch(() => {});
       }
-    }
-    // Remove leftover trailing chunks if replaced by shorter song
-    for (let idx = audioChunks.length; idx < prevChunkCount; idx++) {
-      const chunkId = `c_${idx}`;
-      const cPath = `${path}/audioChunks/${chunkId}`;
-      try {
-        await deleteDoc(doc(db, 'songs', songId, 'audioChunks', chunkId));
-      } catch (error) {
-        handleFirestoreError(error, OperationType.DELETE, cPath);
-      }
+
+      await updateDoc(songRef, {
+        hasAudioChunks: true,
+        chunkCount: audioChunks.length,
+        updatedAt: serverTimestamp(),
+      });
+      audioSaved = true;
+      finalChunkCount = audioChunks.length;
+    } catch (chunkErr) {
+      console.warn('Audio chunks upload failed while project doc succeeded:', chunkErr);
+      audioPartialError = true;
     }
   }
 
   return {
     songId,
     chunkCount: finalChunkCount,
-    audioSaved: audioChunks.length > 0,
+    audioSaved,
     audioTooLarge,
+    audioPartialError,
   };
 }
 
@@ -1191,6 +1468,8 @@ const AlexuraCloud = {
   handleFirestoreError,
   formatAuthError,
   testConnection,
+  ensureUserReady,
+  reloadUserSession,
   signInGoogle,
   switchAccountGoogle,
   signInGoogleRedirect,

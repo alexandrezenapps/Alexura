@@ -1154,24 +1154,64 @@ function qcCopy() {
     trLbl: 'Transcr.', alLbl: 'Align.', clLbl: 'Clarté', ovLbl: 'Superpos.', unLbl: 'Incertitude',
     reanalyzeLine: '🔬 Ré-analyser',
     honestCap: 'max honnête <100%',
+    autoBtn: 'Analyser et performer automatisé',
+    autoTitle: 'Analyser par IA la coordination voix-paroles-vidéo, corriger les faibles confiances et optimiser la fluidité karaoké',
+    autoRunning: 'Analyse & optimisation IA en cours…',
+    coordLbl: 'Voix ↔ Vidéo',
+    tightSyncLbl: 'Verrouillé ±45 ms',
+    stageAudit: '1/3 Analyse coordination voix ↔ vidéo…',
+    stageAi: '2/3 Ré-analyse IA & calage 10 ms des faibles confiances…',
+    stageSmooth: '3/3 Lissage karaoké vidéo & vérification finale…',
+    repTitleDone: 'Optimisation IA terminée',
+    repTitleWarn: 'Optimisation locale + avertissement IA',
+    repKpiConf: 'Fiabilité',
+    repKpiDrift: 'Écart voix↔vidéo',
+    repKpiLow: 'Mots faibles',
+    repKpiFlow: 'Fluidité vidéo',
+    repFlowUnit: 'liss.',
+    aiWarnBilling: '⚠ Quota ou facturation Gemini requis — secours acoustique local appliqué.',
+    aiWarnKey: '⚠ Clé API Gemini invalide ou absente — secours acoustique local appliqué.',
+    aiWarnDegraded: '⚠ Service IA partiel ou hors ligne — précision optimisée via moteur vocal local.',
+    noAudioNote: 'Sans audio chargé : lissage temporel des paroles et vérification orthographique appliqués.',
+    autoToast: (bPct, aPct, fixed) => `✓ Optimisation IA : fiabilité ${bPct}% → ${aPct}% · ${fixed} mot(s) réparé(s)`,
   };
   if (l === 'ja') return {
-    title: '精度・品質管理 (QC)',
+    title: '精度\u30fb品質管理 (QC)',
     overallPrefix: '推定信頼度',
     high: '高信頼', highDesc: '強い音響証拠に基づく単語とタイミング',
-    med: '中信頼', medDesc: '単語は認識済み・境界の目視確認推奨',
+    med: '中信頼', medDesc: '単語は認識済み\u30fb境界の目視確認推奨',
     low: '低信頼', lowDesc: '不確実 — 手動確認と再解析を推奨',
     noisy: '⚠ 背景ノイズ検出',
-    distorted: '⚠ 音割れ・歪み検出',
+    distorted: '⚠ 音割れ\u30fb歪み検出',
     reverb: '⚠ 強い残響 (リバーブ)',
     overlap: '⚠ 重複ボーカル検出',
     reanalyzeAll: '🔬 低信頼区間を再解析',
     reanalyzing: '⏳ 高精度で再解析中…',
     nextLow: '⚠ 次の低信頼単語',
-    reanalyzeDone: (n, up) => n ? `✓ ${n}区間を再解析 · ${up}語を改善` : '再解析が必要な低信頼区間はありません',
+    reanalyzeDone: (n, up) => n ? `✓ ${n}区間を再解析 \u30fb ${up}語を改善` : '再解析が必要な低信頼区間はありません',
     trLbl: '認識', alLbl: '整合', clLbl: '明瞭度', ovLbl: '重複', unLbl: '不確実性',
     reanalyzeLine: '🔬 再解析',
     honestCap: '推定上限 <100%',
+    autoBtn: 'AI\u81ea\u52d5解析\u30fb精度最適化',
+    autoTitle: '声と動画字幕の同期誤差を解析し、低信頼箇所の\u81ea\u52d5修復と滑らかな表示を最適化します',
+    autoRunning: 'AI同期解析\u30fb最適化を実行中…',
+    coordLbl: '声 ↔ 動画',
+    tightSyncLbl: '同期率 ±45ms',
+    stageAudit: '1/3 声と動画字幕の座標\u30fb信頼度を解析中…',
+    stageAi: '2/3 AI再解析と10msアタック補正を実行中…',
+    stageSmooth: '3/3 カラオケ表示の平滑化と最終検証…',
+    repTitleDone: 'AI最適化完了',
+    repTitleWarn: 'ローカル精密補正完了（AI警告あり）',
+    repKpiConf: '信頼度',
+    repKpiDrift: '平均誤差',
+    repKpiLow: '低信頼語',
+    repKpiFlow: '表示滑らかさ',
+    repFlowUnit: '平滑',
+    aiWarnBilling: '⚠ Gemini課金または割り当て上限のため、ローカル音響補正を適用しました。',
+    aiWarnKey: '⚠ Gemini APIキー未設定/無効のため、ローカル音響補正を適用しました。',
+    aiWarnDegraded: '⚠ クラウドAI応答エラーのため、ローカル音響エンジンで同期を最適化しました。',
+    noAudioNote: '音声未読込のため、字幕のオーバーラップ解消と表記チェックを実行しました。',
+    autoToast: (bPct, aPct, fixed) => `✓ AI最適化完了：信頼度 ${bPct}% → ${aPct}%（${fixed}語改善）`,
   };
   return {
     title: 'Accuracy & Quality Control',
@@ -1190,14 +1230,41 @@ function qcCopy() {
     trLbl: 'Transcr.', alLbl: 'Align.', clLbl: 'Clarity', ovLbl: 'Overlap', unLbl: 'Uncertainty',
     reanalyzeLine: '🔬 Re-analyze',
     honestCap: 'honest cap <100%',
+    autoBtn: 'AI Auto-Analyze & Optimize',
+    autoTitle: 'Analyze singing vs video lyric coordination with AI, fix low-confidence words, and smooth karaoke flow',
+    autoRunning: 'AI analyzing & optimizing…',
+    coordLbl: 'Voice ↔ Video',
+    tightSyncLbl: 'Locked ±45ms',
+    stageAudit: '1/3 Auditing singing vs video coordination…',
+    stageAi: '2/3 AI re-analyzing low-confidence & drifting words…',
+    stageSmooth: '3/3 Smoothing karaoke video flow & verifying…',
+    repTitleDone: 'AI Optimization Complete',
+    repTitleWarn: 'Local Optimization + AI Warning',
+    repKpiConf: 'Reliability',
+    repKpiDrift: 'Voice↔Video',
+    repKpiLow: 'Low-conf',
+    repKpiFlow: 'Video flow',
+    repFlowUnit: 'smooth',
+    aiWarnBilling: '⚠ Gemini billing or quota limit hit — applied local Whisper/acoustic fallback.',
+    aiWarnKey: '⚠ Gemini API key missing or invalid — applied local acoustic optimization.',
+    aiWarnDegraded: '⚠ AI cloud request degraded — applied local acoustic engine continuity.',
+    noAudioNote: 'No audio loaded: smoothed lyric overlaps and verified spelling locally.',
+    autoToast: (bPct, aPct, fixed) => `✓ AI Optimized: reliability ${bPct}% → ${aPct}% · ${fixed} word(s) repaired`,
   };
+}
+function clearQcAutoReport() {
+  const rep = $('qcAutoReport');
+  if (!rep) return;
+  rep.hidden = true;
+  rep.classList.remove('is-busy', 'is-warn', 'is-error');
+  rep.innerHTML = '';
 }
 function syncQualityControlPanel() {
   const box = $('qcSummaryBox');
   if (!box) return;
   const L = (S.plan && S.plan.lines) || [];
   const hasContent = Boolean(S.audio || (L && L.some(ln => !ln.interlude && (ln.wordsTimed || []).length)));
-  if (!hasContent) { box.hidden = true; return; }
+  if (!hasContent) { clearQcAutoReport(); box.hidden = true; return; }
   box.hidden = false;
   const cp = qcCopy();
   if ($('qcBoxTitle')) $('qcBoxTitle').textContent = cp.title;
@@ -1226,6 +1293,25 @@ function syncQualityControlPanel() {
       `<span class="qc-tier-pill is-mid" title="${escapeHtml(cp.medDesc)}">◐ ${escapeHtml(cp.med)}: ${med}</span>` +
       `<span class="qc-tier-pill is-low" title="${escapeHtml(cp.lowDesc)}">▲ ${escapeHtml(cp.low)}: ${lo}</span>`;
   }
+  const coordEl = $('qcCoordStrip');
+  if (coordEl) {
+    if (total > 0 && J.analyzeVocalToVideoCoordination) {
+      const typesetOn = Boolean(S.plan ? S.plan.typeset : (S.project && S.project.typeset));
+      const coord = J.analyzeVocalToVideoCoordination(S.audio, L, S.project && S.project.timing, { typeset: typesetOn });
+      const driftCls = !coord.hasAudio ? '' : coord.avgAbsErrMs <= 30 ? 'is-good' : coord.avgAbsErrMs <= 55 ? 'is-warn' : 'is-drift';
+      const syncCls = coord.tightSyncPct >= 82 ? 'is-good' : coord.tightSyncPct >= 62 ? 'is-warn' : 'is-drift';
+      const driftVal = coord.hasAudio
+        ? `${coord.medianVideoDriftMs > 0 ? '+' : ''}${coord.medianVideoDriftMs} ms (±${coord.avgAbsErrMs} ms)`
+        : '—';
+      coordEl.innerHTML =
+        `<span class="qc-coord-metric ${driftCls}"><span>${escapeHtml(cp.coordLbl)}:</span><strong>${escapeHtml(driftVal)}</strong></span>` +
+        `<span class="qc-coord-sep" aria-hidden="true">·</span>` +
+        `<span class="qc-coord-metric ${syncCls}"><span>${escapeHtml(cp.tightSyncLbl)}:</span><strong>${coord.tightSyncPct}%</strong></span>`;
+      coordEl.hidden = false;
+    } else {
+      coordEl.hidden = true;
+    }
+  }
   const qCond = (S.audio && S.audio.qualityConditions) || (S.project && S.project.detection && S.project.detection.validationSummary && S.project.detection.validationSummary.qualityConditions) || null;
   const alertsEl = $('qcCondAlerts');
   if (alertsEl) {
@@ -1236,6 +1322,13 @@ function syncQualityControlPanel() {
     if (qCond && qCond.hasOverlappingSingers) warns.push(cp.overlap);
     alertsEl.innerHTML = warns.map(w => `<span>${escapeHtml(w)}</span>`).join('');
     alertsEl.hidden = warns.length === 0;
+  }
+  const btnAuto = $('btnAutoQcPerform'), btnAutoLbl = $('btnAutoQcPerformLbl');
+  if (btnAuto && !btnAuto.dataset.busy) {
+    if (btnAutoLbl) btnAutoLbl.textContent = cp.autoBtn;
+    btnAuto.title = cp.autoTitle;
+    btnAuto.setAttribute('aria-busy', 'false');
+    btnAuto.disabled = total === 0;
   }
   const btnRe = $('btnReanalyzeLow'), btnNext = $('btnNextLowConf');
   if (btnRe && !btnRe.dataset.busy) {
@@ -1310,6 +1403,301 @@ async function reanalyzeLowConfidenceUI(onlyLineIdx = null) {
     }
   } finally {
     if (btn) { delete btn.dataset.busy; }
+    syncQualityControlPanel();
+  }
+}
+
+async function autoOptimizeQcAndCoordinationUI() {
+  if (!S.project || !S.plan || !Array.isArray(S.plan.lines) || !S.plan.lines.length) return null;
+  const btn = $('btnAutoQcPerform');
+  if (btn && btn.dataset.busy === '1') return null;
+
+  const cp = qcCopy();
+  const uiLang = (document.documentElement.lang || 'fr').toLowerCase();
+  const btnLbl = $('btnAutoQcPerformLbl');
+  const rep = $('qcAutoReport');
+  const typesetOn = Boolean(S.plan ? S.plan.typeset : S.project.typeset);
+
+  const setReportBusy = (stageText, pct = 28, subText = '') => {
+    if (!rep) return;
+    rep.hidden = false;
+    rep.classList.remove('is-warn', 'is-error');
+    rep.classList.add('is-busy');
+    const barPct = Math.max(8, Math.min(100, Math.round(pct)));
+    rep.innerHTML =
+      `<div class="qc-auto-rep-head"><span>⏳ ${escapeHtml(stageText)}</span><span class="qc-auto-rep-engine mono">${barPct}%</span></div>` +
+      `<div class="qc-auto-prog" aria-hidden="true"><span class="qc-auto-prog-fill" style="width:${barPct}%"></span></div>` +
+      (subText ? `<p class="qc-auto-note">${escapeHtml(subText)}</p>` : '');
+  };
+
+  if (btn) {
+    btn.dataset.busy = '1';
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    btn.classList.add('is-running');
+  }
+  if (btnLbl) btnLbl.textContent = cp.autoRunning;
+
+  try {
+    ensureTimingMaps();
+    const gShift = J.clamp(Number(S.project.timing.globalOffsetMs) || 0, -600, 600) / 1000 - (typesetOn ? 0.2 : 0);
+
+    // Stage 1: Baseline Voice ↔ Video Coordination Audit (accounting cleanly for typeset 200ms lead)
+    const beforeAudit = J.analyzeVocalToVideoCoordination
+      ? J.analyzeVocalToVideoCoordination(S.audio, S.plan.lines, S.project.timing, { typeset: typesetOn })
+      : { hasAudio: false, overallConfidencePct: 75, avgAbsErrMs: 0, medianVideoDriftMs: 0, lowCount: 0, tightSyncPct: 0, weakLineIndices: [], perLine: [] };
+
+    setReportBusy(
+      cp.stageAudit,
+      32,
+      `${cp.repKpiConf} ${beforeAudit.overallConfidencePct}% · ${beforeAudit.lowCount} ${cp.low.toLowerCase()} · ${cp.repKpiDrift} ±${beforeAudit.avgAbsErrMs} ms`,
+    );
+
+    const songLang = J.resolveLang ? J.resolveLang(S.project) : 'auto';
+    const rawLinesInput = S.plan.lines.map((ln, idx) => {
+      const words = ln.interlude ? [] : getEditableWords(idx).map(w => Object.assign({}, w));
+      const rawStart = words.length ? words[0].start : Math.max(0, (Number(ln.start) || 0) - gShift);
+      const rawEnd = words.length ? words[words.length - 1].end : Math.max(rawStart + 0.2, (Number(ln.visEnd || ln.end) || rawStart + 2) - gShift);
+      return {
+        index: idx,
+        start: +rawStart.toFixed(3),
+        end: +rawEnd.toFixed(3),
+        text: ln.text,
+        interlude: Boolean(ln.interlude),
+        isInstrumentalSection: Boolean(ln.interlude),
+        language: (ln.meta && ln.meta.language) || songLang,
+        speaker: (ln.meta && ln.meta.speaker) || 'Lead',
+        unclear: Boolean(ln.meta && ln.meta.unclear),
+        flags: (ln.meta && ln.meta.flags) || [],
+        words,
+      };
+    });
+
+    // Stage 2: Extract bounded target audio clips (<= 14s per slice centered on weak words) + call AI /api/qc-auto-perform
+    setReportBusy(cp.stageAi, 64);
+    const audioSlices = [];
+    const blobToB64 = (blob) => new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => { const s = String(r.result || ''); res(s.includes(',') ? s.split(',')[1] : s); };
+      r.onerror = rej;
+      r.readAsDataURL(blob);
+    });
+
+    const priorityIndices = Array.isArray(beforeAudit.weakLineIndices) && beforeAudit.weakLineIndices.length
+      ? beforeAudit.weakLineIndices.slice(0, 5)
+      : rawLinesInput.filter(l => !l.interlude).slice(0, 3).map(l => l.index);
+
+    if (S.audio && S.audio.buffer && J.audioMonoWavWindow) {
+      for (const pIdx of priorityIndices) {
+        const targetLn = rawLinesInput[pIdx];
+        if (!targetLn || targetLn.interlude || !targetLn.words.length) continue;
+        let padS = Math.max(0, targetLn.start - 0.35);
+        let padE = Math.min(S.audio.duration || (targetLn.end + 0.6), targetLn.end + 0.35);
+        if (padE - padS > 14) {
+          const weakW = targetLn.words.find(w => !w.validated && ((w.alignmentConfidence ?? 1) < 0.78 || (w.recognitionConfidence ?? 1) < 0.76)) || targetLn.words[0];
+          const mid = Number(weakW && weakW.start) || ((padS + padE) * 0.5);
+          padS = Math.max(0, mid - 7);
+          padE = Math.min(S.audio.duration || (padS + 14), padS + 14);
+        }
+        try {
+          const wavBlob = J.audioMonoWavWindow(S.audio.buffer, padS, Math.max(0.3, padE - padS), 16000);
+          const audioBase64 = await blobToB64(wavBlob);
+          let separatedVocalBase64 = '';
+          if (J.audioVocalSeparatedWavWindow && (!S.audio.preprocessing || S.audio.preprocessing.shouldSeparate !== false)) {
+            const sepBlob = J.audioVocalSeparatedWavWindow(S.audio.buffer, padS, Math.max(0.3, padE - padS), 16000);
+            separatedVocalBase64 = await blobToB64(sepBlob);
+          }
+          const hasUnc = targetLn.words.some(w => (w.recognitionConfidence ?? 1) < 0.76 || /\[?unclear/i.test(w.text));
+          audioSlices.push({
+            lineIdx: pIdx,
+            startSec: padS,
+            endSec: padE,
+            existingWords: targetLn.words,
+            needsTranscriptRefresh: hasUnc,
+            audioBase64,
+            separatedVocalBase64,
+          });
+        } catch {}
+      }
+    }
+
+    let serverData = null;
+    let aiNotice = '';
+    const postAutoPerform = (slicesPayload) => fetch('/api/qc-auto-perform', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lines: beforeAudit.perLine.length ? beforeAudit.perLine : rawLinesInput,
+        coordinationAudit: {
+          medianVideoDriftMs: beforeAudit.medianVideoDriftMs,
+          avgAbsErrMs: beforeAudit.avgAbsErrMs,
+          lowConfCount: beforeAudit.lowCount,
+          overlapCount: beforeAudit.overlapCount,
+          microGapCount: beforeAudit.microGapCount,
+        },
+        audioSlices: slicesPayload,
+        vocalSegments: (S.audio && Array.isArray(S.audio.vocalSegments)) ? S.audio.vocalSegments.slice(0, 32) : [],
+        qualityConditions: (S.audio && S.audio.qualityConditions) || null,
+        globalOffsetMs: Number(S.project.timing.globalOffsetMs) || 0,
+        typesetLeadActive: typesetOn,
+        lang: songLang,
+        uiLang,
+      }),
+    });
+
+    try {
+      let resp = await postAutoPerform(audioSlices);
+      if (resp.status === 413 && audioSlices.length) {
+        const leanSlices = audioSlices.map(sl => Object.assign({}, sl, { separatedVocalBase64: '' }));
+        resp = await postAutoPerform(leanSlices);
+      }
+      if (resp.ok) {
+        serverData = await resp.json();
+        if (serverData && (serverData.aiStatus === 'degraded' || serverData.aiStatus === 'unavailable')) {
+          aiNotice = serverData.requiresBilling
+            ? cp.aiWarnBilling
+            : serverData.requiresApiKey
+            ? cp.aiWarnKey
+            : cp.aiWarnDegraded;
+        }
+      } else {
+        let errJson = null;
+        try { errJson = await resp.json(); } catch {}
+        aiNotice = (errJson && errJson.requiresBilling)
+          ? cp.aiWarnBilling
+          : (errJson && errJson.requiresApiKey)
+          ? cp.aiWarnKey
+          : cp.aiWarnDegraded;
+      }
+    } catch {
+      aiNotice = cp.aiWarnDegraded;
+    }
+
+    // Stage 3: Apply AI + 10ms Acoustic Precision Optimization + Karaoke Video Fluidity Smoothing first,
+    // then calibrate globalOffsetMs from post-reanchor residual drift (prevents double-shifting).
+    setReportBusy(cp.stageSmooth, 92);
+    pushEdit();
+
+    const optRes = J.autoOptimizeKaraokePrecision
+      ? J.autoOptimizeKaraokePrecision(S.audio, rawLinesInput, {
+          lang: songLang,
+          targetLineIndices: priorityIndices,
+          repairedSlices: (serverData && serverData.repairedSlices) || [],
+          orthographyFixes: (serverData && serverData.orthographyFixes) || [],
+        })
+      : { lines: rawLinesInput, validationSummary: null, stats: { reanalyzedLines: 0, upgradedWords: 0, fixedOverlaps: 0, smoothedGaps: 0 } };
+
+    if (optRes && Array.isArray(optRes.lines)) {
+      let prevLineStart = 0;
+      optRes.lines.forEach((rl, idx) => {
+        if (!rl || rl.interlude || rl.isInstrumentalSection) return;
+        if (Array.isArray(rl.words) && rl.words.length) {
+          S.project.timing.wordTimes[idx] = rl.words;
+          const firstS = +Math.max(prevLineStart, Number(rl.words[0].start) || 0).toFixed(3);
+          const lastE = +Math.max(firstS + 0.12, Number(rl.words[rl.words.length - 1].end) || (firstS + 0.5)).toFixed(3);
+          if (!rl.words[0].validated || S.project.timing.lineTimes[idx] == null || firstS < S.project.timing.lineTimes[idx]) {
+            S.project.timing.lineTimes[idx] = firstS;
+          }
+          prevLineStart = +(S.project.timing.lineTimes[idx] + 0.05).toFixed(3);
+          if ((S.project.timing.lineEnds && S.project.timing.lineEnds[idx] != null) || (lastE - firstS > 3.45)) {
+            S.project.timing.lineEnds[idx] = +Math.max(Number(S.project.timing.lineEnds[idx]) || 0, lastE).toFixed(3);
+          }
+          const planTxtNorm = String((S.plan.lines[idx] && S.plan.lines[idx].text) || '').replace(/\s+/g, '');
+          const wordsTxtNorm = rl.words.map(w => String(w.text || '')).join('').replace(/\s+/g, '');
+          if (wordsTxtNorm && wordsTxtNorm !== planTxtNorm && !/^\[?unclear/i.test(String(rl.text || ''))) {
+            syncLineTextFromWords(idx, rl.words);
+          }
+        }
+        if (rl.flags) {
+          S.project.timing.lineMeta[idx] = Object.assign({}, S.project.timing.lineMeta[idx] || {}, {
+            flags: rl.flags,
+            unclear: Boolean(rl.unclear),
+          });
+        }
+      });
+      if (S.project.detection && optRes.validationSummary) {
+        S.project.detection.validationSummary = optRes.validationSummary;
+        S.project.detection.hasUnclearSections = optRes.validationSummary.lowConfidenceWords > 0;
+      }
+    }
+
+    replan();
+    let midAudit = J.analyzeVocalToVideoCoordination
+      ? J.analyzeVocalToVideoCoordination(S.audio, S.plan.lines, S.project.timing, { typeset: typesetOn })
+      : beforeAudit;
+
+    let appliedOffsetDeltaMs = 0;
+    if (midAudit.hasAudio) {
+      const residualShift = Math.abs(midAudit.medianVideoDriftMs) >= 18
+        ? -midAudit.medianVideoDriftMs
+        : ((!optRes.stats.reanalyzedLines && serverData && Math.abs(Number(serverData.recommendedOffsetAdjustMs) || 0) >= 18)
+          ? Math.round(Number(serverData.recommendedOffsetAdjustMs))
+          : 0);
+      if (Math.abs(residualShift) >= 18) {
+        const prevOff = Number(S.project.timing.globalOffsetMs) || 0;
+        const candOff = J.clamp(Math.round(prevOff + residualShift), -600, 600);
+        if (candOff !== prevOff) {
+          S.project.timing.globalOffsetMs = candOff;
+          replan();
+          const candAudit = J.analyzeVocalToVideoCoordination
+            ? J.analyzeVocalToVideoCoordination(S.audio, S.plan.lines, S.project.timing, { typeset: typesetOn })
+            : midAudit;
+          if (candAudit.avgAbsErrMs <= midAudit.avgAbsErrMs) {
+            appliedOffsetDeltaMs = candOff - prevOff;
+            midAudit = candAudit;
+          } else {
+            S.project.timing.globalOffsetMs = prevOff;
+            replan();
+          }
+        }
+      }
+    }
+
+    flushSave();
+    syncUI();
+
+    const afterAudit = midAudit;
+    const fixedLowCount = Math.max(optRes.stats.upgradedWords || 0, Math.max(0, beforeAudit.lowCount - afterAudit.lowCount));
+    const flowFixes = (optRes.stats.fixedOverlaps || 0) + (optRes.stats.smoothedGaps || 0);
+    const engineTag = (serverData && serverData.engineUsed) ? String(serverData.engineUsed) : (S.audio ? '10ms Acoustic' : 'Timing');
+    const diagNote = (serverData && (serverData.coordinationDiagnosis || serverData.optimizationSummary))
+      ? `${serverData.coordinationDiagnosis || ''} ${serverData.optimizationSummary || ''}`.trim()
+      : (!afterAudit.hasAudio ? cp.noAudioNote : '');
+
+    if (rep) {
+      rep.hidden = false;
+      rep.classList.remove('is-busy', 'is-error');
+      rep.classList.toggle('is-warn', Boolean(aiNotice));
+      const headTitle = aiNotice ? cp.repTitleWarn : cp.repTitleDone;
+      const headIco = aiNotice ? '⚠' : '✓';
+      const driftBeforeTxt = beforeAudit.hasAudio ? `±${beforeAudit.avgAbsErrMs} ms` : '—';
+      const driftAfterTxt = afterAudit.hasAudio ? `±${afterAudit.avgAbsErrMs} ms` : '—';
+      const calSuffix = appliedOffsetDeltaMs !== 0 ? ` (${appliedOffsetDeltaMs > 0 ? '+' : ''}${appliedOffsetDeltaMs} ms)` : '';
+      rep.innerHTML =
+        `<div class="qc-auto-rep-head"><span>${headIco} ${escapeHtml(headTitle)}</span><span class="qc-auto-rep-engine mono">${escapeHtml(engineTag)}</span></div>` +
+        `<div class="qc-auto-kpis">` +
+          `<div class="qc-auto-kpi"><span>${escapeHtml(cp.repKpiConf)}</span><strong>${beforeAudit.overallConfidencePct}% → ${afterAudit.overallConfidencePct}%</strong></div>` +
+          `<div class="qc-auto-kpi"><span>${escapeHtml(cp.repKpiDrift)}</span><strong>${escapeHtml(driftBeforeTxt)} → ${escapeHtml(driftAfterTxt)}${escapeHtml(calSuffix)}</strong></div>` +
+          `<div class="qc-auto-kpi"><span>${escapeHtml(cp.repKpiLow)}</span><strong>${beforeAudit.lowCount} → ${afterAudit.lowCount} (-${fixedLowCount})</strong></div>` +
+          `<div class="qc-auto-kpi"><span>${escapeHtml(cp.repKpiFlow)}</span><strong>${afterAudit.tightSyncPct}% · ${flowFixes} ${escapeHtml(cp.repFlowUnit)}</strong></div>` +
+        `</div>` +
+        (aiNotice ? `<p class="qc-auto-alert">${escapeHtml(aiNotice)}</p>` : '') +
+        (diagNote ? `<p class="qc-auto-note">${escapeHtml(diagNote)}</p>` : '');
+    }
+
+    recordWork(
+      'auto_qc_perform',
+      'sync',
+      `${beforeAudit.overallConfidencePct}%→${afterAudit.overallConfidencePct}% · ±${beforeAudit.avgAbsErrMs}→±${afterAudit.avgAbsErrMs}ms`,
+    );
+    toast(cp.autoToast(beforeAudit.overallConfidencePct, afterAudit.overallConfidencePct, fixedLowCount));
+    return { beforeAudit, afterAudit, stats: optRes.stats, appliedOffsetDeltaMs, serverData, aiNotice };
+  } finally {
+    if (btn) {
+      delete btn.dataset.busy;
+      btn.setAttribute('aria-busy', 'false');
+      btn.classList.remove('is-running');
+    }
     syncQualityControlPanel();
   }
 }
@@ -2789,11 +3177,28 @@ function getEditableWords(li) {
   ensureTimingMaps();
   const saved = S.project.timing.wordTimes[li];
   if (Array.isArray(saved) && saved.length) return saved.map(w => Object.assign({}, w));
+  const globalShift = J.clamp(Number(S.project.timing.globalOffsetMs) || 0, -600, 600) / 1000;
+  const leadShift = (S.plan && S.plan.typeset ? 0.2 : 0) - globalShift;
   if (Array.isArray(ln.wordsTimed) && ln.wordsTimed.length) {
-    S.project.timing.wordTimes[li] = ln.wordsTimed.map(w => Object.assign({}, w));
+    S.project.timing.wordTimes[li] = ln.wordsTimed.map(w => {
+      const ws = +Math.max(0, (Number(w.start) || 0) + leadShift).toFixed(3);
+      const we = +Math.max(ws + 0.02, (Number(w.end) || (ws + 0.15)) + leadShift).toFixed(3);
+      return Object.assign({}, w, {
+        start: ws,
+        end: we,
+        chars: Array.isArray(w.chars) && w.chars.length
+          ? w.chars.map(ch => ({
+              ch: ch.ch,
+              start: +Math.max(0, (Number(ch.start) || 0) + leadShift).toFixed(3),
+              end: +Math.max(0.008, (Number(ch.end) || 0.02) + leadShift).toFixed(3),
+            }))
+          : (J.buildCharTimings ? J.buildCharTimings(w.text, ws, we, S.audio) : []),
+      });
+    });
     return S.project.timing.wordTimes[li].map(w => Object.assign({}, w));
   }
-  const s = ln.start, e = ln.visEnd || ln.end;
+  const s = Math.max(0, (Number(ln.start) || 0) + leadShift);
+  const e = Math.max(s + 0.14, (Number(ln.visEnd || ln.end) || (s + 2)) + leadShift);
   const aligned = J.alignWordsAcoustic ? J.alignWordsAcoustic(S.audio, ln.text, s, e, J.resolveLang(S.project)) : [];
   S.project.timing.wordTimes[li] = aligned;
   return aligned.map(w => Object.assign({}, w));
@@ -3488,6 +3893,7 @@ function edGo(d) {
   S.project.lyrics = o.lyrics; S.project.timing.lineTimes = o.lineTimes; S.project.timing.lineEnds = o.lineEnds || {}; S.project.timing.wordTimes = o.wordTimes || {}; S.project.timing.lineMeta = o.lineMeta || {}; S.project.detection = o.detection || null; $('lyrics').value = o.lyrics;
   if ('translation' in o && o.translation) S.project.translation = o.translation;
   if ('ov' in o) { S.project.overrides = o.ov || {}; S.project.exportRange = o.range || null; }
+  clearQcAutoReport();
   replan(); syncTranslationControls(); syncAudioDetectPanel(); flushSave(); updateEditBtns();
   toast(d < 0 ? '元に戻しました' : 'やり直しました');
 }
@@ -3500,6 +3906,7 @@ function loadLrc(text, sub) {
   pause();
   P.lyrics = String(text).replace(/^\ufeff/, '').replace(/\r\n?/g, '\n').trim(); P.timing.lineTimes = {}; P.timing.lineEnds = {}; P.timing.wordTimes = {}; P.timing.lineMeta = {}; P.overrides = {}; P.exportRange = null;
   $('lyrics').value = P.lyrics;
+  clearQcAutoReport();
   replan(); flushSave(); updateEditBtns(); seek(0);
   const n = J.parseLyrics(P.lyrics).lines.filter(l => l.lrc != null).length;
   if (sub) toast(`字幕ファイルを読み込みました（${sub.lines} 行・間奏 ${sub.gaps} か所・「元に戻す」で戻せます）`);
@@ -3647,6 +4054,7 @@ function clearLyrics() {
   ED.undo.push(JSON.stringify(snap)); if (ED.undo.length > 60) ED.undo.shift(); ED.redo = [];
   pause();
   P.lyrics = ''; P.timing.lineTimes = {}; P.timing.lineEnds = {}; P.timing.wordTimes = {}; P.timing.lineMeta = {}; P.overrides = {}; P.exportRange = null; $('lyrics').value = '';
+  clearQcAutoReport();
   replan(); flushSave(); updateEditBtns(); seek(0);
   toast('歌詞を消しました（「元に戻す」か Ctrl+Z で戻せます）');
 }
@@ -3667,6 +4075,7 @@ async function resetAll() {
   ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
   TL.z = 1; TL.off = 0;
   $('lyrics').value = ''; fontKey = '';
+  clearQcAutoReport();
   syncUI(); replan(); commit(); updateEditBtns(); flushSave(); seek(0);
   toast('初期化しました');
 }
@@ -6625,6 +7034,7 @@ function bind() {
         if (!ln || joined !== String(ln.text || '').replace(/\s+/g, '')) delete wt[k];
       });
     }
+    clearQcAutoReport();
     replanSoon(260);
   });
   const btnKh = $('btnKaraokeHud');
@@ -6728,7 +7138,7 @@ function bind() {
   $('offset').addEventListener('change', e => { S.project.timing.offset = Math.max(0, parseFloat(e.target.value) || 0); replan(); });
   $('lineScale').addEventListener('change', e => { S.project.timing.lineScale = J.clamp(parseFloat(e.target.value) || 1, 0.3, 4); replan(); });
   $('snap').addEventListener('change', e => { S.project.timing.snap = e.target.checked; replan(); });
-  $('btnResetTimes').addEventListener('click', () => { pushEdit(); S.project.timing.lineTimes = {}; S.project.timing.lineEnds = {}; S.project.timing.wordTimes = {}; replan(); });
+  $('btnResetTimes').addEventListener('click', () => { pushEdit(); S.project.timing.lineTimes = {}; S.project.timing.lineEnds = {}; S.project.timing.wordTimes = {}; clearQcAutoReport(); replan(); });
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
   const adz = $('audioDropzone');
   if (adz) {
@@ -7435,6 +7845,7 @@ function bind() {
     if (w) playRange(Math.max(0, w.start - 0.12), w.end + 0.12);
   });
   if ($('tlReanalyzeBtn')) $('tlReanalyzeBtn').addEventListener('click', () => reanalyzeLowConfidenceUI(EDL.lineIdx));
+  if ($('btnAutoQcPerform')) $('btnAutoQcPerform').addEventListener('click', () => autoOptimizeQcAndCoordinationUI());
   if ($('btnReanalyzeLow')) $('btnReanalyzeLow').addEventListener('click', () => reanalyzeLowConfidenceUI(null));
   if ($('btnNextLowConf')) $('btnNextLowConf').addEventListener('click', () => jumpToNextLowConfWord());
   const bindTlMsInput = (id, edge) => {
@@ -7687,6 +8098,7 @@ async function openProjectFile(f) {
     if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = '';
     // another project: undo and 前の案 / 次の案 belonged to the old one
     ED.undo = []; ED.redo = []; H.list = []; H.i = -1;
+    clearQcAutoReport();
     syncUI(); replan(); restoreFonts(); commit(); updateEditBtns(); flushSave();
   }
   catch (err) { showMsg('プロジェクトを読み込めませんでした'); setTimeout(() => showMsg(null), 2500); }
@@ -7725,6 +8137,7 @@ async function loadAudioFile(f, restored) {
     if (my !== audioSeq) return false;
     S.audio = a;
     S.audioFile = f || null;
+    if (!restored) clearQcAutoReport();
     $('audioName').textContent = `${f.name}（${J.fmtTime(S.audio.duration)}・約${S.audio.bpm}BPM）` + (restored ? '・前回の曲' : '');
     S.project.audioName = f.name;
     if (!restored && J.saveSong) J.saveSong(f);             // kept in this browser: a reload does not drop the song from exports
@@ -7908,10 +8321,17 @@ function cloudCopy() {
       saving: 'Enregistrement sur Firebase…',
       savedOk: '☁ Chanson et données enregistrées sur Firebase !',
       savedNoAudio: '☁ Projet enregistré sur Firebase (audio trop lourd > 20 Mo conservé en local).',
+      savedPartialAudio: '☁ Paroles et projet enregistrés sur Firebase (transfert audio incomplet — réessayez plus tard).',
       loadedOk: '☁ Chanson chargée depuis votre compte Google !',
       deletedOk: '🗑 Chanson supprimée de Firebase.',
       dlOk: '⬇ Téléchargement lancé :',
       dlNoAudio: 'Aucun fichier audio stocké sur le cloud pour cette entrée (téléchargez LRC, SRT, VTT, JSON ou TXT).',
+      verifiedBadge: '✓ Vérifié',
+      retryPopup: '↻ Réessayer',
+      refreshSession: '↻ Vérifier le compte',
+      signingIn: 'Connexion…',
+      savingBtn: '⏳ Sauvegarde…',
+      authCancelledToast: 'Connexion Google annulée.',
       vSavedOk: '✓ Configuration Vercel enregistrée.',
       vTestOk: '✓ App Vercel joignable',
       vTestLocal: '✓ Endpoints /api/* prêts sur ce serveur (renseignez votre URL Vercel pour tester l’app distante).',
@@ -7993,10 +8413,17 @@ function cloudCopy() {
       saving: 'Saving to Firebase…',
       savedOk: '☁ Song & data saved to Firebase!',
       savedNoAudio: '☁ Project saved to Firebase (audio > 20 MB kept locally).',
+      savedPartialAudio: '☁ Lyrics & project saved to Firebase (audio chunk upload incomplete — please retry).',
       loadedOk: '☁ Song loaded from your Google account!',
       deletedOk: '🗑 Song deleted from Firebase.',
       dlOk: '⬇ Download started:',
       dlNoAudio: 'No cloud audio stored for this song (download LRC, SRT, VTT, JSON, or TXT instead).',
+      verifiedBadge: '✓ Verified',
+      retryPopup: '↻ Retry',
+      refreshSession: '↻ Check verification',
+      signingIn: 'Signing in…',
+      savingBtn: '⏳ Saving…',
+      authCancelledToast: 'Google sign-in cancelled.',
       vSavedOk: '✓ Vercel settings saved.',
       vTestOk: '✓ Vercel app reachable',
       vTestLocal: '✓ Local /api/* endpoints ready (enter your Vercel URL to ping your deployed app).',
@@ -8077,10 +8504,17 @@ function cloudCopy() {
     saving: 'Firebaseに保存中…',
     savedOk: '☁ 曲とデータをFirebaseに保存しました！',
     savedNoAudio: '☁ プロジェクトをFirebaseに保存しました（大容量音声はローカル保持）。',
+    savedPartialAudio: '☁ 歌詞とプロジェクトをFirebaseに保存しました（音声のアップロードが一部未完了です）。',
     loadedOk: '☁ Googleアカウントから曲を読み込みました！',
     deletedOk: '🗑 Firebaseから削除しました。',
     dlOk: '⬇ ダウンロード開始:',
     dlNoAudio: 'この曲にはクラウド音声が保存されていません（LRC / SRT / VTT / JSON / TXT はダウンロード可能）。',
+    verifiedBadge: '✓ 認証済み',
+    retryPopup: '↻ 再試行',
+    refreshSession: '↻ 状態を再確認',
+    signingIn: '接続中…',
+    savingBtn: '⏳ 保存中…',
+    authCancelledToast: 'Googleログインがキャンセルされました。',
     vSavedOk: '✓ Vercel設定を保存しました。',
     vTestOk: '✓ Vercelアプリへ接続できました',
     vTestLocal: '✓ ローカル /api/* 準備完了（デプロイ先URLを入力すると疎通確認できます）。',
@@ -8173,24 +8607,31 @@ function setCloudTab(tab) {
   });
   syncSlidingMenus(true);
 }
+let cloudAuthRunner = null;
 function showCloudError(err) {
   const box = $('cloudErrorBox');
   if (!box) return;
   if (!err) {
     box.hidden = true;
+    box.className = 'cloud-err';
     box.textContent = '';
     return;
   }
   const lang = document.documentElement.lang || 'fr';
+  const c = cloudCopy();
   const fmt =
     window.AlexuraCloud && typeof window.AlexuraCloud.formatAuthError === 'function'
       ? window.AlexuraCloud.formatAuthError(err, lang)
       : {
           code: '',
+          severity: 'error',
           message: err instanceof Error ? err.message : String(err),
+          hint: '',
+          canRetryPopup: false,
           canRetryRedirect: false,
           shouldOpenNewTab: false,
           isCancelled: false,
+          isRedirecting: false,
         };
   let msg = fmt.message || '';
   if (!window.AlexuraCloud || typeof window.AlexuraCloud.formatAuthError !== 'function') {
@@ -8199,15 +8640,63 @@ function showCloudError(err) {
       if (parsed && parsed.error) msg = `${parsed.error}${parsed.path ? ' (' + parsed.path + ')' : ''}`;
     } catch (e) {}
   }
+
+  box.className = 'cloud-err' + (fmt.severity === 'info' ? ' is-info' : fmt.severity === 'warn' ? ' is-warn' : '');
   box.innerHTML = '';
+
+  const top = document.createElement('div');
+  top.className = 'cloud-err-top';
   const txt = document.createElement('div');
   txt.className = 'cloud-err-msg';
   txt.textContent = msg;
-  box.appendChild(txt);
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'ghost small cloud-err-dismiss';
+  closeBtn.textContent = '✕';
+  closeBtn.setAttribute('aria-label', 'Fermer');
+  closeBtn.addEventListener('click', () => showCloudError(null));
+  top.append(txt, closeBtn);
+  box.appendChild(top);
 
-  if (fmt.canRetryRedirect || fmt.shouldOpenNewTab) {
+  if (fmt.hint) {
+    const hintEl = document.createElement('div');
+    hintEl.className = 'cloud-err-hint';
+    hintEl.textContent = fmt.hint;
+    box.appendChild(hintEl);
+  }
+
+  const showRefreshBtn = fmt.code === 'auth/email-not-verified' && window.AlexuraCloud && typeof window.AlexuraCloud.reloadUserSession === 'function';
+  if (fmt.canRetryPopup || fmt.canRetryRedirect || fmt.shouldOpenNewTab || showRefreshBtn) {
     const actRow = document.createElement('div');
     actRow.className = 'cloud-err-acts';
+    if (showRefreshBtn) {
+      const btnChk = document.createElement('button');
+      btnChk.type = 'button';
+      btnChk.className = 'primary small';
+      btnChk.textContent = c.refreshSession;
+      btnChk.addEventListener('click', async () => {
+        try {
+          const u = await window.AlexuraCloud.reloadUserSession();
+          if (u && u.emailVerified !== false) {
+            showCloudError(null);
+            await attachCloudListeners(u);
+          }
+        } catch (rErr) {
+          showCloudError(rErr);
+        }
+      });
+      actRow.appendChild(btnChk);
+    }
+    if (fmt.canRetryPopup && typeof cloudAuthRunner === 'function') {
+      const btnRetry = document.createElement('button');
+      btnRetry.type = 'button';
+      btnRetry.className = 'primary small';
+      btnRetry.textContent = c.retryPopup;
+      btnRetry.addEventListener('click', () => {
+        cloudAuthRunner({ switchAccount: !!S.cloudUser, openModalOnError: true });
+      });
+      actRow.appendChild(btnRetry);
+    }
     if (fmt.canRetryRedirect && window.AlexuraCloud && typeof window.AlexuraCloud.signInGoogleRedirect === 'function') {
       const btnRedir = document.createElement('button');
       btnRedir.type = 'button';
@@ -8603,12 +9092,15 @@ let cloudSaveInFlight = false;
 async function saveCurrentSongToFirebase(asNew = false, silent = false) {
   const c = cloudCopy();
   if (!window.AlexuraCloud) return null;
-  if (cloudSaveInFlight && silent) return null;
+  if (cloudSaveInFlight) return null;
   let activeUser = S.cloudUser || (typeof window.AlexuraCloud.getUser === 'function' ? window.AlexuraCloud.getUser() : null);
   if (!activeUser) {
+    if (silent) return null;
     openCloudHub('songs');
     try {
-      const signedUser = await window.AlexuraCloud.signInGoogle();
+      const signedUser = typeof cloudAuthRunner === 'function'
+        ? await cloudAuthRunner({ switchAccount: false, openModalOnError: true })
+        : await window.AlexuraCloud.signInGoogle();
       activeUser = S.cloudUser || signedUser || (typeof window.AlexuraCloud.getUser === 'function' ? window.AlexuraCloud.getUser() : null);
       if (activeUser) S.cloudUser = activeUser;
     } catch (err) {
@@ -8617,11 +9109,24 @@ async function saveCurrentSongToFirebase(asNew = false, silent = false) {
     }
   }
   if (!activeUser) return null;
-  if (cloudSaveInFlight) return null;
+  if (activeUser.emailVerified === false) {
+    if (!silent) {
+      openCloudHub('songs');
+      showCloudError(new Error('AUTH_EMAIL_NOT_VERIFIED'));
+    }
+    return null;
+  }
   cloudSaveInFlight = true;
   showCloudError(null);
+  const saveBtns = ['btnCloudSave', 'btnFbSaveSong', 'btnFbSaveNew'].map(id => $(id)).filter(Boolean);
+  saveBtns.forEach(b => { b.disabled = true; });
+  if ($('btnCloudSave')) $('btnCloudSave').textContent = c.savingBtn;
+  if ($('btnFbSaveSong')) $('btnFbSaveSong').textContent = c.savingBtn;
   if (!silent) toast(c.saving);
   try {
+    if (typeof window.AlexuraCloud.ensureUserReady === 'function') {
+      await window.AlexuraCloud.ensureUserReady(activeUser).catch(() => {});
+    }
     const ownedByOther = S.project && S.project.cloudOwnerUid && S.project.cloudOwnerUid !== activeUser.uid;
     const effectiveSongId = asNew || ownedByOther ? undefined : (S.cloudSongId || undefined);
     const vCfg = collectVercelInputs();
@@ -8647,21 +9152,31 @@ async function saveCurrentSongToFirebase(asNew = false, silent = false) {
     try { localStorage.setItem(LS_KEY, JSON.stringify(S.project)); } catch (e) {}
     if (!silent) {
       recordWork('cloud_save', 'save', res.audioSaved ? 'Projet + audio complet' : 'Paroles & synchro', res.songId);
-      toast(res.audioTooLarge ? c.savedNoAudio : c.savedOk);
+      if (res.audioPartialError) {
+        toast(c.savedPartialAudio);
+      } else {
+        toast(res.audioTooLarge ? c.savedNoAudio : c.savedOk);
+      }
     }
     if (vCfg.autoSync && vCfg.appUrl) {
       await syncSongToVercel(res.songId, null, true);
     }
     return res;
   } catch (err) {
-    showCloudError(err);
-    const fmtErr = window.AlexuraCloud && typeof window.AlexuraCloud.formatAuthError === 'function'
-      ? window.AlexuraCloud.formatAuthError(err, document.documentElement.lang || 'fr').message
-      : (err && err.message ? err.message : 'Erreur');
-    if (!silent) toast('Firebase: ' + String(fmtErr).slice(0, 90));
+    if (!silent) {
+      openCloudHub('songs');
+      showCloudError(err);
+      const fmtErr = window.AlexuraCloud && typeof window.AlexuraCloud.formatAuthError === 'function'
+        ? window.AlexuraCloud.formatAuthError(err, document.documentElement.lang || 'fr').message
+        : (err && err.message ? err.message : 'Erreur');
+      toast('Firebase: ' + String(fmtErr).slice(0, 90));
+    }
     return null;
   } finally {
     cloudSaveInFlight = false;
+    saveBtns.forEach(b => { b.disabled = false; });
+    if ($('btnCloudSave')) $('btnCloudSave').textContent = c.btnTop;
+    if ($('btnFbSaveSong')) $('btnFbSaveSong').textContent = c.saveSong;
   }
 }
 async function loadCloudSongIntoStudio(songId) {
@@ -8834,16 +9349,22 @@ async function attachCloudListeners(user) {
   tearDownCloudListeners();
   if (!user || !window.AlexuraCloud) return;
   try {
+    if (typeof window.AlexuraCloud.ensureUserReady === 'function') {
+      await window.AlexuraCloud.ensureUserReady(user);
+    }
     const vCfg = await window.AlexuraCloud.loadVercelConfig();
     if (vCfg) {
       applyVercelInputs(vCfg);
       try { localStorage.setItem(LS_VERCEL, JSON.stringify(vCfg)); } catch (e) {}
     }
   } catch (err) {
-    // Non-fatal if user email isn't verified or rules defer initial profile sync
     const fmt = typeof window.AlexuraCloud.formatAuthError === 'function'
       ? window.AlexuraCloud.formatAuthError(err, document.documentElement.lang || 'fr')
       : null;
+    if (fmt && fmt.code === 'auth/email-not-verified') {
+      showCloudError(err);
+      return;
+    }
     if (!fmt || !fmt.isCancelled) showCloudError(err);
   }
   cloudSongsUnsub = window.AlexuraCloud.subscribeUserSongs(
@@ -8869,9 +9390,13 @@ function bindCloudStudio() {
 
   const runGoogleAuth = async ({ switchAccount = false, openModalOnError = true } = {}) => {
     if (!window.AlexuraCloud) { openCloudHub('songs'); return null; }
+    const c = cloudCopy();
+    const lang = document.documentElement.lang || 'fr';
     showCloudError(null);
     const btns = ['btnGoogleAuth', 'btnFbSignIn', 'btnFbSwitchAccount'].map(id => $(id)).filter(Boolean);
-    btns.forEach(b => { b.disabled = true; });
+    btns.forEach(b => { b.disabled = true; b.setAttribute('aria-busy', 'true'); });
+    if ($('btnGoogleAuth')) $('btnGoogleAuth').classList.add('is-loading');
+    if ($('hdrGoogleLabel') && !S.cloudUser) $('hdrGoogleLabel').textContent = c.signingIn;
     try {
       const fn = switchAccount && typeof window.AlexuraCloud.switchAccountGoogle === 'function'
         ? window.AlexuraCloud.switchAccountGoogle
@@ -8880,18 +9405,30 @@ function bindCloudStudio() {
       showCloudError(null);
       return u;
     } catch (err) {
-      // Restore active session listeners if an account-switch popup was cancelled cleanly
+      const fmt = typeof window.AlexuraCloud.formatAuthError === 'function'
+        ? window.AlexuraCloud.formatAuthError(err, lang)
+        : null;
       const activeUser = typeof window.AlexuraCloud.getUser === 'function' ? window.AlexuraCloud.getUser() : null;
       if (activeUser && !cloudSongsUnsub) {
         attachCloudListeners(activeUser);
+      }
+      if (fmt && fmt.isRedirecting) {
+        return null;
+      }
+      if (fmt && fmt.isCancelled && switchAccount) {
+        toast(c.authCancelledToast);
+        return null;
       }
       if (openModalOnError) openCloudHub('songs');
       showCloudError(err);
       return null;
     } finally {
-      btns.forEach(b => { b.disabled = false; });
+      btns.forEach(b => { b.disabled = false; b.setAttribute('aria-busy', 'false'); });
+      if ($('btnGoogleAuth')) $('btnGoogleAuth').classList.remove('is-loading');
+      syncHeaderGoogleAuth(S.cloudUser);
     }
   };
+  cloudAuthRunner = runGoogleAuth;
 
   if ($('btnGoogleAuth')) $('btnGoogleAuth').addEventListener('click', async () => {
     if (S.cloudUser) { openCloudHub('songs'); return; }
@@ -8950,32 +9487,35 @@ function bindCloudStudio() {
 
   if (window.AlexuraCloud && typeof window.AlexuraCloud.subscribeAuth === 'function') {
     let lastAuthUid = null;
+    let hadSignedIn = false;
     window.AlexuraCloud.subscribeAuth(async (user) => {
       const nextUid = user ? user.uid : null;
-      if ((lastAuthUid && nextUid !== lastAuthUid) || !nextUid) {
-        if (S.project && S.project.cloudOwnerUid && S.project.cloudOwnerUid !== nextUid) {
-          S.cloudSongId = null;
+      if ((lastAuthUid && nextUid && nextUid !== lastAuthUid) || (hadSignedIn && !nextUid) || (nextUid && S.project && S.project.cloudOwnerUid && S.project.cloudOwnerUid !== nextUid)) {
+        S.cloudSongId = null;
+        if (S.project) {
           delete S.project.cloudSongId;
           delete S.project.cloudOwnerUid;
-        } else if (!nextUid) {
-          S.cloudSongId = null;
-          if (S.project) {
-            delete S.project.cloudSongId;
-            delete S.project.cloudOwnerUid;
-          }
         }
-        if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = S.cloudSongId ? `ID: ${S.cloudSongId}` : '';
+        if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = '';
       }
+      if (nextUid) hadSignedIn = true;
+      else if (hadSignedIn) hadSignedIn = false;
       lastAuthUid = nextUid;
       S.cloudUser = user || null;
       tearDownCloudListeners();
       applyCloudLabels();
+      const c = cloudCopy();
       if (user) {
         showCloudError(null);
         if ($('fbSignedOutRow')) $('fbSignedOutRow').hidden = true;
         if ($('fbSignedInBox')) $('fbSignedInBox').hidden = false;
         if ($('fbUserName')) $('fbUserName').textContent = user.displayName || user.email || 'Creator';
         if ($('fbUserEmail')) $('fbUserEmail').textContent = user.email || '';
+        if ($('fbVerifiedBadge')) {
+          $('fbVerifiedBadge').textContent = c.verifiedBadge;
+          $('fbVerifiedBadge').hidden = user.emailVerified === false;
+        }
+        if ($('fbCurSongBadge')) $('fbCurSongBadge').textContent = S.cloudSongId ? `ID: ${S.cloudSongId}` : '';
         const av = $('fbUserAvatar');
         if (av) {
           if (user.photoURL) { av.src = user.photoURL; av.hidden = false; }
@@ -8989,6 +9529,7 @@ function bindCloudStudio() {
       } else {
         if ($('fbSignedOutRow')) $('fbSignedOutRow').hidden = false;
         if ($('fbSignedInBox')) $('fbSignedInBox').hidden = true;
+        if ($('fbVerifiedBadge')) $('fbVerifiedBadge').hidden = true;
         S.cloudSongs = [];
         S.cloudHistory = [];
         renderCloudSongs([]);
@@ -10797,7 +11338,7 @@ function boot() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 J.ui = S;
 // hooks for hosts that embed the app (the After Effects CEP panel)
-J.uiApi = { toast, replan, syncUI, pause, seek, playRange, selectLyricWord, saveCorrectedLyrics, tlWHandleAt, tlDragWordTo, tlFocusWord, tlWordBoxAt, syncTimelineInspector, syncQualityControlPanel, reanalyzeLowConfidenceUI, jumpToNextLowConfWord, translateAllLyrics, toggleTranslationLayer, clearTranslationLayer, syncTranslationControls, updateTransCfg, saveSyncedLyrics, syncSlidingMenus, nudgeGlobalSyncOffset, alignAllWordsAcousticallyUI, microAlignTapPhrase, shiftTapPhraseWords, toggleTapLoop, assistRemainingTapLines, kpQuickTapCurrentWord, startTap, tapNow, tapEndHold, tapSkip, tapBack, stopTap, openCloudHub, setCloudTab, saveCurrentSongToFirebase, loadCloudSongIntoStudio, downloadCloudSongArtifact, recordWork, testVercelBridge, syncSongToVercel, deployToVercel, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines, openNotice, closeNotice, initWeatherStudio, openWeatherDrawer, closeWeatherDrawer, toggleWeatherDrawer, refreshWeatherGps, wxClassifyUvRisk };
+J.uiApi = { toast, replan, syncUI, pause, seek, playRange, selectLyricWord, saveCorrectedLyrics, tlWHandleAt, tlDragWordTo, tlFocusWord, tlWordBoxAt, syncTimelineInspector, syncQualityControlPanel, reanalyzeLowConfidenceUI, autoOptimizeQcAndCoordinationUI, jumpToNextLowConfWord, translateAllLyrics, toggleTranslationLayer, clearTranslationLayer, syncTranslationControls, updateTransCfg, saveSyncedLyrics, syncSlidingMenus, nudgeGlobalSyncOffset, alignAllWordsAcousticallyUI, microAlignTapPhrase, shiftTapPhraseWords, toggleTapLoop, assistRemainingTapLines, kpQuickTapCurrentWord, startTap, tapNow, tapEndHold, tapSkip, tapBack, stopTap, openCloudHub, setCloudTab, saveCurrentSongToFirebase, loadCloudSongIntoStudio, downloadCloudSongArtifact, recordWork, testVercelBridge, syncSongToVercel, deployToVercel, flushSave, loadAudioFile, restartPreview, exportRange, exportRangeLines, openNotice, closeNotice, initWeatherStudio, openWeatherDrawer, closeWeatherDrawer, toggleWeatherDrawer, refreshWeatherGps, wxClassifyUvRisk };
 J.S = S;
 if (typeof window !== 'undefined') window.J = J;
 const modBtn = $('btnModularStudio');

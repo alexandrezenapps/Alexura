@@ -294,11 +294,20 @@
             <span id="qcOverallBadge" class="qc-overall mono muted">—</span>
           </div>
           <div id="qcTierCounts" class="qc-tiers"></div>
+          <div id="qcCoordStrip" class="qc-coord-strip" hidden></div>
           <div id="qcCondAlerts" class="qc-cond-alerts" hidden></div>
           <div class="qc-actions">
+            <button type="button" id="btnAutoQcPerform" class="qc-auto-btn" aria-busy="false" title="Analyser par IA la coordination voix-paroles-vidéo, corriger les faibles confiances et optimiser la fluidité karaoké">
+              <svg class="qc-auto-ico" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <circle cx="9" cy="9" r="6.75" stroke="currentColor" stroke-width="1.35" stroke-opacity="0.45" stroke-dasharray="3.2 2.2"/>
+                <path d="M5.2 9.2h1.35l1.1-2.8 1.7 5.2 1.25-3.3 0.95 0.9h1.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span id="btnAutoQcPerformLbl" class="qc-auto-lbl">Analyser et performer automatisé</span>
+            </button>
             <button type="button" id="btnReanalyzeLow" class="ghost small" title="Ré-analyser automatiquement les segments à faible confiance avec haute résolution vocale">🔬 Ré-analyser segments faibles</button>
             <button type="button" id="btnNextLowConf" class="ghost small" title="Aller au prochain mot à faible confiance">⚠ Prochain faible</button>
           </div>
+          <div id="qcAutoReport" class="qc-auto-report" hidden aria-live="polite"></div>
         </div>
         <div class="fields pro-only">
           <label class="field">BPM<input id="bpm" type="number" min="0" max="300" step="0.1" placeholder="自動"></label>
@@ -876,7 +885,7 @@
     <h2 id="cloudTitle">☁ Espace Personnel Google — Enregistrements &amp; Historique</h2>
     <button type="button" id="btnCloudClose" class="ghost small" aria-label="Fermer">✕</button>
   </div>
-  <div id="cloudErrorBox" class="cloud-err" hidden></div>
+  <div id="cloudErrorBox" class="cloud-err" role="alert" aria-live="polite" hidden></div>
 
   <section class="cloud-card" aria-label="Compte Google et Sauvegarde rapide">
     <div class="cloud-card-h">
@@ -892,7 +901,10 @@
         <div class="cloud-user-meta">
           <img id="fbUserAvatar" class="cloud-avatar" alt="" hidden>
           <div>
-            <div id="fbUserName" class="cloud-uname"></div>
+            <div class="cloud-uname-row">
+              <div id="fbUserName" class="cloud-uname"></div>
+              <span id="fbVerifiedBadge" class="cloud-vbadge" hidden>✓</span>
+            </div>
             <div id="fbUserEmail" class="mono muted cloud-uemail"></div>
           </div>
         </div>

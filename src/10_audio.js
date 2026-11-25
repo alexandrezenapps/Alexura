@@ -1662,6 +1662,472 @@ J.reanalyzeLowConfidenceSegments = async (analysis, lines, lang = 'auto', onProg
   };
 };
 
+/* Automated Coordination Analyzer (Voice vs Displayed Video Lyrics):
+   Measures exact singing onset vs displayed karaoke video timing (accounting for intentional typeset read-ahead),
+   low-confidence bottlenecks, overlaps, and choppy micro-gaps. */
+J.analyzeVocalToVideoCoordination = (analysis, planLines = [], projectTiming = null, options = {}) => {
+  const lines = Array.isArray(planLines) ? planLines : [];
+  const env = analysis && analysis.vocalEnv100;
+  const vad = analysis && analysis.voicing100;
+  const att = analysis && analysis.wordAttack100;
+  const fr = (analysis && analysis.fineRate) || 100;
+  const hasAudio = Boolean(env && env.length && att && att.length && fr > 0);
+  const globalOffsetMs = Math.round(Number(projectTiming && projectTiming.globalOffsetMs) || 0);
+  const expectedLeadSec = Number.isFinite(Number(options && options.expectedLeadSec))
+    ? Math.max(0, Number(options.expectedLeadSec))
+    : (options && options.typeset ? 0.2 : 0);
+
+  const rawWordMap = (projectTiming && projectTiming.wordTimes) || {};
+  const drifts = [];
+  const absErrors = [];
+  let totalWords = 0, highCount = 0, medCount = 0, lowCount = 0;
+  let tightSyncedCount = 0, measuredOnsetCount = 0;
+  let overlapCount = 0, microGapCount = 0, uncertainBoundaryCount = 0;
+  let uncSum = 0;
+  const perLine = [];
+
+  for (let li = 0; li < lines.length; li++) {
+    const ln = lines[li];
+    if (!ln || ln.interlude) continue;
+    const dispWords = Array.isArray(ln.wordsTimed) ? ln.wordsTimed : [];
+    const rawWords = (Array.isArray(rawWordMap[ln.index]) && rawWordMap[ln.index].length) ? rawWordMap[ln.index] : dispWords;
+    if (!dispWords.length && !rawWords.length) continue;
+
+    let lineLow = 0, lineWeak = 0;
+    const lineDrifts = [];
+    const lineAbs = [];
+    const count = Math.max(dispWords.length, rawWords.length);
+
+    for (let wi = 0; wi < count; wi++) {
+      const dw = dispWords[wi] || rawWords[wi];
+      const rw = rawWords[wi] || dispWords[wi];
+      totalWords++;
+
+      const q = J.evaluateWordQuality ? J.evaluateWordQuality(rw, analysis, ln.meta) : { qualityTier: 'MEDIUM', recognitionUncertainty: 0.25 };
+      uncSum += q.recognitionUncertainty;
+      if (q.qualityTier === 'HIGH') highCount++;
+      else if (q.qualityTier === 'LOW') { lowCount++; lineLow++; lineWeak++; }
+      else { medCount++; if ((rw.alignmentConfidence ?? 0.8) < 0.80) lineWeak++; }
+      if (Array.isArray(rw.flags) && rw.flags.includes('uncertain_boundary')) uncertainBoundaryCount++;
+
+      // Check word-to-word video display overlap / choppy micro-gap fluidity
+      if (wi + 1 < count) {
+        const curW = dispWords[wi] || rw;
+        const nxtW = dispWords[wi + 1] || rawWords[wi + 1];
+        const gap = Number(nxtW.start) - Number(curW.end);
+        if (gap < -0.004) overlapCount++;
+        else if (gap > 0.005 && gap < 0.055) {
+          if (hasAudio && vad && vad.length) {
+            const vocalMid = ((Number(curW.end) + Number(nxtW.start)) * 0.5) + expectedLeadSec;
+            const midF = Math.max(0, Math.min(vad.length - 1, Math.round(vocalMid * fr)));
+            if ((vad[midF] || 0) >= 0.30) microGapCount++;
+          } else if (gap < 0.018 && !/[,.;:!?、。！？]$/.test(String(curW.text || ''))) {
+            microGapCount++;
+          }
+        }
+      }
+
+      if (hasAudio && dw && Number.isFinite(Number(dw.start))) {
+        const wsDisp = Number(dw.start);
+        const weDisp = Number(dw.end) || (wsDisp + 0.35);
+        // Compensate intentional visual read-ahead lead so voice-attack comparison reflects true sync accuracy
+        const wsTarget = wsDisp + expectedLeadSec;
+        const prevDisp = wi > 0 && dispWords[wi - 1] ? Number(dispWords[wi - 1].start) + expectedLeadSec + 0.02 : Math.max(0, wsTarget - 0.24);
+        const minB = Math.max(0, prevDisp);
+        const maxB = weDisp + expectedLeadSec + 0.14;
+        const atk = J.estimateVocalAttackNear(analysis, wsTarget, 0.22, minB, maxB);
+        if (atk && atk.found) {
+          const driftMs = Math.round((wsTarget - atk.attackTime) * 1000);
+          measuredOnsetCount++;
+          drifts.push(driftMs);
+          absErrors.push(Math.abs(driftMs));
+          lineDrifts.push(driftMs);
+          lineAbs.push(Math.abs(driftMs));
+          if (Math.abs(driftMs) <= 45) tightSyncedCount++;
+        }
+      }
+    }
+
+    // Check cross-line video overlap
+    if (li + 1 < lines.length && lines[li + 1] && !lines[li + 1].interlude) {
+      const nextDisp = lines[li + 1].wordsTimed;
+      const lastCur = dispWords[dispWords.length - 1];
+      const firstNxt = nextDisp && nextDisp[0];
+      if (lastCur && firstNxt && Number(lastCur.end) > Number(firstNxt.start) + 0.002) {
+        overlapCount++;
+      }
+    }
+
+    const avgLineDriftMs = lineDrifts.length ? Math.round(lineDrifts.reduce((a, b) => a + b, 0) / lineDrifts.length) : 0;
+    const avgLineAbsMs = lineAbs.length ? Math.round(lineAbs.reduce((a, b) => a + b, 0) / lineAbs.length) : 0;
+    const needsRepair = lineLow > 0 || lineWeak > 0 || avgLineAbsMs > 42 || (ln.meta && (ln.meta.unclear || (ln.meta.flags || []).includes('uncertain_boundary')));
+    const priorityScore = lineLow * 10 + lineWeak * 4 + (avgLineAbsMs > 40 ? avgLineAbsMs / 15 : 0);
+
+    perLine.push({
+      index: ln.index,
+      text: ln.text || '',
+      start: ln.start,
+      end: ln.visEnd || ln.end,
+      wordCount: count,
+      lowWords: lineLow,
+      weakWords: lineWeak,
+      avgDriftMs: avgLineDriftMs,
+      avgAbsErrMs: avgLineAbsMs,
+      needsRepair,
+      priorityScore,
+      flags: (ln.meta && Array.isArray(ln.meta.flags)) ? ln.meta.flags.slice() : [],
+    });
+  }
+
+  drifts.sort((a, b) => a - b);
+  const medianVideoDriftMs = drifts.length
+    ? (drifts.length % 2 ? drifts[(drifts.length - 1) >> 1] : Math.round((drifts[(drifts.length >> 1) - 1] + drifts[drifts.length >> 1]) * 0.5))
+    : 0;
+  const avgAbsErrMs = absErrors.length ? Math.round(absErrors.reduce((a, b) => a + b, 0) / absErrors.length) : 0;
+  const tightSyncPct = measuredOnsetCount ? Math.round((tightSyncedCount / measuredOnsetCount) * 100) : (totalWords ? Math.round(((highCount + medCount * 0.6) / totalWords) * 100) : 0);
+  const overallConfidencePct = totalWords ? Math.min(97, Math.max(5, Math.round((1 - uncSum / totalWords) * 100))) : 0;
+  const weakLineIndices = perLine
+    .filter(l => l.needsRepair)
+    .sort((a, b) => b.priorityScore - a.priorityScore)
+    .map(l => l.index);
+
+  return {
+    hasAudio,
+    typesetLeadActive: expectedLeadSec > 0,
+    expectedLeadMs: Math.round(expectedLeadSec * 1000),
+    totalWords,
+    highCount,
+    medCount,
+    lowCount,
+    uncertainBoundaryCount,
+    overlapCount,
+    microGapCount,
+    measuredOnsetCount,
+    tightSyncedCount,
+    tightSyncPct,
+    medianVideoDriftMs,
+    avgAbsErrMs,
+    globalOffsetMs,
+    overallConfidencePct,
+    weakLineIndices,
+    perLine,
+  };
+};
+
+/* Multi-Pass Automated Quality Control, Acoustic Re-Anchor & Karaoke Video Fluidity Optimizer */
+J.autoOptimizeKaraokePrecision = (analysis, inputLines = [], options = {}) => {
+  const lines = Array.isArray(inputLines) ? inputLines : [];
+  if (!lines.length) {
+    return {
+      lines: [],
+      validationSummary: null,
+      stats: { reanalyzedLines: 0, upgradedWords: 0, fixedOverlaps: 0, smoothedGaps: 0 },
+    };
+  }
+
+  const langDefault = options.lang || 'auto';
+  const repairedMap = new Map();
+  if (Array.isArray(options.repairedSlices)) {
+    for (const sl of options.repairedSlices) {
+      if (sl && Number.isFinite(Number(sl.lineIdx)) && Array.isArray(sl.lines) && sl.lines.length) {
+        repairedMap.set(Number(sl.lineIdx), sl);
+      }
+    }
+  }
+  const orthoMap = new Map();
+  if (Array.isArray(options.orthographyFixes)) {
+    for (const fx of options.orthographyFixes) {
+      if (fx && Number.isFinite(Number(fx.lineIdx)) && fx.text) {
+        orthoMap.set(Number(fx.lineIdx), String(fx.text).trim());
+      }
+    }
+  }
+  const prioritySet = new Set(Array.isArray(options.targetLineIndices) ? options.targetLineIndices : []);
+  const durMax = (analysis && analysis.duration) || 600;
+  const env = analysis && analysis.vocalEnv100;
+  const vad = analysis && analysis.voicing100;
+  const att = analysis && analysis.wordAttack100;
+  const clMap = analysis && analysis.clarity100;
+  const fr = (analysis && analysis.fineRate) || 100;
+  const hasAudioMaps = Boolean(env && env.length && att && att.length && fr > 0);
+  const qCond = (analysis && analysis.qualityConditions) || {};
+
+  let reanalyzedLines = 0;
+  let upgradedWords = 0;
+  let fixedOverlaps = 0;
+  let smoothedGaps = 0;
+
+  // Pass 1 & 2: AI Merge + High-Precision 10ms Vocal Re-Anchor + Honest Score Recalibration
+  let prevLineEndCursor = 0;
+  const outLines = lines.map((ln, idx) => {
+    if (!ln || ln.interlude || ln.isInstrumentalSection) {
+      if (ln && Number.isFinite(Number(ln.end))) prevLineEndCursor = Math.max(prevLineEndCursor, Number(ln.end));
+      return Object.assign({}, ln);
+    }
+
+    const lineIdx = Number.isInteger(Number(ln.index)) ? Number(ln.index) : idx;
+    const sLine = Math.max(0, Number(ln.start) || 0);
+    const eLine = Math.max(sLine + 0.14, Math.min(durMax, Number(ln.end) || sLine + 2.5));
+    const lineLang = ln.language || langDefault;
+    const spk = ln.speaker || 'Lead';
+    let curText = String(ln.text || '');
+    let words = Array.isArray(ln.words) ? ln.words.map(w => Object.assign({}, w)) : [];
+    const oldLow = words.filter(w => !w.validated && (w.qualityTier || (J.evaluateWordQuality ? J.evaluateWordQuality(w, analysis, ln).qualityTier : 'MEDIUM')) === 'LOW').length;
+
+    // Apply verified orthography normalization if word token count matches cleanly
+    const orthoTxt = orthoMap.get(lineIdx);
+    if (orthoTxt && orthoTxt !== curText) {
+      const orthoTokens = J.tokenizeKaraokeWords ? J.tokenizeKaraokeWords(orthoTxt, lineLang) : orthoTxt.split(/\s+/);
+      if (orthoTokens.length === words.length && !words.some(w => w.validated)) {
+        curText = orthoTxt;
+        words = words.map((w, wi) => Object.assign({}, w, {
+          text: orthoTokens[wi] || w.text,
+          recognitionConfidence: Math.max(Number(w.recognitionConfidence) || 0.75, 0.84),
+        }));
+      }
+    }
+
+    const aiSlice = repairedMap.get(lineIdx);
+    const hasWeakWord = words.some(w => {
+      if (w.validated) return false;
+      const q = J.evaluateWordQuality ? J.evaluateWordQuality(w, analysis, ln) : { qualityTier: 'MEDIUM', alignmentConfidence: 0.78 };
+      return q.qualityTier === 'LOW' || q.alignmentConfidence < 0.82 || (Array.isArray(w.flags) && w.flags.some(f => f === 'uncertain_boundary' || f === 'uncertain_word'));
+    });
+
+    let nextActiveStart = Infinity;
+    for (let j = idx + 1; j < lines.length; j++) {
+      if (lines[j] && !lines[j].interlude && !lines[j].isInstrumentalSection) {
+        nextActiveStart = Number(lines[j].start);
+        break;
+      }
+    }
+    const minSafeStart = idx === 0 ? 0 : prevLineEndCursor + 0.012;
+    const maxSafeEnd = Number.isFinite(nextActiveStart) ? Math.max(eLine, nextActiveStart - 0.012) : durMax;
+    let optSLine = sLine;
+    let optELine = eLine;
+
+    if (aiSlice || prioritySet.has(lineIdx) || hasWeakWord || ln.unclear) {
+      reanalyzedLines++;
+      let candidateWords = null;
+
+      if (hasAudioMaps && words.length && !words[0].validated && !aiSlice && J.estimateVocalAttackNear) {
+        const probeMin = Math.max(minSafeStart, sLine - 0.24);
+        if (probeMin < sLine - 0.02) {
+          const atkHead = J.estimateVocalAttackNear(analysis, Math.max(probeMin, sLine - 0.08), 0.16, probeMin, sLine + 0.04);
+          if (atkHead && atkHead.found && atkHead.strength >= 0.045 && atkHead.attackTime < sLine - 0.02) {
+            optSLine = Math.max(minSafeStart, +(atkHead.attackTime - 0.015).toFixed(3));
+          }
+        }
+      }
+
+      if (aiSlice && Array.isArray(aiSlice.lines)) {
+        const aiWords = aiSlice.lines.flatMap(dl => dl.words || []);
+        if (aiWords.length) {
+          const aiFirstS = Number(aiWords[0].start);
+          const aiLastE = Number(aiWords[aiWords.length - 1].end);
+          if (Number.isFinite(aiFirstS)) {
+            optSLine = Math.max(minSafeStart, Math.min(optSLine, Math.max(sLine - 0.35, aiFirstS - 0.015)));
+          }
+          if (Number.isFinite(aiLastE)) {
+            optELine = Math.min(maxSafeEnd, Math.max(eLine, Math.min(eLine + 0.35, aiLastE + 0.015)));
+          }
+          if (optELine <= optSLine + 0.14) optELine = optSLine + 0.14;
+
+          const aiTxt = aiSlice.lines.map(dl => dl.text).filter(Boolean).join(' ').trim();
+          const shouldAdoptAiText = Boolean(
+            aiTxt &&
+            !/^\[?unclear/i.test(aiTxt) &&
+            (words.some(w => /\[?unclear/i.test(w.text) || (w.recognitionConfidence ?? 1) < 0.62) || ln.unclear)
+          );
+          if (shouldAdoptAiText && !words.some(w => w.validated)) {
+            candidateWords = J.refineWordTimingsAcoustic
+              ? J.refineWordTimingsAcoustic(analysis, aiWords, optSLine, optELine, lineLang, spk)
+              : aiWords;
+            curText = aiTxt;
+          } else if (aiWords.length === words.length) {
+            // Merge AI word timestamps cleanly onto existing tokens without overwriting human-validated words
+            candidateWords = words.map((ow, wi) => {
+              if (ow.validated) return ow;
+              const aw = aiWords[wi];
+              if (!aw) return ow;
+              const ws = Math.max(optSLine, Math.min(optELine - 0.03, Number(aw.start) || ow.start));
+              const we = Math.min(optELine, Math.max(ws + 0.025, Number(aw.end) || ow.end));
+              return Object.assign({}, ow, {
+                start: +ws.toFixed(3),
+                end: +we.toFixed(3),
+                recognitionConfidence: Math.max(Number(ow.recognitionConfidence) || 0.72, Math.min(0.95, Number(aw.recognitionConfidence) || 0.86)),
+                alignmentConfidence: Math.max(Number(ow.alignmentConfidence) || 0.72, Math.min(0.95, Number(aw.alignmentConfidence) || 0.87)),
+                audioClarity: aw.audioClarity ?? ow.audioClarity,
+              });
+            });
+          }
+        }
+      }
+
+      if (!candidateWords) {
+        candidateWords = words;
+      }
+
+      // Pass 1b: 10ms Anchored Viterbi + Transient Snap Optimization (respects validated anchors!)
+      if (hasAudioMaps && J.optimizeLineVocalCoordination && candidateWords.length) {
+        words = J.optimizeLineVocalCoordination(analysis, candidateWords, optSLine, optELine, lineLang, spk);
+      } else if (hasAudioMaps && J.realignLineWords && candidateWords.length) {
+        words = J.realignLineWords(analysis, curText, optSLine, optELine, lineLang, spk, candidateWords);
+      } else {
+        words = candidateWords;
+      }
+
+      // Pass 2: Sequential Acoustic Attack & Clarity Verification -> Honest Confidence Calibration (strictly < 0.97)
+      const mappedWords = [];
+      for (let wi = 0; wi < words.length; wi++) {
+        const w = words[wi];
+        if (w.validated) { mappedWords.push(w); continue; }
+        const nextW = Object.assign({}, w);
+        const fSet = new Set(Array.isArray(nextW.flags) ? nextW.flags : []);
+        if (hasAudioMaps) {
+          const prevMapped = wi > 0 ? mappedWords[wi - 1] : null;
+          const minB = prevMapped ? Math.max(optSLine, prevMapped.end + 0.002) : optSLine;
+          const maxB = wi + 1 < words.length ? Math.min(optELine, words[wi + 1].end - 0.02) : optELine;
+          const atk = minB <= maxB ? J.estimateVocalAttackNear(analysis, nextW.start, 0.075, minB, maxB) : null;
+          const f0 = Math.max(0, Math.min(env.length - 1, Math.round(nextW.start * fr)));
+          const f1 = Math.max(f0, Math.min(env.length - 1, Math.round(nextW.end * fr)));
+          let maxE = 0, sumVad = 0, sumCl = 0, cnt = 0;
+          for (let f = f0; f <= f1; f++) {
+            if (env[f] > maxE) maxE = env[f];
+            if (vad) sumVad += vad[f] || 0;
+            if (clMap) sumCl += clMap[f] || 0;
+            cnt++;
+          }
+          const avgVad = cnt ? sumVad / cnt : 0.6;
+          const avgCl = (cnt && clMap) ? sumCl / cnt : (qCond.avgClarity ?? 0.78);
+
+          // Fine-tune onset within ±55ms if a crisp attack is adjacent
+          if (atk && atk.found && Math.abs(atk.driftMs) <= 55 && atk.strength >= 0.045) {
+            const snapped = +J.clamp(atk.attackTime, minB, Math.max(minB, nextW.end - 0.028)).toFixed(3);
+            if (!prevMapped || snapped >= prevMapped.end - 0.004) {
+              nextW.start = snapped;
+            }
+            const envCap = (qCond.isDistorted ? 0.78 : qCond.isNoisy ? 0.84 : 0.96);
+            const verifiedAlign = Math.min(envCap, Math.max(Number(nextW.alignmentConfidence) || 0.72, 0.85 + 0.09 * Math.min(1, avgVad * 1.2)));
+            nextW.alignmentConfidence = +verifiedAlign.toFixed(3);
+            if (avgCl >= 0.62 && avgVad >= 0.25) {
+              fSet.delete('uncertain_boundary');
+            }
+          }
+
+          if (maxE >= 0.005 && avgVad >= 0.34 && avgCl >= 0.62 && !/\[?unclear/i.test(nextW.text)) {
+            const recFloor = aiSlice ? 0.86 : 0.81;
+            const envCap = (qCond.isDistorted ? 0.80 : qCond.isNoisy ? 0.85 : 0.95);
+            nextW.recognitionConfidence = +Math.min(envCap, Math.max(Number(nextW.recognitionConfidence) || 0.72, recFloor)).toFixed(3);
+            nextW.audioClarity = +Math.min(0.96, avgCl).toFixed(3);
+            if (nextW.recognitionConfidence >= 0.78) {
+              fSet.delete('uncertain_word');
+              fSet.delete('misrecognized_word');
+            }
+          }
+        }
+        nextW.flags = Array.from(fSet);
+        mappedWords.push(nextW);
+      }
+      words = mappedWords;
+    }
+
+    // Pass 3a: Intra-line Karaoke Overlap Repair & Continuous Vocal Fluidity Smoothing
+    for (let wi = 0; wi < words.length - 1; wi++) {
+      const cur = words[wi];
+      const nxt = words[wi + 1];
+      if (!cur || !nxt) continue;
+
+      if (cur.end > nxt.start + 0.002) {
+        fixedOverlaps++;
+        if (!cur.validated) {
+          cur.end = +Math.max(cur.start + 0.022, nxt.start - 0.004).toFixed(3);
+        } else if (!nxt.validated) {
+          nxt.start = +Math.min(nxt.end - 0.022, cur.end + 0.004).toFixed(3);
+        }
+      } else if (!cur.validated && !nxt.validated) {
+        const gap = nxt.start - cur.end;
+        if (hasAudioMaps && vad && vad.length) {
+          if (gap > 0.005 && gap <= 0.060) {
+            const midF = Math.max(0, Math.min(vad.length - 1, Math.round(((cur.end + nxt.start) * 0.5) * fr)));
+            if ((vad[midF] || 0) >= 0.28) {
+              cur.end = +nxt.start.toFixed(3);
+              smoothedGaps++;
+            }
+          }
+        } else if (gap > 0.002 && gap <= 0.018 && !/[,.;:!?、。！？]$/.test(String(cur.text || ''))) {
+          cur.end = +nxt.start.toFixed(3);
+          smoothedGaps++;
+        }
+      }
+    }
+
+    // Rebuild character sweeps cleanly after smoothing
+    words = words.map(w => Object.assign({}, w, {
+      start: +Math.max(0, Number(w.start) || optSLine).toFixed(3),
+      end: +Math.max((Number(w.start) || optSLine) + 0.02, Number(w.end) || (optSLine + 0.08)).toFixed(3),
+      chars: J.buildCharTimings ? J.buildCharTimings(w.text, w.start, w.end, analysis) : w.chars,
+    }));
+
+    const lineStartOut = words.length ? words[0].start : optSLine;
+    const lineEndOut = words.length ? Math.max(lineStartOut + 0.12, words[words.length - 1].end) : optELine;
+    prevLineEndCursor = Math.max(prevLineEndCursor, lineEndOut);
+    const postLow = words.filter(w => !w.validated && (J.evaluateWordQuality ? J.evaluateWordQuality(w, analysis, ln).qualityTier : 'MEDIUM') === 'LOW').length;
+    if (postLow < oldLow) upgradedWords += (oldLow - postLow);
+
+    const lineFlagSet = new Set(Array.isArray(ln.flags) ? ln.flags : []);
+    if (!words.some(w => (w.flags || []).includes('uncertain_boundary'))) lineFlagSet.delete('uncertain_boundary');
+    if (!words.some(w => (w.flags || []).includes('uncertain_word'))) lineFlagSet.delete('uncertain_word');
+    if (!words.some(w => (w.flags || []).includes('misrecognized_word'))) lineFlagSet.delete('misrecognized_word');
+
+    return Object.assign({}, ln, {
+      index: lineIdx,
+      text: curText,
+      start: +lineStartOut.toFixed(3),
+      end: +lineEndOut.toFixed(3),
+      unclear: postLow > 0 && Boolean(ln.unclear),
+      flags: Array.from(lineFlagSet),
+      words,
+    });
+  });
+
+  // Pass 3b: Cross-line overlap prevention for clean subtitle transitions
+  for (let i = 0; i < outLines.length - 1; i++) {
+    const curL = outLines[i];
+    if (!curL || curL.interlude || curL.isInstrumentalSection || !curL.words || !curL.words.length) continue;
+    let nextL = null;
+    for (let j = i + 1; j < outLines.length; j++) {
+      if (outLines[j] && !outLines[j].interlude && !outLines[j].isInstrumentalSection && outLines[j].words && outLines[j].words.length) {
+        nextL = outLines[j];
+        break;
+      }
+    }
+    if (!nextL) continue;
+    const lastW = curL.words[curL.words.length - 1];
+    const firstN = nextL.words[0];
+    if (lastW.end > firstN.start - 0.010) {
+      fixedOverlaps++;
+      if (!lastW.validated) {
+        lastW.end = +Math.max(lastW.start + 0.025, firstN.start - 0.012).toFixed(3);
+        lastW.chars = J.buildCharTimings ? J.buildCharTimings(lastW.text, lastW.start, lastW.end, analysis) : lastW.chars;
+        curL.end = lastW.end;
+      }
+    }
+  }
+
+  const finalVal = J.validateKaraokeAlignment(analysis, outLines);
+  return {
+    lines: finalVal.lines,
+    validationSummary: finalVal.validationSummary,
+    stats: {
+      reanalyzedLines,
+      upgradedWords,
+      fixedOverlaps,
+      smoothedGaps,
+    },
+  };
+};
+
 /* CORE FUNCTION 06 — Realign an edited word & unvalidated surrounding words locally against acoustic vocal onsets
    while preserving original audio AND all previously validated timestamps. */
 J.realignSurroundingWords = (analysis, existingWords, editedIdx, newWordText, lineStart, lineEnd, lang = 'auto', defaultSpeaker = 'Lead') => {

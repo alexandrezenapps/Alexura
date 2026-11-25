@@ -111,6 +111,7 @@ app.get('/api/health', (_req, res) => {
       '/api/align-vocals/stream',
       '/api/reconcile-lyrics',
       '/api/reanalyze-segment',
+      '/api/qc-auto-perform',
       '/api/translate-lyrics',
       '/api/bridge',
     ],
@@ -1598,6 +1599,360 @@ Rules:
       return runWhisperReanalyzeFallback();
     }
     return runWhisperReanalyzeFallback();
+  }
+});
+
+// FUNCTION 08B: Automated AI Quality Control, Vocal-to-Video Coordination Audit & Multi-Pass Repair
+app.post('/api/qc-auto-perform', async (req, res) => {
+  const {
+    lines = [],
+    coordinationAudit = {},
+    audioSlices = [],
+    vocalSegments = [],
+    qualityConditions = null,
+    globalOffsetMs = 0,
+    typesetLeadActive = false,
+    lang = 'auto',
+    uiLang = 'fr',
+  } = req.body || {};
+
+  const inputLines = Array.isArray(lines) ? lines : [];
+  if (!inputLines.length) {
+    return res.status(400).json({ success: false, reason: 'missing_lines', aiStatus: 'unavailable' });
+  }
+
+  const isFr = String(uiLang || 'fr').toLowerCase().startsWith('fr');
+  const isJa = String(uiLang || '').toLowerCase().startsWith('ja');
+
+  const classifyAiError = (err: any) => {
+    const rawMsg = String(err?.message || err || '');
+    const lower = rawMsg.toLowerCase();
+    const statusCode = Number(err?.statusCode || err?.code || 0);
+    const statusStr = String(err?.status || '');
+    const requiresBilling = statusCode === 403 || statusCode === 429 || statusStr === 'PERMISSION_DENIED' || statusStr === 'RESOURCE_EXHAUSTED' || lower.includes('billing') || lower.includes('quota') || lower.includes('free tier');
+    const requiresApiKey = statusCode === 400 || lower.includes('api_key_invalid') || lower.includes('api key not valid');
+    return {
+      statusCode,
+      requiresBilling,
+      requiresApiKey,
+      message: rawMsg.slice(0, 220),
+    };
+  };
+
+  try {
+    // 1. Deterministic Orthography & Diacritics Check
+    const orthoReport = analyzeAndFixOrthography(
+      inputLines.map((l: any) => String(l?.text || '')),
+      String(lang || 'auto'),
+    );
+    const orthographyFixes: Array<{ lineIdx: number; text: string; fixes: number }> = [];
+    inputLines.forEach((ln: any, k: number) => {
+      const li = Number.isInteger(Number(ln?.index)) ? Number(ln.index) : k;
+      const fixedTxt = orthoReport.correctedLines[k];
+      if (fixedTxt && fixedTxt.trim() && fixedTxt.trim() !== String(ln?.text || '').trim()) {
+        orthographyFixes.push({
+          lineIdx: li,
+          text: fixedTxt.trim(),
+          fixes: orthoReport.changes.filter((c: any) => c.lineIdx === k).length || 1,
+        });
+      }
+    });
+
+    // 2. Re-analyze targeted low-confidence / high-drift audio slices concurrently (max 3 in flight)
+    const slices = Array.isArray(audioSlices) ? audioSlices.slice(0, 5) : [];
+    const repairedSlices: Array<{ lineIdx: number; focusTranscript: string; lines: any[]; engine: string }> = [];
+    const aiErrors: Array<{ statusCode: number; requiresBilling: boolean; requiresApiKey: boolean; message: string }> = [];
+    const condDesc = qualityConditions
+      ? `noise=${qualityConditions.isNoisy ? 'YES' : 'no'}, distortion=${qualityConditions.isDistorted ? 'YES' : 'no'}, reverb=${qualityConditions.isReverberated ? 'YES' : 'no'}, overlap=${qualityConditions.hasOverlappingSingers ? 'YES' : 'no'}`
+      : 'standard';
+
+    const processSlice = async (sl: any) => {
+      const lineIdx = Number(sl?.lineIdx);
+      const audioBase64 = String(sl?.audioBase64 || '');
+      if (!Number.isFinite(lineIdx) || !audioBase64 || audioBase64.length > 6_500_000) return null;
+      const sepRaw = String(sl?.separatedVocalBase64 || '');
+      const separatedVocalBase64 = sepRaw.length <= 6_500_000 ? sepRaw : '';
+      const offsetSec = Math.max(0, Number(sl?.startSec) || 0);
+      const segDur = Math.max(0.25, Math.min(18, (Number(sl?.endSec) || offsetSec + 2) - offsetSec));
+      const existingWords = Array.isArray(sl?.existingWords) ? sl.existingWords.slice(0, 48) : [];
+      const needsTranscriptRefresh = Boolean(sl?.needsTranscriptRefresh);
+      let handledByAi = false;
+
+      if (ai) {
+        try {
+          let focusTranscript = '';
+          if (needsTranscriptRefresh) {
+            try {
+              const tResp = await ai.models.generateContent({
+                model: 'gemini-3.5-transcribe',
+                contents: [
+                  {
+                    inlineData: {
+                      mimeType: 'audio/wav',
+                      data: separatedVocalBase64 || audioBase64,
+                    },
+                  },
+                  {
+                    text: `Listen closely to this ${segDur.toFixed(2)}s vocal excerpt (language hint: ${lang || 'auto'}).
+Candidate lyric tokens: ${JSON.stringify(existingWords.map((w: any) => w.text || '')).slice(0, 600)}.
+Transcribe strictly what the singer actually sings; preserve authentic spelling and mark genuinely unintelligible syllables [UNCLEAR].`,
+                  },
+                ],
+              });
+              focusTranscript = String(tResp.text || '').trim();
+            } catch (tErr: any) {
+              aiErrors.push(classifyAiError(tErr));
+              focusTranscript = '';
+            }
+          }
+
+          const alignResp = await ai.models.generateContent({
+            model: 'gemini-4-hydrogen',
+            contents: [
+              { inlineData: { mimeType: 'audio/wav', data: audioBase64 } },
+              ...(separatedVocalBase64 ? [{ inlineData: { mimeType: 'audio/wav', data: separatedVocalBase64 } }] : []),
+              {
+                text: `Re-anchor every sung word & phoneme precisely in this ${segDur.toFixed(2)}s excerpt (timeline starts at 0.000s relative to this clip).
+Acoustic environment: ${condDesc}.
+${focusTranscript ? `Clarified vocal transcript:\n${focusTranscript}\n` : ''}Target lyric words (relative seconds hints):
+${JSON.stringify(existingWords.map((w: any) => ({
+  text: w.text,
+  start: +Math.max(0, (Number(w.start) || 0) - offsetSec).toFixed(3),
+  end: +Math.max(0.05, (Number(w.end) || 0) - offsetSec).toFixed(3),
+})), null, 2)}
+
+Rules:
+- Lock every word onset accurately onto the sung consonant/vowel attack in the audio.
+- Keep smooth natural karaoke flow between connected syllables while preserving authentic breath pauses.
+- Calibrate honest scores strictly <= 0.96.
+- Return JSON { "lines": [{ "text", "start", "end", "recognitionConfidence", "alignmentConfidence", "flags", "words": [{ "text", "start", "end", "recognitionConfidence", "alignmentConfidence", "audioClarity", "vocalOverlap", "flags" }] }] }.`,
+              },
+            ],
+            config: {
+              responseMimeType: 'application/json',
+              responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                  lines: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        text: { type: Type.STRING },
+                        start: { type: Type.NUMBER },
+                        end: { type: Type.NUMBER },
+                        recognitionConfidence: { type: Type.NUMBER },
+                        alignmentConfidence: { type: Type.NUMBER },
+                        flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        words: {
+                          type: Type.ARRAY,
+                          items: {
+                            type: Type.OBJECT,
+                            properties: {
+                              text: { type: Type.STRING },
+                              start: { type: Type.NUMBER },
+                              end: { type: Type.NUMBER },
+                              recognitionConfidence: { type: Type.NUMBER },
+                              alignmentConfidence: { type: Type.NUMBER },
+                              audioClarity: { type: Type.NUMBER },
+                              vocalOverlap: { type: Type.NUMBER },
+                              flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                            },
+                            required: ['text', 'start', 'end'],
+                          },
+                        },
+                      },
+                      required: ['text', 'start', 'end', 'words'],
+                    },
+                  },
+                },
+                required: ['lines'],
+              },
+            },
+          });
+
+          const parsedSlice = JSON.parse(alignResp.text || '{}');
+          const normLines = normalizeKaraokeLines(Array.isArray(parsedSlice.lines) ? parsedSlice.lines : [], offsetSec);
+          if (normLines.length) {
+            handledByAi = true;
+            return {
+              lineIdx,
+              focusTranscript,
+              lines: normLines,
+              engine: 'gemini-4-hydrogen',
+            };
+          }
+        } catch (aiErr: any) {
+          aiErrors.push(classifyAiError(aiErr));
+          handledByAi = false;
+        }
+      }
+
+      if (!handledByAi) {
+        try {
+          const wRes = await transcribeWithWhisper({
+            audioBase64,
+            separatedVocalBase64,
+            lang: lang || 'auto',
+            chunkStartSec: offsetSec,
+            chunkDurationSec: segDur,
+          });
+          const normLines = normalizeKaraokeLines(wRes.lines || [], 0);
+          if (normLines.length) {
+            return {
+              lineIdx,
+              focusTranscript: wRes.rawTranscript || '',
+              lines: normLines,
+              engine: wRes.engine || 'neural_whisper',
+            };
+          }
+        } catch {}
+      }
+      return null;
+    };
+
+    const SLICE_CONCURRENCY = 3;
+    for (let i = 0; i < slices.length; i += SLICE_CONCURRENCY) {
+      const batch = slices.slice(i, i + SLICE_CONCURRENCY);
+      const batchRes = await Promise.all(batch.map(processSlice));
+      for (const item of batchRes) {
+        if (item) repairedSlices.push(item);
+      }
+    }
+
+    // 3. Holistic AI Karaoke Vocal-to-Video Coordination Audit & Offset Calibration
+    const measuredMedianDriftMs = Math.round(Number(coordinationAudit?.medianVideoDriftMs) || 0);
+    const measuredAbsErrMs = Math.round(Number(coordinationAudit?.avgAbsErrMs) || 0);
+    const lowWordsCount = Math.round(Number(coordinationAudit?.lowConfCount) || 0);
+    const overlapCount = Math.round(Number(coordinationAudit?.overlapCount) || 0);
+    const microGapCount = Math.round(Number(coordinationAudit?.microGapCount) || 0);
+
+    let recommendedOffsetAdjustMs = Math.abs(measuredMedianDriftMs) >= 20
+      ? Math.max(-180, Math.min(180, -measuredMedianDriftMs))
+      : 0;
+    let coordinationDiagnosis = isFr
+      ? (Math.abs(measuredMedianDriftMs) >= 20
+          ? `Décalage systématique voix↔vidéo de ${measuredMedianDriftMs > 0 ? '+' : ''}${measuredMedianDriftMs} ms détecté (erreur moyenne ±${measuredAbsErrMs} ms).`
+          : `Coordination globale voix↔vidéo stable (±${measuredAbsErrMs} ms), affinage des mots faibles et fluidité karaoké.`)
+      : isJa
+      ? `音声と動画字幕の座標誤差 ±${measuredAbsErrMs}ms を検出し、低信頼ワードと遷移を最適化しました。`
+      : `Detected ${measuredMedianDriftMs >= 0 ? '+' : ''}${measuredMedianDriftMs} ms systematic voice-to-video drift (±${measuredAbsErrMs} ms mean error).`;
+    let optimizationSummary = isFr
+      ? `Recalibrage précis sur les attaques vocales, correction de ${lowWordsCount} mot(s) faible(s) et lissage des transitions vidéo.`
+      : isJa
+      ? `声のアタック基準で再アンカーし、${lowWordsCount}語の低信頼トークンと表示遷移を滑らかに補正。`
+      : `Re-anchored onto vocal attacks, repaired ${lowWordsCount} weak token(s), and smoothed video sweep flow.`;
+
+    let auditAiSucceeded = false;
+    if (ai) {
+      try {
+        const lineDigest = inputLines.slice(0, 48).map((ln: any, idx: number) => ({
+          index: Number.isInteger(Number(ln?.index)) ? Number(ln.index) : idx,
+          text: String(ln?.text || '').slice(0, 90),
+          start: +(Number(ln?.start) || 0).toFixed(3),
+          end: +(Number(ln?.end) || 0).toFixed(3),
+          avgDriftMs: Math.round(Number(ln?.avgDriftMs) || 0),
+          lowWords: Math.round(Number(ln?.lowWords) || 0),
+          flags: Array.isArray(ln?.flags) ? ln.flags.slice(0, 5) : [],
+        }));
+
+        const auditResp = await ai.models.generateContent({
+          model: 'gemini-4-hydrogen',
+          contents: [
+            {
+              text: `You are an expert Karaoke Motion & Vocal Synchronization Quality Engineer.
+Evaluate the coordination between SUNG VOICE in audio vs LYRICS DISPLAYED ON VIDEO, and return an automated calibration & quality diagnosis.
+
+Telemetry:
+- uiLanguage: ${uiLang}
+- lyricLanguage: ${lang || 'auto'}
+- currentGlobalOffsetMs: ${Math.round(Number(globalOffsetMs) || 0)}
+- typesetReadAhead200msEnabled: ${Boolean(typesetLeadActive)}
+- measuredMedianVoiceToVideoDriftMs: ${measuredMedianDriftMs} (positive means video lyrics appear AFTER singer starts; negative means lyrics appear BEFORE singer starts, already compensating for any active read-ahead lead)
+- measuredMeanAbsTimingErrorMs: ${measuredAbsErrMs}
+- lowConfidenceWords: ${lowWordsCount}
+- overlappingWordsOrBoundaries: ${overlapCount}
+- choppyMicroGaps: ${microGapCount}
+- acousticConditions: ${JSON.stringify(qualityConditions || {})}
+- orthographyFixCount: ${orthographyFixes.length}
+- reanalyzedVocalSlicesCount: ${repairedSlices.length}
+- activeVocalSegmentsSample: ${JSON.stringify((Array.isArray(vocalSegments) ? vocalSegments : []).slice(0, 12))}
+
+Per-line summary:
+${JSON.stringify(lineDigest)}
+
+Output strict JSON with:
+- "recommendedOffsetAdjustMs": integer in [-180, 180] (set 0 if |measuredMedianVoiceToVideoDriftMs| < 18, or roughly -measuredMedianVoiceToVideoDriftMs to center video display onto true vocal attack)
+- "coordinationDiagnosis": 1 concise natural sentence (${isFr ? 'in French' : isJa ? 'in Japanese' : 'in English'}) summarizing what was found between singing timing, video display, and low-confidence segments.
+- "optimizationSummary": 1 concise natural sentence (${isFr ? 'in French' : isJa ? 'in Japanese' : 'in English'}) summarizing how precision and karaoke fluidity are restored.`,
+            },
+          ],
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                recommendedOffsetAdjustMs: { type: Type.INTEGER },
+                coordinationDiagnosis: { type: Type.STRING },
+                optimizationSummary: { type: Type.STRING },
+              },
+              required: ['recommendedOffsetAdjustMs', 'coordinationDiagnosis', 'optimizationSummary'],
+            },
+          },
+        });
+
+        const parsedAudit = JSON.parse(auditResp.text || '{}');
+        if (Number.isFinite(Number(parsedAudit?.recommendedOffsetAdjustMs))) {
+          const recOff = Math.round(Number(parsedAudit.recommendedOffsetAdjustMs));
+          recommendedOffsetAdjustMs = Math.abs(recOff) >= 16 ? Math.max(-180, Math.min(180, recOff)) : 0;
+        }
+        if (typeof parsedAudit?.coordinationDiagnosis === 'string' && parsedAudit.coordinationDiagnosis.trim()) {
+          coordinationDiagnosis = parsedAudit.coordinationDiagnosis.trim().slice(0, 260);
+        }
+        if (typeof parsedAudit?.optimizationSummary === 'string' && parsedAudit.optimizationSummary.trim()) {
+          optimizationSummary = parsedAudit.optimizationSummary.trim().slice(0, 260);
+        }
+        auditAiSucceeded = true;
+      } catch (auditErr: any) {
+        aiErrors.push(classifyAiError(auditErr));
+      }
+    }
+
+    const usedGemini = auditAiSucceeded || repairedSlices.some(s => s.engine.startsWith('gemini'));
+    const hasBillingIssue = aiErrors.some(e => e.requiresBilling);
+    const hasKeyIssue = aiErrors.some(e => e.requiresApiKey);
+    const aiStatus = !ai
+      ? 'unavailable'
+      : usedGemini && !aiErrors.length
+      ? 'ok'
+      : usedGemini
+      ? 'partial'
+      : 'degraded';
+    const engineUsed = usedGemini ? 'gemini-4-hydrogen' : 'whisper+acoustic';
+
+    return res.json({
+      success: true,
+      engineUsed,
+      aiStatus,
+      requiresBilling: hasBillingIssue,
+      requiresApiKey: hasKeyIssue,
+      aiError: aiErrors.length ? aiErrors[0].message : (!ai ? 'GEMINI_API_KEY missing on server' : null),
+      orthographyFixes,
+      repairedSlices,
+      recommendedOffsetAdjustMs,
+      coordinationDiagnosis,
+      optimizationSummary,
+    });
+  } catch (err: any) {
+    const info = classifyAiError(err);
+    return res.status(500).json({
+      success: false,
+      reason: 'qc_auto_error',
+      aiStatus: 'degraded',
+      requiresBilling: info.requiresBilling,
+      requiresApiKey: info.requiresApiKey,
+      message: info.message,
+    });
   }
 });
 
