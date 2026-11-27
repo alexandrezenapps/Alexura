@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { GoogleGenAI, Type } from '@google/genai';
 import { createPipelineRouter } from './server/routes/pipelineRoutes.ts';
 import { createSyncEngineV1Router } from './server/routes/syncEngineRoutes.ts';
+import { createSkillsRouter } from './server/routes/skillsRoutes.ts';
 import {
   warmupWhisper,
   isWhisperWarm,
@@ -56,6 +57,9 @@ app.use('/api/v1', createSyncEngineV1Router());
 // Modular Audio Pipeline v2 Router (Secure Uploads, Async Jobs/SSE, Provider Interfaces, SQLite Timestamp DB)
 app.use('/api/v2', createPipelineRouter());
 
+// AI Studio Master Skills Registry, Selection & Context Loader API
+app.use('/api/skills', createSkillsRouter());
+
 function validateHttpsTarget(raw: unknown): string | null {
   if (typeof raw !== 'string') return null;
   const trimmed = raw.trim();
@@ -80,6 +84,36 @@ function validateHttpsTarget(raw: unknown): string | null {
     return u.toString();
   } catch {
     return null;
+  }
+}
+
+const MAX_AUDIO_BASE64_CHARS = 28_000_000;
+const MAX_ALIGN_LINES = 500;
+
+function normalizeBase64Audio(raw: unknown): string {
+  if (typeof raw !== 'string') return '';
+  let s = raw.trim();
+  if (!s) return '';
+  const dataPrefixMatch = s.match(/^data:[^;,]+;base64,(.+)$/i);
+  if (dataPrefixMatch) s = dataPrefixMatch[1].trim();
+  if (s.length > MAX_AUDIO_BASE64_CHARS) return '__TOO_LARGE__';
+  if (!/^[A-Za-z0-9+/=\s]+$/.test(s)) return '';
+  return s.replace(/\s+/g, '');
+}
+
+async function withApiTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      const err: any = new Error(`${label} exceeded ${timeoutMs}ms`);
+      err.code = 'ETIMEDOUT';
+      reject(err);
+    }, timeoutMs);
+  });
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timer) clearTimeout(timer);
   }
 }
 
@@ -114,6 +148,9 @@ app.get('/api/health', (_req, res) => {
       '/api/qc-auto-perform',
       '/api/translate-lyrics',
       '/api/bridge',
+      '/api/skills',
+      '/api/skills/select',
+      '/api/skills/load-context',
     ],
   });
 });
@@ -566,9 +603,25 @@ async function runVocalSyncPipeline(
   body: any,
   onProgress?: (evt: { event: string; payload: any }) => void,
 ) {
-  const { audioBase64, separatedVocalBase64, lines, lang, vocalSegments, durationSec } = body || {};
-  if (!audioBase64 || !Array.isArray(lines) || !lines.length) {
-    return { success: false, reason: 'missing_input' };
+  const { audioBase64: rawAudio, separatedVocalBase64: rawSep, lines: rawLinesInput, lang, vocalSegments, durationSec } = body || {};
+  const audioBase64 = normalizeBase64Audio(rawAudio);
+  if (audioBase64 === '__TOO_LARGE__') {
+    return { success: false, statusCode: 413, reason: 'payload_too_large', message: 'Audio payload exceeds limit' };
+  }
+  if (!audioBase64) {
+    return { success: false, statusCode: 400, reason: 'missing_audio', message: 'Missing or invalid audioBase64' };
+  }
+  const sepNorm = normalizeBase64Audio(rawSep);
+  const separatedVocalBase64 = sepNorm === '__TOO_LARGE__' ? '' : sepNorm;
+  const lines = Array.isArray(rawLinesInput)
+    ? rawLinesInput.slice(0, MAX_ALIGN_LINES).map((l: any, idx: number) => ({
+        i: typeof l?.i === 'number' ? l.i : (typeof l?.index === 'number' ? l.index : idx),
+        text: String(l?.text || '').slice(0, 600),
+        lockedStart: Number.isFinite(Number(l?.lockedStart)) ? Number(l.lockedStart) : undefined,
+      }))
+    : [];
+  if (!lines.length) {
+    return { success: false, statusCode: 400, reason: 'missing_lines', message: 'Missing lyric lines to align' };
   }
 
   const runWhisperAlignFallback = async (geminiErrReason?: string) => {
@@ -701,10 +754,16 @@ async function runVocalSyncPipeline(
       : '';
     const segHint = cleanSegs ? `\nAcoustic vocal activity windows (seconds): ${cleanSegs}.` : '';
 
+    const anchorHints = lines
+      .filter((l: any) => typeof l.lockedStart === 'number')
+      .map((l: any) => `#${l.i}@${l.lockedStart.toFixed(3)}s`)
+      .join(', ');
+    const anchorNote = anchorHints ? `\nPre-calibrated user anchor hints (preserve closely unless clearly off): ${anchorHints}.` : '';
+
     const prompt = `You are a singing-aware forced-alignment phonetician and lyric validator executing Stages 4-6.
-Analyze BOTH the original mix reference${separatedVocalBase64 ? ' AND the center-isolated vocal stem provided' : ''}. Language hint: ${lang || 'auto'}.${segHint}
+Analyze BOTH the original mix reference${separatedVocalBase64 ? ' AND the center-isolated vocal stem provided' : ''}. Language hint: ${lang || 'auto'}.${segHint}${anchorNote}
 Ordered list of lyric lines to align:
-${JSON.stringify(lines, null, 2)}
+${JSON.stringify(lines.map((l: any) => ({ i: l.i, text: l.text })), null, 2)}
 
 CRITICAL SINGING-AWARE ALIGNMENT & VALIDATION RULES:
 - Distinguish actual SINGING performance (sustained vowels, vibrato, melisma, vocal onsets) from ordinary speech or musical beats.
@@ -732,52 +791,56 @@ CRITICAL SINGING-AWARE ALIGNMENT & VALIDATION RULES:
     }
     contentParts.push({ text: prompt });
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-4-hydrogen',
-      contents: contentParts,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            alignments: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  index: { type: Type.INTEGER },
-                  start: { type: Type.NUMBER },
-                  end: { type: Type.NUMBER },
-                  speaker: { type: Type.STRING },
-                  recognitionConfidence: { type: Type.NUMBER },
-                  alignmentConfidence: { type: Type.NUMBER },
-                  flags: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  validationNote: { type: Type.STRING },
-                  words: {
-                    type: Type.ARRAY,
-                    items: {
-                      type: Type.OBJECT,
-                      properties: {
-                        text: { type: Type.STRING },
-                        start: { type: Type.NUMBER },
-                        end: { type: Type.NUMBER },
-                        recognitionConfidence: { type: Type.NUMBER },
-                        alignmentConfidence: { type: Type.NUMBER },
-                        speaker: { type: Type.STRING },
-                        flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+    const response = await withApiTimeout(
+      ai.models.generateContent({
+        model: 'gemini-4-hydrogen',
+        contents: contentParts,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              alignments: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    index: { type: Type.INTEGER },
+                    start: { type: Type.NUMBER },
+                    end: { type: Type.NUMBER },
+                    speaker: { type: Type.STRING },
+                    recognitionConfidence: { type: Type.NUMBER },
+                    alignmentConfidence: { type: Type.NUMBER },
+                    flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    validationNote: { type: Type.STRING },
+                    words: {
+                      type: Type.ARRAY,
+                      items: {
+                        type: Type.OBJECT,
+                        properties: {
+                          text: { type: Type.STRING },
+                          start: { type: Type.NUMBER },
+                          end: { type: Type.NUMBER },
+                          recognitionConfidence: { type: Type.NUMBER },
+                          alignmentConfidence: { type: Type.NUMBER },
+                          speaker: { type: Type.STRING },
+                          flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        },
+                        required: ['text', 'start', 'end'],
                       },
-                      required: ['text', 'start', 'end'],
                     },
                   },
+                  required: ['index', 'start', 'end'],
                 },
-                required: ['index', 'start', 'end'],
               },
             },
+            required: ['alignments'],
           },
-          required: ['alignments'],
         },
-      },
-    });
+      }),
+      55000,
+      'gemini_align_vocals',
+    );
 
     const parsed = JSON.parse(response.text || '{}');
     const lineTimes: Record<number, number> = {};
@@ -811,6 +874,11 @@ CRITICAL SINGING-AWARE ALIGNMENT & VALIDATION RULES:
           };
         }
       });
+    }
+
+    const nonInterludeLines = lines.filter((l: any) => !/^\[interlude/i.test(String(l.text || '').trim()));
+    if (nonInterludeLines.length >= 2 && Object.keys(lineTimes).length < Math.max(1, Math.floor(nonInterludeLines.length * 0.4))) {
+      return runWhisperAlignFallback('insufficient_gemini_coverage');
     }
 
     const preAudit = analyzeAndFixOrthography(lines.map((l: any) => String(l?.text || '')), String(lang || 'auto'));
@@ -904,7 +972,10 @@ CRITICAL SINGING-AWARE ALIGNMENT & VALIDATION RULES:
 
 app.post('/api/align-vocals', async (req, res) => {
   try {
-    const result = await runVocalSyncPipeline(req.body);
+    const result: any = await runVocalSyncPipeline(req.body);
+    if (result && !result.success && result.statusCode) {
+      return res.status(result.statusCode).json(result);
+    }
     return res.status(200).json(result);
   } catch (err: any) {
     return res.status(200).json({
@@ -1064,8 +1135,8 @@ async function runSingingTranscriptionPipeline(
   onProgress?: (evt: { stage: number; event: string; payload?: any }) => void,
 ) {
   const {
-    audioBase64,
-    separatedVocalBase64,
+    audioBase64: rawAudio,
+    separatedVocalBase64: rawSep,
     lang,
     audioFormat,
     duration,
@@ -1076,13 +1147,20 @@ async function runSingingTranscriptionPipeline(
     vocalSegments,
   } = body || {};
 
-  if (!audioBase64) {
-    return { success: false, reason: 'no_audio' };
+  const audioBase64 = normalizeBase64Audio(rawAudio);
+  if (audioBase64 === '__TOO_LARGE__') {
+    return { success: false, statusCode: 413, reason: 'payload_too_large', message: 'Audio payload exceeds limit' };
   }
+  if (!audioBase64) {
+    return { success: false, statusCode: 400, reason: 'missing_audio', message: 'Missing or invalid audioBase64' };
+  }
+  const sepNorm = normalizeBase64Audio(rawSep);
+  const separatedVocalBase64 = sepNorm === '__TOO_LARGE__' ? '' : sepNorm;
+  const cleanBody = { ...body, audioBase64, separatedVocalBase64 };
 
   // If Cloud Gemini is unconfigured, run self-hosted Neural Whisper + FFmpeg Vocal Isolation directly
   if (!ai) {
-    return runWhisperFallbackPipeline(body, onProgress);
+    return runWhisperFallbackPipeline(cleanBody, onProgress);
   }
 
   const offsetSec = Math.max(0, Number(chunkStartSec) || 0);
@@ -1120,10 +1198,14 @@ async function runSingingTranscriptionPipeline(
 5. Mark pure non-vocal instrumental passages as [INSTRUMENTAL]. If a brief phrase is genuinely masked/inaudible, mark [UNCLEAR] instead of inventing words.`,
       },
     ];
-    const transcribeResp = await ai.models.generateContent({
-      model: 'gemini-3.5-transcribe',
-      contents: transcribeParts,
-    });
+    const transcribeResp = await withApiTimeout(
+      ai.models.generateContent({
+        model: 'gemini-3.5-transcribe',
+        contents: transcribeParts,
+      }),
+      45000,
+      'gemini_transcribe_vocals',
+    );
     vocalTranscript = String(transcribeResp.text || '').trim();
     if (vocalTranscript) {
       const previewLines = vocalTranscript
@@ -1139,7 +1221,7 @@ async function runSingingTranscriptionPipeline(
   } catch (tErr: any) {
     const tMsg = tErr?.message || String(tErr || '');
     if (tMsg.includes('billing') || tMsg.includes('free tier') || errIsPermissionDenied(tErr)) {
-      return runWhisperFallbackPipeline(body, onProgress);
+      return runWhisperFallbackPipeline(cleanBody, onProgress);
     }
   }
 
@@ -1189,100 +1271,104 @@ Preserve timeline starting at 0.000s of this audio window (${winDur}s total). Ou
   let parsed: any = null;
   let usedStageARecovery = false;
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-4-hydrogen',
-      contents: alignContents,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            audioType: { type: Type.STRING },
-            language: { type: Type.STRING },
-            detectedLanguages: { type: Type.ARRAY, items: { type: Type.STRING } },
-            detectedSpeakers: { type: Type.ARRAY, items: { type: Type.STRING } },
-            hasBackingVocals: { type: Type.BOOLEAN },
-            hasUnclearSections: { type: Type.BOOLEAN },
-            hasInstrumentalSections: { type: Type.BOOLEAN },
-            hasRepeatedChorus: { type: Type.BOOLEAN },
-            title: { type: Type.STRING },
-            artist: { type: Type.STRING },
-            isInstrumental: { type: Type.BOOLEAN },
-            missingVocalGaps: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  start: { type: Type.NUMBER },
-                  end: { type: Type.NUMBER },
-                  reason: { type: Type.STRING },
+    const response = await withApiTimeout(
+      ai.models.generateContent({
+        model: 'gemini-4-hydrogen',
+        contents: alignContents,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              audioType: { type: Type.STRING },
+              language: { type: Type.STRING },
+              detectedLanguages: { type: Type.ARRAY, items: { type: Type.STRING } },
+              detectedSpeakers: { type: Type.ARRAY, items: { type: Type.STRING } },
+              hasBackingVocals: { type: Type.BOOLEAN },
+              hasUnclearSections: { type: Type.BOOLEAN },
+              hasInstrumentalSections: { type: Type.BOOLEAN },
+              hasRepeatedChorus: { type: Type.BOOLEAN },
+              title: { type: Type.STRING },
+              artist: { type: Type.STRING },
+              isInstrumental: { type: Type.BOOLEAN },
+              missingVocalGaps: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    start: { type: Type.NUMBER },
+                    end: { type: Type.NUMBER },
+                    reason: { type: Type.STRING },
+                  },
+                  required: ['start', 'end'],
                 },
-                required: ['start', 'end'],
               },
-            },
-            sections: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  type: { type: Type.STRING },
-                  label: { type: Type.STRING },
-                  start: { type: Type.NUMBER },
-                  end: { type: Type.NUMBER },
-                  isRepeat: { type: Type.BOOLEAN },
+              sections: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    type: { type: Type.STRING },
+                    label: { type: Type.STRING },
+                    start: { type: Type.NUMBER },
+                    end: { type: Type.NUMBER },
+                    isRepeat: { type: Type.BOOLEAN },
+                  },
+                  required: ['type', 'start', 'end'],
                 },
-                required: ['type', 'start', 'end'],
               },
-            },
-            lines: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  text: { type: Type.STRING },
-                  start: { type: Type.NUMBER },
-                  end: { type: Type.NUMBER },
-                  section: { type: Type.STRING },
-                  vocalType: { type: Type.STRING },
-                  language: { type: Type.STRING },
-                  speaker: { type: Type.STRING },
-                  recognitionConfidence: { type: Type.NUMBER },
-                  alignmentConfidence: { type: Type.NUMBER },
-                  flags: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  validationNote: { type: Type.STRING },
-                  isRepeatedChorus: { type: Type.BOOLEAN },
-                  backingText: { type: Type.STRING },
-                  unclear: { type: Type.BOOLEAN },
-                  words: {
-                    type: Type.ARRAY,
-                    items: {
-                      type: Type.OBJECT,
-                      properties: {
-                        text: { type: Type.STRING },
-                        start: { type: Type.NUMBER },
-                        end: { type: Type.NUMBER },
-                        recognitionConfidence: { type: Type.NUMBER },
-                        alignmentConfidence: { type: Type.NUMBER },
-                        speaker: { type: Type.STRING },
-                        flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+              lines: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    text: { type: Type.STRING },
+                    start: { type: Type.NUMBER },
+                    end: { type: Type.NUMBER },
+                    section: { type: Type.STRING },
+                    vocalType: { type: Type.STRING },
+                    language: { type: Type.STRING },
+                    speaker: { type: Type.STRING },
+                    recognitionConfidence: { type: Type.NUMBER },
+                    alignmentConfidence: { type: Type.NUMBER },
+                    flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    validationNote: { type: Type.STRING },
+                    isRepeatedChorus: { type: Type.BOOLEAN },
+                    backingText: { type: Type.STRING },
+                    unclear: { type: Type.BOOLEAN },
+                    words: {
+                      type: Type.ARRAY,
+                      items: {
+                        type: Type.OBJECT,
+                        properties: {
+                          text: { type: Type.STRING },
+                          start: { type: Type.NUMBER },
+                          end: { type: Type.NUMBER },
+                          recognitionConfidence: { type: Type.NUMBER },
+                          alignmentConfidence: { type: Type.NUMBER },
+                          speaker: { type: Type.STRING },
+                          flags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        },
+                        required: ['text', 'start', 'end'],
                       },
-                      required: ['text', 'start', 'end'],
                     },
                   },
+                  required: ['text', 'start', 'end', 'words'],
                 },
-                required: ['text', 'start', 'end', 'words'],
               },
             },
+            required: ['audioType', 'language', 'lines'],
           },
-          required: ['audioType', 'language', 'lines'],
         },
-      },
-    });
+      }),
+      55000,
+      'gemini_transcribe_align',
+    );
     parsed = JSON.parse(response.text || '{}');
   } catch (alignErr: any) {
     const aMsg = alignErr?.message || String(alignErr || '');
     if (aMsg.includes('billing') || aMsg.includes('free tier') || errIsPermissionDenied(alignErr)) {
-      return runWhisperFallbackPipeline(body, onProgress);
+      return runWhisperFallbackPipeline(cleanBody, onProgress);
     }
     if (vocalTranscript) {
       const recovered = parseTranscriptLinesForRecovery(vocalTranscript, cleanSegments, winDur, offsetSec, lang);
@@ -1295,11 +1381,34 @@ Preserve timeline starting at 0.000s of this audio window (${winDur}s total). Ou
         };
       }
     }
-    if (!parsed) throw alignErr;
+    if (!parsed) {
+      return runWhisperFallbackPipeline(cleanBody, onProgress);
+    }
   }
 
-  const rawLines = Array.isArray(parsed?.lines) ? parsed.lines : [];
+  let rawLines = Array.isArray(parsed?.lines) ? parsed.lines : [];
+  if (!rawLines.length && !parsed?.isInstrumental) {
+    if (vocalTranscript) {
+      const recovered = parseTranscriptLinesForRecovery(vocalTranscript, cleanSegments, winDur, offsetSec, lang);
+      if (recovered.length) {
+        usedStageARecovery = true;
+        rawLines = recovered;
+      }
+    }
+    if (!rawLines.length) {
+      return runWhisperFallbackPipeline(cleanBody, onProgress);
+    }
+  }
   const lines = normalizeKaraokeLines(rawLines, offsetSec);
+  if (lines.length) {
+    const lineTextsOnly = lines.map((l: any) => (l.isInstrumentalSection ? '' : String(l.text || '')));
+    const orthoClean = analyzeAndFixOrthography(lineTextsOnly, String(parsed?.language || lang || 'auto'));
+    lines.forEach((ln: any, idx: number) => {
+      if (!ln.isInstrumentalSection && orthoClean.correctedLines[idx]) {
+        ln.text = orthoClean.correctedLines[idx];
+      }
+    });
+  }
   const missingVocalGaps = Array.isArray(parsed?.missingVocalGaps)
     ? parsed.missingVocalGaps.map((g: any) => ({
         start: +(Math.max(0, (Number(g?.start) || 0) + offsetSec)).toFixed(3),
@@ -1363,7 +1472,10 @@ function sendSseEvent(res: express.Response, event: string, data: unknown) {
 // CORE FUNCTION 05 Multi-Stage Server Pipeline (Stages 2-7): Singing Transcription + Forced Alignment + Validation
 app.post('/api/transcribe-lyrics', async (req, res) => {
   try {
-    const result = await runSingingTranscriptionPipeline(req.body);
+    const result: any = await runSingingTranscriptionPipeline(req.body);
+    if (result && !result.success && result.statusCode) {
+      return res.status(result.statusCode).json(result);
+    }
     return res.status(200).json(result);
   } catch (err: any) {
     const msg = err?.message || String(err || '');
@@ -1418,7 +1530,11 @@ app.post('/api/transcribe-lyrics/stream', async (req, res) => {
 // Direct live voice clip transcription endpoint (mic WebM/Opus/Ogg/MP4/WAV -> Neural Whisper)
 app.post('/api/transcribe-voice-clip', async (req, res) => {
   try {
-    const { audioBase64, lang } = req.body || {};
+    const { audioBase64: rawAudio, lang } = req.body || {};
+    const audioBase64 = normalizeBase64Audio(rawAudio);
+    if (audioBase64 === '__TOO_LARGE__') {
+      return res.status(413).json({ success: false, reason: 'payload_too_large' });
+    }
     if (!audioBase64) {
       return res.status(400).json({ success: false, reason: 'missing_audio' });
     }

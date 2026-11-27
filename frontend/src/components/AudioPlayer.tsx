@@ -44,14 +44,14 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   return (
     <section
       aria-label="Audio Playback Transport"
-      className="rounded-xl border border-white/9 bg-[#111114] px-4 py-3.5 sm:px-5"
+      className="rounded-xl border border-slate-200/10 bg-gradient-to-b from-[#101521]/95 to-[#0b0f18]/98 px-4 py-3.5 sm:px-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_10px_28px_-14px_rgba(0,0,0,0.65)]"
     >
       <div className="flex flex-col gap-3.5 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-semibold text-zinc-100">
+          <div className="truncate text-sm font-semibold text-slate-50">
             {title || snapshot.sourceLabel || 'No Audio Loaded'}
           </div>
-          <div className="truncate text-[11px] text-zinc-400">
+          <div className="truncate text-[11px] text-slate-400">
             {artist || (snapshot.ready ? 'Original Audio Timeline · HTML5 Audio API' : 'Upload or select a track to activate transport')}
           </div>
         </div>
@@ -65,7 +65,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             onClick={() => onSeek(currentTime - 5)}
             aria-label="Seek back 5 seconds"
           >
-            <RotateCcw className="h-3.5 w-3.5" />
+            <RotateCcw className="h-3.5 w-3.5 text-sky-300" />
             <span className="axr-tc">-5s</span>
           </Button>
 
@@ -99,7 +99,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             onClick={() => onSeek(currentTime + 5)}
             aria-label="Seek forward 5 seconds"
           >
-            <RotateCw className="h-3.5 w-3.5" />
+            <RotateCw className="h-3.5 w-3.5 text-sky-300" />
             <span className="axr-tc">+5s</span>
           </Button>
 
@@ -111,20 +111,23 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             onClick={onToggleLoop}
             aria-pressed={snapshot.loop}
             aria-label="Toggle loop"
-            className={cn(snapshot.loop && 'border-sky-400/50 bg-sky-400/12 text-sky-300')}
+            className={cn(
+              snapshot.loop &&
+                'border-sky-400/55 bg-gradient-to-b from-sky-500/24 to-sky-500/12 text-sky-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]',
+            )}
           >
             <Repeat className="h-3.5 w-3.5" />
           </Button>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-1.5 text-[11px] text-zinc-400">
+          <label className="flex items-center gap-1.5 text-[11px] text-slate-400">
             <span>Speed</span>
             <select
               value={String(snapshot.playbackRate)}
               disabled={!snapshot.ready}
               onChange={(e) => onRateChange(Number(e.target.value))}
-              className="axr-tc h-8 rounded-md border border-white/10 bg-zinc-950 px-2 text-[11px] text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
+              className="axr-tc h-8 rounded-md border border-slate-200/12 bg-[#080b12] px-2 text-[11px] text-slate-100 hover:border-slate-200/24 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
             >
               {SPEED_OPTIONS.map((rate) => (
                 <option key={rate} value={String(rate)}>
@@ -137,16 +140,16 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           <div className="flex items-center gap-2 min-w-[132px]">
             <Button
               type="button"
-              variant="ghost"
+              variant="secondary"
               size="icon"
               onClick={onToggleMute}
               aria-label={snapshot.muted ? 'Unmute' : 'Mute'}
               className="h-8 w-8"
             >
               {snapshot.muted || snapshot.volume === 0 ? (
-                <VolumeX className="h-3.5 w-3.5 text-zinc-400" />
+                <VolumeX className="h-3.5 w-3.5 text-amber-300" />
               ) : (
-                <Volume2 className="h-3.5 w-3.5 text-zinc-300" />
+                <Volume2 className="h-3.5 w-3.5 text-sky-300" />
               )}
             </Button>
             <Slider
@@ -163,7 +166,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       </div>
 
       <div className="mt-3.5 flex items-center gap-3">
-        <span className="axr-tc w-16 text-[11px] text-zinc-200">
+        <span className="axr-tc w-16 text-[11px] font-medium text-slate-200">
           {formatSeconds(snapshot.ready ? currentTime : 0)}
         </span>
         <Slider
@@ -176,7 +179,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           aria-label="Audio Seek Scrub Bar"
           className="flex-1"
         />
-        <span className="axr-tc w-16 text-right text-[11px] text-zinc-500">
+        <span className="axr-tc w-16 text-right text-[11px] text-slate-500">
           {formatSeconds(duration > 0 ? duration : null)}
         </span>
       </div>

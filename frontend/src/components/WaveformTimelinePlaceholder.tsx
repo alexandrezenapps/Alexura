@@ -43,14 +43,14 @@ export const WaveformTimelinePlaceholder: React.FC<WaveformTimelinePlaceholderPr
   return (
     <section
       aria-label="Waveform Timeline Container"
-      className="rounded-xl border border-white/9 bg-[#111114] p-4"
+      className="rounded-xl border border-slate-200/10 bg-gradient-to-b from-[#101521]/95 to-[#0b0f18]/98 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_10px_28px_-14px_rgba(0,0,0,0.65)]"
     >
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-xs">
           <AudioLines className="h-4 w-4 text-sky-400" />
-          <span className="font-semibold text-zinc-100">Waveform Timeline</span>
-          <span className="text-zinc-500">·</span>
-          <span className="text-[11px] text-zinc-400">
+          <span className="font-semibold text-slate-100">Waveform Timeline</span>
+          <span className="text-slate-600">·</span>
+          <span className="text-[11px] text-slate-400">
             WaveSurfer.js integration slot (Phase 2)
           </span>
         </div>
@@ -58,7 +58,7 @@ export const WaveformTimelinePlaceholder: React.FC<WaveformTimelinePlaceholderPr
         <div className="flex items-center gap-1.5">
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => setZoomFactor((z) => Math.max(1, z - 1))}
             disabled={zoomFactor <= 1}
@@ -66,12 +66,12 @@ export const WaveformTimelinePlaceholder: React.FC<WaveformTimelinePlaceholderPr
           >
             <ZoomOut className="h-3.5 w-3.5" />
           </Button>
-          <span className="axr-tc w-10 text-center text-[11px] text-zinc-400">
+          <span className="axr-tc w-10 text-center text-[11px] text-slate-300">
             {zoomFactor}x
           </span>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => setZoomFactor((z) => Math.min(8, z + 1))}
             disabled={zoomFactor >= 8}
@@ -89,29 +89,29 @@ export const WaveformTimelinePlaceholder: React.FC<WaveformTimelinePlaceholderPr
         data-audio-url={audioUrl || ''}
         data-zoom-factor={zoomFactor}
         onClick={handleClickTimeline}
-        className="relative h-24 w-full overflow-hidden rounded-lg border border-white/8 bg-zinc-950 cursor-crosshair select-none"
+        className="relative h-24 w-full overflow-hidden rounded-lg border border-slate-200/10 bg-[#070a11] shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)] cursor-crosshair select-none"
       >
         {/* Center reference line & second grid markers */}
-        <div className="pointer-events-none absolute inset-x-0 top-1/2 h-px bg-white/7" />
-        <div className="pointer-events-none absolute inset-y-0 left-1/4 w-px bg-white/4" />
-        <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px bg-white/4" />
-        <div className="pointer-events-none absolute inset-y-0 left-3/4 w-px bg-white/4" />
+        <div className="pointer-events-none absolute inset-x-0 top-1/2 h-px bg-sky-400/12" />
+        <div className="pointer-events-none absolute inset-y-0 left-1/4 w-px bg-slate-200/5" />
+        <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px bg-slate-200/5" />
+        <div className="pointer-events-none absolute inset-y-0 left-3/4 w-px bg-slate-200/5" />
 
         {/* Playhead needle synchronized strictly to HTML Audio currentTime */}
         {safeDur > 0 && (
           <div
-            className="pointer-events-none absolute inset-y-0 w-0.5 bg-sky-400"
+            className="pointer-events-none absolute inset-y-0 w-0.5 bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.65)]"
             style={{ left: `${progressPct}%` }}
           />
         )}
 
         <div className="pointer-events-none relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
-          <p className="text-xs font-medium text-zinc-300">
+          <p className="text-xs font-medium text-slate-200">
             {audioUrl
               ? 'Original audio bound · WaveSurfer.js peak canvas mounts here in Phase 2'
               : 'Drop an audio track to bind timeline and prepare WaveSurfer.js decoding'}
           </p>
-          <p className="axr-tc mt-1 text-[11px] text-zinc-500">
+          <p className="axr-tc mt-1 text-[11px] text-slate-400">
             Origin 0.00s · Cursor {formatSeconds(safeDur > 0 ? currentTimeSeconds : 0)} /{' '}
             {formatSeconds(safeDur > 0 ? safeDur : null)}
           </p>

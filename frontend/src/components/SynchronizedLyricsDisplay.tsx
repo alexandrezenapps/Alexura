@@ -127,6 +127,7 @@ export const SynchronizedLyricsDisplay: React.FC<SynchronizedLyricsDisplayProps>
                 </Button>
                 <Button
                   type="button"
+                  variant="emerald"
                   size="sm"
                   disabled={saving}
                   onClick={handleSave}
@@ -142,7 +143,7 @@ export const SynchronizedLyricsDisplay: React.FC<SynchronizedLyricsDisplayProps>
                 size="sm"
                 onClick={() => setEditMode(true)}
               >
-                <Edit3 className="h-3.5 w-3.5" />
+                <Edit3 className="h-3.5 w-3.5 text-sky-300" />
                 <span>Edit Lyrics</span>
               </Button>
             )}
@@ -159,14 +160,14 @@ export const SynchronizedLyricsDisplay: React.FC<SynchronizedLyricsDisplayProps>
         )}
 
         {!document ? (
-          <div className="rounded-lg border border-dashed border-white/10 bg-zinc-950/60 px-6 py-12 text-center">
-            <p className="text-sm font-medium text-zinc-300">No LyricsDocument Active</p>
-            <p className="mt-1 text-xs text-zinc-500">
+          <div className="rounded-xl border border-dashed border-slate-200/14 bg-[#080b12]/75 px-6 py-12 text-center">
+            <p className="text-sm font-medium text-slate-200">No LyricsDocument Active</p>
+            <p className="mt-1 text-xs text-slate-400">
               Start an audio upload &amp; Phase 1 analysis job to prepare the normalized schema.
             </p>
           </div>
         ) : segmentsToRender.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-white/10 bg-zinc-950/60 px-6 py-10 text-center text-xs text-zinc-400">
+          <div className="rounded-xl border border-dashed border-slate-200/14 bg-[#080b12]/75 px-6 py-10 text-center text-xs text-slate-400">
             Document contains 0 segments.
           </div>
         ) : (
@@ -179,17 +180,19 @@ export const SynchronizedLyricsDisplay: React.FC<SynchronizedLyricsDisplayProps>
                 <div
                   key={seg.segmentId}
                   className={cn(
-                    'rounded-lg border px-4 py-3 transition-colors',
+                    'rounded-lg border px-4 py-3 transition-[border-color,background-color,box-shadow] duration-150',
                     isActive
-                      ? 'border-sky-400/50 bg-sky-400/10'
-                      : 'border-white/7 bg-zinc-950/80 hover:border-white/15',
+                      ? 'border-sky-400/55 bg-gradient-to-r from-sky-500/16 to-indigo-500/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
+                      : 'border-slate-200/8 bg-[#080b12]/85 hover:border-slate-200/18',
                   )}
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-zinc-500">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
                     <div className="flex items-center gap-2">
-                      <span className="axr-tc text-zinc-400">#{String(seg.index + 1).padStart(2, '0')}</span>
+                      <span className="axr-tc font-semibold text-[#e8c97a]">
+                        #{String(seg.index + 1).padStart(2, '0')}
+                      </span>
                       <span>{seg.sectionType}</span>
-                      <span>·</span>
+                      <span className="text-slate-600">·</span>
                       <span>{seg.alignmentState}</span>
                     </div>
 
@@ -227,10 +230,10 @@ export const SynchronizedLyricsDisplay: React.FC<SynchronizedLyricsDisplayProps>
                           if (seg.startSeconds !== null) onSeek(seg.startSeconds);
                         }}
                         className={cn(
-                          'axr-tc text-[11px]',
+                          'axr-tc rounded-md px-1.5 py-0.5 text-[11px] transition-colors',
                           hasTiming
-                            ? 'text-sky-400 hover:underline cursor-pointer'
-                            : 'text-zinc-500 cursor-default',
+                            ? 'text-sky-300 hover:bg-sky-500/14 hover:text-white cursor-pointer'
+                            : 'text-slate-500 cursor-default',
                         )}
                       >
                         {formatSeconds(seg.startSeconds)} → {formatSeconds(seg.endSeconds)}
@@ -250,10 +253,10 @@ export const SynchronizedLyricsDisplay: React.FC<SynchronizedLyricsDisplayProps>
                         className={cn(
                           'text-base font-medium leading-snug',
                           seg.isPlaceholder
-                            ? 'italic text-zinc-500'
+                            ? 'italic text-slate-500'
                             : isActive
                               ? 'text-white'
-                              : 'text-zinc-200',
+                              : 'text-slate-100',
                         )}
                       >
                         {seg.text}
@@ -276,10 +279,10 @@ export const SynchronizedLyricsDisplay: React.FC<SynchronizedLyricsDisplayProps>
                                     : 'Unaligned word (Phase 1 — no fake timestamp)'
                                 }
                                 className={cn(
-                                  'rounded px-1.5 py-0.5 text-xs border',
+                                  'rounded px-1.5 py-0.5 text-xs border transition-colors',
                                   wordActive
-                                    ? 'border-sky-400/60 bg-sky-400/20 text-white'
-                                    : 'border-white/7 bg-zinc-900/70 text-zinc-300',
+                                    ? 'border-sky-400/65 bg-sky-500/24 text-white'
+                                    : 'border-slate-200/8 bg-[#101624] text-slate-300',
                                 )}
                               >
                                 {word.text}
@@ -297,7 +300,7 @@ export const SynchronizedLyricsDisplay: React.FC<SynchronizedLyricsDisplayProps>
         )}
 
         {document && (
-          <div className="flex items-center justify-between border-t border-white/6 pt-2.5 text-[11px] text-zinc-500">
+          <div className="flex items-center justify-between border-t border-slate-200/8 pt-2.5 text-[11px] text-slate-400">
             <span className="flex items-center gap-1.5">
               <Check className="h-3.5 w-3.5 text-emerald-400" />
               No fabricated word timestamps — unaligned tokens show `--:--.--`

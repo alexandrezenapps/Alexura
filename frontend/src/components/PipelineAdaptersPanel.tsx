@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lock, ServerCog } from 'lucide-react';
+import { CheckCircle2, Clock3, Lock, ServerCog } from 'lucide-react';
 import type { AdapterReportMap } from '@/types/lyrics';
 import { Alert } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,10 +23,10 @@ export const PipelineAdaptersPanel: React.FC<PipelineAdaptersPanelProps> = ({ ad
       <Alert variant="default">
         <Lock className="h-4 w-4 shrink-0 mt-0.5 text-emerald-400" />
         <div className="space-y-0.5">
-          <div className="font-semibold text-zinc-100">
+          <div className="font-semibold text-slate-50">
             API Keys &amp; Secrets Isolated on Backend
           </div>
-          <p className="text-[11px] text-zinc-400">
+          <p className="text-[11px] text-slate-400">
             `GEMINI_API_KEY` and Phase 2 inference URLs are stored strictly in backend environment
             variables. Frontend bundle never accesses provider credentials.
           </p>
@@ -36,7 +36,7 @@ export const PipelineAdaptersPanel: React.FC<PipelineAdaptersPanelProps> = ({ ad
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {list.length === 0 ? (
           <Card className="md:col-span-2">
-            <CardContent className="py-8 text-center text-xs text-zinc-400">
+            <CardContent className="py-8 text-center text-xs text-slate-400">
               Loading modular adapter capability report from backend...
             </CardContent>
           </Card>
@@ -52,18 +52,23 @@ export const PipelineAdaptersPanel: React.FC<PipelineAdaptersPanelProps> = ({ ad
                   <span
                     className={
                       adapter.isImplementedForProduction
-                        ? 'axr-tc text-[11px] text-emerald-400'
-                        : 'axr-tc text-[11px] text-amber-300'
+                        ? 'axr-tc inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-300'
+                        : 'axr-tc inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#e8c97a]'
                     }
                   >
-                    {adapter.status}
+                    {adapter.isImplementedForProduction ? (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    ) : (
+                      <Clock3 className="h-3.5 w-3.5" />
+                    )}
+                    <span>{adapter.status}</span>
                   </span>
                 </div>
                 <CardDescription className="axr-tc text-[11px]">
                   {adapter.adapterClass} · {adapter.phaseTarget}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="text-xs leading-relaxed text-zinc-300">
+              <CardContent className="text-xs leading-relaxed text-slate-300">
                 {adapter.note}
               </CardContent>
             </Card>

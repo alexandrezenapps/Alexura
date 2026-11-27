@@ -27,42 +27,46 @@
 
 :root {
   color-scheme: dark;
-  --bg: #050507;
-  --bg-gradient: radial-gradient(ellipse 68% 48% at 12% 0%, rgba(10, 132, 255, 0.085) 0%, transparent 72%),
-                 radial-gradient(ellipse 56% 44% at 90% 4%, rgba(214, 180, 106, 0.055) 0%, transparent 68%),
-                 radial-gradient(ellipse 75% 55% at 50% 100%, rgba(15, 23, 42, 0.35) 0%, transparent 76%);
-  --ink: #f5f5f7;
-  --surface: #0b0c10;
-  --surface-warm: #101218;
-  --surface-translucent: rgba(11, 12, 16, 0.88);
-  --panel: rgba(12, 13, 18, 0.86);
-  --panel-solid: #0b0c10;
-  --raised: #141720;
-  --raised2: #191d28;
-  --glass-card: rgba(16, 18, 24, 0.92);
-  --line: rgba(255, 255, 255, 0.08);
-  --line2: rgba(255, 255, 255, 0.145);
-  --line-glass: rgba(255, 255, 255, 0.09);
-  --text: #f3f4f6;
-  --text-soft: #b8c1d1;
-  --muted: #848d9e;
-  --faint: #586070;
-  --accent: #0a84ff;
-  --accent-hover: #3b9eff;
-  --accent-deep: #6cb6ff;
-  --accent-glow: rgba(10, 132, 255, 0.28);
-  --accent-subtle: rgba(10, 132, 255, 0.13);
-  --champagne: #d6b46a;
-  --champagne-subtle: rgba(214, 180, 106, 0.12);
-  --champagne-line: rgba(214, 180, 106, 0.30);
+  --bg: #05060a;
+  --bg-gradient: radial-gradient(ellipse 68% 48% at 10% 0%, rgba(18, 132, 255, 0.095) 0%, transparent 72%),
+                 radial-gradient(ellipse 56% 44% at 92% 4%, rgba(222, 185, 108, 0.065) 0%, transparent 68%),
+                 radial-gradient(ellipse 75% 55% at 50% 100%, rgba(16, 25, 48, 0.38) 0%, transparent 76%);
+  --ink: #f7f8fb;
+  --surface: #0b0d14;
+  --surface-warm: #10131e;
+  --surface-translucent: rgba(11, 13, 20, 0.88);
+  --panel: rgba(11, 13, 20, 0.88);
+  --panel-solid: #0b0d14;
+  --raised: #141824;
+  --raised2: #1a2030;
+  --glass-card: rgba(15, 18, 28, 0.92);
+  --line: rgba(226, 232, 240, 0.085);
+  --line2: rgba(226, 232, 240, 0.155);
+  --line-glass: rgba(226, 232, 240, 0.10);
+  --text: #f3f5f9;
+  --text-soft: #bcc5d6;
+  --muted: #8b95a8;
+  --faint: #5f687a;
+  --accent: #148bff;
+  --accent-hover: #42a4ff;
+  --accent-deep: #78c2ff;
+  --accent-glow: rgba(20, 139, 255, 0.30);
+  --accent-subtle: rgba(20, 139, 255, 0.14);
+  --champagne: #deb96c;
+  --champagne-soft: #f3deb0;
+  --champagne-subtle: rgba(222, 185, 108, 0.13);
+  --champagne-line: rgba(222, 185, 108, 0.34);
   --indigo: #818cf8;
-  --indigo-subtle: rgba(129, 140, 248, 0.12);
-  --btn-pearl: linear-gradient(180deg, rgba(28, 31, 40, 0.95) 0%, rgba(19, 21, 28, 0.98) 100%);
-  --btn-pearl-hover: linear-gradient(180deg, rgba(36, 41, 54, 0.98) 0%, rgba(24, 30, 44, 1) 100%);
-  --btn-ghost: rgba(255, 255, 255, 0.045);
-  --btn-ghost-hover: rgba(10, 132, 255, 0.12);
-  --btn-border: rgba(255, 255, 255, 0.12);
-  --btn-border-hover: rgba(10, 132, 255, 0.45);
+  --indigo-subtle: rgba(129, 140, 248, 0.14);
+  --emerald: #10b981;
+  --emerald-soft: #6ee7b7;
+  --emerald-subtle: rgba(16, 185, 129, 0.13);
+  --btn-pearl: linear-gradient(180deg, rgba(29, 34, 46, 0.96) 0%, rgba(18, 21, 30, 0.98) 100%);
+  --btn-pearl-hover: linear-gradient(180deg, rgba(38, 46, 64, 0.98) 0%, rgba(23, 30, 46, 1) 100%);
+  --btn-ghost: rgba(255, 255, 255, 0.042);
+  --btn-ghost-hover: rgba(20, 139, 255, 0.13);
+  --btn-border: rgba(226, 232, 240, 0.125);
+  --btn-border-hover: rgba(56, 189, 248, 0.46);
   --amber: #f59e0b;
   --cyan: #38bdf8;
   --rose: #fb7185;
@@ -74,10 +78,10 @@
   --r: 9px;
   --r-card: 13px;
   --r-pill: 980px;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
-  --shadow-card: 0 10px 26px -8px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.38);
+  --shadow-card: 0 10px 28px -8px rgba(0, 0, 0, 0.58), 0 1px 3px rgba(0, 0, 0, 0.42);
   --shadow-stage: 0 32px 72px -18px rgba(0, 0, 0, 0.85), 0 10px 28px -8px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.07);
-  --shadow-pop: 0 24px 52px -10px rgba(0, 0, 0, 0.72), 0 6px 16px -2px rgba(0, 0, 0, 0.45);
+  --shadow-pop: 0 24px 52px -10px rgba(0, 0, 0, 0.74), 0 6px 16px -2px rgba(0, 0, 0, 0.48);
 }
 
 html, body { height: 100%; }
@@ -343,12 +347,12 @@ button {
   border: 1px solid var(--btn-border);
   border-radius: var(--r);
   padding: 6.5px 13px;
-  color: #e6ebf5;
+  color: #e8edf7;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.07);
   transition: background 0.16s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.16s ease, color 0.16s ease, transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s ease;
 }
 button:hover {
@@ -356,11 +360,11 @@ button:hover {
   border-color: var(--btn-border-hover);
   color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(10, 132, 255, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  box-shadow: 0 5px 16px rgba(10, 132, 255, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 button:active {
   transform: translateY(0.5px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.38);
 }
 button:disabled {
   opacity: 0.40;
@@ -370,59 +374,61 @@ button:disabled {
 }
 
 button.primary, .omk-top, button.play {
-  background: linear-gradient(135deg, #0b5be0 0%, #0a84ff 60%, #2d9cff 100%);
-  border-color: rgba(59, 158, 255, 0.55);
+  background: linear-gradient(135deg, #0b5be0 0%, #148bff 58%, #38bdf8 100%);
+  border-color: rgba(84, 178, 255, 0.58);
   color: #ffffff !important;
   font-weight: 700;
-  box-shadow: 0 6px 18px rgba(10, 132, 255, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  box-shadow: 0 6px 18px rgba(10, 132, 255, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.30);
 }
 button.primary:hover, .omk-top:hover, button.play:hover {
-  background: linear-gradient(135deg, #0d66f7 0%, #2091ff 60%, #4dadff 100%);
-  border-color: #6cb6ff;
+  background: linear-gradient(135deg, #0e68f7 0%, #2697ff 58%, #5acbf9 100%);
+  border-color: #78c2ff;
   color: #ffffff !important;
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(10, 132, 255, 0.44), inset 0 1px 0 rgba(255, 255, 255, 0.38);
+  box-shadow: 0 8px 24px rgba(10, 132, 255, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.40);
 }
 
 button.ghost {
-  background: var(--btn-ghost);
-  border-color: rgba(255, 255, 255, 0.10);
-  color: #c8d1e0;
-  box-shadow: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.052) 0%, rgba(255, 255, 255, 0.028) 100%);
+  border-color: rgba(226, 232, 240, 0.115);
+  color: #ced6e4;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
 button.ghost:hover {
-  background: var(--btn-ghost-hover);
-  border-color: rgba(10, 132, 255, 0.38);
+  background: linear-gradient(180deg, rgba(20, 139, 255, 0.16) 0%, rgba(15, 28, 52, 0.42) 100%);
+  border-color: rgba(56, 189, 248, 0.42);
   color: #ffffff;
-  box-shadow: 0 2px 10px rgba(10, 132, 255, 0.14);
+  box-shadow: 0 3px 12px rgba(10, 132, 255, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.10);
 }
 
 button.small {
-  padding: 4px 10px;
+  padding: 4.5px 10px;
   font-size: 11px;
-  border-radius: 6.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  border-radius: 7px;
 }
 
 button.accent {
-  background: linear-gradient(135deg, rgba(10, 132, 255, 0.16) 0%, rgba(129, 140, 248, 0.16) 100%);
-  border: 1px solid rgba(10, 132, 255, 0.38);
-  color: #8cc5ff;
+  background: linear-gradient(135deg, rgba(20, 139, 255, 0.18) 0%, rgba(129, 140, 248, 0.19) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.40);
+  color: #9ed0ff;
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(10, 132, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 10px rgba(10, 132, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.10);
 }
 button.accent:hover {
-  background: linear-gradient(135deg, rgba(10, 132, 255, 0.26) 0%, rgba(129, 140, 248, 0.26) 100%);
-  border-color: rgba(108, 182, 255, 0.65);
+  background: linear-gradient(135deg, rgba(20, 139, 255, 0.28) 0%, rgba(129, 140, 248, 0.28) 100%);
+  border-color: rgba(120, 194, 255, 0.68);
   color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(10, 132, 255, 0.25);
+  box-shadow: 0 6px 18px rgba(10, 132, 255, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 button[aria-pressed=true] {
-  background: linear-gradient(135deg, rgba(10, 132, 255, 0.22) 0%, rgba(10, 132, 255, 0.12) 100%);
+  background: linear-gradient(135deg, rgba(20, 139, 255, 0.25) 0%, rgba(20, 139, 255, 0.13) 100%);
   border-color: var(--accent);
   color: #ffffff;
   font-weight: 700;
-  box-shadow: 0 0 0 1px rgba(10, 132, 255, 0.28);
+  box-shadow: 0 0 0 1px rgba(20, 139, 255, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 button.icon { padding: 6px 8px; line-height: 0; }
@@ -626,27 +632,53 @@ h3 {
 .audio-ai-row {
   display: flex;
   flex-wrap: wrap;
+  gap: 8px;
+}
+.audio-ai-row > #btnAiTranscribe,
+.audio-ai-row > #btnVocalSync,
+.audio-ai-row > #btnTap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   gap: 7px;
+  min-width: 0;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
 }
 .audio-ai-row > #btnAiTranscribe {
   flex: 1 1 100%;
-  justify-content: center;
-  padding: 10px 14px;
-  letter-spacing: 0.01em;
+  min-height: 44px;
+  padding: 10px 16px;
+  font-size: 13px;
 }
 .audio-ai-row > #btnVocalSync {
-  flex: 1 1 215px;
-  min-width: 195px;
-  justify-content: center;
-  white-space: nowrap;
-  font-size: 11.5px;
-  letter-spacing: 0.02em;
-  padding: 9px 11px;
+  flex: 1.35 1 182px;
+  min-width: 172px;
+  min-height: 40px;
+  font-size: 12px;
+  padding: 9px 13px;
 }
-.audio-ai-row > #btnTap,
+.audio-ai-row > #btnTap {
+  flex: 1 1 132px;
+  min-width: 124px;
+  min-height: 40px;
+  font-size: 12px;
+  padding: 9px 12px;
+}
 .audio-ai-row > #btnVoiceDictate {
-  flex: 1 1 115px;
-  min-width: 108px;
+  flex: 1 1 132px;
+  min-width: 120px;
+  min-height: 38px;
+}
+.ai-btn-ico {
+  flex-shrink: 0;
+  opacity: 0.92;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease;
+}
+.ai-btn-lbl {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #btnVoiceDictate {
@@ -890,10 +922,11 @@ h3 {
 .quick-exp-bar {
   display: grid;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 11px 12px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(16, 20, 30, 0.92) 0%, rgba(11, 14, 22, 0.96) 100%);
+  border: 1px solid rgba(226, 232, 240, 0.095);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
 .quick-exp-head {
   display: flex;
@@ -944,87 +977,130 @@ h3 {
 .field { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; font-weight: 600; color: var(--muted); }
 .field input, .field select { width: 100%; }
 
-/* AI Transcribe Lyrics Button - Obsidian Sapphire Jewel */
+/* AI Transcribe Lyrics Button - Primary Obsidian Sapphire Action */
 #btnAiTranscribe {
-  background: linear-gradient(135deg, rgba(10, 132, 255, 0.22) 0%, rgba(99, 102, 241, 0.24) 100%);
-  border: 1px solid rgba(59, 158, 255, 0.48);
-  color: #e2f0ff;
+  background: linear-gradient(135deg, #0a84ff 0%, #2f6bff 54%, #4f46e5 100%);
+  border: 1px solid rgba(125, 211, 252, 0.45);
+  color: #ffffff;
   font-weight: 700;
   border-radius: var(--r);
   position: relative;
-  box-shadow: 0 4px 16px rgba(10, 132, 255, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
+  box-shadow: 0 6px 20px rgba(10, 132, 255, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease, opacity 0.16s ease;
 }
-#btnAiTranscribe:hover {
-  background: linear-gradient(135deg, rgba(10, 132, 255, 0.34) 0%, rgba(99, 102, 241, 0.36) 100%);
-  border-color: #6cb6ff;
+#btnAiTranscribe:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2193ff 0%, #447bff 54%, #6366f1 100%);
+  border-color: rgba(186, 230, 253, 0.72);
   color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(10, 132, 255, 0.30);
+  box-shadow: 0 10px 26px rgba(10, 132, 255, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.32);
 }
-#btnAiTranscribe:active {
+#btnAiTranscribe:hover:not(:disabled) .ai-btn-ico {
+  transform: scale(1.06);
+}
+#btnAiTranscribe:active:not(:disabled) {
   transform: translateY(0.5px) scale(0.99);
 }
+#btnAiTranscribe.is-ready:not(.is-analyzing) {
+  box-shadow: 0 6px 22px rgba(10, 132, 255, 0.36), 0 0 0 1px rgba(147, 197, 253, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
 #btnAiTranscribe.is-analyzing {
-  opacity: 0.9;
+  opacity: 0.96;
+  cursor: progress;
   pointer-events: none;
   animation: pulseAiTranscribe 1.4s infinite ease-in-out;
 }
+#btnAiTranscribe.is-analyzing .ai-btn-ico,
+#btnVocalSync.is-syncing .ai-btn-ico {
+  animation: pulseIconWave 1.1s infinite ease-in-out;
+}
+#btnAiTranscribe:disabled:not(.is-analyzing),
+#btnVocalSync:disabled:not(.is-syncing),
+#btnTap:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  transform: none;
+}
+#btnAiTranscribe:focus-visible,
+#btnVocalSync:focus-visible,
+#btnTap:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
 @keyframes pulseAiTranscribe {
-  0%, 100% { box-shadow: 0 2px 12px rgba(10, 132, 255, 0.28); }
-  50% { box-shadow: 0 6px 26px rgba(56, 189, 248, 0.45); }
+  0%, 100% { box-shadow: 0 4px 16px rgba(10, 132, 255, 0.30); }
+  50% { box-shadow: 0 8px 28px rgba(56, 189, 248, 0.50); }
+}
+@keyframes pulseIconWave {
+  0%, 100% { transform: scale(1); opacity: 0.92; }
+  50% { transform: scale(1.12); opacity: 1; }
 }
 
-/* Vocal Sync Button - Sapphire Crystal Studio Action */
+/* Vocal Sync Button - Secondary Obsidian Glass + Sapphire Hairline */
 #btnVocalSync {
-  background: linear-gradient(135deg, rgba(10, 132, 255, 0.14) 0%, rgba(56, 189, 248, 0.14) 100%);
-  border: 1px solid rgba(56, 189, 248, 0.36);
-  color: #9dd4ff;
+  background: linear-gradient(180deg, rgba(20, 34, 58, 0.94) 0%, rgba(12, 20, 36, 0.97) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.38);
+  color: #bce4ff;
   font-weight: 700;
   border-radius: var(--r);
-  box-shadow: 0 2px 10px rgba(10, 132, 255, 0.12);
-  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 1px 0 rgba(186, 230, 253, 0.12), 0 2px 8px rgba(0, 0, 0, 0.32);
+  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease, transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s ease, opacity 0.16s ease;
 }
-#btnVocalSync:hover {
-  background: linear-gradient(135deg, rgba(10, 132, 255, 0.24) 0%, rgba(56, 189, 248, 0.22) 100%);
-  border-color: var(--accent);
+#btnVocalSync.is-ready:not(.is-syncing) {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.22) 0%, rgba(37, 99, 235, 0.22) 100%);
+  border-color: rgba(96, 165, 250, 0.60);
+  color: #eef7ff;
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+#btnVocalSync:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.30) 0%, rgba(59, 130, 246, 0.30) 100%);
+  border-color: rgba(125, 211, 252, 0.72);
   color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(10, 132, 255, 0.26);
+  box-shadow: 0 6px 18px rgba(10, 132, 255, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
-#btnVocalSync:active {
+#btnVocalSync:active:not(:disabled) {
   transform: translateY(0.5px) scale(0.99);
 }
 #btnVocalSync.is-syncing {
-  opacity: 0.92;
+  opacity: 0.96;
+  cursor: progress;
   pointer-events: none;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.34) 0%, rgba(37, 99, 235, 0.36) 100%);
   border-color: #38bdf8;
   color: #ffffff;
   animation: pulseAiTranscribe 1.2s infinite ease-in-out;
 }
 
-/* Studio Tap Sync Button & Guided Console */
+/* Studio Tap Sync Button - Tactile Graphite Precision Instrument */
 #btnTap {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  font-weight: 600;
-  border: 1px solid var(--btn-border);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text);
-  transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease, transform 0.12s ease;
+  font-weight: 650;
+  border-radius: var(--r);
+  border: 1px solid rgba(203, 213, 225, 0.18);
+  background: linear-gradient(180deg, rgba(30, 36, 50, 0.95) 0%, rgba(19, 23, 33, 0.98) 100%);
+  color: #e6ecf5;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 1px 4px rgba(0, 0, 0, 0.34);
+  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease, transform 0.14s ease, box-shadow 0.16s ease, opacity 0.16s ease;
 }
-#btnTap:hover {
-  border-color: var(--accent);
+#btnTap.is-ready:not([aria-pressed="true"]) {
+  border-color: rgba(222, 185, 108, 0.34);
+  color: #f4ebd8;
+}
+#btnTap:hover:not(:disabled) {
+  border-color: rgba(222, 185, 108, 0.62);
   color: #ffffff;
-  background: var(--accent-subtle);
+  background: linear-gradient(180deg, rgba(46, 52, 70, 0.96) 0%, rgba(28, 33, 46, 0.98) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+#btnTap:active:not(:disabled) {
+  transform: translateY(0.5px) scale(0.99);
 }
 #btnTap[aria-pressed="true"] {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: linear-gradient(135deg, #0a84ff 0%, #2563eb 100%);
+  border-color: rgba(147, 197, 253, 0.72);
   color: #ffffff;
-  box-shadow: 0 3px 14px rgba(10, 132, 255, 0.35);
+  box-shadow: 0 4px 16px rgba(10, 132, 255, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .tapbox {
@@ -1573,44 +1649,47 @@ button.play:hover {
   font-size: 11px;
   font-weight: 600;
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(22, 27, 38, 0.92) 0%, rgba(14, 18, 27, 0.96) 100%);
+  border: 1px solid rgba(226, 232, 240, 0.10);
   color: var(--text-soft);
   font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
 .style-cat-btn:hover {
-  border-color: rgba(10, 132, 255, 0.45);
+  border-color: rgba(56, 189, 248, 0.45);
+  background: rgba(20, 139, 255, 0.14);
   color: #ffffff;
 }
 .style-cat-btn[aria-pressed=true] {
-  background: #f5f5f7;
-  border-color: #f5f5f7;
-  color: #050507;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(135deg, #f6f8fc 0%, #e5ebf6 100%);
+  border-color: #ffffff;
+  color: #05070c;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.42);
 }
 .style-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; max-height: 440px; overflow-y: auto; padding-right: 2px; }
 .stile {
   position: relative;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(226, 232, 240, 0.095);
   border-radius: 10px;
   padding: 11px 12px;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.03);
+  background: linear-gradient(180deg, rgba(18, 22, 33, 0.88) 0%, rgba(12, 15, 23, 0.94) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
   display: grid;
   gap: 4px;
   text-align: left;
-  transition: border-color 0.16s ease, transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s ease;
+  transition: border-color 0.16s ease, transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s ease, background 0.16s ease;
 }
 .stile:hover {
-  border-color: rgba(255, 255, 255, 0.20);
-  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(120, 194, 255, 0.38);
+  background: linear-gradient(180deg, rgba(24, 30, 45, 0.96) 0%, rgba(15, 20, 32, 0.98) 100%);
   transform: translateY(-1px);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 .stile[aria-pressed=true] {
-  border-color: var(--accent);
-  background: rgba(10, 132, 255, 0.11);
-  box-shadow: 0 0 0 1px var(--accent), 0 6px 18px -4px rgba(10, 132, 255, 0.25);
+  border-color: rgba(56, 189, 248, 0.72);
+  background: linear-gradient(145deg, rgba(20, 139, 255, 0.18) 0%, rgba(129, 140, 248, 0.10) 100%);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.42), 0 8px 20px -6px rgba(10, 132, 255, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 .stile .name { font-weight: 700; font-size: 12.5px; color: var(--text); letter-spacing: -0.01em; }
 .stile .desc { font-size: 11px; color: var(--muted); line-height: 1.45; }
@@ -1623,9 +1702,10 @@ button.play:hover {
 
 .tech-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .tgroup {
-  border: 1px solid var(--line);
+  border: 1px solid rgba(226, 232, 240, 0.095);
   border-radius: var(--r);
-  background: var(--surface);
+  background: linear-gradient(180deg, rgba(16, 20, 30, 0.94) 0%, rgba(12, 15, 22, 0.98) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
 .tgroup summary { display: flex; justify-content: space-between; align-items: center; padding: 10px 13px; cursor: pointer; list-style: none; font-size: 12.5px; font-weight: 600; color: var(--text); }
 .tgroup summary::-webkit-details-marker { display: none; }
@@ -1691,12 +1771,12 @@ button.omakase:disabled { box-shadow: none; opacity: 0.45; }
 .hist-row #histPos { font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: center; min-width: 44px; color: var(--muted); }
 
 /* Spec Ledger */
-.now { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line2); border-radius: 10px; overflow: hidden; }
-.now-row { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 10px; align-items: center; padding: 9.5px 13px; background: var(--surface); font-size: 12.5px; color: var(--text); }
+.now { display: grid; gap: 1px; background: rgba(226, 232, 240, 0.08); border: 1px solid rgba(226, 232, 240, 0.11); border-radius: 10px; overflow: hidden; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045); }
+.now-row { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 10px; align-items: center; padding: 9.5px 13px; background: #0c1018; font-size: 12.5px; color: var(--text); }
 .now-row .k { color: var(--muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
 .now-row .v { display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .now-row b { font-weight: 700; color: var(--ink); }
-.tagl { font: 600 10px var(--mono); color: var(--champagne); background: var(--champagne-subtle); border: 1px solid var(--champagne-line); padding: 2px 7px; border-radius: 4px; }
+.tagl { font: 600 10px var(--mono); color: var(--champagne-soft); background: var(--champagne-subtle); border: 1px solid var(--champagne-line); padding: 2px 7px; border-radius: 4px; }
 
 .easy-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .easy-grid button { padding: 12px 10px; font-weight: 600; }
@@ -1752,7 +1832,21 @@ dialog.terms p { margin: 0 0 10px; line-height: 1.7; font-size: 13px; color: var
 dialog.terms a { color: var(--accent-deep); word-break: break-all; }
 .terms-main { border: 1px solid rgba(10, 132, 255, 0.28); background: rgba(10, 132, 255, 0.09); padding: 14px 16px 8px; border-radius: 10px; margin-bottom: 16px; }
 .terms-main strong { color: var(--accent-deep); font-weight: 700; }
-.terms-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
+.terms-foot { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
+#termsDlg { width: min(680px, calc(100vw - 32px)); padding: 28px 32px 24px; }
+.terms-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid rgba(226, 232, 240, 0.09); margin-bottom: 16px; }
+#termsDlg h2 { margin: 0 0 6px; font-size: clamp(22px, 2.4vw, 27px); text-wrap: balance; }
+.terms-meta { margin: 0; font-size: 11.5px; color: var(--champagne); font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+.terms-x { min-width: 32px; min-height: 32px; padding: 6px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.terms-lead { margin: 0 0 18px; font-size: 13.5px; line-height: 1.65; color: #dbe3ef; max-width: 65ch; }
+.terms-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 24px; padding: 18px 0; border-top: 1px solid rgba(226, 232, 240, 0.08); border-bottom: 1px solid rgba(226, 232, 240, 0.08); margin-bottom: 14px; }
+.terms-block h3 { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: #f8fafc; letter-spacing: 0.005em; }
+.terms-block p { margin: 0; font-size: 12.5px; line-height: 1.6; color: #9aa7bd; }
+.terms-foot-acts { display: inline-flex; align-items: center; gap: 8px; }
+@media (max-width: 640px) {
+  #termsDlg { padding: 22px 20px 18px; }
+  .terms-grid { grid-template-columns: 1fr; gap: 14px; }
+}
 button.danger { background: var(--danger); border-color: var(--danger); color: #fff !important; font-weight: 700; box-shadow: 0 2px 10px rgba(239, 68, 68, 0.30); }
 button.danger:hover { background: #dc2626; box-shadow: 0 4px 16px rgba(239, 68, 68, 0.45); }
 
@@ -1902,62 +1996,125 @@ button.small.primary { padding: 5px 13px; }
   color: var(--text-soft);
 }
 #easyPanel .theme-row {
+  --theme-accent: #d8b467;
+  --theme-border: rgba(255, 255, 255, 0.12);
+  --theme-glow: rgba(216, 180, 103, 0.11);
+  --theme-note: var(--muted);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 8px 10px;
-  padding: 11px 12px;
-  background: linear-gradient(180deg, rgba(20, 23, 32, 0.96) 0%, rgba(12, 14, 20, 0.98) 100%);
-  border: 1px solid var(--line2);
-  border-left: 3px solid var(--champagne);
-  border-radius: 10px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: var(--text-soft);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  gap: 9px 12px;
+  padding: 13px 14px;
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--theme-glow) 0%, transparent 62%),
+    linear-gradient(180deg, rgba(22, 26, 36, 0.96) 0%, rgba(13, 16, 23, 0.98) 100%);
+  border: 1px solid var(--theme-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px -10px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--ink);
+  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease;
+}
+#easyPanel .theme-row[data-theme="trapsoul"] {
+  --theme-accent: #eab308;
+  --theme-border: rgba(168, 85, 247, 0.34);
+  --theme-glow: rgba(168, 85, 247, 0.16);
+  --theme-note: rgba(233, 213, 255, 0.84);
+}
+#easyPanel .theme-row[data-theme="rnb"] {
+  --theme-accent: #f472b6;
+  --theme-border: rgba(245, 158, 11, 0.32);
+  --theme-glow: rgba(244, 114, 182, 0.15);
+  --theme-note: rgba(254, 215, 170, 0.86);
+}
+#easyPanel .theme-row[data-theme="hiphop"] {
+  --theme-accent: #ff3b1f;
+  --theme-border: rgba(250, 204, 21, 0.34);
+  --theme-glow: rgba(255, 59, 31, 0.16);
+  --theme-note: rgba(254, 240, 138, 0.86);
+}
+#easyPanel .theme-row[data-theme="pop"] {
+  --theme-accent: #ff2e9f;
+  --theme-border: rgba(34, 211, 238, 0.34);
+  --theme-glow: rgba(255, 46, 159, 0.16);
+  --theme-note: rgba(165, 243, 252, 0.88);
+}
+#easyPanel .theme-row[data-theme="musicvideo"] {
+  --theme-accent: #38bdf8;
+  --theme-border: rgba(56, 189, 248, 0.30);
+  --theme-glow: rgba(56, 189, 248, 0.13);
+}
+#easyPanel .theme-row[data-theme="cinematic"] {
+  --theme-accent: #e0b857;
+  --theme-border: rgba(224, 184, 87, 0.28);
+  --theme-glow: rgba(224, 184, 87, 0.12);
+}
+#easyPanel .theme-row[data-theme="artmotion"],
+#easyPanel .theme-row[data-theme="bauhaus"],
+#easyPanel .theme-row[data-theme="popart"],
+#easyPanel .theme-row[data-theme="iso3d"] {
+  --theme-accent: #60a5fa;
+  --theme-border: rgba(96, 165, 250, 0.28);
+  --theme-glow: rgba(96, 165, 250, 0.12);
+}
+#easyPanel .theme-row[data-theme="futuristic"] {
+  --theme-accent: #00f0ff;
+  --theme-border: rgba(0, 240, 255, 0.28);
+  --theme-glow: rgba(0, 240, 255, 0.12);
+}
+#easyPanel .theme-row[data-theme="guofeng"] {
+  --theme-accent: #e11d48;
+  --theme-border: rgba(225, 29, 72, 0.30);
+  --theme-glow: rgba(212, 175, 55, 0.14);
 }
 #easyPanel .theme-row:focus-within,
 #easyPanel .theme-row:hover {
-  border-color: rgba(10, 132, 255, 0.42);
-  border-left-color: var(--accent);
-  box-shadow: 0 8px 24px -6px rgba(10, 132, 255, 0.22);
+  border-color: var(--theme-accent);
+  box-shadow: 0 10px 26px -10px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 #easyPanel .theme-row > select.themeSel {
   width: 100%;
   min-width: 0;
-  padding: 8px 11px;
+  min-height: 40px;
+  padding: 8px 34px 8px 12px;
+  appearance: none;
+  -webkit-appearance: none;
   font-size: 12.5px;
   font-weight: 600;
   letter-spacing: -0.01em;
   text-transform: none;
   color: var(--ink);
-  background: var(--surface);
+  background-color: rgba(10, 12, 18, 0.85);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%23a1a8b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
   cursor: pointer;
 }
 #easyPanel .theme-row > select.themeSel:hover {
-  border-color: var(--accent);
-  box-shadow: 0 2px 10px rgba(10, 132, 255, 0.22);
+  border-color: var(--theme-accent);
+  background-color: rgba(15, 18, 26, 0.96);
 }
+#easyPanel .theme-row > select.themeSel:focus-visible,
 #easyPanel .theme-row > select.themeSel:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-subtle);
+  border-color: var(--theme-accent);
+  box-shadow: 0 0 0 3px var(--theme-glow);
 }
 #easyPanel .theme-row > small.muted {
   grid-column: 1 / -1;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 500;
   letter-spacing: 0;
   text-transform: none;
   line-height: 1.45;
-  color: var(--muted);
+  color: var(--theme-note);
   font-variant-numeric: tabular-nums;
 }
 .transport .themeSel { max-width: 268px; text-overflow: ellipsis; }
@@ -2076,8 +2233,11 @@ button.chip { cursor: pointer; }
 .reset-list { margin: 0 0 12px; padding-left: 18px; display: grid; gap: 4px; font-size: 12.5px; color: var(--text-soft); }
 .terms-sub, .terms-note { font-size: 12px; color: var(--muted); }
 .terms-big { font-size: 14px; color: var(--text); }
-.terms-oss { margin-top: 10px; font-size: 12px; color: var(--text-soft); }
-.terms-oss summary { cursor: pointer; font-weight: 600; color: var(--muted); }
+.terms-oss { margin: 0 0 14px; font-size: 12px; color: var(--text-soft); }
+.terms-oss summary { cursor: pointer; font-weight: 600; color: #b8c4d8; padding: 4px 0; transition: color 0.16s ease; }
+.terms-oss summary:hover { color: #ffffff; }
+.terms-oss-body { padding-top: 8px; display: grid; gap: 4px; }
+.terms-oss-deps { margin: 0; font-size: 11.5px; line-height: 1.55; color: #8f9db5; }
 
 /* ============================================================
    8. Live AI Karaoke Prompter & Full-Screen Stage
@@ -2497,11 +2657,12 @@ button.chip { cursor: pointer; }
 .qc-box {
   display: grid;
   gap: 7px;
-  padding: 10px 12px;
+  padding: 11px 12px;
   margin-bottom: 8px;
   border-radius: 10px;
-  background: var(--surface-warm);
-  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(16, 20, 30, 0.94) 0%, rgba(11, 14, 22, 0.98) 100%);
+  border: 1px solid rgba(226, 232, 240, 0.10);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 .qc-head {
   display: flex;
@@ -3145,10 +3306,11 @@ button.chip { cursor: pointer; }
   flex-wrap: wrap;
 }
 .cloud-card {
-  border: 1px solid var(--line);
+  border: 1px solid rgba(226, 232, 240, 0.10);
   border-radius: 10px;
   padding: 13px 15px;
-  background: var(--surface-warm);
+  background: linear-gradient(180deg, rgba(16, 20, 30, 0.95) 0%, rgba(11, 14, 22, 0.98) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   display: grid;
   gap: 10px;
 }
@@ -3420,10 +3582,11 @@ button.chip { cursor: pointer; }
 }
 .tr-panel {
   margin-top: 8px;
-  padding: 10px 12px;
+  padding: 11px 12px;
   border-radius: 10px;
-  background: var(--surface-warm);
-  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(16, 20, 30, 0.94) 0%, rgba(11, 14, 22, 0.98) 100%);
+  border: 1px solid rgba(226, 232, 240, 0.10);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   display: grid;
   gap: 8px;
 }
@@ -3560,8 +3723,9 @@ button.chip { cursor: pointer; }
   margin-top: 10px;
   padding: 11px 12px;
   border-radius: 10px;
-  border: 1px solid var(--line);
-  background: var(--surface-warm);
+  border: 1px solid rgba(226, 232, 240, 0.10);
+  background: linear-gradient(180deg, rgba(16, 20, 30, 0.94) 0%, rgba(11, 14, 22, 0.98) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   display: grid;
   gap: 8px;
 }
@@ -3903,103 +4067,160 @@ button.chip { cursor: pointer; }
 }
 
 /* ============================================================
-   11. Unified Atelier Button Nuance System (Obsidian / Sapphire / Platinum)
+   11. Unified Atelier Button Nuance System (Obsidian / Sapphire / Champagne / Jade / Iris)
    ============================================================ */
+/* Top-Bar Signature Jewels: Cloud Save (Emerald-Jade), Hub (Sapphire-Slate), Skills Admin (Champagne-Iris) */
+#btnCloudSave {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.20) 0%, rgba(14, 116, 144, 0.24) 100%);
+  border-color: rgba(52, 211, 153, 0.40);
+  color: #a7f3d0;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+#btnCloudSave:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.30) 0%, rgba(14, 116, 144, 0.34) 100%);
+  border-color: rgba(110, 231, 183, 0.68);
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+#btnCloudHub {
+  background: linear-gradient(180deg, rgba(24, 30, 44, 0.94) 0%, rgba(15, 19, 30, 0.96) 100%);
+  border-color: rgba(120, 194, 255, 0.26);
+  color: #dbeafe;
+}
+#btnCloudHub:hover {
+  background: linear-gradient(180deg, rgba(20, 139, 255, 0.20) 0%, rgba(16, 36, 68, 0.65) 100%);
+  border-color: rgba(120, 194, 255, 0.52);
+  color: #ffffff;
+}
+#btnSkillsAdmin {
+  background: linear-gradient(135deg, rgba(222, 185, 108, 0.15) 0%, rgba(129, 140, 248, 0.16) 100%);
+  border-color: rgba(222, 185, 108, 0.36);
+  color: var(--champagne-soft);
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgba(222, 185, 108, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+#btnSkillsAdmin:hover {
+  background: linear-gradient(135deg, rgba(222, 185, 108, 0.26) 0%, rgba(129, 140, 248, 0.26) 100%);
+  border-color: rgba(243, 222, 176, 0.64);
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(222, 185, 108, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
 /* Playback & Vocal Preview Cues (cool obsidian-sapphire tint) */
 #lePlayLine,
 #lePlayWord,
 #tlPlayWordBtn,
-#btnVocalSync,
-#btnTap,
 #btnKpTapWord {
-  background: linear-gradient(180deg, rgba(22, 34, 56, 0.96) 0%, rgba(13, 22, 38, 0.98) 100%);
-  border-color: rgba(56, 189, 248, 0.30);
-  color: #7dd3fc;
+  background: linear-gradient(180deg, rgba(20, 35, 60, 0.96) 0%, rgba(12, 22, 40, 0.98) 100%);
+  border-color: rgba(56, 189, 248, 0.34);
+  color: #8ad8ff;
+  box-shadow: inset 0 1px 0 rgba(125, 211, 252, 0.10), 0 1px 3px rgba(0, 0, 0, 0.32);
 }
 #lePlayLine:hover,
 #lePlayWord:hover,
 #tlPlayWordBtn:hover,
-#btnVocalSync:hover,
-#btnTap:hover,
 #btnKpTapWord:hover {
-  background: linear-gradient(180deg, rgba(10, 132, 255, 0.26) 0%, rgba(14, 58, 128, 0.42) 100%);
-  border-color: rgba(56, 189, 248, 0.56);
+  background: linear-gradient(180deg, rgba(20, 139, 255, 0.28) 0%, rgba(14, 58, 128, 0.46) 100%);
+  border-color: rgba(96, 206, 255, 0.62);
   color: #ffffff;
+  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
-/* AI Acoustic / Precision Alignment Controls (obsidian indigo) */
+/* AI Acoustic / Precision Alignment Controls (obsidian iris-indigo) */
 #btnReanalyzeLow,
 #tlReanalyzeBtn,
 #tapMicroAlign,
 #tapAssistRest,
-#btnLeRecalcLine {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(10, 132, 255, 0.18) 100%);
-  border-color: rgba(129, 140, 248, 0.34);
-  color: #c7d2fe;
+#btnLeRecalcLine,
+#btnKpAutoAlign,
+#btnTranslateLyrics {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.20) 0%, rgba(20, 139, 255, 0.18) 100%);
+  border-color: rgba(129, 140, 248, 0.38);
+  color: #d1d8ff;
+  box-shadow: inset 0 1px 0 rgba(199, 210, 254, 0.10), 0 1px 3px rgba(0, 0, 0, 0.30);
 }
 #btnReanalyzeLow:hover,
 #tlReanalyzeBtn:hover,
 #tapMicroAlign:hover,
 #tapAssistRest:hover,
-#btnLeRecalcLine:hover {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.30) 0%, rgba(10, 132, 255, 0.32) 100%);
-  border-color: rgba(165, 180, 252, 0.58);
+#btnLeRecalcLine:hover,
+#btnKpAutoAlign:hover,
+#btnTranslateLyrics:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.34) 0%, rgba(20, 139, 255, 0.32) 100%);
+  border-color: rgba(165, 180, 252, 0.65);
   color: #ffffff;
+  box-shadow: 0 5px 16px rgba(99, 102, 241, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
-/* Export, Save & Download Controls (dark graphite-cobalt hairline) */
+/* Export, Save & Download Controls (graphite-platinum with subtle cobalt hover) */
 .outbtns button:not(.primary),
 .lyrics-exp-btns button,
 .lyrics-exp-sub button,
+.quick-exp-btns button,
 #btnSave,
 #btnAE,
 .cloud-dl-btn {
-  background: linear-gradient(180deg, rgba(24, 27, 36, 0.96) 0%, rgba(15, 18, 25, 0.98) 100%);
-  border-color: rgba(255, 255, 255, 0.13);
-  color: #e2e8f0;
+  background: linear-gradient(180deg, rgba(25, 29, 40, 0.96) 0%, rgba(15, 18, 26, 0.98) 100%);
+  border-color: rgba(203, 213, 225, 0.145);
+  color: #e4eaf4;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.065), 0 1px 2px rgba(0, 0, 0, 0.30);
 }
 .outbtns button:not(.primary):hover,
 .lyrics-exp-btns button:hover,
 .lyrics-exp-sub button:hover,
+.quick-exp-btns button:hover,
 #btnSave:hover,
 #btnAE:hover,
 .cloud-dl-btn:hover {
-  background: linear-gradient(180deg, rgba(10, 132, 255, 0.20) 0%, rgba(14, 34, 68, 0.50) 100%);
-  border-color: rgba(10, 132, 255, 0.48);
+  background: linear-gradient(180deg, rgba(20, 139, 255, 0.22) 0%, rgba(16, 36, 70, 0.56) 100%);
+  border-color: rgba(56, 189, 248, 0.52);
   color: #ffffff;
+  box-shadow: 0 4px 14px rgba(10, 132, 255, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
-/* Precision Micro-Nudges & Timeline Stepper Controls */
+/* Precision Micro-Nudges & Timeline Stepper Controls (machined slate chips) */
 .tl-btns button,
 .tl-ms-grp button,
 .le-num-grp button,
 .kp-sync-nudges button,
-.kp-presets button {
-  background: rgba(255, 255, 255, 0.055);
-  border-color: rgba(255, 255, 255, 0.12);
-  color: var(--text-soft);
+.kp-presets button,
+.tap-sub-btns button,
+.qc-actions > .ghost.small,
+.ln .tools button,
+.ln .cuts span {
+  background: linear-gradient(180deg, rgba(26, 31, 44, 0.92) 0%, rgba(17, 20, 30, 0.96) 100%);
+  border-color: rgba(203, 213, 225, 0.135);
+  color: #c8d2e3;
   font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
 }
 .tl-btns button:hover:not(:disabled),
 .tl-ms-grp button:hover:not(:disabled),
 .le-num-grp button:hover:not(:disabled),
 .kp-sync-nudges button:hover:not(:disabled),
-.kp-presets button:hover:not(:disabled) {
-  background: rgba(10, 132, 255, 0.22);
-  border-color: rgba(10, 132, 255, 0.48);
+.kp-presets button:hover:not(:disabled),
+.tap-sub-btns button:hover:not(:disabled),
+.qc-actions > .ghost.small:hover:not(:disabled),
+.ln .tools button:hover:not(:disabled),
+.ln .cuts span:hover {
+  background: linear-gradient(180deg, rgba(20, 139, 255, 0.24) 0%, rgba(15, 40, 80, 0.62) 100%);
+  border-color: rgba(56, 189, 248, 0.52);
   color: #ffffff;
+  box-shadow: 0 3px 10px rgba(10, 132, 255, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-/* Easy Panel Secondary Style Reroll Buttons */
+/* Easy Panel Secondary Style Reroll Buttons (obsidian-champagne nuance) */
 .easy-grid button {
-  background: linear-gradient(180deg, rgba(26, 30, 40, 0.96) 0%, rgba(16, 18, 26, 0.98) 100%);
-  border-color: rgba(255, 255, 255, 0.12);
-  color: var(--text);
+  background: linear-gradient(180deg, rgba(26, 30, 42, 0.96) 0%, rgba(16, 19, 28, 0.98) 100%);
+  border-color: rgba(222, 185, 108, 0.20);
+  color: #edf1f8;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 6px rgba(0, 0, 0, 0.30);
 }
 .easy-grid button:hover {
-  background: linear-gradient(135deg, rgba(10, 132, 255, 0.18) 0%, rgba(28, 36, 54, 0.98) 100%);
-  border-color: rgba(10, 132, 255, 0.45);
+  background: linear-gradient(135deg, rgba(222, 185, 108, 0.16) 0%, rgba(20, 139, 255, 0.18) 100%);
+  border-color: rgba(222, 185, 108, 0.52);
   color: #ffffff;
+  box-shadow: 0 6px 18px rgba(222, 185, 108, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 /* Soft Destructive / Clear Controls (serene at rest, crisp rose nuance on hover) */
@@ -4011,14 +4232,18 @@ button.chip { cursor: pointer; }
 #leDelWord:hover,
 #btnClearTrans:hover,
 button.exp-cancel:hover {
-  background: rgba(239, 68, 68, 0.16);
-  border-color: rgba(239, 68, 68, 0.45);
-  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(248, 113, 113, 0.50);
+  color: #fecaca;
+}
+#btnNextLowConf {
+  border-color: rgba(245, 158, 11, 0.26);
+  color: #fde68a;
 }
 #btnNextLowConf:hover:not(:disabled) {
-  background: rgba(245, 158, 11, 0.16);
-  border-color: rgba(245, 158, 11, 0.45);
-  color: #fcd34d;
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(251, 191, 36, 0.52);
+  color: #fef3c7;
 }
 
 /* Karaoke Header Toggle Contrast & Dark Fullscreen Stage Adaptation */
@@ -4054,6 +4279,24 @@ button.exp-cancel:hover {
   border-color: rgba(147, 197, 253, 0.72);
   color: #ffffff;
 }
+@media (prefers-reduced-motion: reduce) {
+  button,
+  label.file,
+  .audio-dropzone,
+  .stile,
+  .tcard,
+  #btnAiTranscribe,
+  #btnAiTranscribe .ai-btn-ico,
+  #btnVocalSync,
+  #btnVocalSync .ai-btn-ico,
+  #btnTap,
+  #btnTerms,
+  #btnTerms .terms-btn-ico,
+  button.omakase {
+    transition-duration: 0.01ms !important;
+    animation: none !important;
+  }
+}
 
 /* ============================================================
    Notice — Editorial User Manual Button & Modal Architecture
@@ -4069,6 +4312,41 @@ button.exp-cancel:hover {
   background: linear-gradient(180deg, rgba(214, 180, 106, 0.26) 0%, rgba(214, 180, 106, 0.14) 100%);
   border-color: rgba(214, 180, 106, 0.68);
   color: #ffffff;
+}
+#btnTerms {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0.025) 100%);
+  border: 1px solid rgba(226, 232, 240, 0.16);
+  color: #e4eaf4;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease, transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#btnTerms .terms-btn-ico {
+  flex-shrink: 0;
+  opacity: 0.86;
+  color: var(--champagne);
+  transition: opacity 0.16s ease, transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#btnTerms:hover {
+  background: linear-gradient(180deg, rgba(214, 180, 106, 0.14) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-color: rgba(214, 180, 106, 0.50);
+  color: #ffffff;
+}
+#btnTerms:hover .terms-btn-ico {
+  opacity: 1;
+  transform: scale(1.06);
+}
+#btnTerms:focus-visible,
+#termsDlg button:focus-visible,
+#termsDlg a:focus-visible,
+#termsDlg summary:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
 }
 
 dialog.notice-dlg {
@@ -5921,8 +6199,15 @@ dialog.notice-dlg:not([open]) {
       <button id="btnReset" class="ghost" title="清除歌词、歌曲、设置与历史，回到最初的状态">初始化</button>
       <button id="bgJobPill" type="button" class="ghost small bg-job-btn" hidden title="Traitement audio en cours en arrière-plan — cliquez pour ouvrir le Studio IA React"><span class="bg-job-dot" aria-hidden="true"></span><span id="bgJobText" class="mono">Analyse 0%</span></button>
       <button id="btnModularStudio" type="button" class="accent small" title="Ouvrir le Studio Pipeline Modulaire React/TypeScript (Web Audio, Forme d'onde, Workers asynchrone &amp; Base Timestamps)">🎛 Studio IA React</button>
+      <button id="btnSkillsAdmin" type="button" class="ghost small" title="Administration des 20 AI Studio Master Skills (registre, activation &amp; chargement contextuel)">🧩 Skills IA</button>
       <button id="btnNotice" type="button" class="ghost small notice-open" title="Ouvrir la Notice complète d’Alexura Motion Studio — guide illustré de chaque touche et fonctionnement">Notice</button>
-      <button id="btnTerms" class="ghost terms-open" title="输出物的权利与许可">使用说明</button>
+      <button id="btnTerms" type="button" class="ghost small terms-open" aria-haspopup="dialog" aria-controls="termsDlg" title="输出物的权利与许可">
+        <svg class="terms-btn-ico" width="14" height="14" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.45"/>
+          <path d="M9 8.2v4.3M9 5.5v.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span id="btnTermsLbl">使用说明</span>
+      </button>
     </div>
   </header>
 
@@ -6001,10 +6286,26 @@ dialog.notice-dlg:not([open]) {
           </div>
           <label class="file audio-upload-cta" title="MP3、WAV、M4A 等"><span id="lblUploadAudioBtn">载入音乐</span><input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.opus,.webm,.mp4,.aiff,.aif,.wma"></label>
         </div>
-        <div class="row audio-ai-row">
-          <button id="btnAiTranscribe" class="accent" title="AI听音识词：自动分析歌曲音频，多语言（中文、法文、英文等）识别人声歌词并即时同步到视频">✨ AI 识词与同步</button>
-          <button id="btnVocalSync" class="ghost" title="根据歌声人声起始瞬间，自动精准同步各行歌词">⚡ 人声同步</button>
-          <button id="btnTap" title="Synchronisation manuelle guidée au rythme de la voix (ligne par ligne ou mot par mot)">⏱ 轻点同步</button>
+        <div class="row audio-ai-row" role="group" aria-label="音声・歌词同期ツール">
+          <button id="btnAiTranscribe" type="button" class="accent" aria-busy="false" title="AI听音识词：自动分析歌曲音频，多语言（中文、法文、英文等）识别人声歌词并即时同步到视频">
+            <svg class="ai-btn-ico" width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <path d="M9 1.75v14.5M5.5 4.25v9.5M12.5 4.25v9.5M2 7v4M16 7v4" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"/>
+            </svg>
+            <span id="btnAiTranscribeLbl" class="ai-btn-lbl">AI 识词与同步</span>
+          </button>
+          <button id="btnVocalSync" type="button" class="ghost" aria-busy="false" title="根据歌声人声起始瞬间，自动精准同步各行歌词">
+            <svg class="ai-btn-ico" width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <path d="M1.8 9h2.6l1.7-4.6 2.8 9.2 2.4-6.4 1.6 1.8h3.3" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="btnVocalSyncLbl" class="ai-btn-lbl">人声同步</span>
+          </button>
+          <button id="btnTap" type="button" aria-pressed="false" title="边播放音乐边在每行开头轻点">
+            <svg class="ai-btn-ico" width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <circle cx="9" cy="9.5" r="6.25" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M9 6.2v3.5l2.3 1.4M7 1.75h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="btnTapLbl" class="ai-btn-lbl">轻点同步</span>
+          </button>
           <button id="btnVoiceDictate" type="button" class="ghost" aria-pressed="false" title="リアルタイム音声認識：マイクで歌や音声を認識して即座に歌词化・同期します">🎙️ ライブ音声認識</button>
         </div>
         <div id="aiProgressBox" class="ai-prog-box" hidden aria-live="polite">
@@ -6338,7 +6639,7 @@ dialog.notice-dlg:not([open]) {
           <button id="btnNext" class="ghost small icon-txt" title="前往下一个方案" aria-label="下一个">▶</button>
         </span>
         <button id="btnShuffle" class="accent" title="设置不变，只重新随机编排（锁定的行保持不变）">随机编排</button>
-        <select class="themeSel" aria-label="一键随机的主题" title="一键随机的主题（选择后，会在该方向内随机生成，并打开所需的部件开关）"><option value="">不指定主题</option><option value="cinematic">CINEMATIC — 电影・预告片・银翼杀手 (20)</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B (20)</option><option value="artmotion">ART &amp; MOTION — 动态设计・波普・3D・故障 (20)</option><option value="futuristic">FUTURISTIC — 赛博朋克・科幻・霓虹・AI (20)</option><option value="lifestyle">LIFESTYLE — 奢华・时尚・旅行・纪录片 (20)</option><option value="animation">ANIMATION — 动画・卡通・奇幻・超现实 (20)</option><option value="guofeng">GUOFENG — 中国风・水墨山水・宫廷古典 (30)</option><option value="bauhaus">BAUHAUS — 包豪斯动态几何・瑞士网格 (20)</option><option value="popart">POP ART — 漫画网点・本戴点・CMYK (20)</option><option value="iso3d">3D ISOMETRIC — 3D等轴线框景深・立体 (20)</option><option value="compositing">COMPOSITING — 居中留空・纯绿抠像合成 (20)</option><option value="lyricpv">文字PV (20)</option><option value="kinetic">动态文字 (20)</option><option value="wa">和风 (20)</option><option value="horror">恐怖 (20)</option><option value="pop">流行 (20)</option><option value="ballad">抒情 (20)</option></select>
+        <select class="themeSel" aria-label="一键随机的主题" title="一键随机的主题（选择后，会在该方向内随机生成，并打开所需的部件开关）"><option value="">不指定主题</option><option value="cinematic">CINEMATIC — 电影・预告片・银翼杀手 (20)</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B (20)</option><option value="trapsoul">TRAP SOUL — 808低频・夜色霓虹・灵魂律动 (10)</option><option value="rnb">R&amp;B — 丝绸柔光・烛影・舒缓节奏 (10)</option><option value="hiphop">HIP-HOP — 街头重拍・808鼓击・强烈冲击 (10)</option><option value="pop">POP — 星光舞台・弹性跳跃・流行光感 (10)</option><option value="artmotion">ART &amp; MOTION — 动态设计・波普・3D・故障 (20)</option><option value="futuristic">FUTURISTIC — 赛博朋克・科幻・霓虹・AI (20)</option><option value="lifestyle">LIFESTYLE — 奢华・时尚・旅行・纪录片 (20)</option><option value="animation">ANIMATION — 动画・卡通・奇幻・超现实 (20)</option><option value="guofeng">GUOFENG — 中国风・水墨山水・宫廷古典 (30)</option><option value="bauhaus">BAUHAUS — 包豪斯动态几何・瑞士网格 (20)</option><option value="popart">POP ART — 漫画网点・本戴点・CMYK (20)</option><option value="iso3d">3D ISOMETRIC — 3D等轴线框景深・立体 (20)</option><option value="compositing">COMPOSITING — 居中留空・纯绿抠像合成 (20)</option><option value="lyricpv">文字PV (20)</option><option value="kinetic">动态文字 (20)</option><option value="wa">和风 (20)</option><option value="horror">恐怖 (20)</option><option value="ballad">抒情 (20)</option></select>
         <button id="btnOmakase" class="primary" title="风格、氛围、特效、配色全部随机（快捷键 R）">一键随机</button>
       </div>
       <div class="tl-bar">
@@ -6417,7 +6718,7 @@ dialog.notice-dlg:not([open]) {
       <div id="easyPanel" class="easy" hidden>
         <div class="easy-hero">
           <button id="btnOmakaseBig" class="omakase">一键生成</button>
-          <label class="theme-row">主题<select class="themeSel" aria-label="一键随机的主题"><option value="">不指定主题</option><option value="cinematic">CINEMATIC — 电影・预告片・银翼杀手 (20)</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B (20)</option><option value="artmotion">ART &amp; MOTION — 动态设计・波普・3D・故障 (20)</option><option value="futuristic">FUTURISTIC — 赛博朋克・科幻・霓虹・AI (20)</option><option value="lifestyle">LIFESTYLE — 奢华・时尚・旅行・纪录片 (20)</option><option value="animation">ANIMATION — 动画・卡通・奇幻・超现实 (20)</option><option value="guofeng">GUOFENG — 中国风・水墨山水・宫廷古典 (30)</option><option value="bauhaus">BAUHAUS — 包豪斯动态几何・瑞士网格 (20)</option><option value="popart">POP ART — 漫画网点・本戴点・CMYK (20)</option><option value="iso3d">3D ISOMETRIC — 3D等轴线框景深・立体 (20)</option><option value="compositing">COMPOSITING — 居中留空・纯绿抠像合成 (20)</option><option value="lyricpv">文字PV (20)</option><option value="kinetic">动态文字 (20)</option><option value="wa">和风 (20)</option><option value="horror">恐怖 (20)</option><option value="pop">流行 (20)</option><option value="ballad">抒情 (20)</option></select><small class="muted" id="themeMetaNote">选择主题后，将在专属流畅国风/艺术风格库中生成特效</small></label>
+          <label class="theme-row">主题<select class="themeSel" aria-label="一键随机的主题"><option value="">不指定主题</option><option value="cinematic">CINEMATIC — 电影・预告片・银翼杀手 (20)</option><option value="musicvideo">MUSIC VIDEO — Pop・Hip-Hop・K-Pop・Trap・R&amp;B (20)</option><option value="trapsoul">TRAP SOUL — 808低频・夜色霓虹・灵魂律动 (10)</option><option value="rnb">R&amp;B — 丝绸柔光・烛影・舒缓节奏 (10)</option><option value="hiphop">HIP-HOP — 街头重拍・808鼓击・强烈冲击 (10)</option><option value="pop">POP — 星光舞台・弹性跳跃・流行光感 (10)</option><option value="artmotion">ART &amp; MOTION — 动态设计・波普・3D・故障 (20)</option><option value="futuristic">FUTURISTIC — 赛博朋克・科幻・霓虹・AI (20)</option><option value="lifestyle">LIFESTYLE — 奢华・时尚・旅行・纪录片 (20)</option><option value="animation">ANIMATION — 动画・卡通・奇幻・超现实 (20)</option><option value="guofeng">GUOFENG — 中国风・水墨山水・宫廷古典 (30)</option><option value="bauhaus">BAUHAUS — 包豪斯动态几何・瑞士网格 (20)</option><option value="popart">POP ART — 漫画网点・本戴点・CMYK (20)</option><option value="iso3d">3D ISOMETRIC — 3D等轴线框景深・立体 (20)</option><option value="compositing">COMPOSITING — 居中留空・纯绿抠像合成 (20)</option><option value="lyricpv">文字PV (20)</option><option value="kinetic">动态文字 (20)</option><option value="wa">和风 (20)</option><option value="horror">恐怖 (20)</option><option value="ballad">抒情 (20)</option></select><small class="muted" id="themeMetaNote">选择主题后，将在专属流畅国风/艺术风格库中生成特效</small></label>
           <p class="hint">每按一次，风格、氛围、动态、配色、编排都会整体改变。也可以按键盘上的 <span class="kbd">R</span> 键执行。</p>
           <div class="hist-row">
             <button id="btnPrev2" class="ghost">◀ 上一个</button>
@@ -6602,20 +6903,56 @@ dialog.notice-dlg:not([open]) {
     <div class="terms-foot"><span></span><span class="row"><button value="cancel" class="ghost">取消</button><button value="reset" class="danger">初始化</button></span></div>
   </form>
 </dialog>
-<dialog id="termsDlg" class="terms" aria-labelledby="termsTitle">
-  <form method="dialog">
-    <h2 id="termsTitle">使用说明</h2>
-    <div class="terms-main">
-      <p class="terms-big">使用本工具制作的<strong>视频和图片（输出物）的权利归制作者</strong>所有。</p>
-      <p class="terms-sub">※ 所用歌词和音乐的权利归各自的权利人所有。</p>
+<dialog id="termsDlg" class="terms" aria-labelledby="termsTitle" aria-describedby="termsLead">
+  <form method="dialog" class="terms-sheet">
+    <div class="terms-head">
+      <div class="terms-head-copy">
+        <h2 id="termsTitle">À propos d’Alexura Motion Studio</h2>
+        <p id="termsMetaLine" class="terms-meta mono">Version 0.13.0 · Studio vidéo &amp; synchronisation vocale · Licence MIT</p>
+      </div>
+      <button type="submit" value="close" id="btnTermsTopClose" class="ghost small terms-x" aria-label="Fermer">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
-    <p>本工具以 <strong>MIT 许可证</strong> 发布。完整许可证见：</p>
-    <p><a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener">https://github.com/852wa/JIZURA</a></p>
-    <p class="muted terms-note">你输入的歌词和音乐只在此浏览器中处理，不会发送到服务器。</p>
-    <details class="terms-oss"><summary>使用的开源软件</summary>
-      <p>MP4 导出：mp4-muxer（MIT License）<br>字体：Google Fonts 提供的各款字体（SIL Open Font License 1.1）</p>
+
+    <p id="termsLead" class="terms-lead">Alexura Motion Studio transforme vos chansons et paroles en clips vidéo animés, karaokés temps réel et projets typographiques haute précision directement dans votre navigateur — avec analyse acoustique vocale, styles sur mesure et export jusqu’en 4K 60 ips.</p>
+
+    <div class="terms-grid">
+      <section class="terms-block">
+        <h3 id="termsRightsTitle">Droits de création &amp; export</h3>
+        <p id="termsRightsBody">Toutes les vidéos (MP4), calques PNG transparents, sous-titres (LRC, SRT, VTT, JSON) et données After Effects exportés vous appartiennent intégralement, y compris pour un usage commercial. Les musiques et paroles importées restent la propriété de leurs ayants droit.</p>
+      </section>
+      <section class="terms-block">
+        <h3 id="termsPrivacyTitle">Confidentialité &amp; traitement</h3>
+        <p id="termsPrivacyBody">La lecture audio, le rendu vidéo Canvas/WebCodecs, l’export MP4 et les brouillons locaux restent 100 % dans votre navigateur. Les options connectées (IA Cloud Gemini, sauvegarde Google Firebase, météo studio) ne s’activent qu’à votre demande.</p>
+      </section>
+      <section class="terms-block">
+        <h3 id="termsTechTitle">Synchronisation &amp; moteur artistique</h3>
+        <p id="termsTechBody">Alignement acoustique à 10 ms sur l’attaque vocale, studio Synchro au Tap, prompteur karaoké progressif mot à mot et 17+ univers graphiques dédiés (Trap Soul, R&amp;B, Hip-Hop, Pop, Cinematic, Art &amp; Motion).</p>
+      </section>
+      <section class="terms-block">
+        <h3 id="termsCompatTitle">Formats &amp; flux professionnels</h3>
+        <p id="termsCompatBody">Rendu MP4 direct sur disque (Chrome / Edge recommandés), séquences PNG avec transparence, modes fond vert / fond noir, Enhanced LRC mot à mot et export structuré pour Adobe After Effects.</p>
+      </section>
+    </div>
+
+    <details class="terms-oss">
+      <summary id="termsOssSummary">Licence MIT &amp; composants open source</summary>
+      <div class="terms-oss-body">
+        <p id="termsOssText">Publié sous licence MIT · Code source : <a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener noreferrer">github.com/852wa/JIZURA</a></p>
+        <p id="termsOssDeps" class="terms-oss-deps">Export MP4 : mp4-muxer (MIT License) · Reconnaissance vocale locale : Transformers.js / Whisper · Polices : Google Fonts (SIL Open Font License 1.1) · Sauvegarde optionnelle : Firebase SDK.</p>
+      </div>
     </details>
-    <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>关闭</button></div>
+
+    <div class="terms-foot">
+      <span id="termsFootMeta" class="muted mono">© 2026 Alexura Motion Studio · MIT</span>
+      <div class="terms-foot-acts">
+        <button type="button" id="btnTermsNotice" class="ghost small">Consulter la Notice</button>
+        <button value="close" id="btnTermsClose" class="primary" autofocus>关闭</button>
+      </div>
+    </div>
   </form>
 </dialog>
 <dialog id="cloudDlg" class="terms cloud-dlg" aria-labelledby="cloudTitle">
@@ -12726,6 +13063,78 @@ J.THEMES = {
     },
     avoid: { bg: ['seigaiha', 'asanoha', 'wzBgShippo'] },
   },
+  trapsoul: {
+    name: 'TRAP SOUL',
+    moods: ['emotional', 'glitch', 'calm'],
+    styles: [
+      'ts808Velvet', 'tsLateNightDrive', 'tsAmethystHaze', 'tsLeanPurple', 'tsChromeTears',
+      'tsSubBassGold', 'tsRainWindow', 'tsMoodySatin', 'tsNocturneEcho', 'tsGhostHotline',
+    ],
+    koma: [0],
+    extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
+    fxPatch: { motion: [0.68, 0.90], glitch: [0.22, 0.48], chroma: [0.58, 0.90], decor: [0.46, 0.78], density: [0.42, 0.68], texture: [0.38, 0.65], bgSwitch: [0.35, 0.65] },
+    prefers: {
+      layout: ['equalizer', 'neon', 'huge', 'depthStack', 'rain', 'mirror', 'xdKaraoke', 'vinyl', 'vcols', 'lowerThird'],
+      enter: ['mvTrap808Drop', 'mvTrapGlide', 'blurStagger', 'neonOn', 'echoIn', 'iris', 'backlight', 'xgPumpUp'],
+      hold: ['mvTrap808Pump', 'mvTrapFloatDrift', 'heartbeat', 'beatHop', 'focusRack', 'xkBeatBump', 'xkLoudWeight', 'glowFlicker'],
+      exit: ['mvTrapSmokeOut', 'dissolve', 'blurOutStagger', 'zoomThrough', 'echoOut'],
+      cam: ['mvCam808Kick', 'mvCamLateDrive', 'beatPunch', 'xqBeatBreath', 'dollyIn', 'rackFocus', 'xqLoudZoom'],
+      fx: ['mvFx808Shock', 'bloomFlash', 'radialChroma', 'anamorphic', 'rgbSplit', 'chroma'],
+      trans: ['mvTransSilkBlend', 'xqLightLeak', 'xqSoftSweep', 'zoomThrough', 'irisOpen'],
+      treat: ['mvTreatRnbAura', 'glow', 'neonOutline', 'gradientV', 'softShadow', 'karaoke'],
+      bg: ['mvBg808SubRing', 'rainWindow', 'spotlight', 'bokehBg', 'horizonGlow', 'eqBars'],
+      decor: ['mvDecoHhBars', 'beatRing', 'lightLeak', 'bokeh', 'waveform', 'spectrumRing'],
+    },
+    avoid: { bg: ['seigaiha', 'asanoha', 'wzBgShippo', 'polka', 'checker'] },
+  },
+  rnb: {
+    name: 'R&B',
+    moods: ['calm', 'emotional', 'editorial'],
+    styles: [
+      'rnbSilkCandle', 'rnbSilkRose', 'rnbMidnightBath', 'rnbGoldenHour', 'rnbNeoSoulTea',
+      'rnbPearlMist', 'rnbVioletSmooth', 'rnbHoneyAmber', 'rnbDreamyBlue', 'rnbRubyIntimate',
+    ],
+    koma: [0],
+    extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
+    fxPatch: { motion: [0.54, 0.78], glitch: [0.04, 0.18], chroma: [0.28, 0.56], decor: [0.42, 0.74], density: [0.34, 0.56], texture: [0.35, 0.65], bgSwitch: [0.3, 0.58] },
+    prefers: {
+      layout: ['gloss', 'lowerThird', 'frameBox', 'vcols', 'center', 'vinyl', 'quote', 'dropCap', 'xdKaraoke', 'credits'],
+      enter: ['mvRnbSilkSweep', 'mvRnbVelvetRise', 'fadeStagger', 'blurStagger', 'lightLeak', 'glint', 'trackIn', 'riseMask'],
+      hold: ['mvRnbSilkSway', 'mvRnbCandleBreathe', 'breathe', 'shimmer', 'glintSweep', 'xkFocusBreath', 'focusRack', 'drift'],
+      exit: ['mvRnbSilkFade', 'dissolve', 'blurOutStagger', 'trackOutWide', 'drift', 'wipe'],
+      cam: ['mvCamRnbSilkDolly', 'mvCamRnbSway', 'xqBeatBreath', 'dollyIn', 'xqArcSweep', 'pullOut', 'orbitDrift'],
+      fx: ['mvFxRnbWarmBloom', 'lightSweep', 'filmBurn', 'defocus', 'bloomFlash', 'chroma'],
+      trans: ['mvTransSilkBlend', 'xqSoftSweep', 'xqLightLeak', 'irisOpen', 'wipe'],
+      treat: ['mvTreatRnbAura', 'softShadow', 'glow', 'gradientV', 'wide', 'karaoke'],
+      bg: ['mvBgRnbSilkWaves', 'bokehBg', 'auroraRibbons', 'horizonGlow', 'spotlight', 'gradientSweep'],
+      decor: ['mvDecoPopSparks', 'bokeh', 'lightLeak', 'twinkle', 'leaders', 'swatches', 'beatRing'],
+    },
+    avoid: { hold: ['jitter', 'glitchtick', 'glitchJump'], fx: ['block', 'mosaic', 'tvStatic', 'edgeDetect'], bg: ['seigaiha', 'asanoha', 'wzBgShippo'] },
+  },
+  hiphop: {
+    name: 'HIP-HOP',
+    moods: ['pop', 'glitch', 'graphic'],
+    styles: [
+      'hhConcreteRaw', 'hhChromeChain', 'hhBoomBap90', 'hhSubwayGraff', 'hhPlatinumFlex',
+      'hhAlertRed', 'hhTapeDistort', 'hhNightCypher', 'hhStreetPoster', 'hhDrillSteel',
+    ],
+    koma: [0],
+    extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
+    fxPatch: { motion: [0.80, 0.98], glitch: [0.28, 0.65], chroma: [0.55, 0.90], decor: [0.55, 0.88], density: [0.56, 0.84], texture: [0.35, 0.7], bgSwitch: [0.48, 0.85] },
+    prefers: {
+      layout: ['huge', 'equalizer', 'marquee', 'columnsBig', 'stickerBomb', 'diag', 'splitScreen', 'xdFourUp', 'mixed', 'zoomRepeat'],
+      enter: ['mvHhSlamPunch', 'mvHhSliceCut', 'knWordSlam', 'whip', 'stamp', 'stretch', 'glitchIn', 'zoom', 'slice'],
+      hold: ['mvHhHeadNod', 'mvHhBarFlex', 'eqBounce', 'xkBeatBump', 'beatHop', 'knWordPulse', 'stretchPulse', 'xkLoudWeight'],
+      exit: ['mvHhCutSnap', 'whipOut', 'knWordKick', 'scatter', 'glitchDissolve', 'zoomThrough', 'spinOut'],
+      cam: ['mvCamHhBounce', 'mvCamHhSnapZoom', 'beatPunch', 'crashZoom', 'stepZoom', 'whipIn', 'xqWhipSpring', 'knRushIn'],
+      fx: ['mvFxHhImpactCut', 'zoomPunch', 'strobe', 'flash', 'rgbSplit', 'slice', 'xrBandZoom', 'shake', 'chroma'],
+      trans: ['mvTransPopFlashWipe', 'whipPan', 'knStripSlam', 'flashCross', 'pushSlide', 'cubeTurn'],
+      treat: ['mvTreatHhChrome', 'extrude', 'hardShadow', 'outlineFill', 'knWordPlate', 'knWordScale', 'chrome'],
+      bg: ['mvBgHhSubGrid', 'eqBars', 'spotlight', 'squareTunnel', 'particlesBg', 'xpShiftRows'],
+      decor: ['mvDecoHhBars', 'beatRing', 'barcode', 'speedCorner', 'bars', 'knSpeedTrail', 'waveform'],
+    },
+    avoid: { bg: ['seigaiha', 'asanoha', 'wzBgShippo'], decor: ['petals'] },
+  },
   artmotion: {
     name: 'ART & MOTION',
     moods: ['graphic', 'glitch', 'pop'],
@@ -12993,8 +13402,28 @@ J.THEMES = {
     styles: ['hrRuin', 'hrNightRec', 'hrCurse', 'noir', 'crimson', 'mono', 'hud', 'sumi', 'acid', 'glitchPrism', 'cinVelvetNoir', 'cinMonolith', 'cinAmberNocturne', 'mvDrillDark', 'isoMidnightAxis', 'isoObsidianGlass', 'amBrutalistType', 'futTokyoCyber', 'futPlasmaArc', 'aniShonenFlame'],
   },
   pop: {
-    name: 'ポップ', moods: ['pop'], koma: [0],
-    styles: ['magenta', 'candy', 'popArtBenDay', 'caution', 'transit', 'synth80', 'sunset', 'popRoyComic', 'popWarholSilk', 'popSupernova', 'popBubblegum', 'popSkyAction', 'mvKpopNeon', 'mvHyperPop', 'mvDancefloor', 'aniCelStudio', 'aniCartoonBounce', 'aniComicKawaii', 'amMemphisGroove', 'animePrism'],
+    name: 'POP',
+    moods: ['pop', 'graphic', 'emotional'],
+    styles: [
+      'popStarlight', 'popBubblePink', 'popMirrorball', 'popSolarCitrus', 'popNeonArcade',
+      'popCottonSky', 'popChromeHeart', 'popConfettiBoom', 'popLaserMint', 'popVelvetChart',
+    ],
+    koma: [0],
+    extra: true, extra2: true, sets: ['typo', 'kinetic'], sprinkle: 0,
+    fxPatch: { motion: [0.76, 0.96], glitch: [0.10, 0.34], chroma: [0.48, 0.82], decor: [0.62, 0.94], density: [0.52, 0.80], texture: [0.18, 0.45], bgSwitch: [0.50, 0.85] },
+    prefers: {
+      layout: ['mixed', 'pill', 'ring', 'bounceLine', 'wave', 'bubbles', 'stickerBomb', 'equalizer', 'xdKaraoke', 'marquee'],
+      enter: ['mvPopElasticStar', 'mvPopCurtainFlash', 'pop', 'bounceBig', 'rubber', 'squashDrop', 'xgJelly', 'knPushIn'],
+      hold: ['mvPopGrooveBounce', 'mvPopGlossShimmer', 'beatHop', 'jelly', 'wave', 'eqBounce', 'xkBeatBump', 'pulse'],
+      exit: ['mvPopSparkBurst', 'popOut', 'scatter', 'spinOut', 'shrink', 'whipOut'],
+      cam: ['mvCamPopStageHop', 'mvCamPopChorusWide', 'bounce', 'xqWhipSpring', 'beatPunch', 'dollyIn', 'xqBeatBreath'],
+      fx: ['mvFxPopSparkFlash', 'bloomFlash', 'starGlint', 'zoomPunch', 'flash', 'xrSpotlight', 'chroma'],
+      trans: ['mvTransPopFlashWipe', 'flashCross', 'xqRingRipple', 'irisOpen', 'clockWipe', 'whipPan'],
+      treat: ['mvTreatHhChrome', 'rainbow', 'glow', 'sticker', 'outlineFill', 'neonOutline', 'karaoke'],
+      bg: ['mvBgPopMirrorLights', 'auroraRibbons', 'sunburst', 'meshBlobs', 'fireworks', 'gradientSweep', 'eqBars'],
+      decor: ['mvDecoPopSparks', 'sparks', 'confetti', 'twinkle', 'heartsStars', 'beatRing', 'lineBurst'],
+    },
+    avoid: { bg: ['seigaiha', 'asanoha', 'wzBgShippo'] },
   },
   ballad: {
     name: 'バラード', moods: ['calm', 'emotional'], koma: [0],
@@ -13003,7 +13432,7 @@ J.THEMES = {
 };
 J.THEME_ORDER = Object.keys(J.THEMES);
 
-J.omakase = (project, rnd = Math.random, themeId = null) => {
+J.omakase = (project, rnd = Math.random, themeId = null, audio = null) => {
   const T = themeId && J.THEMES[themeId] ? J.THEMES[themeId] : null;
   const switches = {};
   if (T && T.set) switches[T.set] = true;
@@ -13031,7 +13460,7 @@ J.omakase = (project, rnd = Math.random, themeId = null) => {
     const hero = T.styles[0];
     const tStyles = T.styles.filter(okStyle);
     const nonRepeat = tStyles.filter(k => k !== project.style);
-    const heroProb = tStyles.length >= 15 ? 0.14 : 0.65;
+    const heroProb = tStyles.length >= 10 ? 0.16 : 0.55;
     if (hero && okStyle(hero) && project.style !== hero && rnd() < heroProb) pool = [hero];
     else if (nonRepeat.length) pool = nonRepeat;
     else if (tStyles.length) pool = tStyles;
@@ -13045,8 +13474,30 @@ J.omakase = (project, rnd = Math.random, themeId = null) => {
   const fx = Object.assign({}, project.fx);
   const fxRanges = T && T.fxPatch ? Object.assign({}, M.fx, T.fxPatch) : M.fx;
   for (const k of Object.keys(fxRanges)) fx[k] = range(fxRanges[k]);
+  // Adapt motion, cut density & flash intensity dynamically to the loaded song's BPM & energy
+  if (audio && (audio.bpm || (audio.energy && audio.energy.length))) {
+    const bpm = Number(audio.bpm) || (project.timing && Number(project.timing.bpm)) || 108;
+    let avgEn = 0.55;
+    if (audio.energy && audio.energy.length) {
+      let sum = 0; const step = Math.max(1, Math.floor(audio.energy.length / 120)); let cnt = 0;
+      for (let i = 0; i < audio.energy.length; i += step) { sum += audio.energy[i]; cnt++; }
+      avgEn = cnt ? sum / cnt : 0.55;
+    }
+    const tempoK = J.clamp((bpm - 72) / 72, 0, 1);     // 0 around 72 BPM -> 1 around 144+ BPM
+    const enK = J.clamp((avgEn - 0.25) / 0.55, 0, 1);
+    const dynBoost = (tempoK * 0.55 + enK * 0.45 - 0.45);
+    const clampIn = (val, key) => {
+      const r = fxRanges[key] || [0.2, 0.95];
+      return +J.clamp(val, r[0], Math.min(1, r[1])).toFixed(2);
+    };
+    fx.motion = clampIn(fx.motion + dynBoost * 0.16, 'motion');
+    fx.density = clampIn(fx.density + dynBoost * 0.18, 'density');
+    if (fx.chroma != null) fx.chroma = clampIn(fx.chroma + dynBoost * 0.10, 'chroma');
+    if (fx.bgSwitch != null) fx.bgSwitch = clampIn(fx.bgSwitch + dynBoost * 0.12, 'bgSwitch');
+  }
   fx.koma = pick(T && T.koma ? T.koma : { horror: [12, 8, 0], glitch: [12, 12, 8], pop: [12, 12, 8, 0], calm: [0, 0, 12], editorial: [0, 12], emotional: [12, 0], graphic: [12, 12, 0] }[mood] || [12, 8, 0]);
-  fx.onTwos = fx.koma > 0; fx.flash = rnd() < 0.65;
+  fx.onTwos = fx.koma > 0;
+  fx.flash = audio && audio.bpm >= 112 ? rnd() < 0.78 : rnd() < 0.65;
   fx.hud = J.STYLES[style] && J.STYLES[style].hud ? 'on' : pick(['auto', 'auto', 'on', 'off']);
   // technique subset per group: curated theme parts + mood-tagged parts + small sprinkle
   const enabled = {};
@@ -14870,7 +15321,7 @@ J.refineWordTimingsAcoustic = (analysis, rawWords, lineStart, lineEnd, lang, def
   });
 };
 
-/* Align lyric lines instantly to detected vocal singing onsets and phrase boundaries */
+/* Align lyric lines instantly to detected vocal singing onsets (10ms attack resolution) and phrase boundaries */
 J.alignLinesToVocals = (analysis, lines) => {
   if (!analysis || !lines || !lines.length) return {};
   const { vocalSegments, vocalOnset, duration, energyRate } = analysis;
@@ -14879,6 +15330,7 @@ J.alignLinesToVocals = (analysis, lines) => {
   const validLines = lines.map((l, i) => ({ i, ...l })).filter(l => !l.interlude && l.text);
   if (!validLines.length) return lineTimes;
 
+  let prevAssigned = 0;
   if (segs.length > 0) {
     for (let k = 0; k < validLines.length; k++) {
       const line = validLines[k];
@@ -14888,19 +15340,28 @@ J.alignLinesToVocals = (analysis, lines) => {
       let bestSeg = null, bestDist = 1e9;
       for (const seg of segs) {
         const d = Math.abs(seg.start - estTime);
-        const lastT = Object.keys(lineTimes).length ? Math.max(...Object.values(lineTimes)) : -1;
-        if (d < bestDist && seg.start >= lastT + 0.3) {
+        if (d < bestDist && seg.start >= prevAssigned + 0.3) {
           bestDist = d; bestSeg = seg;
         }
       }
       if (bestSeg) {
-        const f0 = Math.max(0, Math.floor((bestSeg.start - 0.25) * energyRate));
-        const f1 = Math.min(vocalOnset.length - 1, Math.floor((bestSeg.start + 0.35) * energyRate));
-        let maxO = -1, bestT = bestSeg.start;
-        for (let f = f0; f <= f1; f++) {
-          if (vocalOnset[f] > maxO) { maxO = vocalOnset[f]; bestT = f / energyRate; }
+        const er = Number(energyRate) || 25;
+        let bestT = bestSeg.start;
+        if (vocalOnset && vocalOnset.length) {
+          const f0 = Math.max(0, Math.floor((bestSeg.start - 0.25) * er));
+          const f1 = Math.min(vocalOnset.length - 1, Math.floor((bestSeg.start + 0.35) * er));
+          let maxO = -1;
+          for (let f = f0; f <= f1; f++) {
+            if (vocalOnset[f] > maxO) { maxO = vocalOnset[f]; bestT = f / er; }
+          }
         }
+        if (J.estimateVocalAttackNear) {
+          const fine = J.estimateVocalAttackNear(analysis, bestT, 0.16, prevAssigned > 0 ? prevAssigned + 0.25 : 0, Math.max(0.5, duration - 0.25));
+          if (fine && fine.found) bestT = fine.attackTime;
+        }
+        bestT = Math.max(prevAssigned > 0 ? prevAssigned + 0.25 : 0, bestT);
         lineTimes[line.i] = +bestT.toFixed(3);
+        prevAssigned = lineTimes[line.i];
       }
     }
   }
@@ -14908,12 +15369,21 @@ J.alignLinesToVocals = (analysis, lines) => {
   let prevT = 0.4;
   for (let i = 0; i < lines.length; i++) {
     if (lineTimes[i] == null) {
-      let nextT = duration - 1;
+      let nextT = Math.max(prevT + 0.8, duration - 0.6);
       for (let j = i + 1; j < lines.length; j++) {
         if (lineTimes[j] != null) { nextT = lineTimes[j]; break; }
       }
-      const remain = Math.max(1, lines.slice(i).filter(l => lineTimes[lines.indexOf(l)] == null).length);
-      const t = prevT + Math.min(3.5, Math.max(0.8, (nextT - prevT) / remain));
+      let remain = 0;
+      for (let j = i; j < lines.length; j++) {
+        if (lineTimes[j] != null) break;
+        remain++;
+      }
+      remain = Math.max(1, remain);
+      let t = prevT + Math.min(3.5, Math.max(0.65, (nextT - prevT) / remain));
+      if (J.estimateVocalAttackNear && lines[i] && !lines[i].interlude) {
+        const snap = J.estimateVocalAttackNear(analysis, t, 0.22, prevT + 0.2, Math.max(prevT + 0.5, nextT - 0.2));
+        if (snap && snap.found) t = snap.attackTime;
+      }
       lineTimes[i] = +t.toFixed(3);
     }
     prevT = lineTimes[i];
@@ -16310,7 +16780,7 @@ J.auditLyricsSpelling = async (linesOrText, lang = 'auto') => {
 };
 
 /* AI Real-Time Streaming Vocal-Lyric Coordination (SSE /api/align-vocals/stream + 10ms Moment Refinement) */
-J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null, onLiveEvent = null) => {
+J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null, onLiveEvent = null, opts = {}) => {
   let requiresBilling = false;
   let errorReason = '';
   let recognizedLines = [];
@@ -16325,13 +16795,64 @@ J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null, on
   let reconcileSummary = null;
   let lineMatchRatios = {};
   let detectedLanguage = lang;
+  const externalSignal = opts && opts.signal ? opts.signal : null;
+  const existingWordTimes = (opts && opts.existingWordTimes && typeof opts.existingWordTimes === 'object') ? opts.existingWordTimes : {};
+  const existingLineTimes = (opts && opts.existingLineTimes && typeof opts.existingLineTimes === 'object') ? opts.existingLineTimes : {};
   const report = (st, msg, meta = null) => { if (typeof onStage === 'function') try { onStage(st, msg, meta); } catch (e) {} };
   const emitLive = (evt) => { if (typeof onLiveEvent === 'function') try { onLiveEvent(evt); } catch (e) {} };
   const vocalSegs = Array.isArray(audioAnalysis && audioAnalysis.vocalSegments)
     ? audioAnalysis.vocalSegments.slice(0, 48).map(s => ({ start: +Number(s.start || 0).toFixed(3), end: +Number(s.end || 0).toFixed(3) }))
     : [];
   const dur = (audioAnalysis && audioAnalysis.duration) || 30;
-  const lineTexts = lines.map((l, i) => ({ i, text: l.interlude ? '[interlude]' : l.text }));
+  const lineTexts = lines.map((l, i) => {
+    const prevWords = Array.isArray(existingWordTimes[i]) ? existingWordTimes[i] : [];
+    const hasLockedWord = prevWords.some(w => w && w.validated);
+    const lockedStart = (hasLockedWord || existingLineTimes[i] != null) && Number.isFinite(Number(existingLineTimes[i] ?? (prevWords[0] && prevWords[0].start)))
+      ? Number((existingLineTimes[i] ?? prevWords[0].start).toFixed(3))
+      : undefined;
+    return {
+      i,
+      text: l.interlude ? '[interlude]' : l.text,
+      ...(lockedStart != null ? { lockedStart } : {}),
+    };
+  });
+
+  const makeTimeoutSignal = (ms) => {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(new Error('timeout')), ms);
+    const onExtAbort = () => ctrl.abort(externalSignal ? externalSignal.reason : new Error('aborted'));
+    if (externalSignal) {
+      if (externalSignal.aborted) ctrl.abort(externalSignal.reason);
+      else externalSignal.addEventListener('abort', onExtAbort, { once: true });
+    }
+    return {
+      signal: ctrl.signal,
+      cleanup: () => {
+        clearTimeout(tid);
+        if (externalSignal) externalSignal.removeEventListener('abort', onExtAbort);
+      },
+    };
+  };
+
+  const mergeValidatedAnchors = (idx, alignedWords) => {
+    const prevWords = Array.isArray(existingWordTimes[idx]) ? existingWordTimes[idx] : [];
+    const curWords = Array.isArray(alignedWords) ? alignedWords : [];
+    if (!prevWords.length || !curWords.length || !prevWords.some(w => w && w.validated)) return curWords;
+    const prevJoined = prevWords.map(w => String(w.text || '').trim().toLowerCase()).join('|');
+    const curJoined = curWords.map(w => String(w.text || '').trim().toLowerCase()).join('|');
+    if (prevJoined !== curJoined || prevWords.length !== curWords.length) return curWords;
+    return curWords.map((w, wi) => {
+      const pw = prevWords[wi];
+      if (pw && pw.validated) {
+        return Object.assign({}, pw, {
+          text: w.text || pw.text,
+          validated: true,
+          alignmentConfidence: Math.max(0.95, Number(pw.alignmentConfidence) || 0.96),
+        });
+      }
+      return w;
+    });
+  };
 
   const refineAlignedLinesBatch = (rawLineTimes, rawWordTimes, rawLineMeta) => {
     const refinedLineTimes = Object.assign({}, rawLineTimes || {});
@@ -16351,7 +16872,8 @@ J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null, on
       const nextRawStart = (nextL && refinedLineTimes[idx + 1] != null) ? refinedLineTimes[idx + 1] : Math.min(dur || 300, s + 4);
       const e = Math.max(s + 0.14, nextRawStart - 0.015);
       const metaSpk = (rawLineMeta && rawLineMeta[idx] && rawLineMeta[idx].speaker) || 'Lead';
-      const r1 = J.refineWordTimingsAcoustic(audioAnalysis, rawWordTimes[idx], s, e, lang, metaSpk);
+      const anchoredInput = mergeValidatedAnchors(idx, rawWordTimes[idx]);
+      const r1 = J.refineWordTimingsAcoustic(audioAnalysis, anchoredInput, s, e, lang, metaSpk);
       const r2 = J.optimizeLineVocalCoordination ? J.optimizeLineVocalCoordination(audioAnalysis, r1, s, e, lang, metaSpk) : r1;
       if (r2.length) {
         refinedLineTimes[idx] = r2[0].start;
@@ -16409,6 +16931,10 @@ J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null, on
     };
 
     while (true) {
+      if (externalSignal && externalSignal.aborted) {
+        try { await reader.cancel(); } catch (e) {}
+        throw new Error('aborted');
+      }
       const { value, done } = await reader.read();
       if (value) {
         buf += decoder.decode(value, { stream: true });
@@ -16426,16 +16952,23 @@ J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null, on
   };
 
   try {
+    if (externalSignal && externalSignal.aborted) {
+      return { success: false, aborted: true, reason: 'aborted' };
+    }
     if (audioAnalysis && audioAnalysis.buffer) {
       report(1, 'Extraction piste vocale & orthographe…', { pct: 12 });
-      const sr = dur > 180 ? 10000 : dur > 90 ? 12000 : 16000;
-      const includeDualSep = Boolean(audioAnalysis.preprocessing && audioAnalysis.preprocessing.shouldSeparate && dur <= 85);
+      const sr = dur > 180 ? 10000 : dur > 85 ? 10500 : 16000;
+      const includeDualSep = Boolean(audioAnalysis.preprocessing && audioAnalysis.preprocessing.shouldSeparate && dur <= 180);
       const wavBlob = J.audioMonoWav(audioAnalysis.buffer, Math.min(300, dur), sr);
       const base64Audio = await blobToBase64(wavBlob);
       let separatedVocalBase64 = '';
       if (includeDualSep) {
-        const sepBlob = J.audioVocalSeparatedWavWindow(audioAnalysis.buffer, 0, Math.min(300, dur), sr);
+        const sepSr = dur > 85 ? 10000 : sr;
+        const sepBlob = J.audioVocalSeparatedWavWindow(audioAnalysis.buffer, 0, Math.min(300, dur), sepSr);
         separatedVocalBase64 = await blobToBase64(sepBlob);
+      }
+      if (externalSignal && externalSignal.aborted) {
+        return { success: false, aborted: true, reason: 'aborted' };
       }
       report(2, 'Streaming vocal temps réel…', { pct: 22 });
       const buildAlignReqBody = (b64, sepB64) => JSON.stringify({
@@ -16448,35 +16981,49 @@ J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null, on
       });
 
       let reqBody = buildAlignReqBody(base64Audio, separatedVocalBase64);
-      let resp = await fetch('/api/align-vocals/stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: reqBody,
-      });
-      if (resp.status === 413) {
-        const slimBlob = (audioAnalysis.preprocessing && audioAnalysis.preprocessing.shouldSeparate)
-          ? J.audioVocalSeparatedWavWindow(audioAnalysis.buffer, 0, Math.min(300, dur), 8000)
-          : J.audioMonoWav(audioAnalysis.buffer, Math.min(300, dur), 8000);
-        const slimB64 = await blobToBase64(slimBlob);
-        reqBody = buildAlignReqBody(slimB64, '');
+      const tGate = makeTimeoutSignal(110000);
+      let resp;
+      try {
         resp = await fetch('/api/align-vocals/stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: reqBody,
+          signal: tGate.signal,
         });
+        if (resp.status === 413) {
+          const slimBlob = (audioAnalysis.preprocessing && audioAnalysis.preprocessing.shouldSeparate)
+            ? J.audioVocalSeparatedWavWindow(audioAnalysis.buffer, 0, Math.min(300, dur), 8000)
+            : J.audioMonoWav(audioAnalysis.buffer, Math.min(300, dur), 8000);
+          const slimB64 = await blobToBase64(slimBlob);
+          reqBody = buildAlignReqBody(slimB64, '');
+          resp = await fetch('/api/align-vocals/stream', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: reqBody,
+            signal: tGate.signal,
+          });
+        }
+      } finally {
+        tGate.cleanup();
       }
       let data = null;
       if (resp.ok) {
         const ctype = (resp.headers.get('content-type') || '').toLowerCase();
         data = ctype.includes('text/event-stream') ? await readAlignSseStream(resp) : await resp.json();
       }
-      if (!data) {
-        const fbResp = await fetch('/api/align-vocals', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: reqBody,
-        });
-        if (fbResp.ok) data = await fbResp.json();
+      if (!data && !(externalSignal && externalSignal.aborted)) {
+        const fbGate = makeTimeoutSignal(95000);
+        try {
+          const fbResp = await fetch('/api/align-vocals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: reqBody,
+            signal: fbGate.signal,
+          });
+          if (fbResp.ok) data = await fbResp.json();
+        } finally {
+          fbGate.cleanup();
+        }
       }
 
       if (data) {
@@ -16531,6 +17078,9 @@ J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null, on
       }
     }
   } catch (e) {
+    if ((externalSignal && externalSignal.aborted) || (e && e.message === 'aborted')) {
+      return { success: false, aborted: true, reason: 'aborted' };
+    }
     errorReason = 'network_or_align_error';
   }
 
@@ -16555,9 +17105,15 @@ J.aiAlignVocals = async (audioAnalysis, lines, lang = 'auto', onStage = null, on
     const ln = lines[i];
     if (!ln || ln.interlude || !ln.text) continue;
     const effectiveText = correctedLines[i] || ln.text;
-    const s = lineTimes[i] != null ? lineTimes[i] : (ln.start ?? 0.4);
+    const s = existingLineTimes[i] != null && Array.isArray(existingWordTimes[i]) && existingWordTimes[i].some(w => w && w.validated)
+      ? existingLineTimes[i]
+      : (lineTimes[i] != null ? lineTimes[i] : (ln.start ?? 0.4));
+    lineTimes[i] = s;
     const e = i < lines.length - 1 && lineTimes[i + 1] != null ? lineTimes[i + 1] : Math.min(dur, s + 3.2);
-    const pass1 = J.alignWordsAcoustic(audioAnalysis, effectiveText, s, e, lang, 'Lead', 0.85);
+    const prevAnchored = mergeValidatedAnchors(i, existingWordTimes[i] || []);
+    const pass1 = prevAnchored.some(w => w && w.validated)
+      ? prevAnchored
+      : J.alignWordsAcoustic(audioAnalysis, effectiveText, s, e, lang, 'Lead', 0.85);
     const words = J.optimizeLineVocalCoordination ? J.optimizeLineVocalCoordination(audioAnalysis, pass1, s, e, lang, 'Lead') : pass1;
     wordTimes[i] = words;
     if (J.analyzeLineVocalCoordination && words.length) {
@@ -16714,10 +17270,11 @@ J.audioMonoWav = (buffer, maxSeconds = 300, targetSampleRate = 16000) => {
 
 /* CORE FUNCTION 05 — Complete 7-Stage Audio Analysis, Vocal Separation, Streaming Singing Transcription,
    Forced Alignment, Refinement, Validation & Synchronized Subtitle Generation Pipeline */
-J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null, onPartialResult = null) => {
+J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null, onPartialResult = null, opts = {}) => {
   if (!audioAnalysis || !audioAnalysis.buffer) {
     return { success: false, reason: 'no_audio', errorMessage: 'No decoded audio buffer available' };
   }
+  const externalSignal = opts && opts.signal ? opts.signal : null;
   const totalDur = audioAnalysis.duration || audioAnalysis.buffer.duration || 0;
   const reportStage = (stage, label) => { if (typeof onStage === 'function') try { onStage(stage, label); } catch (e) {} };
   const reportPartial = (payload) => { if (typeof onPartialResult === 'function') try { onPartialResult(payload); } catch (e) {} };
@@ -16788,6 +17345,10 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null, onPar
     };
 
     while (true) {
+      if (externalSignal && externalSignal.aborted) {
+        try { await reader.cancel(); } catch (e) {}
+        throw new Error('aborted');
+      }
       const { value, done } = await reader.read();
       if (value) {
         buf += decoder.decode(value, { stream: true });
@@ -16804,16 +17365,36 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null, onPar
     return finalData;
   };
 
+  const makeTimeoutSignal = (ms) => {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(new Error('timeout')), ms);
+    const onExt = () => ctrl.abort(externalSignal ? externalSignal.reason : new Error('aborted'));
+    if (externalSignal) {
+      if (externalSignal.aborted) ctrl.abort(externalSignal.reason);
+      else externalSignal.addEventListener('abort', onExt, { once: true });
+    }
+    return {
+      signal: ctrl.signal,
+      cleanup: () => {
+        clearTimeout(tid);
+        if (externalSignal) externalSignal.removeEventListener('abort', onExt);
+      },
+    };
+  };
+
   const transcribeWindow = async (chunkStart, chunkDur) => {
+    if (externalSignal && externalSignal.aborted) return { success: false, aborted: true, reason: 'aborted' };
     const useSep = Boolean(prep.shouldSeparate);
     let sr = chunkDur > 140 ? 12000 : 16000;
     let bodyJson = await buildPayload(chunkStart, chunkDur, sr, useSep);
     reportStage(3, 'transcription');
+    const sseGate = makeTimeoutSignal(95000);
     try {
       let resp = await fetch('/api/transcribe-lyrics/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: bodyJson,
+        signal: sseGate.signal,
       });
       if (resp.status === 413) {
         bodyJson = await buildPayload(chunkStart, chunkDur, 8000, false);
@@ -16821,6 +17402,7 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null, onPar
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: bodyJson,
+          signal: sseGate.signal,
         });
       }
       if (resp.ok) {
@@ -16828,26 +17410,45 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null, onPar
         const streamed = ctype.includes('text/event-stream') ? await readSseStream(resp) : await resp.json();
         if (streamed) return streamed;
       }
-    } catch (e) {}
+    } catch (e) {
+      if ((externalSignal && externalSignal.aborted) || (e && e.message === 'aborted')) {
+        return { success: false, aborted: true, reason: 'aborted' };
+      }
+    } finally {
+      sseGate.cleanup();
+    }
 
+    if (externalSignal && externalSignal.aborted) return { success: false, aborted: true, reason: 'aborted' };
     // Fallback cleanly to standard JSON endpoint if SSE stream fails
-    let respFallback = await fetch('/api/transcribe-lyrics', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: bodyJson,
-    });
-    if (respFallback.status === 413) {
-      bodyJson = await buildPayload(chunkStart, chunkDur, 8000, false);
-      respFallback = await fetch('/api/transcribe-lyrics', {
+    const fbGate = makeTimeoutSignal(90000);
+    try {
+      let respFallback = await fetch('/api/transcribe-lyrics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: bodyJson,
+        signal: fbGate.signal,
       });
+      if (respFallback.status === 413) {
+        bodyJson = await buildPayload(chunkStart, chunkDur, 8000, false);
+        respFallback = await fetch('/api/transcribe-lyrics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: bodyJson,
+          signal: fbGate.signal,
+        });
+      }
+      if (!respFallback.ok) {
+        return { success: false, reason: 'http_error', errorMessage: `HTTP ${respFallback.status}` };
+      }
+      return respFallback.json();
+    } catch (e) {
+      if ((externalSignal && externalSignal.aborted) || (e && e.message === 'aborted')) {
+        return { success: false, aborted: true, reason: 'aborted' };
+      }
+      return { success: false, reason: 'network_error', errorMessage: (e && e.message) || 'Network error' };
+    } finally {
+      fbGate.cleanup();
     }
-    if (!respFallback.ok) {
-      return { success: false, reason: 'http_error', errorMessage: `HTTP ${respFallback.status}` };
-    }
-    return respFallback.json();
   };
 
   const refineAndValidate = (rawLines, detectedLang, serverValidation, usedModels) => {
@@ -16866,16 +17467,32 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null, onPar
         return Object.assign({}, l, { start: +ns.toFixed(3), end: +ne.toFixed(3) });
       });
     }
-    const refined = workingLines.map(l => {
+    let prevWordEnd = 0;
+    const refined = workingLines.map((l, idx) => {
       const lineLang = l.language || detectedLang || lang;
       const lineSpk = l.speaker || 'Lead';
       if (l.isInstrumentalSection || l.vocalType === 'instrumental') {
-        return Object.assign({}, l, { speaker: 'Instrumental', words: [] });
+        const ls = Math.max(prevWordEnd, Number(l.start) || 0);
+        const le = Math.max(ls + 0.5, Number(l.end) || (ls + 2.0));
+        prevWordEnd = le;
+        return Object.assign({}, l, { start: +ls.toFixed(3), end: +le.toFixed(3), speaker: 'Instrumental', words: [] });
       }
-      const words = (Array.isArray(l.words) && l.words.length)
-        ? J.refineWordTimingsAcoustic(audioAnalysis, l.words, l.start, l.end, lineLang, lineSpk)
-        : J.alignWordsAcoustic(audioAnalysis, l.text, l.start, l.end, lineLang, lineSpk, l.recognitionConfidence ?? 0.9);
-      return Object.assign({}, l, { words });
+      const nextL = workingLines[idx + 1];
+      const maxEndBound = (nextL && Number(nextL.start) > (Number(l.start) || 0) + 0.25)
+        ? Math.min(totalDur || 600, Number(nextL.start) - 0.012)
+        : Math.min(totalDur || 600, Math.max((Number(l.end) || (Number(l.start) || 0) + 2.8), (Number(l.start) || 0) + 0.35));
+      const ls = Math.max(prevWordEnd > 0 ? prevWordEnd + 0.012 : 0, Number(l.start) || 0);
+      const le = Math.max(ls + 0.16, maxEndBound);
+      const pass1 = (Array.isArray(l.words) && l.words.length)
+        ? J.refineWordTimingsAcoustic(audioAnalysis, l.words, ls, le, lineLang, lineSpk)
+        : J.alignWordsAcoustic(audioAnalysis, l.text, ls, le, lineLang, lineSpk, l.recognitionConfidence ?? 0.9);
+      const words = J.optimizeLineVocalCoordination
+        ? J.optimizeLineVocalCoordination(audioAnalysis, pass1, ls, le, lineLang, lineSpk)
+        : pass1;
+      const exactStart = words.length ? words[0].start : +ls.toFixed(3);
+      const exactEnd = words.length ? Math.max(exactStart + 0.16, words[words.length - 1].end) : +le.toFixed(3);
+      prevWordEnd = exactEnd;
+      return Object.assign({}, l, { start: exactStart, end: exactEnd, words });
     });
     reportStage(6, 'validation');
     const validated = J.validateKaraokeAlignment(audioAnalysis, refined, serverValidation);
@@ -16898,6 +17515,9 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null, onPar
   if (totalDur <= 42) {
     const data = await transcribeWindow(0, totalDur);
     if (!data) return { success: false, reason: 'empty_response', errorMessage: 'Empty server response' };
+    if (data.aborted || data.reason === 'aborted') {
+      return { success: false, aborted: true, reason: 'aborted', lines: [] };
+    }
     if (data.requiresBilling || data.reason === 'billing_required') {
       return { success: false, billingRequired: true, reason: 'billing_required', errorMessage: data.message || '', lines: [] };
     }
@@ -16947,6 +17567,9 @@ J.aiTranscribeMusic = async (audioAnalysis, lang = 'auto', onStage = null, onPar
     const dur = Math.min(winDur, totalDur - t0);
     const chunkData = await transcribeWindow(t0, dur);
     if (!chunkData) continue;
+    if (chunkData.aborted || chunkData.reason === 'aborted') {
+      return { success: false, aborted: true, reason: 'aborted', lines: [] };
+    }
     if (chunkData.requiresBilling || chunkData.reason === 'billing_required') {
       return { success: false, billingRequired: true, reason: 'billing_required', errorMessage: chunkData.message || '', lines: [] };
     }
@@ -29695,6 +30318,948 @@ fx('loopScroll', { name: '横ループ', tags: ['pop', 'graphic', 'glitch'], w: 
     ctx.drawImage(T2, 0, 0, w, h, 0, 0, cw, ch);
   } });
 
+})();
+
+/* JIZURA pack: genreMotions — Audio-reactive bespoke motions for Trap Soul, R&B, Hip-Hop & Pop (enter, hold, exit, cam, bg, fx, trans, treat, decor) */
+(() => {
+'use strict';
+const E = J.E;
+const PK = 'genreMotions';
+const reg = (g, k, d) => J.register(g, k, d, PK);
+const DEG = J.DEG, TAU = J.TAU, PI = Math.PI;
+const clamp = J.clamp, lerp = J.lerp;
+const HIDE = Object.freeze({ hide: true });
+
+/* ---------------- Song-reactive beat & energy helpers ---------------- */
+function beatState(env, fallbackHz = 1.65) {
+  const b = env && env.beat;
+  if (b && b.len > 0.14) {
+    const phase = clamp(b.since / b.len);
+    const hit = Math.exp(-b.since * 9.5);
+    const beatIdx = b.index | 0;
+    return { phase, hit, idx: beatIdx, len: b.len, synced: true };
+  }
+  const t = Math.max(0, (env && env.t) || 0);
+  const len = 1 / Math.max(0.5, fallbackHz);
+  const pos = t * fallbackHz;
+  const beatIdx = Math.floor(pos);
+  const phase = pos - beatIdx;
+  const since = phase * len;
+  const hit = Math.exp(-since * 9.5);
+  return { phase, hit, idx: beatIdx, len, synced: false };
+}
+
+function songEnergy(env, fb = 0.52) {
+  const e = env && env.energy;
+  if (typeof e === 'number' && Number.isFinite(e)) return clamp(e);
+  const bs = beatState(env, 1.5);
+  return clamp(fb * 0.72 + 0.28 * bs.hit);
+}
+
+const isHex = c => typeof c === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(c);
+const rgbaCol = (c, a) => J.rgba(isHex(c) ? c : '#ffffff', Math.round(clamp(a) * 1000) / 1000);
+const motionK = env => clamp(((env.fx && env.fx.motion != null ? env.fx.motion : 0.75) / 0.75), 0.15, 1.6);
+const pop = sc => [sc.accent, sc.accent2, sc.fg].find(c => c && J.contrast(c, sc.bg) > 1.45) || sc.fg;
+const pop2 = sc => [sc.accent2, sc.ghostA, sc.ghostB, sc.fg].find(c => c && c !== pop(sc) && J.contrast(c, sc.bg) > 1.35) || sc.fg;
+const bell = k => Math.sin(PI * clamp(k));
+const inBack = (x, s = 1.8) => { x = clamp(x); return x * x * ((s + 1) * x - s); };
+
+function pushChar(it, fn) {
+  if (!it.charFns) it.charFns = [];
+  it.charFns.push(fn);
+}
+function addPre(it, fn) { const p = it.pre; it.pre = p ? (e, x) => { p(e, x); fn(e, x); } : fn; }
+function addPost(it, fn) { const p = it.post; it.post = p ? (e, x, bb) => { p(e, x, bb); fn(e, x, bb); } : fn; }
+
+function drawStarGlint(ctx, cx, cy, r, col, alpha) {
+  if (r <= 0.5 || alpha <= 0.01) return;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.globalAlpha = clamp(alpha);
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  const ir = r * 0.18;
+  for (let i = 0; i < 8; i++) {
+    const ang = (i * PI) / 4;
+    const rad = i % 2 === 0 ? r : ir;
+    const x = Math.cos(ang) * rad, y = Math.sin(ang) * rad;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+/* =====================================================================
+   ENTRANCES (8 — 2 per genre)
+   ===================================================================== */
+
+/* 1. Trap Soul — 808 Sub Drop */
+reg('enter', 'mvTrap808Drop', {
+  name: '808 Sub Drop', en: '808 Sub Drop', tags: ['emotional', 'glitch', 'pop'], w: 1.5,
+  apply(env, it, p) {
+    const q = clamp(p);
+    const e = E.outExpo(q);
+    const impact = Math.exp(-q * 6.2) * Math.sin(q * PI * 3.2);
+    const dropY = (1 - e) * it.size * 0.72 - impact * it.size * 0.16;
+    it.y += dropY;
+    it.sy = (it.sy || 1) * (1 + Math.max(0, impact) * 0.20 + (1 - e) * 0.24);
+    it.sx = (it.sx || 1) * (1 - (1 - e) * 0.09);
+    it.blur = (it.blur || 0) + (1 - e) * 14;
+    it.track = (it.track || 0) + (1 - e) * 0.12;
+    it.alpha = (it.alpha ?? 1) * clamp(q * 3.8);
+    if (q < 0.88 && !it.echo) {
+      it.echo = { n: 3, dx: 0, dy: -it.size * 0.14 * (1 - e), scale: 1 + (1 - e) * 0.08, a: 0.32 * (1 - e), decay: 0.58 };
+    }
+  },
+});
+
+/* 2. Trap Soul — Glissée Nocturne 2AM */
+reg('enter', 'mvTrapGlide', {
+  name: 'Glissée Nocturne 2AM', en: 'Midnight Glide', tags: ['emotional', 'calm', 'editorial'], w: 1.45,
+  apply(env, it, p) {
+    const dir = (it.seed | 0) % 2 ? 1 : -1;
+    const bs = beatState(env, 1.25);
+    pushChar(it, (i, g, n) => {
+      const d = n > 1 ? (i / (n - 1)) * 0.38 : 0;
+      const q = clamp((p - d) / 0.62);
+      if (q <= 0.01) return HIDE;
+      const e = E.outCubic(q);
+      return {
+        dx: dir * (1 - e) * it.size * 0.92,
+        dy: (1 - e) * it.size * 0.28 - bs.hit * (1 - e) * it.size * 0.06,
+        blur: (1 - e) * 9,
+        s: lerp(0.92, 1.0, e),
+        a: Math.pow(e, 0.78),
+      };
+    });
+  },
+});
+
+/* 3. R&B — Soie Glissée */
+reg('enter', 'mvRnbSilkSweep', {
+  name: 'Soie Glissée', en: 'Silk Sweep', tags: ['calm', 'emotional', 'editorial'], w: 1.5, bar: true,
+  apply(env, it, p) {
+    const q = clamp(p);
+    const e = E.inOutCubic(q);
+    const m = it._m || (it._m = J.measure(it));
+    const x0 = it.x - m.w / 2 - it.size * 0.38, x1 = it.x + m.w / 2 + it.size * 0.38;
+    const edge = lerp(x0, x1, e);
+    it.clip = [x0 - 3000, edge];
+    it.wipeBar = q < 0.98 ? { x: edge, h: Math.max(m.h * 1.15, it.size * 1.2) } : null;
+    it.size *= lerp(0.94, 1.0, E.outQuad(q));
+    it.blur = (it.blur || 0) + (1 - e) * 5.5;
+    it.alpha = (it.alpha ?? 1) * clamp(q * 2.6);
+  },
+});
+
+/* 4. R&B — Élévation Velours */
+reg('enter', 'mvRnbVelvetRise', {
+  name: 'Élévation Velours', en: 'Velvet Rise', tags: ['calm', 'emotional', 'editorial'], w: 1.45,
+  apply(env, it, p) {
+    pushChar(it, (i, g, n) => {
+      const d = n > 1 ? (i / (n - 1)) * 0.42 : 0;
+      const q = clamp((p - d) / 0.58);
+      if (q <= 0.01) return HIDE;
+      const e = E.outCubic(q);
+      const lift = Math.sin(q * PI) * 0.05;
+      return {
+        dy: (1 - e) * it.size * 0.56 - lift * it.size,
+        s: lerp(0.86, 1.0, e) + lift * 0.4,
+        blur: (1 - e) * 7.5,
+        a: Math.pow(e, 0.85),
+      };
+    });
+  },
+});
+
+/* 5. Hip-Hop — Punch Kick 808 */
+reg('enter', 'mvHhSlamPunch', {
+  name: 'Punch Kick 808', en: '808 Snare Slam', tags: ['pop', 'glitch', 'graphic'], w: 1.55,
+  apply(env, it, p) {
+    const seed = it.seed | 0;
+    pushChar(it, (i, g, n) => {
+      const d = n > 1 ? (i / (n - 1)) * 0.34 : 0;
+      const q = clamp((p - d) / 0.44);
+      if (q <= 0.005) return HIDE;
+      const s = E.outBack(q, 2.3);
+      const kick = Math.exp(-q * 7.2) * Math.sin(q * PI * 2.6);
+      return {
+        s: lerp(1.62, 1.0, clamp(s * 0.92 + 0.08)) + kick * 0.16,
+        dy: kick * it.size * 0.16 * (J.rs(seed, i, 7) > 0 ? 1 : -1),
+        dx: kick * it.size * 0.05 * J.rs(seed, i, 5),
+        rot: (1 - q) * J.rs(seed, i, 9) * 16,
+        a: clamp(q * 5.2),
+      };
+    });
+  },
+});
+
+/* 6. Hip-Hop — Coupe Street */
+reg('enter', 'mvHhSliceCut', {
+  name: 'Coupe Street', en: 'Street Slice', tags: ['glitch', 'graphic', 'pop'], w: 1.45,
+  apply(env, it, p) {
+    const q = clamp(p);
+    const e = E.outExpo(q);
+    it.bands = J.itemBands(env, it, 7, (i) => (1 - clamp(e * 1.28 - i * 0.04)) * (i % 2 ? 1 : -1) * env.W * 0.58);
+    it.sx = (it.sx || 1) * lerp(1.36, 1.0, e);
+    it.streak = q < 0.68 ? { n: 3, dx: (1 - e) * it.size * 0.42, a: 0.28 * (1 - e) } : null;
+    it.alpha = (it.alpha ?? 1) * clamp(q * 4.5);
+  },
+});
+
+/* 7. Pop — Éclat Élastique Pop */
+reg('enter', 'mvPopElasticStar', {
+  name: 'Éclat Élastique Pop', en: 'Elastic Pop Star', tags: ['pop', 'graphic'], w: 1.55,
+  apply(env, it, p) {
+    const seed = it.seed | 0;
+    pushChar(it, (i, g, n) => {
+      const d = n > 1 ? (i / (n - 1)) * 0.38 : 0;
+      const q = clamp((p - d) / 0.58);
+      if (q <= 0.005) return HIDE;
+      const spring = 1 - Math.exp(-q * 7.4) * Math.cos(q * 15.5);
+      return {
+        s: Math.max(0.05, spring),
+        dy: -(1 - E.outQuad(q)) * it.size * 0.48,
+        rot: (1 - E.outCubic(q)) * J.rs(seed, i, 3) * 24,
+        a: clamp(q * 4.2),
+      };
+    });
+  },
+});
+
+/* 8. Pop — Flash Scène Pop */
+reg('enter', 'mvPopCurtainFlash', {
+  name: 'Flash Scène Pop', en: 'Stage Curtain Flash', tags: ['pop', 'emotional'], w: 1.45,
+  apply(env, it, p) {
+    const q = clamp(p);
+    const e = E.outExpo(q);
+    const bs = beatState(env, 1.85);
+    it.size *= lerp(0.82, 1.0 + 0.045 * bs.hit, e);
+    it.streak = q < 0.74 ? { n: 4, dx: (1 - e) * it.size * 0.52, a: 0.36 * (1 - e) } : null;
+    it.alpha = (it.alpha ?? 1) * clamp(q * 3.6);
+  },
+});
+
+/* =====================================================================
+   HOLDS (8 — 2 per genre, beat & song-energy synchronized)
+   ===================================================================== */
+
+/* 1. Trap Soul — Pulse 808 Sub-Bass */
+reg('hold', 'mvTrap808Pump', {
+  name: 'Pulse 808 Sub-Bass', en: '808 Sub-Bass Pulse', tags: ['emotional', 'glitch', 'pop'], w: 1.55,
+  apply(env, it, amt) {
+    const bs = beatState(env, 1.25);
+    const en = songEnergy(env, 0.58);
+    const k = motionK(env) * amt * (0.65 + 0.65 * en);
+    const bump = bs.hit * k;
+    it.size *= 1 + 0.08 * bump;
+    it.y += it.size * 0.048 * bump;
+    it.track = (it.track || 0) + 0.036 * bump;
+    if (bs.hit > 0.32 && !it.echo) {
+      it.echo = { n: 2, dx: 0, dy: 0, scale: 1 + 0.075 * bump, a: 0.22 * bs.hit, decay: 0.55 };
+    }
+  },
+});
+
+/* 2. Trap Soul — Brume Flottante 808 */
+reg('hold', 'mvTrapFloatDrift', {
+  name: 'Brume Flottante 808', en: '808 Haze Float', tags: ['calm', 'emotional'], w: 1.45,
+  apply(env, it, amt) {
+    const bs = beatState(env, 1.2);
+    const en = songEnergy(env, 0.5);
+    const k = motionK(env) * amt;
+    const t = env.lt || 0;
+    it.y += Math.sin(t * 2.1) * it.size * 0.062 * k + bs.hit * it.size * 0.028 * k;
+    it.x += Math.cos(t * 1.15) * it.size * 0.022 * k;
+    it.rot = (it.rot || 0) + Math.sin(t * 1.1) * 1.0 * k;
+    it.blur = (it.blur || 0) + Math.max(0, Math.sin(t * 2.4)) * (0.65 + 0.45 * en) * k;
+  },
+});
+
+/* 3. R&B — Onde de Soie R&B */
+reg('hold', 'mvRnbSilkSway', {
+  name: 'Onde de Soie R&B', en: 'R&B Silk Wave', tags: ['calm', 'emotional', 'editorial'], w: 1.55,
+  apply(env, it, amt) {
+    const bs = beatState(env, 1.35);
+    const en = songEnergy(env, 0.5);
+    const k = motionK(env) * amt * (0.75 + 0.45 * en);
+    const t = env.lt || 0;
+    pushChar(it, (i) => ({
+      dy: Math.sin(t * 3.4 - i * 0.44) * it.size * 0.052 * k,
+      dx: Math.cos(t * 1.9 - i * 0.32) * it.size * 0.018 * k,
+      s: 1 + 0.025 * bs.hit * k,
+      rot: Math.sin(t * 2.2 - i * 0.35) * 1.4 * k,
+    }));
+  },
+});
+
+/* 4. R&B — Respiration Bougie */
+reg('hold', 'mvRnbCandleBreathe', {
+  name: 'Respiration Bougie', en: 'Candlelight Breathe', tags: ['calm', 'editorial', 'emotional'], w: 1.45,
+  apply(env, it, amt) {
+    const bs = beatState(env, 1.25);
+    const en = songEnergy(env, 0.48);
+    const k = motionK(env) * amt;
+    const wave = 0.5 - 0.5 * Math.cos(bs.phase * TAU);
+    it.size *= 1 + (0.028 * wave + 0.032 * en) * k;
+    it.track = (it.track || 0) + 0.032 * wave * k;
+    it.alpha = (it.alpha ?? 1) * (0.94 + 0.06 * wave);
+  },
+});
+
+/* 5. Hip-Hop — Groove Head-Nod */
+reg('hold', 'mvHhHeadNod', {
+  name: 'Groove Head-Nod', en: 'Head-Nod Bounce', tags: ['pop', 'graphic', 'glitch'], w: 1.6,
+  apply(env, it, amt) {
+    const bs = beatState(env, 1.55);
+    const en = songEnergy(env, 0.65);
+    const k = motionK(env) * amt * (0.75 + 0.52 * en);
+    const nod = bs.hit * k;
+    const dir = (bs.idx % 2 === 0 ? 1 : -1);
+    it.y += it.size * 0.092 * nod;
+    it.rot = (it.rot || 0) + dir * 1.8 * nod;
+    it.sx = (it.sx || 1) * (1 + 0.052 * nod);
+    it.sy = (it.sy || 1) * (1 - 0.028 * nod);
+  },
+});
+
+/* 6. Hip-Hop — Flex Rythmique Street */
+reg('hold', 'mvHhBarFlex', {
+  name: 'Flex Rythmique Street', en: 'Beat Bar Flex', tags: ['pop', 'glitch', 'graphic'], w: 1.5,
+  apply(env, it, amt) {
+    const bs = beatState(env, 1.6);
+    const en = songEnergy(env, 0.62);
+    const k = motionK(env) * amt * (0.7 + 0.55 * en);
+    pushChar(it, (i) => {
+      const pulse = Math.exp(-Math.max(0, bs.phase - (i % 4) * 0.045) * 10);
+      return {
+        s: 1 + 0.072 * pulse * k,
+        dy: -it.size * 0.038 * bs.hit * k,
+      };
+    });
+  },
+});
+
+/* 7. Pop — Rebond Live Pop */
+reg('hold', 'mvPopGrooveBounce', {
+  name: 'Rebond Live Pop', en: 'Pop Live Bounce', tags: ['pop', 'graphic'], w: 1.55,
+  apply(env, it, amt) {
+    const bs = beatState(env, 1.9);
+    const en = songEnergy(env, 0.65);
+    const k = motionK(env) * amt * (0.75 + 0.45 * en);
+    const t = env.lt || 0;
+    pushChar(it, (i) => ({
+      dy: (Math.sin(t * 6.2 + i * 0.65) * 0.045 + bs.hit * 0.055) * it.size * k,
+      s: 1 + 0.05 * bs.hit * k,
+      rot: Math.cos(t * 4.5 + i * 0.55) * 3.4 * k,
+    }));
+  },
+});
+
+/* 8. Pop — Reflet Scène Gloss */
+reg('hold', 'mvPopGlossShimmer', {
+  name: 'Reflet Scène Gloss', en: 'Stage Gloss Shimmer', tags: ['pop', 'emotional'], w: 1.5,
+  apply(env, it, amt) {
+    const bs = beatState(env, 1.85);
+    const k = motionK(env) * amt;
+    const t = env.lt || 0;
+    it.size *= 1 + (0.042 * bs.hit + 0.016 * Math.sin(t * 4.2)) * k;
+    const sc = env.sc;
+    const hi = pop(sc);
+    const hi2 = pop2(sc);
+    pushChar(it, (i, g, n) => {
+      const pos = (t * 1.45) % 1.45;
+      const u = n > 1 ? i / (n - 1) : 0.5;
+      const dist = Math.abs(u - pos + 0.22);
+      if (dist < 0.14 && isHex(hi)) {
+        const w = 1 - dist / 0.14;
+        return { color: w > 0.5 ? hi : (isHex(hi2) ? hi2 : hi), s: 1 + 0.065 * w * k, dy: -it.size * 0.024 * w * k };
+      }
+      return null;
+    });
+  },
+});
+
+/* =====================================================================
+   EXITS (4 — 1 per genre)
+   ===================================================================== */
+
+reg('exit', 'mvTrapSmokeOut', {
+  name: 'Brume 2AM Dissolve', en: 'Midnight Haze Out', tags: ['emotional', 'calm'], w: 1.45,
+  apply(env, it, p) {
+    const e = E.inQuad(clamp(p));
+    it.y -= it.size * 0.46 * e;
+    it.blur = (it.blur || 0) + e * 24;
+    it.track = (it.track || 0) + e * 0.28;
+    it.alpha = (it.alpha ?? 1) * (1 - e);
+  },
+});
+
+reg('exit', 'mvRnbSilkFade', {
+  name: 'Voile de Soie', en: 'Silk Feather Fade', tags: ['calm', 'emotional', 'editorial'], w: 1.45,
+  apply(env, it, p) {
+    pushChar(it, (i, g, n) => {
+      const d = n > 1 ? (i / (n - 1)) * 0.35 : 0;
+      const q = clamp((p - d) / 0.65);
+      const e = E.inCubic(q);
+      return {
+        dy: -e * it.size * 0.38,
+        blur: e * 11,
+        s: lerp(1, 0.91, e),
+        a: 1 - e,
+      };
+    });
+  },
+});
+
+reg('exit', 'mvHhCutSnap', {
+  name: 'Whip Coupe Sèche', en: 'Street Whip Snap', tags: ['pop', 'glitch', 'graphic'], w: 1.5,
+  apply(env, it, p) {
+    const q = clamp(p);
+    const e = E.inExpo(q);
+    const dir = (it.seed | 0) % 2 ? 1 : -1;
+    it.x += dir * env.W * 0.44 * e;
+    it.sx = (it.sx || 1) * lerp(1, 2.45, e);
+    it.streak = q > 0.12 ? { n: 4, dx: -dir * it.size * 0.5 * e, a: 0.35 * (1 - e * 0.6) } : null;
+    it.alpha = (it.alpha ?? 1) * (1 - Math.pow(e, 0.8));
+  },
+});
+
+reg('exit', 'mvPopSparkBurst', {
+  name: 'Éclat Pop Confetti', en: 'Pop Spark Exit', tags: ['pop', 'graphic'], w: 1.5,
+  apply(env, it, p) {
+    const seed = it.seed | 0;
+    pushChar(it, (i, g, n) => {
+      const d = n > 1 ? J.r(seed, i, 2) * 0.3 : 0;
+      const q = clamp((p - d) / 0.7);
+      const e = inBack(q, 1.8);
+      return {
+        s: Math.max(0.01, 1 - Math.abs(e)),
+        dy: J.rs(seed, i, 5) * it.size * 0.85 * Math.max(0, q),
+        dx: J.rs(seed, i, 6) * it.size * 0.42 * q,
+        rot: J.rs(seed, i, 8) * 180 * q,
+        a: 1 - q * q,
+      };
+    });
+  },
+});
+
+/* =====================================================================
+   CAMERAS (8 — 2 per genre, beat & song-energy synced)
+   ===================================================================== */
+
+reg('cam', 'mvCam808Kick', {
+  name: 'Kick 808 Lourd', en: '808 Bass Kick Cam', tags: ['emotional', 'glitch', 'pop'], w: 1.55, ae: 'beatPunch',
+  get(env) {
+    const bs = beatState(env, 1.25), en = songEnergy(env, 0.58), K = motionK(env);
+    const punch = bs.hit * (0.65 + 0.55 * en) * K;
+    return { s: 1.015 + 0.048 * punch, y: env.H * 0.015 * punch, rot: (bs.idx % 2 ? 0.62 : -0.62) * punch };
+  },
+});
+
+reg('cam', 'mvCamLateDrive', {
+  name: 'Drive Nocturne Cruise', en: 'Midnight Cruise Cam', tags: ['calm', 'emotional'], w: 1.45, ae: 'driftDiag',
+  get(env) {
+    const bs = beatState(env, 1.2), K = motionK(env);
+    const u = clamp(env.lt / Math.max(0.3, env.cut.dur));
+    return {
+      x: (u - 0.5) * env.W * 0.036 * K,
+      y: Math.sin(env.lt * 1.4) * env.H * 0.011 * K,
+      s: 1.02 + 0.02 * bs.hit * K,
+    };
+  },
+});
+
+reg('cam', 'mvCamRnbSilkDolly', {
+  name: 'Travelling Soie R&B', en: 'R&B Silk Dolly', tags: ['calm', 'emotional', 'editorial'], w: 1.55, ae: 'dollyIn',
+  get(env) {
+    const bs = beatState(env, 1.3), K = motionK(env);
+    const u = E.inOutSine(clamp(env.lt / Math.max(0.3, env.cut.dur)));
+    const breathe = 0.5 - 0.5 * Math.cos(bs.phase * TAU);
+    return { s: 1.0 + 0.058 * u * K + 0.014 * breathe * K, y: -env.H * 0.009 * u * K };
+  },
+});
+
+reg('cam', 'mvCamRnbSway', {
+  name: 'Balancement Velours', en: 'Velvet Pendulum Sway', tags: ['calm', 'emotional'], w: 1.45, ae: 'handheld',
+  get(env) {
+    const bs = beatState(env, 1.3), K = motionK(env);
+    const ph = ((bs.idx % 2) + bs.phase) * PI;
+    return { x: Math.sin(ph) * env.W * 0.015 * K, rot: Math.sin(ph) * 0.95 * K, s: 1.024 };
+  },
+});
+
+reg('cam', 'mvCamHhBounce', {
+  name: 'Bounce Cypher 808', en: 'Hip-Hop Cypher Bounce', tags: ['pop', 'glitch', 'graphic'], w: 1.6, ae: 'beatPunch',
+  get(env) {
+    const bs = beatState(env, 1.55), en = songEnergy(env, 0.65), K = motionK(env);
+    const p = bs.hit * (0.7 + 0.5 * en) * K;
+    return { s: 1.012 + 0.056 * p, y: env.H * 0.019 * p, rot: (bs.idx % 2 ? -1 : 1) * 0.92 * p };
+  },
+});
+
+reg('cam', 'mvCamHhSnapZoom', {
+  name: 'Snap Zoom Street', en: 'Street Beat Snap Zoom', tags: ['glitch', 'pop', 'graphic'], w: 1.5, ae: 'stepZoom',
+  get(env) {
+    const bs = beatState(env, 1.6), K = motionK(env);
+    const step = (bs.idx % 3) * 0.026 * K;
+    return { s: 1.01 + step + 0.032 * bs.hit * K, rot: ((bs.idx % 2) ? 0.65 : -0.65) * K * 0.5 };
+  },
+});
+
+reg('cam', 'mvCamPopStageHop', {
+  name: 'Hop Scène Live', en: 'Pop Stage Hop', tags: ['pop', 'graphic'], w: 1.55, ae: 'bounce',
+  get(env) {
+    const bs = beatState(env, 1.9), en = songEnergy(env, 0.65), K = motionK(env);
+    const hop = Math.abs(Math.sin(bs.phase * PI)) * K * (0.7 + 0.4 * en);
+    return { s: 1.015 + 0.038 * bs.hit * K, y: -env.H * 0.015 * hop, rot: Math.sin(bs.phase * TAU) * 0.72 * K };
+  },
+});
+
+reg('cam', 'mvCamPopChorusWide', {
+  name: 'Refrain Grand Angle', en: 'Chorus Wide Bloom', tags: ['pop', 'emotional'], w: 1.5, ae: 'pullOut',
+  get(env) {
+    const en = songEnergy(env, 0.62), K = motionK(env);
+    const u = E.outCubic(clamp(env.lt / Math.max(0.3, env.cut.dur)));
+    return { s: lerp(1.075, 1.0, u) + 0.024 * en * K };
+  },
+});
+
+/* =====================================================================
+   BACKGROUNDS (4 — 1 per genre, song-energy & beat reactive)
+   ===================================================================== */
+
+reg('bg', 'mvBg808SubRing', {
+  name: 'Ondes Sub-Bass 808', en: '808 Sub-Bass Rings', tags: ['emotional', 'glitch'], w: 1.55,
+  plan: rng => ({ rings: rng.int(5, 8), embers: rng.int(8, 14), seed: rng.int(1, 9999) }),
+  draw(env, Q) {
+    const { ctx, W, H, sc, t } = env;
+    const bs = beatState(env, 1.25), en = songEnergy(env, 0.55);
+    const c1 = pop(sc), c2 = pop2(sc), cx = W * 0.5, cy = H * 0.5;
+    const maxR = Math.hypot(W, H) * 0.54, U = Math.min(W, H);
+    ctx.save();
+    // Deep nocturnal ambient radial wash
+    const g = ctx.createRadialGradient(cx, cy, maxR * 0.04, cx, cy, maxR * 0.88);
+    g.addColorStop(0, rgbaCol(c1, 0.16 + 0.14 * bs.hit + 0.09 * en));
+    g.addColorStop(0.5, rgbaCol(c2, 0.08 + 0.06 * en));
+    g.addColorStop(1, rgbaCol(sc.bg, 0));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    // Concentric sub-bass shockwaves synced to beat hit
+    const n = Q.rings || 6;
+    for (let i = 0; i < n; i++) {
+      const p = ((t * 0.34 + i / n) % 1);
+      const r = maxR * (0.10 + 0.90 * p) * (1 + 0.06 * bs.hit);
+      ctx.strokeStyle = rgbaCol(i % 2 ? c1 : c2, (1 - p) * (0.28 + 0.24 * bs.hit));
+      ctx.lineWidth = Math.max(1.2, U * (0.002 + 0.0045 * (1 - p)));
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, TAU);
+      ctx.stroke();
+    }
+    // Floating 2AM bokeh embers
+    const m = Q.embers || 10, seed = Q.seed || 7;
+    for (let k = 0; k < m; k++) {
+      const bx = (J.r(seed, k, 1) + Math.sin(t * 0.35 + k) * 0.04) * W;
+      const by = ((J.r(seed, k, 2) - t * 0.05 + 10) % 1) * H;
+      const br = U * (0.012 + 0.022 * J.r(seed, k, 3)) * (1 + 0.25 * bs.hit);
+      const bg = ctx.createRadialGradient(bx, by, 0, bx, by, br);
+      const col = k % 2 ? c1 : c2;
+      bg.addColorStop(0, rgbaCol(col, 0.26 + 0.16 * bs.hit));
+      bg.addColorStop(1, rgbaCol(col, 0));
+      ctx.fillStyle = bg;
+      ctx.beginPath();
+      ctx.arc(bx, by, br, 0, TAU);
+      ctx.fill();
+    }
+    ctx.restore();
+  },
+});
+
+reg('bg', 'mvBgRnbSilkWaves', {
+  name: 'Vagues de Soie R&B', en: 'R&B Silk Waves', tags: ['calm', 'emotional', 'editorial'], w: 1.55,
+  plan: rng => ({ layers: rng.int(4, 6), phase: rng.range(0, 6.28), seed: rng.int(1, 9999) }),
+  draw(env, Q) {
+    const { ctx, W, H, sc, t } = env;
+    const en = songEnergy(env, 0.5), bs = beatState(env, 1.3);
+    const c1 = pop(sc), c2 = pop2(sc), U = Math.min(W, H);
+    ctx.save();
+    // Warm top-corner candle glow
+    const cg = ctx.createRadialGradient(W * 0.82, H * 0.18, U * 0.02, W * 0.82, H * 0.18, U * 0.85);
+    cg.addColorStop(0, rgbaCol(c1, 0.14 + 0.08 * bs.hit));
+    cg.addColorStop(1, rgbaCol(sc.bg, 0));
+    ctx.fillStyle = cg;
+    ctx.fillRect(0, 0, W, H);
+
+    const layers = Q.layers || 5;
+    for (let l = 0; l < layers; l++) {
+      const yBase = H * (0.30 + 0.52 * (l / Math.max(1, layers - 1)));
+      const amp = H * (0.046 + 0.032 * en + 0.016 * bs.hit);
+      const pts = [];
+      for (let x = 0; x <= W; x += Math.max(20, W / 32)) {
+        const y = yBase + Math.sin(x / W * 4.2 + t * (0.85 + l * 0.16) + (Q.phase || 0) + l) * amp;
+        pts.push([x, y]);
+      }
+      ctx.beginPath();
+      ctx.moveTo(0, H);
+      for (const [px, py] of pts) ctx.lineTo(px, py);
+      ctx.lineTo(W, H);
+      ctx.closePath();
+      const fillG = ctx.createLinearGradient(0, yBase - amp, 0, H);
+      const col = l % 2 ? c1 : c2;
+      fillG.addColorStop(0, rgbaCol(col, 0.09 + 0.045 * en));
+      fillG.addColorStop(1, rgbaCol(col, 0.01));
+      ctx.fillStyle = fillG;
+      ctx.fill();
+      // Delicate silk specular rim along wave crest
+      ctx.beginPath();
+      for (let i = 0; i < pts.length; i++) {
+        if (i === 0) ctx.moveTo(pts[i][0], pts[i][1]);
+        else ctx.lineTo(pts[i][0], pts[i][1]);
+      }
+      ctx.strokeStyle = rgbaCol(col, 0.22 + 0.12 * bs.hit);
+      ctx.lineWidth = Math.max(1, U * 0.0018);
+      ctx.stroke();
+    }
+    ctx.restore();
+  },
+});
+
+reg('bg', 'mvBgHhSubGrid', {
+  name: 'Spectre Street 808', en: 'Hip-Hop Bass Grid', tags: ['pop', 'glitch', 'graphic'], w: 1.55,
+  plan: rng => ({ bars: rng.int(18, 26), seed: rng.int(1, 9999) }),
+  draw(env, Q) {
+    const { ctx, W, H, sc, t } = env;
+    const bs = beatState(env, 1.55), en = songEnergy(env, 0.62);
+    const c1 = pop(sc), c2 = pop2(sc), U = Math.min(W, H);
+    ctx.save();
+    // Subtle perspective grid on lower floor
+    const horizonY = H * 0.62;
+    ctx.strokeStyle = rgbaCol(c2, 0.09 + 0.07 * bs.hit);
+    ctx.lineWidth = Math.max(1, U * 0.0015);
+    for (let r = 1; r <= 5; r++) {
+      const k = r / 5;
+      const y = horizonY + (H - horizonY) * (k * k);
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    for (let s = -4; s <= 4; s++) {
+      ctx.beginPath();
+      ctx.moveTo(W * 0.5 + s * W * 0.05, horizonY);
+      ctx.lineTo(W * 0.5 + s * W * 0.26, H);
+      ctx.stroke();
+    }
+    // Crisp street frame outline + corner crosshairs
+    const pad = U * 0.045;
+    ctx.strokeStyle = rgbaCol(c1, 0.18 + 0.14 * bs.hit);
+    ctx.lineWidth = Math.max(1.5, U * 0.0025);
+    ctx.strokeRect(pad, pad, W - pad * 2, H - pad * 2);
+
+    // Symmetrical bass spectrum bars + floating peak-hold caps
+    const n = Q.bars || 22, bw = (W - pad * 4) / n;
+    for (let i = 0; i < n; i++) {
+      const sym = 1 - Math.abs(i / (n - 1) - 0.5) * 1.3;
+      const lvl = clamp(0.18 + 0.58 * sym * (0.45 * en + 0.55 * bs.hit) + 0.24 * Math.sin(t * 7.2 + i * 0.9));
+      const bh = H * 0.17 * lvl;
+      const x = pad * 2 + i * bw + bw * 0.18;
+      const barW = bw * 0.64;
+      ctx.fillStyle = rgbaCol(i % 3 === 0 ? c2 : c1, 0.16 + 0.18 * bs.hit);
+      ctx.fillRect(x, H - pad - bh, barW, bh);
+      // floating peak cap
+      ctx.fillStyle = rgbaCol(i % 2 ? c1 : c2, 0.52 + 0.25 * bs.hit);
+      ctx.fillRect(x, H - pad - bh - U * 0.009, barW, Math.max(2, U * 0.004));
+    }
+    ctx.restore();
+  },
+});
+
+reg('bg', 'mvBgPopMirrorLights', {
+  name: 'Projecteurs Mirrorball', en: 'Pop Mirrorball Beams', tags: ['pop', 'graphic'], w: 1.55,
+  plan: rng => ({ beams: rng.int(6, 9), seed: rng.int(1, 9999) }),
+  draw(env, Q) {
+    const { ctx, W, H, sc, t } = env;
+    const bs = beatState(env, 1.9), en = songEnergy(env, 0.65);
+    const c1 = pop(sc), c2 = pop2(sc), U = Math.min(W, H);
+    ctx.save();
+    const beams = Q.beams || 7;
+    const R = Math.hypot(W, H) * 1.1;
+    for (let i = 0; i < beams; i++) {
+      const topX = W * ((i + 0.5) / beams);
+      const ang = PI * 0.5 + Math.sin(t * 1.3 + i * 1.1) * 0.38;
+      const spread = 0.068 + 0.032 * bs.hit;
+      ctx.beginPath();
+      ctx.moveTo(topX, -10);
+      ctx.lineTo(topX + Math.cos(ang - spread) * R, Math.sin(ang - spread) * R);
+      ctx.lineTo(topX + Math.cos(ang + spread) * R, Math.sin(ang + spread) * R);
+      ctx.closePath();
+      const grad = ctx.createLinearGradient(topX, 0, topX, H);
+      const col = i % 2 ? c1 : c2;
+      grad.addColorStop(0, rgbaCol(col, 0.14 + 0.09 * bs.hit + 0.04 * en));
+      grad.addColorStop(1, rgbaCol(col, 0));
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+    // Crisp 4-point stage sparkles
+    for (let k = 0; k < 14; k++) {
+      const px = J.r(Q.seed || 7, k, 1) * W;
+      const py = J.r(Q.seed || 7, k, 2) * H;
+      const tw = 0.45 + 0.55 * Math.sin(t * 4.5 + k * 2.1);
+      const r = U * (0.011 + 0.014 * bs.hit) * tw;
+      drawStarGlint(ctx, px, py, r, k % 2 ? c2 : c1, 0.48 * tw);
+    }
+    ctx.restore();
+  },
+});
+
+/* =====================================================================
+   POST FX (4 — 1 per genre, properly tagged scratch when sampling S)
+   ===================================================================== */
+
+const fxWrap = (k, d) => reg('fx', k, Object.assign({}, d, {
+  draw(ctx, ev, k2, I) { ctx.save(); try { d.draw(ctx, ev, clamp(Number.isFinite(k2) ? k2 : 1), I); } finally { ctx.restore(); } },
+}));
+
+fxWrap('mvFx808Shock', {
+  name: 'Choc Sub-Bass 808', en: '808 Sub Shock', tags: ['emotional', 'glitch', 'pop'], w: 1.45, dur: 4, amp: 1, mid: true, scratch: true,
+  draw(ctx, ev, k, I) {
+    const { cw, ch, S, sc } = I;
+    const pulse = Math.sin(PI * k);
+    if (S) {
+      const dy = pulse * ch * 0.014;
+      ctx.globalCompositeOperation = 'screen';
+      ctx.globalAlpha = 0.28 * pulse;
+      ctx.drawImage(S, 0, -dy, cw, ch);
+      ctx.globalAlpha = 0.18 * pulse;
+      ctx.drawImage(S, 0, dy * 0.8, cw, ch);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    const rad = ctx.createRadialGradient(cw / 2, ch / 2, cw * 0.08, cw / 2, ch / 2, cw * 0.72);
+    rad.addColorStop(0, rgbaCol(pop(sc), 0.16 * pulse));
+    rad.addColorStop(0.55, rgbaCol(pop2(sc), 0.06 * pulse));
+    rad.addColorStop(1, rgbaCol(sc.bg, 0));
+    ctx.fillStyle = rad;
+    ctx.fillRect(0, 0, cw, ch);
+  },
+});
+
+fxWrap('mvFxRnbWarmBloom', {
+  name: 'Halo Soie Chaud', en: 'R&B Warm Bloom', tags: ['calm', 'emotional', 'editorial'], w: 1.45, dur: 5, amp: 1, mid: true,
+  draw(ctx, ev, k, I) {
+    const { cw, ch, sc } = I;
+    const a = bell(k) * 0.26;
+    const g = ctx.createRadialGradient(cw * 0.5, ch * 0.5, cw * 0.04, cw * 0.5, ch * 0.5, cw * 0.66);
+    g.addColorStop(0, rgbaCol(pop(sc), a));
+    g.addColorStop(0.55, rgbaCol(pop2(sc), a * 0.45));
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.globalCompositeOperation = 'screen';
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, cw, ch);
+    // Diagonal silk sheen sweep
+    const sweepX = lerp(-cw * 0.25, cw * 1.25, E.inOutSine(k));
+    const sw = ctx.createLinearGradient(sweepX - cw * 0.12, 0, sweepX + cw * 0.12, ch);
+    sw.addColorStop(0, 'rgba(255,255,255,0)');
+    sw.addColorStop(0.5, rgbaCol(pop(sc), 0.14 * bell(k)));
+    sw.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = sw;
+    ctx.fillRect(0, 0, cw, ch);
+  },
+});
+
+fxWrap('mvFxHhImpactCut', {
+  name: 'Flash Impact Street', en: 'Street Impact Flash', tags: ['pop', 'glitch', 'graphic'], w: 1.5, dur: 3, amp: 1, mid: true, scratch: true,
+  draw(ctx, ev, k, I) {
+    const { cw, ch, S, sc } = I;
+    const dec = 1 - E.outQuad(k);
+    ctx.fillStyle = rgbaCol(pop(sc), dec * 0.22);
+    ctx.fillRect(0, 0, cw, ch);
+    if (S && k < 0.72) {
+      const sh = cw * 0.018 * (1 - k);
+      ctx.globalAlpha = 0.36 * (1 - k);
+      ctx.drawImage(S, 0, ch * 0.32, cw, ch * 0.34, sh, ch * 0.32, cw, ch * 0.34);
+      ctx.drawImage(S, 0, ch * 0.68, cw, ch * 0.16, -sh * 0.7, ch * 0.68, cw, ch * 0.16);
+    }
+  },
+});
+
+fxWrap('mvFxPopSparkFlash', {
+  name: 'Éclat Scène Pop', en: 'Pop Stage Spark', tags: ['pop', 'graphic'], w: 1.45, dur: 4, amp: 1, mid: true,
+  draw(ctx, ev, k, I) {
+    const { cw, ch, sc } = I;
+    const a = bell(k) * 0.26;
+    const g = ctx.createLinearGradient(0, 0, cw, ch);
+    g.addColorStop(0, rgbaCol(pop(sc), a));
+    g.addColorStop(0.5, rgbaCol('#ffffff', a * 0.55));
+    g.addColorStop(1, rgbaCol(pop2(sc), a));
+    ctx.globalCompositeOperation = 'screen';
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, cw, ch);
+    // Corner star lens glints
+    const r = Math.min(cw, ch) * 0.055 * bell(k);
+    drawStarGlint(ctx, cw * 0.18, ch * 0.24, r, '#ffffff', 0.6 * bell(k));
+    drawStarGlint(ctx, cw * 0.82, ch * 0.72, r * 0.85, pop(sc), 0.55 * bell(k));
+  },
+});
+
+/* =====================================================================
+   TRANSITIONS (2)
+   ===================================================================== */
+
+reg('trans', 'mvTransSilkBlend', {
+  name: 'Fondu Soie Nocturne', en: 'Silk Horizon Blend', tags: ['calm', 'emotional', 'editorial'], w: 1.5, dur: 0.44,
+  plan: rng => ({ dir: rng.pick([1, -1]) }),
+  draw(ctx, A, B, p, I, P) {
+    const { cw, ch, sc } = I, e = E.inOutCubic(p), d = (P && P.dir) || 1;
+    ctx.drawImage(A, 0, 0);
+    const x = d > 0 ? cw * e : cw * (1 - e);
+    ctx.save();
+    ctx.beginPath();
+    if (d > 0) ctx.rect(0, 0, x, ch); else ctx.rect(x, 0, cw - x, ch);
+    ctx.clip();
+    ctx.drawImage(B, 0, 0);
+    ctx.restore();
+    // Soft luminous silk ribbon edge
+    const lw = Math.max(6, Math.min(cw, ch) * 0.045);
+    const g = ctx.createLinearGradient(x - lw, 0, x + lw, 0);
+    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(0.5, rgbaCol(pop(sc), bell(p) * 0.78));
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(x - lw, 0, lw * 2, ch);
+  },
+});
+
+reg('trans', 'mvTransPopFlashWipe', {
+  name: 'Coupe Flash Rythmée', en: 'Beat Flash Wipe', tags: ['pop', 'glitch', 'graphic'], w: 1.5, dur: 0.34,
+  plan: rng => ({ dir: rng.pick([1, -1]) }),
+  draw(ctx, A, B, p, I, P) {
+    const { cw, ch, sc } = I, e = E.inOutExpo(p), d = (P && P.dir) || 1;
+    ctx.drawImage(A, 0, 0);
+    const band = Math.min(cw, ch) * 0.068 * bell(p);
+    const sl = ch * 0.25 * d;
+    const x = lerp(-Math.abs(sl) - band, cw + Math.abs(sl) + band, e);
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(-cw, 0); ctx.lineTo(x - sl * 0.5, 0); ctx.lineTo(x + sl * 0.5, ch); ctx.lineTo(-cw, ch); ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(B, 0, 0);
+    ctx.restore();
+    // Dual chromatic prism ribbon
+    ctx.fillStyle = pop(sc);
+    ctx.globalAlpha = 0.85 * bell(p);
+    ctx.beginPath();
+    ctx.moveTo(x - sl * 0.5, 0); ctx.lineTo(x - sl * 0.5 + band, 0);
+    ctx.lineTo(x + sl * 0.5 + band, ch); ctx.lineTo(x + sl * 0.5, ch);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = pop2(sc);
+    ctx.globalAlpha = 0.55 * bell(p);
+    ctx.beginPath();
+    ctx.moveTo(x - sl * 0.5 - band * 0.45, 0); ctx.lineTo(x - sl * 0.5, 0);
+    ctx.lineTo(x + sl * 0.5, ch); ctx.lineTo(x + sl * 0.5 - band * 0.45, ch);
+    ctx.closePath();
+    ctx.fill();
+  },
+});
+
+/* =====================================================================
+   TREATMENTS (2) & DECOR (2)
+   ===================================================================== */
+
+reg('treat', 'mvTreatRnbAura', {
+  name: 'Aura Velours Soie', en: 'Velvet Aura Glow', tags: ['calm', 'emotional', 'pop'], w: 1.5,
+  apply(env, it) {
+    const bs = beatState(env, 1.3);
+    const ac = pop(env.sc);
+    const ac2 = pop2(env.sc);
+    if (!it.shadow) {
+      it.shadow = { color: rgbaCol(ac, 0.56 + 0.26 * bs.hit), blur: it.size * 0.24, dx: 0, dy: it.size * 0.045 };
+    }
+    if (env.sc.fg && isHex(ac)) {
+      it.gradient = it.gradient || [env.sc.fg, ac];
+    }
+    addPost(it, (e, x, bb) => {
+      if (!bb || e.pass !== 'main') return;
+      const g = e.ctx.createLinearGradient(bb.x0, bb.y1 + it.size * 0.08, bb.x1, bb.y1 + it.size * 0.08);
+      g.addColorStop(0, 'rgba(0,0,0,0)');
+      g.addColorStop(0.5, rgbaCol(ac2 || ac, 0.35 + 0.25 * bs.hit));
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      e.ctx.save();
+      e.ctx.fillStyle = g;
+      e.ctx.fillRect(bb.x0, bb.y1 + it.size * 0.06, Math.max(8, bb.x1 - bb.x0), Math.max(1.5, it.size * 0.032));
+      e.ctx.restore();
+    });
+  },
+});
+
+reg('treat', 'mvTreatHhChrome', {
+  name: 'Chrome Impact Scène', en: 'Stage Chrome Impact', tags: ['pop', 'graphic', 'glitch'], w: 1.5,
+  apply(env, it) {
+    const ac = pop(env.sc), ac2 = pop2(env.sc);
+    const cTop = isHex(env.sc.fg) ? env.sc.fg : '#ffffff';
+    const cMid = isHex(ac) ? ac : '#e2e8f0';
+    const cBot = isHex(ac2) ? ac2 : cTop;
+    if (!it.gradient) {
+      it.gradient = [[0, cTop], [0.48, cMid], [1, cBot]];
+    }
+    if (!it.shadow) {
+      it.shadow = { color: rgbaCol(cMid, 0.48), blur: 0, dx: it.size * 0.045, dy: it.size * 0.045 };
+    }
+    if (!it.extrude) {
+      it.extrude = { n: 4, dx: it.size * 0.032, dy: it.size * 0.032, color: rgbaCol(cBot, 0.32), fade: true };
+    }
+  },
+});
+
+reg('decor', 'mvDecoHhBars', {
+  name: 'Barres 808 Live', en: 'Live 808 Meter Bars', tags: ['pop', 'glitch', 'graphic'], w: 1.55,
+  plan: rng => ({ bars: rng.int(5, 7) }),
+  draw(env, bb, Q) {
+    if (!bb) return;
+    const { ctx, sc, t } = env;
+    const bs = beatState(env, 1.55), en = songEnergy(env, 0.6);
+    const ac = pop(sc), ac2 = pop2(sc), n = (Q && Q.bars) || 6;
+    const U = Math.min(env.W, env.H);
+    const w = Math.max(3, U * 0.0052);
+    const cy = (bb.y0 + bb.y1) * 0.5;
+    ctx.save();
+    for (let i = 0; i < n; i++) {
+      const h = (12 + 28 * clamp(0.32 + 0.48 * bs.hit + 0.35 * en + 0.25 * Math.sin(t * 8.2 + i * 1.1)));
+      const lx = bb.x0 - (n - i) * (w * 2.15) - 10;
+      const rx = bb.x1 + i * (w * 2.15) + 10;
+      ctx.fillStyle = rgbaCol(ac, 0.72);
+      ctx.fillRect(lx, cy - h * 0.5, w, h);
+      ctx.fillRect(rx, cy - h * 0.5, w, h);
+      // Floating crisp peak caps
+      ctx.fillStyle = rgbaCol(ac2, 0.85);
+      ctx.fillRect(lx, cy - h * 0.5 - 4, w, 2.2);
+      ctx.fillRect(rx, cy - h * 0.5 - 4, w, 2.2);
+    }
+    ctx.restore();
+  },
+});
+
+reg('decor', 'mvDecoPopSparks', {
+  name: 'Étoiles & Lueur Pop', en: 'Pop Stage Sparks', tags: ['pop', 'emotional'], w: 1.55,
+  plan: rng => ({ seed: rng.int(1, 9999) }),
+  draw(env, bb, Q) {
+    if (!bb) return;
+    const { ctx, sc, t } = env;
+    const bs = beatState(env, 1.9);
+    const c1 = pop(sc), c2 = pop2(sc);
+    const pts = [
+      [bb.x0 - 20, bb.y0 - 12],
+      [bb.x1 + 20, bb.y0 - 10],
+      [bb.x0 - 16, bb.y1 + 12],
+      [bb.x1 + 18, bb.y1 + 14],
+    ];
+    ctx.save();
+    pts.forEach(([px, py], i) => {
+      const r = (9 + 9 * bs.hit) * (0.65 + 0.35 * Math.sin(t * 5 + i + (Q.seed || 1)));
+      drawStarGlint(ctx, px, py, r, i % 2 ? c1 : c2, 0.84);
+      drawStarGlint(ctx, px, py, r * 0.45, '#ffffff', 0.55);
+    });
+    ctx.restore();
+  },
+});
 })();
 
 /* ============================================================================
@@ -46071,6 +47636,106 @@ const PROFILES = {
     decor: { beatRing: 2.0, sparks: 1.8, lineBurst: 1.7, knSpeedTrail: 1.7, waveform: 1.7, bars: 1.6 },
   },
 
+  trapsoul: {
+    moods: ['emotional', 'glitch', 'calm'],
+    texture: { grain: 0.42, paper: 0, scan: 0.14 },
+    ghost: 1.0,
+    glow: 1.75,
+    fonts: {
+      display: ['am_syne', 'am_cinzel', 'am_unbounded', 'mincho_black', 'gothic_black'],
+      serif: ['am_playfair', 'am_dm_serif', 'tokumin', 'mincho'],
+      body: ['am_outfit', 'am_space_grotesk', 'gothic_med'],
+      mono: ['am_space_mono', 'mono'],
+    },
+    bias: {
+      layout: { equalizer: 2.1, neon: 2.0, huge: 1.9, depthStack: 1.9, rain: 1.7, mirror: 1.8, xdKaraoke: 1.9, vinyl: 1.7, vcols: 1.6 },
+      enter: { mvTrap808Drop: 2.6, mvTrapGlide: 2.5, blurStagger: 1.9, neonOn: 1.9, echoIn: 1.8, iris: 1.7, backlight: 1.7 },
+      exit: { mvTrapSmokeOut: 2.6, dissolve: 1.9, blurOutStagger: 1.8, zoomThrough: 1.8, echoOut: 1.7 },
+      hold: { mvTrap808Pump: 2.6, mvTrapFloatDrift: 2.5, heartbeat: 2.0, beatHop: 1.9, focusRack: 1.8, xkBeatBump: 2.0, glowFlicker: 1.7 },
+      treat: { mvTreatRnbAura: 2.4, glow: 2.0, neonOutline: 1.9, gradientV: 1.7, softShadow: 1.6, karaoke: 1.7 },
+      bg: { mvBg808SubRing: 2.6, rainWindow: 2.0, spotlight: 1.9, bokehBg: 1.8, horizonGlow: 1.7, eqBars: 1.7 },
+      cam: { mvCam808Kick: 2.6, mvCamLateDrive: 2.5, beatPunch: 2.0, xqBeatBreath: 1.9, dollyIn: 1.8, rackFocus: 1.7 },
+      fx: { mvFx808Shock: 2.6, bloomFlash: 1.9, radialChroma: 1.9, anamorphic: 1.8, rgbSplit: 1.7, chroma: 1.7 },
+      trans: { mvTransSilkBlend: 2.5, xqLightLeak: 1.9, xqSoftSweep: 1.8, zoomThrough: 1.8, irisOpen: 1.7 },
+    },
+    decor: { mvDecoHhBars: 2.2, beatRing: 2.0, lightLeak: 1.8, bokeh: 1.7, waveform: 1.7 },
+  },
+
+  rnb: {
+    moods: ['calm', 'emotional', 'editorial'],
+    texture: { grain: 0.34, paper: 0.12, scan: 0.04 },
+    ghost: 0.72,
+    glow: 1.55,
+    fonts: {
+      display: ['am_playfair', 'am_bodoni', 'am_cinzel', 'am_outfit', 'tokumin'],
+      serif: ['am_dm_serif', 'am_abril', 'shippori', 'mincho'],
+      body: ['am_montserrat', 'am_josefin', 'gothic_med'],
+      mono: ['am_space_mono', 'mono'],
+    },
+    bias: {
+      layout: { gloss: 2.1, lowerThird: 1.9, frameBox: 1.9, vcols: 1.8, center: 1.8, vinyl: 1.9, quote: 1.7, dropCap: 1.7, xdKaraoke: 1.8 },
+      enter: { mvRnbSilkSweep: 2.6, mvRnbVelvetRise: 2.5, fadeStagger: 1.9, blurStagger: 1.9, lightLeak: 1.8, glint: 1.8, trackIn: 1.7 },
+      exit: { mvRnbSilkFade: 2.6, dissolve: 1.9, blurOutStagger: 1.8, trackOutWide: 1.8, drift: 1.7 },
+      hold: { mvRnbSilkSway: 2.6, mvRnbCandleBreathe: 2.5, breathe: 2.0, shimmer: 1.9, glintSweep: 1.9, xkFocusBreath: 1.8, focusRack: 1.7 },
+      treat: { mvTreatRnbAura: 2.6, softShadow: 2.0, glow: 1.9, gradientV: 1.8, wide: 1.6, karaoke: 1.7 },
+      bg: { mvBgRnbSilkWaves: 2.6, bokehBg: 2.0, auroraRibbons: 1.9, horizonGlow: 1.9, spotlight: 1.8, gradientSweep: 1.8 },
+      cam: { mvCamRnbSilkDolly: 2.6, mvCamRnbSway: 2.5, xqBeatBreath: 1.9, dollyIn: 1.9, xqArcSweep: 1.8, pullOut: 1.7 },
+      fx: { mvFxRnbWarmBloom: 2.6, lightSweep: 2.0, filmBurn: 1.8, defocus: 1.8, bloomFlash: 1.7, chroma: 1.4 },
+      trans: { mvTransSilkBlend: 2.6, xqSoftSweep: 2.0, xqLightLeak: 1.9, irisOpen: 1.8, wipe: 1.6 },
+    },
+    decor: { mvDecoPopSparks: 1.9, bokeh: 2.0, lightLeak: 1.9, twinkle: 1.8, leaders: 1.7, swashes: 1.5 },
+  },
+
+  hiphop: {
+    moods: ['pop', 'glitch', 'graphic'],
+    texture: { grain: 0.44, paper: 0.14, scan: 0.16 },
+    ghost: 0.95,
+    glow: 1.35,
+    fonts: {
+      display: ['am_archivo_black', 'am_anton', 'am_syne', 'am_unbounded', 'dela', 'gothic_black'],
+      serif: ['am_bodoni', 'mincho_black'],
+      body: ['am_space_grotesk', 'am_chakra', 'gothic_bold'],
+      mono: ['am_rubik_mono', 'am_space_mono', 'mono'],
+    },
+    bias: {
+      layout: { huge: 2.1, equalizer: 2.1, marquee: 2.0, columnsBig: 1.9, stickerBomb: 1.8, diag: 1.8, splitScreen: 1.8, xdFourUp: 1.8 },
+      enter: { mvHhSlamPunch: 2.6, mvHhSliceCut: 2.5, knWordSlam: 2.1, whip: 2.0, stamp: 1.9, stretch: 1.8, glitchIn: 1.8 },
+      exit: { mvHhCutSnap: 2.6, whipOut: 2.0, knWordKick: 1.9, scatter: 1.8, glitchDissolve: 1.7, zoomThrough: 1.7 },
+      hold: { mvHhHeadNod: 2.6, mvHhBarFlex: 2.5, eqBounce: 2.1, xkBeatBump: 2.1, beatHop: 2.0, knWordPulse: 1.9, stretchPulse: 1.8 },
+      treat: { mvTreatHhChrome: 2.6, extrude: 2.0, hardShadow: 1.9, outlineFill: 1.9, knWordPlate: 1.9, knWordScale: 1.8 },
+      bg: { mvBgHhSubGrid: 2.6, eqBars: 2.1, spotlight: 1.8, squareTunnel: 1.7, particlesBg: 1.6, xpShiftRows: 1.7 },
+      cam: { mvCamHhBounce: 2.6, mvCamHhSnapZoom: 2.5, beatPunch: 2.1, crashZoom: 2.0, stepZoom: 1.9, whipIn: 1.9 },
+      fx: { mvFxHhImpactCut: 2.6, zoomPunch: 2.1, strobe: 1.9, flash: 1.9, rgbSplit: 1.8, slice: 1.8, xrBandZoom: 1.8 },
+      trans: { mvTransPopFlashWipe: 2.6, whipPan: 2.1, knStripSlam: 2.0, flashCross: 1.9, pushSlide: 1.8 },
+    },
+    decor: { mvDecoHhBars: 2.6, beatRing: 2.0, barcode: 1.8, speedCorner: 1.8, bars: 1.8, knSpeedTrail: 1.8 },
+  },
+
+  pop: {
+    moods: ['pop', 'graphic', 'emotional'],
+    texture: { grain: 0.2, paper: 0.08, scan: 0.04 },
+    ghost: 0.78,
+    glow: 1.7,
+    fonts: {
+      display: ['am_unbounded', 'am_bricolage', 'am_syne', 'am_outfit', 'dela'],
+      serif: ['am_abril', 'am_playfair', 'tokumin'],
+      body: ['am_outfit', 'am_montserrat', 'gothic_bold'],
+      mono: ['am_space_mono', 'mono'],
+    },
+    bias: {
+      layout: { mixed: 2.1, pill: 2.0, ring: 1.9, bounceLine: 1.9, wave: 1.9, bubbles: 1.8, stickerBomb: 1.8, equalizer: 1.8, xdKaraoke: 1.9 },
+      enter: { mvPopElasticStar: 2.6, mvPopCurtainFlash: 2.5, pop: 2.0, bounceBig: 2.0, rubber: 1.9, squashDrop: 1.8, xgJelly: 1.8 },
+      exit: { mvPopSparkBurst: 2.6, popOut: 2.0, scatter: 1.9, spinOut: 1.8, shrink: 1.7 },
+      hold: { mvPopGrooveBounce: 2.6, mvPopGlossShimmer: 2.5, beatHop: 2.0, jelly: 1.9, wave: 1.9, eqBounce: 1.9, xkBeatBump: 1.9 },
+      treat: { mvTreatHhChrome: 2.2, rainbow: 2.0, glow: 1.9, sticker: 1.9, outlineFill: 1.8, neonOutline: 1.8, karaoke: 1.8 },
+      bg: { mvBgPopMirrorLights: 2.6, auroraRibbons: 2.0, sunburst: 1.9, meshBlobs: 1.9, fireworks: 1.8, gradientSweep: 1.8 },
+      cam: { mvCamPopStageHop: 2.6, mvCamPopChorusWide: 2.5, bounce: 2.0, xqWhipSpring: 1.9, beatPunch: 1.9, dollyIn: 1.8 },
+      fx: { mvFxPopSparkFlash: 2.6, bloomFlash: 2.0, starGlint: 1.9, zoomPunch: 1.8, flash: 1.8, xrSpotlight: 1.9 },
+      trans: { mvTransPopFlashWipe: 2.6, flashCross: 2.0, xqRingRipple: 1.9, irisOpen: 1.9, clockWipe: 1.8 },
+    },
+    decor: { mvDecoPopSparks: 2.6, sparks: 2.0, confetti: 1.9, twinkle: 1.9, heartsStars: 1.8, beatRing: 1.8 },
+  },
+
   artmotion: {
     moods: ['graphic', 'glitch', 'pop'],
     texture: { grain: 0.42, paper: 0.3, scan: 0.12 },
@@ -46425,6 +48090,54 @@ const CATALOG = [
   ['aniComicKawaii', 'animation', 'Kawaii Stickers Pop', 'Rose tendre sucré, gommettes rebondissantes & ciel bleu', '#FFF0F6', '#3D1A4D', '#FF4D94', '#38BDF8'],
   ['aniSunsetSakura', 'animation', 'Crépuscule Pétales Anime', 'Violet crépuscule, fleurs de cerisier & lueur dorée', '#2B1438', '#FFF5F9', '#FF7EB6', '#FFAE52', { useGrad: true }],
   ['aniSurrealMirror', 'animation', 'Miroir Surréaliste', 'Prune profonde, reflets symétriques cyan & étoiles jaunes', '#170D28', '#FFFFFF', '#38BDF8', '#FFE066'],
+
+  /* ===================== TRAP SOUL (10 styles & motions) ===================== */
+  ['ts808Velvet', 'trapsoul', 'Trap Soul 808 Velours', 'Basses 808 profondes, or ambré nocturne & pulsation fluide', '#09060E', '#FBF8FF', '#EAB308', '#A855F7', { useGrad: true }],
+  ['tsLateNightDrive', 'trapsoul', 'Drive Nocturne 2AM', 'Asphalte mouillé bleu nuit, cyan sodium & lueurs arrière', '#060A14', '#F1F7FF', '#22D3EE', '#F97316', { useGrad: true }],
+  ['tsAmethystHaze', 'trapsoul', 'Brume Améthyste', 'Pourpre fumé nocturne, lilas néon & glissées lentes', '#13091F', '#FAF5FF', '#C084FC', '#F472B6', { useGrad: true }],
+  ['tsLeanPurple', 'trapsoul', 'Néon Pourpre Profond', 'Violet intense, magenta électrique & chrome sombre', '#160624', '#FFFFFF', '#E879F9', '#38BDF8', { useGrad: true }],
+  ['tsChromeTears', 'trapsoul', 'Larmes Chrome Froid', 'Obsidienne pure, reflets argentés & bleu glacier', '#0A0D12', '#F8FAFC', '#94A3B8', '#38BDF8'],
+  ['tsSubBassGold', 'trapsoul', 'Sub-Bass Or Liquide', 'Noir charbon dense, or liquide & braises rythmées', '#0D0A07', '#FFFBEB', '#F59E0B', '#EF4444', { useGrad: true }],
+  ['tsRainWindow', 'trapsoul', 'Vitre Pluie & Néon', 'Bleu minuit brumeux, corail humide & halos doux', '#07111A', '#EFF6FF', '#FB7185', '#2DD4BF'],
+  ['tsMoodySatin', 'trapsoul', 'Satin Bordeaux Nuit', 'Lie de vin sombre, rose poudré & or rose velours', '#17070D', '#FFF1F5', '#F43F5E', '#FBBF24', { useGrad: true }],
+  ['tsNocturneEcho', 'trapsoul', 'Écho Minuit Indigo', 'Encre minuit, indigo électrique & battements 808', '#070812', '#EEF2FF', '#818CF8', '#E879F9'],
+  ['tsGhostHotline', 'trapsoul', 'Ligne Fantôme Analog', 'Anthracite VHS, menthe néon & traces rose sombre', '#100E14', '#F4F4F5', '#34D399', '#EC4899'],
+
+  /* ===================== R&B (10 styles & motions) ===================== */
+  ['rnbSilkCandle', 'rnb', 'Soie & Lueur Bougie', 'Acajou chaleureux, miel doré & respiration sensuelle', '#1A0E0C', '#FFF7ED', '#F59E0B', '#FB7185', { useGrad: true }],
+  ['rnbSilkRose', 'rnb', 'Velours Rose Poudré', 'Prune velours, rose soyeux & champagne doux', '#1C0D18', '#FFF5FA', '#F472B6', '#FDE68A', { useGrad: true }],
+  ['rnbMidnightBath', 'rnb', 'Reflets Saphir Soie', 'Bleu nuit soyeux, turquoise nacré & ondes douces', '#091324', '#F0F9FF', '#2DD4BF', '#A5B4FC', { useGrad: true }],
+  ['rnbGoldenHour', 'rnb', 'Heure Dorée R&B', 'Bronze chaud, soleil couchant ambré & corail soyeux', '#1F1209', '#FFFBEB', '#FB923C', '#FDE047', { useGrad: true }],
+  ['rnbNeoSoulTea', 'rnb', 'Néo-Soul Sauge & Or', 'Forêt feutrée, sauge dorée & typographie éditoriale', '#0F1A14', '#F4F9F4', '#A3E635', '#FBBF24'],
+  ['rnbPearlMist', 'rnb', 'Perle & Brume Ivoire', 'Ivoire éditorial nacré, bordeaux encre & or vieilli', '#F6EFEA', '#26141C', '#B91C1C', '#D97706', { paper: true }],
+  ['rnbVioletSmooth', 'rnb', 'Smooth Violet Satin', 'Aubergine profonde, orchidée lumineuse & or doux', '#160B24', '#FAF5FF', '#D946EF', '#FBBF24', { useGrad: true }],
+  ['rnbHoneyAmber', 'rnb', 'Miel Ambré Analog', 'Caramel profond, ambre chaud & lueurs vinyle', '#1C1008', '#FFFBF2', '#F59E0B', '#EA580C', { useGrad: true }],
+  ['rnbDreamyBlue', 'rnb', 'Bleu Rêveur Minuit', 'Velours bleu nuit, lavande nacrée & reflets argent', '#0C1428', '#F8FAFC', '#93C5FD', '#C4B5FD'],
+  ['rnbRubyIntimate', 'rnb', 'Intime Rubis & Or', 'Grenat nocturne, rubis incandescent & or champagne', '#18060B', '#FFF5F7', '#FB7185', '#FDE047', { useGrad: true }],
+
+  /* ===================== HIP HOP (10 styles & motions) ===================== */
+  ['hhConcreteRaw', 'hiphop', 'Béton Brut Street', 'Asphalte urbain massif, rouge alerte & jaune chantier', '#111111', '#FAFAFA', '#FF3B1F', '#FACC15'],
+  ['hhChromeChain', 'hiphop', 'Chaîne Chrome & Glace', 'Noir jais profond, platine brillant & bleu électrique', '#08090C', '#FFFFFF', '#E2E8F0', '#38BDF8', { useGrad: true }],
+  ['hhBoomBap90', 'hiphop', 'Boom-Bap Vinyle 90s', 'Kraft chaud sombre, orange vinyle & vert olive street', '#1A140F', '#FFF6EA', '#FF6B2C', '#84CC16'],
+  ['hhSubwayGraff', 'hiphop', 'Métro Graffiti Punch', 'Acier souterrain, vert lime tag & magenta néon', '#0B111C', '#FFFFFF', '#A3FF12', '#FF2E9F'],
+  ['hhPlatinumFlex', 'hiphop', 'Platine & Or 24K', 'Obsidienne pure, or massif 24K & découpes rapides', '#0A0908', '#FFFFFF', '#FACC15', '#E2E8F0', { useGrad: true }],
+  ['hhAlertRed', 'hiphop', 'Alerte Sirène Rouge', 'Noir studio, rouge sirène vif & blanc choc sur beat', '#090506', '#FFFFFF', '#EF4444', '#F97316'],
+  ['hhTapeDistort', 'hiphop', 'Cassette Analogique', 'Gris bande magnétique, cyan rétro & orange VHS', '#151517', '#F8FAFC', '#00F5D4', '#FF7A2F'],
+  ['hhNightCypher', 'hiphop', 'Cypher Micro Nocturne', 'Ombre fumée, projecteur ambre chaud & punch kick', '#0E1015', '#FFF8EC', '#F59E0B', '#38BDF8'],
+  ['hhStreetPoster', 'hiphop', 'Affiche Street Collage', 'Papier affiche usé, encre noire brute & rouge choc', '#ECE6D8', '#111111', '#DC2626', '#2563EB', { paper: true }],
+  ['hhDrillSteel', 'hiphop', 'Acier Glacial Drill', 'Acier froid sombre, bleu glacier & flash rubis secs', '#070A10', '#F1F5F9', '#38BDF8', '#EF4444'],
+
+  /* ===================== POP (10 styles & motions) ===================== */
+  ['popStarlight', 'pop', 'Pop Starlight Scène', 'Indigo scène concert, rose laser & cyan prisme', '#100826', '#FFFFFF', '#FF2E9F', '#00F0FF', { useGrad: true }],
+  ['popBubblePink', 'pop', 'Gloss Bubblegum Pop', 'Rose clair pop brillant, magenta vif & bleu ciel', '#FFF0F7', '#2D0A2E', '#FF1F8F', '#0EA5E9'],
+  ['popMirrorball', 'pop', 'Mirrorball Disco Pop', 'Nuit disco étoilée, or facettes & rose miroir', '#0A0B1E', '#FFFFFF', '#FDE047', '#F472B6', { useGrad: true }],
+  ['popSolarCitrus', 'pop', 'Agrumes Solaire Pop', 'Crème solaire joyeuse, orange tang & turquoise vif', '#FFF9E6', '#1F160A', '#FF5E1A', '#06B6D4'],
+  ['popNeonArcade', 'pop', 'Arcade Électrique Pop', 'Pourpre vibrant, vert lime électrique & rose néon', '#190733', '#FFFFFF', '#A3FF12', '#FF2BD6', { useGrad: true }],
+  ['popCottonSky', 'pop', 'Ciel Pastel Synth-Pop', 'Bleu ciel aérien, corail pop & violet doux', '#E8F4FF', '#13203B', '#FF4D6D', '#7C3AED'],
+  ['popChromeHeart', 'pop', 'Cœur Chrome Y2K', 'Nuit métallique Y2K, lavande chromée & rose gloss', '#101320', '#FFFFFF', '#C4B5FD', '#FB7185', { useGrad: true }],
+  ['popConfettiBoom', 'pop', 'Confetti Live Hook', 'Noir festival, jaune flash pop & cyan électrique', '#0C0818', '#FFFFFF', '#FACC15', '#22D3EE'],
+  ['popLaserMint', 'pop', 'Laser Menthe Radio', 'Émeraude nuit, menthe fluo fraîche & corail pop', '#061816', '#F0FDF9', '#2DD4BF', '#FB7185', { useGrad: true }],
+  ['popVelvetChart', 'pop', 'Top Chart Rubis Pop', 'Prune studio chic, rouge cerise vibrant & or blanc', '#1A0816', '#FFF8FC', '#F43F5E', '#FDE047', { useGrad: true }],
 ];
 
 J.STYLE_CATS = Object.assign({
@@ -46434,6 +48147,10 @@ J.STYLE_CATS = Object.assign({
   compositing: [],
   cinematic: [],
   musicvideo: [],
+  trapsoul: [],
+  rnb: [],
+  hiphop: [],
+  pop: [],
   artmotion: [],
   futuristic: [],
   lifestyle: [],
@@ -73801,7 +75518,7 @@ trReg('wzMawariButai', { name: '回り舞台', en: 'Revolving Stage', tags: ['gr
    ============================================================ */
 (() => {
 'use strict';
-J.BASE_PACKS = ['core', undefined, 'layoutsA', 'layoutsB', 'enter', 'exitHold', 'decor', 'looks'];
+J.BASE_PACKS = ['core', undefined, 'layoutsA', 'layoutsB', 'enter', 'exitHold', 'decor', 'looks', 'genreMotions'];
 J.BASE_STYLES = ['noir', 'crimson', 'caution', 'magenta', 'paper', 'hud', 'mint', 'specimen', 'transit', 'blueprint', 'rouge', 'mono'];
 J.EXTRA_FONTS = ['reggae', 'rampart', 'potta', 'kiwi', 'klee', 'shippori'];
 J.WA = {
@@ -74081,7 +75798,47 @@ J.randomOk = (project, g, k) => {
     glitchPrism: ['Glitch Prism', 'Radical RGB slice-tears, brutalist typography and acid chromatic aberration'],
     cyberAi: ['Futuristic Cyber AI', 'Cyan and UV holograms, HUD telemetry matrix, radar and neon glitch'],
     atelierLux: ['Atelier Lifestyle', 'Editorial champagne and ivory, silk light sweeps and documentary framing'],
-    animePrism: ['Anime Fantasy Prism', 'Luminous cel layers, fluid wave warps, petals and surreal motion']
+    animePrism: ['Anime Fantasy Prism', 'Luminous cel layers, fluid wave warps, petals and surreal motion'],
+    ts808Velvet: ['Trap Soul 808 Velvet', 'Deep 808 sub-bass, nocturnal amber gold and fluid pulsing'],
+    tsLateNightDrive: ['Midnight Drive 2AM', 'Wet midnight asphalt, sodium cyan glow and rear-view blurs'],
+    tsAmethystHaze: ['Amethyst Haze', 'Smoky nocturnal purple, neon lilac and slow glides'],
+    tsLeanPurple: ['Deep Neon Purple', 'Rich violet, electric magenta and dark chrome'],
+    tsChromeTears: ['Cold Chrome Tears', 'Pure obsidian, silver specular glints and glacier blue'],
+    tsSubBassGold: ['Liquid Gold Sub-Bass', 'Dense charcoal black, liquid gold and rhythmic embers'],
+    tsRainWindow: ['Rain Window & Neon', 'Misty midnight blue, wet coral and soft blooms'],
+    tsMoodySatin: ['Night Burgundy Satin', 'Dark wine red, dusty rose and velvet rose gold'],
+    tsNocturneEcho: ['Midnight Indigo Echo', 'Midnight ink, electric indigo and 808 heartbeats'],
+    tsGhostHotline: ['Analog Ghost Line', 'VHS charcoal, neon mint and trailing dark pink'],
+    rnbSilkCandle: ['Silk & Candlelight', 'Warm mahogany, golden honey and sensual breath'],
+    rnbSilkRose: ['Dusty Rose Velvet', 'Velvet plum, silky rose and soft champagne'],
+    rnbMidnightBath: ['Sapphire Silk Reflections', 'Silky night blue, pearled turquoise and smooth waves'],
+    rnbGoldenHour: ['Golden Hour R&B', 'Warm bronze, amber sunset and silky coral'],
+    rnbNeoSoulTea: ['Neo-Soul Sage & Gold', 'Muted forest, golden sage and editorial typography'],
+    rnbPearlMist: ['Ivory Pearl Mist', 'Pearlescent editorial ivory, burgundy ink and antique gold'],
+    rnbVioletSmooth: ['Smooth Violet Satin', 'Deep aubergine, luminous orchid and soft gold'],
+    rnbHoneyAmber: ['Analog Amber Honey', 'Deep caramel, warm amber and vinyl warmth'],
+    rnbDreamyBlue: ['Dreamy Midnight Blue', 'Night blue velvet, pearled lavender and silver glints'],
+    rnbRubyIntimate: ['Intimate Ruby & Gold', 'Nocturnal garnet, glowing ruby and champagne gold'],
+    hhConcreteRaw: ['Raw Street Concrete', 'Heavy urban asphalt, alert red and hazard yellow'],
+    hhChromeChain: ['Chrome & Ice Chain', 'Deep jet black, bright platinum and electric blue'],
+    hhBoomBap90: ['90s Vinyl Boom-Bap', 'Dark warm kraft, vinyl orange and street olive green'],
+    hhSubwayGraff: ['Subway Graffiti Punch', 'Underground steel, tag lime green and neon magenta'],
+    hhPlatinumFlex: ['Platinum & 24K Gold', 'Pure obsidian, solid 24K gold and crisp rhythmic cuts'],
+    hhAlertRed: ['Red Siren Alert', 'Studio black, vivid siren red and beat-synced flash'],
+    hhTapeDistort: ['Analog Cassette', 'Magnetic tape gray, retro cyan and VHS orange'],
+    hhNightCypher: ['Late Night Cypher Mic', 'Smoky shadow, warm amber spotlight and snare punch'],
+    hhStreetPoster: ['Street Collage Poster', 'Weathered street paper, raw black ink and punch red'],
+    hhDrillSteel: ['Cold Drill Steel', 'Dark cold steel, ice blue and sharp ruby flashes'],
+    popStarlight: ['Pop Starlight Stage', 'Concert stage indigo, laser pink and prism cyan'],
+    popBubblePink: ['Pop Bubblegum Gloss', 'Bright bubblegum pink, vivid magenta and sky blue'],
+    popMirrorball: ['Disco Mirrorball Pop', 'Starry disco night, faceted gold and mirror pink'],
+    popSolarCitrus: ['Solar Citrus Pop', 'Sunny cream, tangerine orange and bright turquoise'],
+    popNeonArcade: ['Electric Arcade Pop', 'Vibrant purple, electric lime green and neon pink'],
+    popCottonSky: ['Pastel Synth-Pop Sky', 'Airy sky blue, pop coral and soft violet'],
+    popChromeHeart: ['Y2K Chrome Heart', 'Metallic Y2K night, chromed lavender and gloss rose'],
+    popConfettiBoom: ['Confetti Live Hook', 'Festival black, pop flash yellow and electric cyan'],
+    popLaserMint: ['Radio Laser Mint', 'Night emerald, fresh neon mint and pop coral'],
+    popVelvetChart: ['Ruby Top Chart Pop', 'Chic studio plum, vibrant cherry red and white gold']
   };
   for (const [key, [name, desc]] of Object.entries(styles)) {
     if (J.STYLES[key]) { J.STYLES[key].name = name; J.STYLES[key].desc = desc; }
@@ -78485,6 +80242,10 @@ const STYLE_CAT_META = [
   ['compositing', { fr: 'Compositing', en: 'Compositing', ja: 'Compositing' }],
   ['cinematic', { fr: 'Cinéma', en: 'Cinematic', ja: 'Cinematic' }],
   ['musicvideo', { fr: 'Music Video', en: 'Music Video', ja: 'Music Video' }],
+  ['trapsoul', { fr: 'Trap Soul', en: 'Trap Soul', ja: 'Trap Soul' }],
+  ['rnb', { fr: 'R&B', en: 'R&B', ja: 'R&B' }],
+  ['hiphop', { fr: 'Hip-Hop', en: 'Hip-Hop', ja: 'Hip-Hop' }],
+  ['pop', { fr: 'Pop', en: 'Pop', ja: 'Pop' }],
   ['artmotion', { fr: 'Art & Motion', en: 'Art & Motion', ja: 'Art & Motion' }],
   ['futuristic', { fr: 'Futuristic', en: 'Futuristic', ja: 'Futuristic' }],
   ['lifestyle', { fr: 'Lifestyle', en: 'Lifestyle', ja: 'Lifestyle' }],
@@ -78570,6 +80331,57 @@ function drawStyleThumbAccent(x, st, sc) {
     x.moveTo(22, 18); x.lineTo(22, 26);
     x.moveTo(18, 26); x.lineTo(26, 26);
     x.stroke();
+  } else if (cat === 'trapsoul') {
+    const c1 = sc.accent, c2 = sc.accent2 || sc.fg;
+    x.strokeStyle = c1; x.lineWidth = 1.5; x.globalAlpha = 0.58;
+    x.beginPath(); x.arc(96, 54, 30, 0, Math.PI * 2); x.stroke();
+    x.globalAlpha = 0.34; x.strokeStyle = c2; x.lineWidth = 1.1;
+    x.beginPath(); x.arc(96, 54, 42, 0, Math.PI * 2); x.stroke();
+    x.globalAlpha = 0.78; x.fillStyle = c1;
+    [[22, 24, 3.2], [168, 22, 2.5], [164, 84, 3.5]].forEach(([px, py, r]) => { x.beginPath(); x.arc(px, py, r, 0, Math.PI * 2); x.fill(); });
+    x.fillStyle = c2; x.globalAlpha = 0.65;
+    for (let i = 0; i < 5; i++) x.fillRect(14 + i * 6, 88 - (6 + (i % 3) * 4), 3.5, 6 + (i % 3) * 4);
+  } else if (cat === 'rnb') {
+    const c1 = sc.accent, c2 = sc.accent2 || sc.fg;
+    for (let w = 0; w < 3; w++) {
+      x.strokeStyle = w % 2 ? c2 : c1;
+      x.lineWidth = w === 1 ? 1.8 : 1.2;
+      x.globalAlpha = 0.56 - w * 0.1;
+      x.beginPath();
+      for (let px = 8; px <= 184; px += 8) {
+        const py = (w === 0 ? 22 : w === 1 ? 78 : 88) + Math.sin(px * 0.045 + w * 1.5) * 5;
+        x[px === 8 ? 'moveTo' : 'lineTo'](px, py);
+      }
+      x.stroke();
+    }
+    x.fillStyle = c1; x.globalAlpha = 0.72;
+    x.beginPath(); x.arc(168, 22, 4.5, 0, Math.PI * 2); x.fill();
+  } else if (cat === 'hiphop') {
+    const c1 = sc.accent, c2 = sc.accent2 || sc.fg;
+    const heights = [18, 11, 26, 15, 22, 12];
+    heights.forEach((h, i) => {
+      x.fillStyle = c1; x.globalAlpha = 0.78;
+      x.fillRect(12 + i * 7, 92 - h, 4.5, h);
+      x.fillStyle = c2; x.globalAlpha = 0.9;
+      x.fillRect(12 + i * 7, 92 - h - 3.5, 4.5, 2);
+    });
+    x.strokeStyle = c2; x.lineWidth = 2.2; x.globalAlpha = 0.65;
+    x.beginPath(); x.moveTo(152, 14); x.lineTo(176, 38); x.moveTo(162, 14); x.lineTo(176, 28); x.stroke();
+  } else if (cat === 'pop') {
+    const c1 = sc.accent, c2 = sc.accent2 || sc.fg;
+    const star = (cx, cy, r, col, a) => {
+      x.save(); x.translate(cx, cy); x.fillStyle = col; x.globalAlpha = a;
+      x.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const ang = i * Math.PI / 4, rr = i % 2 ? r * 0.22 : r;
+        x[i ? 'lineTo' : 'moveTo'](Math.cos(ang) * rr, Math.sin(ang) * rr);
+      }
+      x.closePath(); x.fill(); x.restore();
+    };
+    star(24, 24, 8, c1, 0.88);
+    star(166, 26, 6.5, c2, 0.85);
+    star(160, 82, 8.5, c1, 0.82);
+    star(30, 80, 5.5, c2, 0.78);
   } else if (cat === 'animation' || cat === 'musicvideo') {
     x.fillStyle = sc.accent; x.globalAlpha = 0.75;
     x.beginPath(); x.arc(24, 24, 4, 0, Math.PI * 2); x.arc(166, 28, 3, 0, Math.PI * 2); x.fill();
@@ -78831,8 +80643,9 @@ function omakase() {
   remember();
   const keepE = lockedEnabled(), keepP = lockedParams();
   const th = J.THEMES[S.project.themeId] ? S.project.themeId : null;
-  const r = th ? J.omakase(S.project, Math.random, th) : J.omakase(S.project);
+  const r = J.omakase(S.project, Math.random, th, S.audio);
   Object.assign(S.project, r);
+  if (S.audio && S.audio.beats && S.audio.beats.length && S.project.timing) S.project.timing.snap = true;
   restoreEnabled(keepE); restoreParams(keepP);
   fontKey = ''; syncUI(); replan(); commit();
   toast((th ? `一键随机（${themeName(th)}）：` : '一键随机：') + `${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
@@ -78857,8 +80670,9 @@ function rerollPart(part) {
   } else if (part === 'mood') {
     const keepE = lockedEnabled(), keepP = lockedParams();
     const th = J.THEMES[P.themeId] ? P.themeId : null;
-    const r = th ? J.omakase(P, Math.random, th) : J.omakase(P);
+    const r = J.omakase(P, Math.random, th, S.audio);
     Object.assign(P, { mood: r.mood, fx: r.fx, enabled: r.enabled });
+    if (S.audio && S.audio.beats && S.audio.beats.length && P.timing) P.timing.snap = true;
     for (const k of ['wa', 'extra', ...J.SET_ORDER]) if (r[k] === true) P[k] = true;     // switches the theme needs
     restoreEnabled(keepE); restoreParams(keepP);
     msg = `氛围：${J.MOODS[r.mood].name}`;
@@ -79568,7 +81382,10 @@ function tapCopy() {
 function applyTapLabels() {
   const c = tapCopy();
   const setT = (id, t) => { const el = $(id); if (el) el.textContent = t; };
-  if (!($('btnTap') && $('btnTap').dataset.keepCustom)) setT('btnTap', c.btn);
+  if (!($('btnTap') && $('btnTap').dataset.keepCustom)) {
+    const cleanTapLabel = String(c.btn || '').replace(/^⏱\s*/, '');
+    setT($('btnTapLbl') ? 'btnTapLbl' : 'btnTap', cleanTapLabel);
+  }
   setT('tapTitle', c.title);
   setT('lblTapMode', c.mode);
   setT('lblTapRate', c.rate);
@@ -80079,7 +81896,25 @@ function updateTapTelemetry(t) {
 }
 // start from any line: playback begins a little before that line, earlier lines keep their times
 function startTap(from = 0, wordFrom = 0) {
-  if (!S.plan || !S.plan.lines.length) return;
+  const isFr = document.documentElement.lang === 'fr';
+  const isEn = document.documentElement.lang === 'en';
+  if (S.syncTask) {
+    toast(isFr
+      ? 'Synchronisation IA en cours : patientez un instant avant d’ouvrir le Tap Studio.'
+      : isEn
+      ? 'AI sync is currently running — please wait a moment before opening Tap Studio.'
+      : 'AI 同步進行中，請稍候再開啟點擊對拍。');
+    return;
+  }
+  if (!S.plan || !S.plan.lines.length) {
+    toast(isFr
+      ? 'Ajoutez d’abord au moins une ligne de paroles pour utiliser Synchro au Tap.'
+      : isEn
+      ? 'Add at least one lyric line first to use Tap Sync.'
+      : '請先輸入至少一行歌詞再使用點擊對拍。');
+    if ($('lyrics')) $('lyrics').focus();
+    return;
+  }
   from = J.clamp(from | 0, 0, S.plan.lines.length - 1);
   pushEdit();
   ensureTimingMaps();
@@ -80110,6 +81945,7 @@ function startTap(from = 0, wordFrom = 0) {
   applyTapLabels();
   $('tapPanel').hidden = false;
   $('btnTap').setAttribute('aria-pressed', 'true');
+  if (typeof syncAiActionButtonsState === 'function') syncAiActionButtonsState();
   $('tapPanel').classList.remove('compact');
   if ($('tapMode')) $('tapMode').value = opt.mode;
   if ($('tapRate')) $('tapRate').value = String(opt.rate);
@@ -80411,6 +82247,7 @@ function stopTap() {
   if (slow && S.playing) seek(S.t);             // back to normal speed
   $('tapPanel').hidden = true;
   $('btnTap').setAttribute('aria-pressed', 'false');
+  if (typeof syncAiActionButtonsState === 'function') syncAiActionButtonsState();
   refreshStage6Validation();
   replan();
   flushSave();
@@ -80519,11 +82356,12 @@ function syncUI() {
   syncThemeMeta();
   syncMainStudioLabels();
   syncKaraokeDeckMeta();
-  renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); applyExportLabels(); drawStyleGrid(); syncKaraokeBtn(); syncKaraokeControls(); syncTranslationControls(); syncAudioDetectPanel(); applyLeLabels(); syncLyricsEditor();
+  renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); applyExportLabels(); drawStyleGrid(); syncKaraokeBtn(); syncKaraokeControls(); syncTranslationControls(); syncAudioDetectPanel(); syncAiActionButtonsState(); applyLeLabels(); syncLyricsEditor();
 }
 function syncThemeMeta() {
-  const note = $('themeMetaNote'); if (!note) return;
   const thId = J.THEMES[S.project.themeId] ? S.project.themeId : '';
+  document.querySelectorAll('#easyPanel .theme-row').forEach(row => { row.dataset.theme = thId; });
+  const note = $('themeMetaNote'); if (!note) return;
   const lang = document.documentElement.lang || 'fr';
   if (!thId) {
     note.textContent = lang === 'fr'
@@ -80541,8 +82379,18 @@ function syncThemeMeta() {
   }
   const T = J.THEMES[thId], cnt = (T.styles && T.styles.length) || 20, cur = J.STYLES[S.project.style];
   const sName = cur ? cur.name : '';
-  note.textContent = lang === 'fr'
-    ? `${T.name} · ${cnt} styles exclusifs · Actif : ${sName}`
+  const hasSong = !!(S.audio && (S.audio.bpm || (S.audio.beats && S.audio.beats.length)));
+  const bpmTxt = hasSong && S.audio.bpm ? `${Math.round(S.audio.bpm)} BPM` : '';
+  const songTag = hasSong
+    ? (lang === 'fr' ? ` · Sync audio${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
+      : lang === 'en' ? ` · Song-synced${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
+      : lang === 'zh-Hans' ? ` · 节拍同步${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
+      : lang === 'zh-Hant' ? ` · 節拍同步${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
+      : lang === 'ko' ? ` · 곡 비트 동기화${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
+      : ` · 曲と同期${bpmTxt ? ' (' + bpmTxt + ')' : ''}`)
+    : '';
+  note.textContent = (lang === 'fr'
+    ? `${T.name} · ${cnt} styles · Actif : ${sName}`
     : lang === 'en'
       ? `${T.name} · ${cnt} bespoke styles · Active: ${sName}`
       : lang === 'zh-Hans'
@@ -80551,7 +82399,7 @@ function syncThemeMeta() {
           ? `${T.name} · 共${cnt}款專屬風格 · 目前：${sName}`
           : lang === 'ko'
             ? `${T.name} · 전용 ${cnt}종 스타일 · 현재: ${sName}`
-            : `${T.name} · 全${cnt}风格 · 現在：${sName}`;
+            : `${T.name} · 全${cnt}风格 · 現在：${sName}`) + songTag;
 }
 
 function hideAiVoiceActionBar() {
@@ -80962,16 +82810,60 @@ function toggleLiveVoiceRecognition() {
   return startLiveVoiceDictation();
 }
 
+function syncAiActionButtonsState() {
+  const bai = $('btnAiTranscribe');
+  const bvs = $('btnVocalSync');
+  const btap = $('btnTap');
+  const hasAudio = !!(S.audio && S.audio.buffer);
+  const rawTxt = String((S.project && S.project.lyrics) || ($('lyrics') && $('lyrics').value) || '').trim();
+  const isDefaultSample = rawTxt === String(J.SAMPLE_LYRICS || '').trim();
+  const hasRealLyrics = rawTxt.length > 0 && !isDefaultSample && !!(S.plan && S.plan.lines && S.plan.lines.length);
+  const activeKind = S.syncTask && S.syncTask.kind ? S.syncTask.kind : null;
+
+  if (bai) {
+    const busy = activeKind === 'ai_transcribe';
+    bai.classList.toggle('is-analyzing', busy);
+    bai.classList.toggle('is-ready', hasAudio && !activeKind);
+    bai.disabled = Boolean(activeKind);
+    bai.setAttribute('aria-busy', busy ? 'true' : 'false');
+  }
+  if (bvs) {
+    const busy = activeKind === 'vocal_sync';
+    bvs.classList.toggle('is-syncing', busy);
+    bvs.classList.toggle('is-ready', hasAudio && hasRealLyrics && !activeKind);
+    bvs.disabled = Boolean(activeKind);
+    bvs.setAttribute('aria-busy', busy ? 'true' : 'false');
+  }
+  if (btap) {
+    const hasLines = !!(S.plan && S.plan.lines && S.plan.lines.length);
+    btap.classList.toggle('is-ready', hasLines && !activeKind);
+    btap.setAttribute('aria-pressed', S.tap ? 'true' : 'false');
+    btap.disabled = Boolean(activeKind);
+  }
+}
+
 /* Reusable 7-stage Song Lyrics Detection + Streaming + Forced Alignment + Validation */
 async function runAiTranscription(opts = {}) {
   const bai = $('btnAiTranscribe');
+  const baiLbl = $('btnAiTranscribeLbl') || bai;
   const isFr = document.documentElement.lang === 'fr';
   const isEn = document.documentElement.lang === 'en';
   if (!S.audio) return false;
+  if (S.syncTask) {
+    if (!opts.auto) {
+      toast(isFr ? 'Une synchronisation est déjà en cours…' : isEn ? 'A synchronization task is already running…' : '同步任務正在執行中…');
+    }
+    return false;
+  }
+  if (S.tap) stopTap();
   if (activeVoiceController && activeVoiceController.isActive()) stopLiveVoiceDictation();
   hideAiVoiceActionBar();
 
-  const origText = bai ? bai.textContent : '';
+  const controller = typeof AbortController === 'function' ? new AbortController() : null;
+  S.syncTask = { kind: 'ai_transcribe', controller };
+  syncAiActionButtonsState();
+
+  const origText = baiLbl ? baiLbl.textContent : '';
   const stageLabels = isFr ? {
     1: '1/7 Prétraitement audio…',
     2: '2/7 Isolation vocale…',
@@ -81020,7 +82912,7 @@ async function runAiTranscription(opts = {}) {
   let aiDone = false;
   const onStage = (stageNum) => {
     const lbl = stageLabels[stageNum] || `${stageNum}/7`;
-    if (bai && stageLabels[stageNum]) bai.textContent = `✨ ${lbl}`;
+    if (baiLbl && stageLabels[stageNum]) baiLbl.textContent = lbl;
     setAiProgress(stageNum, lbl);
     if (stageNum >= 7) aiDone = true;
   };
@@ -81051,8 +82943,6 @@ async function runAiTranscription(opts = {}) {
   };
 
   if (bai) {
-    bai.classList.add('is-analyzing');
-    bai.disabled = true;
     onStage(1);
   }
   if (!opts.quiet) {
@@ -81065,7 +82955,10 @@ async function runAiTranscription(opts = {}) {
       const hintTxt = `${S.project.title || ''} ${S.project.artist || ''} ${(S.audio && S.audio.fileName) || ''}`;
       if (/[\u4e00-\u9fff]/.test(hintTxt)) lang = 'zh-Hans';
     }
-    const result = await J.aiTranscribeMusic(S.audio, lang, onStage, onPartialResult);
+    const result = await J.aiTranscribeMusic(S.audio, lang, onStage, onPartialResult, {
+      signal: controller ? controller.signal : undefined,
+    });
+    if (result && result.aborted) return false;
 
     if (result && result.success && (result.isInstrumental || (result.lines && result.lines.length))) {
       pushEdit();
@@ -81173,6 +83066,7 @@ async function runAiTranscription(opts = {}) {
       replan();
       flushSave();
       syncUI();
+      if (typeof syncQualityControlPanel === 'function') syncQualityControlPanel();
       seek(0);
       recordWork('ai_transcribe', 'sync', `${rows.length} ligne(s) · ${result.language || 'auto'}`);
 
@@ -81295,11 +83189,9 @@ async function runAiTranscription(opts = {}) {
       toast(isFr ? '🎙️ Erreur réseau IA — Reconnaissance vocale en direct prête.' : isEn ? '🎙️ Network error — Live Voice Recognition ready.' : '🎙️ 連線錯誤 — 可改用即時麥克風辨識。');
     }
   } finally {
-    if (bai) {
-      bai.classList.remove('is-analyzing');
-      bai.disabled = false;
-      bai.textContent = origText;
-    }
+    if (S.syncTask && S.syncTask.controller === controller) S.syncTask = null;
+    if (baiLbl) baiLbl.textContent = origText;
+    syncAiActionButtonsState();
     if (liveBox && !(activeVoiceController && activeVoiceController.isActive())) {
       liveBox.hidden = true;
       liveBox.innerHTML = '';
@@ -81308,7 +83200,7 @@ async function runAiTranscription(opts = {}) {
     if (pBox && !(activeVoiceController && activeVoiceController.isActive())) {
       if (aiDone) {
         setTimeout(() => {
-          if (!($('btnAiTranscribe') && $('btnAiTranscribe').classList.contains('is-analyzing')) && !(activeVoiceController && activeVoiceController.isActive())) {
+          if (!S.syncTask && !(activeVoiceController && activeVoiceController.isActive())) {
             pBox.hidden = true;
           }
         }, 650);
@@ -81334,6 +83226,7 @@ function bind() {
       });
     }
     clearQcAutoReport();
+    syncAiActionButtonsState();
     replanSoon(260);
   });
   const btnKh = $('btnKaraokeHud');
@@ -81507,13 +83400,18 @@ function bind() {
       if (!S.audio) {
         showAiVoiceActionBar({
           message: isFr
-            ? '⚡ SYNCRO VOIX ET PAROLE : importez un fichier audio pour coordonner en temps réel vos paroles sur la voix, OU activez la Reconnaissance Vocale en direct au micro :'
+            ? 'Synchro Voix & Paroles : importez un fichier audio pour coordonner en temps réel vos paroles sur la voix, ou activez la Reconnaissance Vocale en direct au micro :'
             : isEn
-            ? '⚡ Voice Sync: load an audio file to align lyrics to the singing voice, OR start Live Voice Recognition with your microphone to generate & sync lyrics instantaneously:'
-            : '⚡ 人聲同步：請先匯入音樂檔案進行人聲逐詞對齊，或立即使用「即時麥克風語音辨識」邊唱邊自动產生同步歌詞：',
+            ? 'Voice Sync: load an audio file to align lyrics to the singing voice, or start Live Voice Recognition with your microphone to generate & sync lyrics instantaneously:'
+            : '人聲同步：請先匯入音樂檔案進行人聲逐詞對齊，或立即使用「即時麥克風語音辨識」邊唱邊自动產生同步歌詞：',
           showLoadAudio: true,
         });
         toast(isFr ? 'Choisissez une chanson ou démarrez la Voix en direct !' : isEn ? 'Load a song or start Live Voice Mic below!' : '請選擇音樂或開啟即時麥克風！');
+        return;
+      }
+
+      if (S.syncTask) {
+        toast(isFr ? 'Une synchronisation est déjà en cours…' : isEn ? 'A synchronization task is already running…' : '同步任務正在執行中…');
         return;
       }
 
@@ -81522,27 +83420,30 @@ function bind() {
       const isDefaultSample = rawTxt === String(J.SAMPLE_LYRICS || '').trim();
       if (!rawTxt || isDefaultSample || !(S.plan && S.plan.lines && S.plan.lines.length)) {
         toast(isFr
-          ? '⚡ Aucune parole personnalisée : lancement de la détection vocale IA automatique…'
+          ? 'Aucune parole personnalisée : lancement de la détection vocale IA automatique…'
           : isEn
-          ? '⚡ No custom lyrics yet: running automatic AI voice & lyrics detection…'
-          : '⚡ 尚未有自訂歌詞：自动啟動 AI 歌聲識詞與同步…');
+          ? 'No custom lyrics yet: running automatic AI voice & lyrics detection…'
+          : '尚未有自訂歌詞：自动啟動 AI 歌聲識詞與同步…');
         await runAiTranscription();
         return;
       }
 
-      // Case 3: Audio + real lyrics -> Real-Time Streaming SYNCRO VOIX ET PAROLE
+      // Case 3: Audio + real lyrics -> Real-Time Streaming Synchro Voix & Paroles
+      if (S.tap) stopTap();
       if (activeVoiceController && activeVoiceController.isActive()) stopLiveVoiceDictation();
       hideAiVoiceActionBar();
-      const origTxt = bvs.textContent;
-      bvs.classList.add('is-syncing');
-      bvs.disabled = true;
+      const bvsLbl = $('btnVocalSyncLbl') || bvs;
+      const origTxt = bvsLbl.textContent;
+      const controller = typeof AbortController === 'function' ? new AbortController() : null;
+      S.syncTask = { kind: 'vocal_sync', controller };
+      syncAiActionButtonsState();
 
       const stageCopy = isFr
         ? {
             1: '1/4 Analyse orthographe & piste vocale…',
             2: '2/4 Écoute & lien temps réel voix-paroles…',
             3: '3/4 Coordination acoustique 10 ms instant par instant…',
-            4: '4/4 SYNCRO VOIX ET PAROLE prête !',
+            4: '4/4 Synchro Voix & Paroles prête !',
           }
         : isEn
         ? { 1: '1/4 Spelling check & vocal stem…', 2: '2/4 Real-time voice-lyric linking…', 3: '3/4 10ms Viterbi tuning…', 4: '4/4 Voice Sync & fixes ready!' }
@@ -81605,7 +83506,7 @@ function bind() {
             sp.classList.toggle('is-cur', n === Math.min(7, Math.max(1, Math.ceil((pct / 100) * 7))));
           });
         }
-        bvs.textContent = `⚡ ${pct}%`;
+        bvsLbl.textContent = isFr ? `Synchro · ${pct}%` : isEn ? `Sync · ${pct}%` : `同步 · ${pct}%`;
       };
 
       const onLiveSyncEvent = (evt) => {
@@ -81648,7 +83549,7 @@ function bind() {
       };
 
       setSyncProg(1, stageCopy[1], { pct: 10 });
-      toast(isFr ? '⚡ SYNCRO VOIX ET PAROLE en temps réel…' : isEn ? '⚡ Real-time Voice Sync running…' : '⚡ 正在即時執行人聲與歌詞精準對齊…');
+      toast(isFr ? 'Synchro Voix & Paroles en temps réel…' : isEn ? 'Real-time Voice Sync running…' : '正在即時執行人聲與歌詞精準對齊…');
       pushEdit();
 
       let syncDone = false;
@@ -81658,7 +83559,12 @@ function bind() {
         if ((!alignLangHint || alignLangHint === 'auto') && /[\u4e00-\u9fff]/.test(`${S.project.lyrics || ''} ${S.project.title || ''} ${S.project.artist || ''} ${(S.audio && S.audio.fileName) || ''}`)) {
           alignLangHint = 'zh-Hans';
         }
-        const aligned = await J.aiAlignVocals(S.audio, origPlanLines, alignLangHint, setSyncProg, onLiveSyncEvent);
+        const aligned = await J.aiAlignVocals(S.audio, origPlanLines, alignLangHint, setSyncProg, onLiveSyncEvent, {
+          signal: controller ? controller.signal : undefined,
+          existingWordTimes: S.project.timing && S.project.timing.wordTimes,
+          existingLineTimes: S.project.timing && S.project.timing.lineTimes,
+        });
+        if (aligned && aligned.aborted) return;
 
         // Apply automatic orthography & voice-confirmed spelling fixes directly to lyrics editor
         let appliedLyricsChanged = false;
@@ -81718,6 +83624,7 @@ function bind() {
           }
 
           replan(); flushSave(); syncUI();
+          if (typeof syncQualityControlPanel === 'function') syncQualityControlPanel();
           const lineCount = Object.keys(times).length;
           const cohNote = aligned && aligned.coherenceScore
             ? ` · ${aligned.coherenceScore}% (±${aligned.avgAbsErrMs || 0}ms)`
@@ -81728,18 +83635,18 @@ function bind() {
           const fixSamples = fixList.slice(0, 3).map(c => `${c.original} → ${c.corrected}`).join(', ');
           const fixNote = fixCount > 0
             ? (isFr
-                ? ` · ✨ ${fixCount} faute${fixCount > 1 ? 's' : ''} corrigée${fixCount > 1 ? 's' : ''}${fixSamples ? ' (' + fixSamples + ')' : ''}`
+                ? ` · ${fixCount} faute${fixCount > 1 ? 's' : ''} corrigée${fixCount > 1 ? 's' : ''}${fixSamples ? ' (' + fixSamples + ')' : ''}`
                 : isEn
-                ? ` · ✨ ${fixCount} fix${fixCount > 1 ? 'es' : ''}${fixSamples ? ' (' + fixSamples + ')' : ''}`
-                : ` · ✨ 已自动訂正 ${fixCount} 處錯字${fixSamples ? '（' + fixSamples + '）' : ''}`)
+                ? ` · ${fixCount} fix${fixCount > 1 ? 'es' : ''}${fixSamples ? ' (' + fixSamples + ')' : ''}`
+                : ` · 已自动訂正 ${fixCount} 處錯字${fixSamples ? '（' + fixSamples + '）' : ''}`)
             : '';
           recordWork('vocal_sync', 'sync', `${lineCount} lignes${cohNote}${fixCount ? ` · ${fixCount} corrigées` : ''}`);
 
           toast(isFr
-            ? `🎤 SYNCRO VOIX ET PAROLE${isDtw ? ' Neuronale' : ''} réussie (${lineCount} lignes${cohNote})${fixNote} !`
+            ? `Synchro Voix & Paroles${isDtw ? ' Neuronale' : ''} réussie (${lineCount} lignes${cohNote})${fixNote} !`
             : isEn
-            ? `🎤 ${isDtw ? 'Neural ' : ''}Voice Sync complete (${lineCount} lines${cohNote})${fixNote}!`
-            : `🎤 ${isDtw ? '類神經' : ''}人聲同步完成（${lineCount} 句${cohNote}）${fixNote}！`);
+            ? `${isDtw ? 'Neural ' : ''}Voice Sync complete (${lineCount} lines${cohNote})${fixNote}!`
+            : `${isDtw ? '類神經' : ''}人聲同步完成（${lineCount} 句${cohNote}）${fixNote}！`);
 
           const reformList = Array.isArray(aligned && aligned.reformulations) ? aligned.reformulations : [];
           const problemList = Array.isArray(aligned && aligned.unresolvableProblems) ? aligned.unresolvableProblems : [];
@@ -81847,10 +83754,10 @@ function bind() {
             const diagSummaryMsg = (() => {
               if (reformList.length && problemList.length) {
                 return isFr
-                  ? `🧠 Diagnostic SYNCRO VOIX ET PAROLE : ${reformList.length} différence(s) reformulable(s) par IA et ${problemList.length} passage(s) complexe(s) à vérifier :`
+                  ? `Diagnostic Synchro Voix & Paroles : ${reformList.length} différence(s) reformulable(s) par IA et ${problemList.length} passage(s) complexe(s) à vérifier :`
                   : isEn
-                  ? `🧠 Voice Sync Diagnostic: ${reformList.length} AI reformulation(s) ready and ${problemList.length} complex section(s) flagged:`
-                  : `🧠 人聲同步診斷：發現 ${reformList.length} 處 AI 可重構差異與 ${problemList.length} 處困難片段：`;
+                  ? `Voice Sync Diagnostic: ${reformList.length} AI reformulation(s) ready and ${problemList.length} complex section(s) flagged:`
+                  : `人聲同步診斷：發現 ${reformList.length} 處 AI 可重構差異與 ${problemList.length} 處困難片段：`;
               }
               if (reformList.length) {
                 return isFr
@@ -81941,12 +83848,12 @@ function bind() {
       } catch (err) {
         toast((isFr ? 'Erreur de synchro : ' : isEn ? 'Sync error: ' : '同步出错: ') + (err && err.message ? err.message : ''));
       } finally {
-        bvs.classList.remove('is-syncing');
-        bvs.disabled = false;
-        bvs.textContent = origTxt;
+        if (S.syncTask && S.syncTask.controller === controller) S.syncTask = null;
+        bvsLbl.textContent = origTxt;
+        syncAiActionButtonsState();
         if (liveEl) liveEl.hidden = true;
         if (pBox && !(activeVoiceController && activeVoiceController.isActive())) {
-          setTimeout(() => { if (!bvs.classList.contains('is-syncing')) pBox.hidden = true; }, syncDone ? 650 : 200);
+          setTimeout(() => { if (!S.syncTask) pBox.hidden = true; }, syncDone ? 650 : 200);
         }
       }
     });
@@ -82283,10 +84190,98 @@ function bind() {
   $('eMood').addEventListener('click', () => rerollPart('mood'));
   $('eCut').addEventListener('click', () => rerollPart('cut'));
   $('ePalette').addEventListener('click', () => { randomPalette(); restartPreview(); });
-  // 利用について（出力物の権利 · ライセンス）
+  // À propos (présentation, droits, confidentialité & licences)
   const dlg = $('termsDlg');
-  const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
+  const applyTermsCopy = () => {
+    const lang = document.documentElement.lang || 'fr';
+    const setEl = (id, val) => { const el = $(id); if (el && val != null) el.textContent = val; };
+    const copy = lang === 'en' ? {
+      title: 'About Alexura Motion Studio',
+      meta: 'Version 0.13.0 · Lyric Video & Vocal Sync Studio · MIT License',
+      lead: 'Alexura Motion Studio turns songs and lyrics into animated lyric videos, live karaoke prompters and precision motion projects right in your browser — with acoustic vocal alignment, curated visual themes and export up to 4K 60 fps.',
+      rT: 'Creation & export rights',
+      rB: 'All exported videos (MP4), transparent PNG sequences, subtitles (LRC, SRT, VTT, JSON) and After Effects project data belong 100% to you, including for commercial use. Imported audio and lyrics remain the property of their rights holders.',
+      pT: 'Privacy & data processing',
+      pB: 'Audio playback, Canvas/WebCodecs video rendering, MP4 export and local drafts run 100% in your browser. Connected features (Cloud AI transcription/alignment, Google Firebase save, studio weather) only run when explicitly triggered.',
+      tT: 'Vocal sync & creative engine',
+      tB: '10 ms acoustic vocal onset alignment, guided Tap Sync studio, progressive word-by-word karaoke prompter and 17+ curated visual universes (Trap Soul, R&B, Hip-Hop, Pop, Cinematic, Art & Motion).',
+      cT: 'Professional formats & workflow',
+      cB: 'Direct-to-disk MP4 export (Chrome / Edge recommended), transparent PNG layers, green/black key backgrounds, word-level Enhanced LRC and structured export for Adobe After Effects.',
+      ossSum: 'MIT License & open-source components',
+      ossDeps: 'MP4 export: mp4-muxer (MIT License) · Local speech engine: Transformers.js / Whisper · Typefaces: Google Fonts (SIL Open Font License 1.1) · Optional cloud sync: Firebase SDK.',
+      noticeBtn: 'Open User Guide',
+    } : lang === 'ja' ? {
+      title: 'Alexura Motion Studio について',
+      meta: 'バージョン 0.13.0 · 歌詞モーション＆ボーカル同期スタジオ · MIT ライセンス',
+      lead: 'Alexura Motion Studio は、楽曲と歌詞からアニメーション歌詞動画やリアルタイムカラオケをブラウザ上で制作し、最大 4K 60fps の MP4 や After Effects 用データとして書き出せるスタジオです。',
+      rT: '制作物と商用利用の権利',
+      rB: 'このツールで書き出した動画（MP4） · 透過 PNG · 字幕（LRC / SRT / VTT / JSON） · AE 用データの権利は制作者本人に帰属します。使用した楽曲や歌詞の権利は各権利者に帰属します。',
+      pT: 'プライバシーと処理について',
+      pB: '音声播放 · 映像描画 · MP4 書き出し · ローカル下書きはお使いのブラウザ内で完結します。クラウド AI 解析 · Google Firebase 保存 · 天気機能はユーザーが実行した時のみ通信します。',
+      tT: 'ボーカル同期と特效エンジン',
+      tB: '10ms 単位の声頭アタック検出、タップ同期スタジオ、単語単位カラオケプロンプター、17 以上の専用テーマ（Trap Soul / R&B / Hip-Hop / Pop / Cinematic / Art & Motion）を搭載しています。',
+      cT: '対応フォーマットとプロ仕様',
+      cB: 'ディスク直接書き込み対応 MP4（Chrome / Edge 推奨）、背景透過 PNG 連番、グリーン／黑底合成、単語同期 Enhanced LRC、After Effects 编排書き出しに対応。',
+      ossSum: 'MIT ライセンス · 使用オープンソース',
+      ossDeps: 'MP4 書き出し：mp4-muxer（MIT License） · ローカル音声認識：Transformers.js / Whisper · 書体：Google Fonts（SIL OFL 1.1） · 任意保存：Firebase SDK',
+      noticeBtn: '使い方ガイドを開く',
+    } : (lang === 'zh-Hans' || lang === 'zh-Hant') ? {
+      title: lang === 'zh-Hans' ? '关于 Alexura Motion Studio' : '關於 Alexura Motion Studio',
+      meta: lang === 'zh-Hans' ? '版本 0.13.0 · 歌词动态视频与人声同步工作室 · MIT 许可' : '版本 0.13.0 · 歌詞動態影片與人聲同步工作室 · MIT 授權',
+      lead: lang === 'zh-Hans'
+        ? 'Alexura Motion Studio 可直接在浏览器中将歌曲与歌词制作成动态歌词 MV、实时卡拉 OK 提词器与高精度排版作品，支持人声智能对齐与最高 4K 60fps MP4 导出。'
+        : 'Alexura Motion Studio 可直接在瀏覽器中將歌曲與歌詞製作成動態歌詞 MV、即時卡拉 OK 提詞器與高精度排版作品，支援人聲智慧對齊與最高 4K 60fps MP4 匯出。',
+      rT: lang === 'zh-Hans' ? '创作成果与版权归属' : '創作成果與版權歸屬',
+      rB: lang === 'zh-Hans'
+        ? '您导出的全部视频（MP4）、透明 PNG 序列、字幕（LRC/SRT/VTT/JSON）及 AE 工程数据均完全归创作者所有，可用于商业发布；所用歌曲与歌词版权仍归原权利人所有。'
+        : '您匯出的全部影片（MP4）、透明 PNG 序列、字幕（LRC/SRT/VTT/JSON）與 AE 工程資料均完全歸創作者所有，可用於商業發布；所用歌曲與歌詞版權仍歸原權利人所有。',
+      pT: lang === 'zh-Hans' ? '隐私与数据处理' : '隱私與資料處理',
+      pB: lang === 'zh-Hans'
+        ? '音频播放、画面渲染、MP4 导出与本地草稿均在您的浏览器本地完成；仅在您主动触发时才会调用云端 AI 识别、Firebase 云端保存或天气组件。'
+        : '音訊播放、畫面算圖、MP4 匯出與本地草稿均在您的瀏覽器本地完成；僅在您主動觸發時才會呼叫雲端 AI 辨識、Firebase 雲端儲存或天氣模組。',
+      tT: lang === 'zh-Hans' ? '人声同步与视觉引擎' : '人聲同步與視覺引擎',
+      tB: lang === 'zh-Hans'
+        ? '提供 10ms 声学人声起音对齐、敲击对拍工作室、逐词渐进卡拉 OK 与 17+ 专属艺术主题（Trap Soul、R&B、Hip-Hop、Pop、Cinematic、Art & Motion）。'
+        : '提供 10ms 聲學人聲起音對齊、點擊對拍工作室、逐詞漸進卡拉 OK 與 17+ 專屬藝術主題（Trap Soul、R&B、Hip-Hop、Pop、Cinematic、Art & Motion）。',
+      cT: lang === 'zh-Hans' ? '专业导出格式' : '專業匯出格式',
+      cB: lang === 'zh-Hans'
+        ? '支持直写磁盘的大文件 MP4（推荐 Chrome / Edge）、透明背景 PNG 分层、绿幕/黑底抠像、逐词 Enhanced LRC 与 Adobe After Effects 导出。'
+        : '支援直寫磁碟的大檔案 MP4（建議 Chrome / Edge）、透明背景 PNG 分層、綠幕/黑底去背、逐詞 Enhanced LRC 與 Adobe After Effects 匯出。',
+      ossSum: lang === 'zh-Hans' ? 'MIT 许可与开源组件' : 'MIT 授權與開源元件',
+      ossDeps: 'MP4 : mp4-muxer (MIT) · Whisper : Transformers.js · Fonts : Google Fonts (SIL OFL 1.1) · Cloud : Firebase SDK',
+      noticeBtn: lang === 'zh-Hans' ? '查看使用指南' : '查看使用指南',
+    } : null;
+
+    if (copy) {
+      setEl('termsTitle', copy.title);
+      setEl('termsMetaLine', copy.meta);
+      setEl('termsLead', copy.lead);
+      setEl('termsRightsTitle', copy.rT);
+      setEl('termsRightsBody', copy.rB);
+      setEl('termsPrivacyTitle', copy.pT);
+      setEl('termsPrivacyBody', copy.pB);
+      setEl('termsTechTitle', copy.tT);
+      setEl('termsTechBody', copy.tB);
+      setEl('termsCompatTitle', copy.cT);
+      setEl('termsCompatBody', copy.cB);
+      setEl('termsOssSummary', copy.ossSum);
+      setEl('termsOssDeps', copy.ossDeps);
+      setEl('btnTermsNotice', copy.noticeBtn);
+    }
+  };
+  applyTermsCopy();
+  const openTerms = () => {
+    applyTermsCopy();
+    if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', '');
+  };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
+  if ($('btnTermsNotice')) {
+    $('btnTermsNotice').addEventListener('click', () => {
+      if (dlg.close && dlg.open) dlg.close();
+      else dlg.removeAttribute('open');
+      openNotice();
+    });
+  }
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
   $('btnSave').addEventListener('click', () => {
     const fn = baseName() + '.jizura.json';
@@ -82486,7 +84481,7 @@ async function loadAudioFile(f, restored) {
     }
     syncUI(); replan();
     return true;
-  } catch (err) { if (my !== audioSeq) return false; $('audioName').textContent = '无法载入：' + err.message; S.audio = null; syncAudioDetectPanel(); return false; }
+  } catch (err) { if (my !== audioSeq) return false; $('audioName').textContent = '无法载入：' + err.message; S.audio = null; syncAudioDetectPanel(); syncAiActionButtonsState(); return false; }
 }
 
 /* ---------------- かんたんモードの案内ツアー ---------------- */
@@ -84280,7 +86275,7 @@ function getNoticeContent() {
         ],
         steps: [
           { num: 'Étape 01', title: 'Mettre le son et le texte', desc: 'Importez votre MP3/WAV puis collez vos paroles — ou laissez l’IA écouter la voix et écrire les paroles toute seule.' },
-          { num: 'Étape 02', title: 'Caler sur le chanteur', desc: 'Cliquez sur « SYNCRO VOIX ET PAROLE » pour une coordination automatique en temps réel, ou tapez au rythme du chant dans « Synchro au tap ».' },
+          { num: 'Étape 02', title: 'Caler sur le chanteur', desc: 'Cliquez sur « Synchro Voix & Paroles » pour une coordination automatique en temps réel, ou tapez au rythme du chant dans « Synchro au Tap ».' },
           { num: 'Étape 03', title: 'Choisir le look et exporter', desc: 'Choisissez un Thème (Cinematic, Art & Motion…), appuyez sur Aléatoire (touche R) puis cliquez sur « Exporter en MP4 ».' },
         ],
         subh: 'À quoi sert chaque bouton de la barre du haut ?',
@@ -84370,11 +86365,11 @@ function getNoticeContent() {
         num: '03',
         nav: 'Audio, IA & Synchro au Tap',
         title: '03. Synchroniser parfaitement chaque mot sur la voix du chanteur',
-        lead: 'Pour que les paroles s’allument exactement quand le chanteur chante, Alexura vous donne 3 outils simples : l’IA qui écrit et cale tout, « SYNCRO VOIX ET PAROLE » en temps réel, ou le studio « Synchro au Tap » très ludique.',
+        lead: 'Pour que les paroles s’allument exactement quand le chanteur chante, Alexura vous donne 3 outils simples : l’IA qui écrit et cale tout, « Synchro Voix & Paroles » en temps réel, ou le studio « Synchro au Tap » très ludique.',
         gallery: [
           {
             src: imgs.sync,
-            title: 'Photo 5 — Comment l’IA et « SYNCRO VOIX ET PAROLE » repèrent le chant',
+            title: 'Photo 5 — Comment l’IA et « Synchro Voix & Paroles » repèrent le chant',
             alt: 'Illustration de l’onde sonore vocale avec détection d’attaques à 10 ms et barres d’alignement de chaque mot',
             caption: 'Alexura isole la voix (en vert émeraude) du reste des instruments et coordonne chaque mot en temps réel.',
           },
@@ -84393,25 +86388,25 @@ function getNoticeContent() {
             desc: 'Ouvre votre musique (MP3, WAV, M4A, AAC, FLAC, OGG ou MP4) directement dans le navigateur. Alexura calcule tout de suite le tempo (BPM) et repère où le chanteur chante.',
           },
           {
-            label: '✨ Détecter les paroles par IA',
+            label: 'Détecter les paroles par IA',
             zone: 'Colonne gauche · Audio',
             desc: 'Vous n’avez pas le texte de la chanson ? Cliquez ici : l’IA écoute le chanteur, sépare sa voix de la musique, écrit toutes les paroles (même en plusieurs langues) et cale chaque mot toute seule.',
             photo: { src: imgs.sync, title: 'Voir l’alignement acoustique sur la Photo 5', caption: 'Chaque mot est calé sur le vrai pic d’énergie de la voix humaine.' },
           },
           {
-            label: '⚡ SYNCRO VOIX ET PAROLE',
+            label: 'Synchro Voix & Paroles',
             zone: 'Colonne gauche · Audio',
-            desc: 'Vous avez déjà collé vos paroles dans la boîte ? Cliquez simplement sur <strong>⚡ SYNCRO VOIX ET PAROLE</strong> : Alexura analyse en temps réel la voix et vos paroles pour placer automatiquement chaque phrase et chaque mot avec une précision millimétrique à chaque instant.',
+            desc: 'Vous avez déjà collé vos paroles dans la boîte ? Cliquez simplement sur <strong>Synchro Voix & Paroles</strong> : Alexura analyse en temps réel la voix et vos paroles pour placer automatiquement chaque phrase et chaque mot avec une précision millimétrique à chaque instant.',
             example: '<strong>Quand l’utiliser ?</strong> Juste après avoir importé le MP3 et collé le texte. La coordination temps réel calibre chaque syllabe sur la voix.',
           },
           {
-            label: '🔬 Contrôle Qualité & Éditeur mot à mot',
+            label: 'Contrôle Qualité & Éditeur mot à mot',
             zone: 'Sous les boutons Audio',
             desc: 'Affiche chaque mot en vert (sûr) ou en orange (à vérifier à l’oreille). Cliquez sur un mot pour écouter uniquement ce mot (<strong>▶ Mot</strong>), l’avancer ou le reculer de <strong>25 ms</strong>, le verrouiller avec ✓ ou insérer un mot oublié (<strong>+ Avant / + Après</strong>).',
             example: '<strong>Exemple concret :</strong> Un mot apparaît un peu tôt ? Cliquez dessus → appuyez deux fois sur <strong>+25ms</strong> → réécoutez avec <strong>▶ Phrase</strong> → cochez <strong>Validé</strong> pour le figer.',
           },
         ],
-        subh2: 'Toutes les touches du Studio « ⏱ Synchro au tap » expliquées simplement',
+        subh2: 'Toutes les touches du Studio « Synchro au Tap » expliquées simplement',
         items2: [
           {
             label: 'TAP [Espace] & Mode (Phrase / Mot par mot / Coupes [Tab])',
@@ -84599,7 +86594,7 @@ function getNoticeContent() {
             src: imgs.tap,
             title: 'Étape 2 — Caler au millimètre',
             alt: 'Radar Tap Studio étape 2',
-            caption: 'SYNCRO VOIX ET PAROLE ou Tap Studio [Espace], puis ±10 ms à l’oreille.',
+            caption: 'Synchro Voix & Paroles ou Tap Studio [Espace], puis ±10 ms à l’oreille.',
           },
           {
             src: imgs.exportImg,
@@ -84616,7 +86611,7 @@ function getNoticeContent() {
           { label: 'Espace · E · P · S · Retour · Tab · Échap', zone: 'Dans Synchro au Tap', desc: '<span class="notice-kbd">Espace</span> = Tapper · <span class="notice-kbd">E</span> = Marquer la fin · <span class="notice-kbd">P</span> = Pause · <span class="notice-kbd">S</span> = Passer · <span class="notice-kbd">Retour</span> = Annuler le dernier tap · <span class="notice-kbd">Tab</span> = Couper un plan · <span class="notice-kbd">Échap</span> = Enregistrer et quitter.' },
         ],
         steps: [
-          { num: 'Parcours 1', title: 'Clip express en 2 minutes', desc: '1. Importez le MP3 → 2. Collez les paroles → 3. Cliquez « SYNCRO VOIX ET PAROLE » → 4. Choisissez « Music Video » ou « Art & Motion » → 5. Touche R jusqu’au coup de cœur → 6. Exporter en MP4 1080p.' },
+          { num: 'Parcours 1', title: 'Clip express en 2 minutes', desc: '1. Importez le MP3 → 2. Collez les paroles → 3. Cliquez « Synchro Voix & Paroles » → 4. Choisissez « Music Video » ou « Art & Motion » → 5. Touche R jusqu’au coup de cœur → 6. Exporter en MP4 1080p.' },
           { num: 'Parcours 2', title: 'Karaoké ultra précis', desc: '1. Importez l’audio → 2. Cliquez « Détecter les paroles par IA » → 3. Vérifiez les rares mots orange → 4. Ajustez Chant↔Affichage (±10 ms) → 5. Exporter MP4 + Enhanced LRC.' },
           { num: 'Parcours 3', title: 'Montage Reel / TikTok / Chanteur', desc: '1. Format 9:16 → 2. Cochez « Libérer le centre » ou « Fond vert » (ou PNG transparent) → 3. Passez à 60 fps → 4. Posez directement sur votre vidéo dans CapCut ou Premiere.' },
         ],
@@ -85713,9 +87708,20 @@ if (bgJobPill) {
 if (modBtn) {
   modBtn.addEventListener('click', () => {
     if (window.AlexuraReactStudio && typeof window.AlexuraReactStudio.open === 'function') {
-      window.AlexuraReactStudio.open();
+      window.AlexuraReactStudio.open('upload');
     } else {
       toast('Module Studio React en cours de chargement…');
+    }
+  });
+}
+
+const skillsAdminBtn = $('btnSkillsAdmin');
+if (skillsAdminBtn) {
+  skillsAdminBtn.addEventListener('click', () => {
+    if (window.AlexuraReactStudio && typeof window.AlexuraReactStudio.open === 'function') {
+      window.AlexuraReactStudio.open('skills');
+    } else {
+      toast('Interface Skills IA en cours de chargement…');
     }
   });
 }

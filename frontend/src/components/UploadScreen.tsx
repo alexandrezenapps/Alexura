@@ -125,10 +125,10 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
               handleFiles(e.dataTransfer.files);
             }}
             className={cn(
-              'flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-9 text-center transition-colors cursor-pointer',
+              'flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-9 text-center transition-[border-color,background-color,box-shadow] duration-150 cursor-pointer',
               dragging
-                ? 'border-sky-400 bg-sky-500/8'
-                : 'border-white/15 bg-zinc-950/70 hover:border-white/30 hover:bg-zinc-900/50',
+                ? 'border-sky-400 bg-sky-500/12 shadow-[0_0_0_3px_rgba(20,139,255,0.16)]'
+                : 'border-slate-200/16 bg-[#080b12]/90 hover:border-sky-400/45 hover:bg-[#0d1424]/75',
             )}
           >
             <input
@@ -141,44 +141,47 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
                 e.target.value = '';
               }}
             />
-            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-zinc-900 text-sky-400">
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl border border-sky-400/28 bg-gradient-to-br from-sky-500/18 to-indigo-500/14 text-sky-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
               {uploading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <UploadCloud className="h-5 w-5" />
               )}
             </div>
-            <p className="text-sm font-medium text-zinc-100">
+            <p className="text-sm font-medium text-slate-100">
               {uploading
                 ? 'Validating audio signature and storing original file...'
                 : 'Drop audio file here or browse from studio storage'}
             </p>
-            <p className="mt-1 text-[11px] text-zinc-500">
+            <p className="mt-1 text-[11px] text-slate-400">
               WAV, MP3, FLAC, M4A, AAC, OGG, WebM · Preserved 1:1 on backend disk
             </p>
           </div>
 
           {uploadedAudio && (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/8 bg-zinc-950 px-3.5 py-2.5 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-400/25 bg-emerald-500/8 px-3.5 py-2.5 text-xs">
               <div className="flex items-center gap-2.5 min-w-0">
                 <FileAudio className="h-4 w-4 shrink-0 text-sky-400" />
                 <div className="min-w-0">
-                  <div className="truncate font-medium text-zinc-100">
+                  <div className="truncate font-medium text-slate-100">
                     {uploadedAudio.filename}
                   </div>
-                  <div className="axr-tc text-[11px] text-zinc-500">
+                  <div className="axr-tc text-[11px] text-slate-400">
                     {uploadedAudio.audioId} · {formatBytes(uploadedAudio.byteSize)} · SHA-256{' '}
                     {uploadedAudio.sha256.slice(0, 10)}
                   </div>
                 </div>
               </div>
-              <span className="axr-tc text-[11px] text-emerald-400">Original Ready</span>
+              <span className="axr-tc inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-300">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Original Ready
+              </span>
             </div>
           )}
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <label className="space-y-1.5 text-xs">
-              <span className="block text-[11px] font-medium text-zinc-400">Song Title</span>
+              <span className="block text-[11px] font-medium text-slate-400">Song Title</span>
               <Input
                 value={title}
                 onChange={(e) => onTitleChange(e.target.value)}
@@ -186,7 +189,7 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
               />
             </label>
             <label className="space-y-1.5 text-xs">
-              <span className="block text-[11px] font-medium text-zinc-400">Artist</span>
+              <span className="block text-[11px] font-medium text-slate-400">Artist</span>
               <Input
                 value={artist}
                 onChange={(e) => onArtistChange(e.target.value)}
@@ -194,11 +197,11 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
               />
             </label>
             <label className="space-y-1.5 text-xs">
-              <span className="block text-[11px] font-medium text-zinc-400">Language Hint</span>
+              <span className="block text-[11px] font-medium text-slate-400">Language Hint</span>
               <select
                 value={languageHint}
                 onChange={(e) => onLanguageHintChange(e.target.value)}
-                className="flex h-9 w-full rounded-lg border border-white/10 bg-zinc-950 px-3 text-xs text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
+                className="flex h-9 w-full rounded-lg border border-slate-200/12 bg-[#080b12] px-3 text-xs text-slate-100 shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)] hover:border-slate-200/22 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
               >
                 <option value="auto">Auto-detect</option>
                 <option value="fr">Français (fr)</option>
@@ -213,9 +216,9 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
           </div>
 
           <label className="block space-y-1.5 text-xs">
-            <span className="flex items-center justify-between text-[11px] font-medium text-zinc-400">
+            <span className="flex items-center justify-between text-[11px] font-medium text-slate-400">
               <span>Optional Draft Lyrics (one segment per line)</span>
-              <span className="text-zinc-500">Unaligned until Phase 2 / manual edit</span>
+              <span className="text-slate-500">Unaligned until Phase 2 / manual edit</span>
             </span>
             <Textarea
               value={draftLyricsText}
@@ -225,12 +228,12 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
             />
           </label>
 
-          <label className="flex items-center justify-between rounded-lg border border-white/8 bg-zinc-950/60 px-3.5 py-2.5 text-xs cursor-pointer">
+          <label className="flex items-center justify-between rounded-lg border border-slate-200/10 bg-[#080b12]/80 px-3.5 py-2.5 text-xs cursor-pointer transition-colors hover:border-slate-200/20">
             <div>
-              <div className="font-medium text-zinc-200">
+              <div className="font-medium text-slate-100">
                 Include Vocal Separation Stage (Phase 1 Stub Adapter)
               </div>
-              <div className="text-[11px] text-zinc-500">
+              <div className="text-[11px] text-slate-400">
                 Routes job through `separating_vocals` state without altering original audio.
               </div>
             </div>
@@ -266,7 +269,7 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
             </Button>
 
             {activeJob?.state === 'completed' && onOpenStage && (
-              <Button type="button" variant="secondary" onClick={onOpenStage}>
+              <Button type="button" variant="emerald" onClick={onOpenStage}>
                 <PlayCircle className="h-3.5 w-3.5" />
                 <span>Open Player &amp; Lyrics View</span>
               </Button>
@@ -284,10 +287,10 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert variant="info">
-            <Info className="h-4 w-4 shrink-0 mt-0.5 text-sky-400" />
+            <Info className="h-4 w-4 shrink-0 mt-0.5 text-sky-300" />
             <div className="space-y-1">
-              <div className="font-semibold text-zinc-100">Phase 1 Foundation Mode</div>
-              <p className="text-[11px] leading-relaxed text-zinc-300">
+              <div className="font-semibold text-slate-50">Phase 1 Foundation Mode</div>
+              <p className="text-[11px] leading-relaxed text-slate-300">
                 Unimplemented AI models run as explicit Phase 1 stubs. No fake word timestamps
                 or simulated lyrics recognition are generated.
               </p>
@@ -296,13 +299,13 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
 
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-zinc-400">
+              <span className="text-slate-400">
                 Status:{' '}
-                <span className="axr-tc font-medium text-zinc-100">
+                <span className="axr-tc font-medium text-slate-100">
                   {activeJob ? activeJob.state : 'idle'}
                 </span>
               </span>
-              <span className="axr-tc text-zinc-300">
+              <span className="axr-tc text-sky-300">
                 {activeJob ? `${activeJob.progressPercent}%` : '0%'}
               </span>
             </div>
@@ -320,12 +323,12 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
                 <li
                   key={stage}
                   className={cn(
-                    'flex items-center justify-between rounded-lg border px-3 py-2 text-xs',
+                    'flex items-center justify-between rounded-lg border px-3 py-2 text-xs transition-colors',
                     isCurrent
-                      ? 'border-sky-400/40 bg-sky-400/10 text-zinc-100'
+                      ? 'border-sky-400/50 bg-gradient-to-r from-sky-500/18 to-indigo-500/10 text-white'
                       : isDone
-                        ? 'border-white/8 bg-zinc-950/80 text-zinc-300'
-                        : 'border-white/5 bg-zinc-950/35 text-zinc-500',
+                        ? 'border-emerald-400/20 bg-emerald-500/6 text-slate-200'
+                        : 'border-slate-200/7 bg-[#080b12]/70 text-slate-500',
                   )}
                 >
                   <div className="flex items-center gap-2.5">
@@ -334,16 +337,16 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
                     ) : isCurrent ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin text-sky-400" />
                     ) : (
-                      <span className="h-2 w-2 rounded-full bg-zinc-700" />
+                      <span className="h-2 w-2 rounded-full bg-slate-700" />
                     )}
                     <span className="font-medium">{STAGE_LABELS[stage]}</span>
                   </div>
-                  <span className="axr-tc text-[10px] text-zinc-500">{stage}</span>
+                  <span className="axr-tc text-[10px] text-slate-400">{stage}</span>
                 </li>
               );
             })}
             {activeJob?.state === 'failed' && (
-              <li className="flex items-center justify-between rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+              <li className="flex items-center justify-between rounded-lg border border-red-400/45 bg-red-500/12 px-3 py-2 text-xs text-red-200">
                 <div className="flex items-center gap-2">
                   <XCircle className="h-3.5 w-3.5 text-red-400" />
                   <span className="font-medium">Failed</span>

@@ -183,8 +183,15 @@
       <button id="btnReset" class="ghost" title="歌詞・曲・設定・履歴をすべて消して、最初の状態に戻します">初期化</button>
       <button id="bgJobPill" type="button" class="ghost small bg-job-btn" hidden title="Traitement audio en cours en arrière-plan — cliquez pour ouvrir le Studio IA React"><span class="bg-job-dot" aria-hidden="true"></span><span id="bgJobText" class="mono">Analyse 0%</span></button>
       <button id="btnModularStudio" type="button" class="accent small" title="Ouvrir le Studio Pipeline Modulaire React/TypeScript (Web Audio, Forme d'onde, Workers asynchrone &amp; Base Timestamps)">🎛 Studio IA React</button>
+      <button id="btnSkillsAdmin" type="button" class="ghost small" title="Administration des 20 AI Studio Master Skills (registre, activation &amp; chargement contextuel)">🧩 Skills IA</button>
       <button id="btnNotice" type="button" class="ghost small notice-open" title="Ouvrir la Notice complète d’Alexura Motion Studio — guide illustré de chaque touche et fonctionnement">Notice</button>
-      <button id="btnTerms" class="ghost terms-open" title="出力物の権利とライセンス">利用について</button>
+      <button id="btnTerms" type="button" class="ghost small terms-open" aria-haspopup="dialog" aria-controls="termsDlg" title="出力物の権利とライセンス">
+        <svg class="terms-btn-ico" width="14" height="14" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.45"/>
+          <path d="M9 8.2v4.3M9 5.5v.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span id="btnTermsLbl">利用について</span>
+      </button>
     </div>
   </header>
 
@@ -263,10 +270,26 @@
           </div>
           <label class="file audio-upload-cta" title="mp3 / wav / m4a など"><span id="lblUploadAudioBtn">曲を読み込む</span><input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.opus,.webm,.mp4,.aiff,.aif,.wma"></label>
         </div>
-        <div class="row audio-ai-row">
-          <button id="btnAiTranscribe" class="accent" title="AI听音识词：自动分析歌曲音频，多语言（中文、法文、英文等）识别人声歌词并即时同步到视频">✨ AI 识词与同步</button>
-          <button id="btnVocalSync" class="ghost" title="根据歌声人声起始瞬间，自动精准同步各行歌词">⚡ 人声同步</button>
-          <button id="btnTap" title="Synchronisation manuelle guidée au rythme de la voix (ligne par ligne ou mot par mot)">⏱ タップで同期</button>
+        <div class="row audio-ai-row" role="group" aria-label="音声・歌詞同期ツール">
+          <button id="btnAiTranscribe" type="button" class="accent" aria-busy="false" title="AI听音识词：自动分析歌曲音频，多语言（中文、法文、英文等）识别人声歌词并即时同步到视频">
+            <svg class="ai-btn-ico" width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <path d="M9 1.75v14.5M5.5 4.25v9.5M12.5 4.25v9.5M2 7v4M16 7v4" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"/>
+            </svg>
+            <span id="btnAiTranscribeLbl" class="ai-btn-lbl">AI 识词与同步</span>
+          </button>
+          <button id="btnVocalSync" type="button" class="ghost" aria-busy="false" title="根据歌声人声起始瞬间，自动精准同步各行歌词">
+            <svg class="ai-btn-ico" width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <path d="M1.8 9h2.6l1.7-4.6 2.8 9.2 2.4-6.4 1.6 1.8h3.3" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="btnVocalSyncLbl" class="ai-btn-lbl">人声同步</span>
+          </button>
+          <button id="btnTap" type="button" aria-pressed="false" title="曲を再生しながら各行の頭でタップ">
+            <svg class="ai-btn-ico" width="15" height="15" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <circle cx="9" cy="9.5" r="6.25" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M9 6.2v3.5l2.3 1.4M7 1.75h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="btnTapLbl" class="ai-btn-lbl">タップで同期</span>
+          </button>
           <button id="btnVoiceDictate" type="button" class="ghost" aria-pressed="false" title="リアルタイム音声認識：マイクで歌や音声を認識して即座に歌詞化・同期します">🎙️ ライブ音声認識</button>
         </div>
         <div id="aiProgressBox" class="ai-prog-box" hidden aria-live="polite">
@@ -864,20 +887,56 @@
     <div class="terms-foot"><span></span><span class="row"><button value="cancel" class="ghost">やめる</button><button value="reset" class="danger">初期化する</button></span></div>
   </form>
 </dialog>
-<dialog id="termsDlg" class="terms" aria-labelledby="termsTitle">
-  <form method="dialog">
-    <h2 id="termsTitle">利用について</h2>
-    <div class="terms-main">
-      <p class="terms-big">このツールで作った<strong>動画や画像（出力物）の権利は、作った人</strong>に帰属します。</p>
-      <p class="terms-sub">※ 使った歌詞や曲の権利は、それぞれの権利者に帰属します。</p>
+<dialog id="termsDlg" class="terms" aria-labelledby="termsTitle" aria-describedby="termsLead">
+  <form method="dialog" class="terms-sheet">
+    <div class="terms-head">
+      <div class="terms-head-copy">
+        <h2 id="termsTitle">À propos d’Alexura Motion Studio</h2>
+        <p id="termsMetaLine" class="terms-meta mono">Version @VERSION@ · Studio vidéo &amp; synchronisation vocale · Licence MIT</p>
+      </div>
+      <button type="submit" value="close" id="btnTermsTopClose" class="ghost small terms-x" aria-label="Fermer">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
-    <p>ツール本体は <strong>MIT ライセンス</strong>で公開しています。詳細なライセンスはこちら：</p>
-    <p><a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener">https://github.com/852wa/JIZURA</a></p>
-    <p class="muted terms-note">入力した歌詞や曲は、このブラウザの中だけで処理され、サーバーには送信されません。</p>
-    <details class="terms-oss"><summary>使用しているオープンソース</summary>
-      <p>MP4 書き出し：mp4-muxer（MIT License）<br>フォント：Google Fonts 配布の各書体（SIL Open Font License 1.1）</p>
+
+    <p id="termsLead" class="terms-lead">Alexura Motion Studio transforme vos chansons et paroles en clips vidéo animés, karaokés temps réel et projets typographiques haute précision directement dans votre navigateur — avec analyse acoustique vocale, styles sur mesure et export jusqu’en 4K 60 ips.</p>
+
+    <div class="terms-grid">
+      <section class="terms-block">
+        <h3 id="termsRightsTitle">Droits de création &amp; export</h3>
+        <p id="termsRightsBody">Toutes les vidéos (MP4), calques PNG transparents, sous-titres (LRC, SRT, VTT, JSON) et données After Effects exportés vous appartiennent intégralement, y compris pour un usage commercial. Les musiques et paroles importées restent la propriété de leurs ayants droit.</p>
+      </section>
+      <section class="terms-block">
+        <h3 id="termsPrivacyTitle">Confidentialité &amp; traitement</h3>
+        <p id="termsPrivacyBody">La lecture audio, le rendu vidéo Canvas/WebCodecs, l’export MP4 et les brouillons locaux restent 100 % dans votre navigateur. Les options connectées (IA Cloud Gemini, sauvegarde Google Firebase, météo studio) ne s’activent qu’à votre demande.</p>
+      </section>
+      <section class="terms-block">
+        <h3 id="termsTechTitle">Synchronisation &amp; moteur artistique</h3>
+        <p id="termsTechBody">Alignement acoustique à 10 ms sur l’attaque vocale, studio Synchro au Tap, prompteur karaoké progressif mot à mot et 17+ univers graphiques dédiés (Trap Soul, R&amp;B, Hip-Hop, Pop, Cinematic, Art &amp; Motion).</p>
+      </section>
+      <section class="terms-block">
+        <h3 id="termsCompatTitle">Formats &amp; flux professionnels</h3>
+        <p id="termsCompatBody">Rendu MP4 direct sur disque (Chrome / Edge recommandés), séquences PNG avec transparence, modes fond vert / fond noir, Enhanced LRC mot à mot et export structuré pour Adobe After Effects.</p>
+      </section>
+    </div>
+
+    <details class="terms-oss">
+      <summary id="termsOssSummary">Licence MIT &amp; composants open source</summary>
+      <div class="terms-oss-body">
+        <p id="termsOssText">Publié sous licence MIT · Code source : <a href="https://github.com/852wa/JIZURA" target="_blank" rel="noopener noreferrer">github.com/852wa/JIZURA</a></p>
+        <p id="termsOssDeps" class="terms-oss-deps">Export MP4 : mp4-muxer (MIT License) · Reconnaissance vocale locale : Transformers.js / Whisper · Polices : Google Fonts (SIL Open Font License 1.1) · Sauvegarde optionnelle : Firebase SDK.</p>
+      </div>
     </details>
-    <div class="terms-foot"><span class="muted mono">© 2026 hakoniwa · MIT</span><button value="close" class="primary" autofocus>閉じる</button></div>
+
+    <div class="terms-foot">
+      <span id="termsFootMeta" class="muted mono">© 2026 Alexura Motion Studio · MIT</span>
+      <div class="terms-foot-acts">
+        <button type="button" id="btnTermsNotice" class="ghost small">Consulter la Notice</button>
+        <button value="close" id="btnTermsClose" class="primary" autofocus>閉じる</button>
+      </div>
+    </div>
   </form>
 </dialog>
 <dialog id="cloudDlg" class="terms cloud-dlg" aria-labelledby="cloudTitle">

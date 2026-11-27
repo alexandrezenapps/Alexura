@@ -4276,35 +4276,56 @@ function drawStyleThumbAccent(x, st, sc) {
     x.moveTo(18, 26); x.lineTo(26, 26);
     x.stroke();
   } else if (cat === 'trapsoul') {
-    x.strokeStyle = sc.accent; x.lineWidth = 1.4; x.globalAlpha = 0.55;
-    x.beginPath(); x.arc(96, 54, 34, 0, Math.PI * 2); x.stroke();
-    x.globalAlpha = 0.3; x.strokeStyle = sc.accent2 || sc.fg;
-    x.beginPath(); x.arc(96, 54, 44, 0, Math.PI * 2); x.stroke();
-    x.globalAlpha = 0.7; x.fillStyle = sc.accent;
-    for (let i = 0; i < 6; i++) x.fillRect(14 + i * 7, 22 - (i % 3) * 4, 4, 8 + (i % 3) * 4);
+    const c1 = sc.accent, c2 = sc.accent2 || sc.fg;
+    x.strokeStyle = c1; x.lineWidth = 1.5; x.globalAlpha = 0.58;
+    x.beginPath(); x.arc(96, 54, 30, 0, Math.PI * 2); x.stroke();
+    x.globalAlpha = 0.34; x.strokeStyle = c2; x.lineWidth = 1.1;
+    x.beginPath(); x.arc(96, 54, 42, 0, Math.PI * 2); x.stroke();
+    x.globalAlpha = 0.78; x.fillStyle = c1;
+    [[22, 24, 3.2], [168, 22, 2.5], [164, 84, 3.5]].forEach(([px, py, r]) => { x.beginPath(); x.arc(px, py, r, 0, Math.PI * 2); x.fill(); });
+    x.fillStyle = c2; x.globalAlpha = 0.65;
+    for (let i = 0; i < 5; i++) x.fillRect(14 + i * 6, 88 - (6 + (i % 3) * 4), 3.5, 6 + (i % 3) * 4);
   } else if (cat === 'rnb') {
-    x.strokeStyle = sc.accent; x.lineWidth = 1.6; x.globalAlpha = 0.5;
-    for (let w = 0; w < 2; w++) {
+    const c1 = sc.accent, c2 = sc.accent2 || sc.fg;
+    for (let w = 0; w < 3; w++) {
+      x.strokeStyle = w % 2 ? c2 : c1;
+      x.lineWidth = w === 1 ? 1.8 : 1.2;
+      x.globalAlpha = 0.56 - w * 0.1;
       x.beginPath();
       for (let px = 8; px <= 184; px += 8) {
-        const py = (w ? 80 : 26) + Math.sin(px * 0.05 + w * 1.4) * 5;
+        const py = (w === 0 ? 22 : w === 1 ? 78 : 88) + Math.sin(px * 0.045 + w * 1.5) * 5;
         x[px === 8 ? 'moveTo' : 'lineTo'](px, py);
       }
       x.stroke();
     }
-    x.fillStyle = sc.accent2 || sc.accent; x.globalAlpha = 0.55;
-    x.beginPath(); x.arc(166, 26, 4, 0, Math.PI * 2); x.fill();
+    x.fillStyle = c1; x.globalAlpha = 0.72;
+    x.beginPath(); x.arc(168, 22, 4.5, 0, Math.PI * 2); x.fill();
   } else if (cat === 'hiphop') {
-    x.fillStyle = sc.accent; x.globalAlpha = 0.78;
-    const heights = [18, 10, 24, 14, 20];
-    heights.forEach((h, i) => x.fillRect(14 + i * 8, 92 - h, 5, h));
-    x.strokeStyle = sc.accent2 || sc.fg; x.lineWidth = 2; x.globalAlpha = 0.55;
-    x.beginPath(); x.moveTo(154, 14); x.lineTo(176, 36); x.stroke();
+    const c1 = sc.accent, c2 = sc.accent2 || sc.fg;
+    const heights = [18, 11, 26, 15, 22, 12];
+    heights.forEach((h, i) => {
+      x.fillStyle = c1; x.globalAlpha = 0.78;
+      x.fillRect(12 + i * 7, 92 - h, 4.5, h);
+      x.fillStyle = c2; x.globalAlpha = 0.9;
+      x.fillRect(12 + i * 7, 92 - h - 3.5, 4.5, 2);
+    });
+    x.strokeStyle = c2; x.lineWidth = 2.2; x.globalAlpha = 0.65;
+    x.beginPath(); x.moveTo(152, 14); x.lineTo(176, 38); x.moveTo(162, 14); x.lineTo(176, 28); x.stroke();
   } else if (cat === 'pop') {
-    x.fillStyle = sc.accent; x.globalAlpha = 0.75;
-    x.beginPath(); x.arc(24, 24, 5, 0, Math.PI * 2); x.arc(166, 24, 4, 0, Math.PI * 2); x.fill();
-    x.fillStyle = sc.accent2 || sc.accent; x.globalAlpha = 0.75;
-    x.beginPath(); x.arc(160, 82, 5.5, 0, Math.PI * 2); x.arc(32, 78, 3, 0, Math.PI * 2); x.fill();
+    const c1 = sc.accent, c2 = sc.accent2 || sc.fg;
+    const star = (cx, cy, r, col, a) => {
+      x.save(); x.translate(cx, cy); x.fillStyle = col; x.globalAlpha = a;
+      x.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const ang = i * Math.PI / 4, rr = i % 2 ? r * 0.22 : r;
+        x[i ? 'lineTo' : 'moveTo'](Math.cos(ang) * rr, Math.sin(ang) * rr);
+      }
+      x.closePath(); x.fill(); x.restore();
+    };
+    star(24, 24, 8, c1, 0.88);
+    star(166, 26, 6.5, c2, 0.85);
+    star(160, 82, 8.5, c1, 0.82);
+    star(30, 80, 5.5, c2, 0.78);
   } else if (cat === 'animation' || cat === 'musicvideo') {
     x.fillStyle = sc.accent; x.globalAlpha = 0.75;
     x.beginPath(); x.arc(24, 24, 4, 0, Math.PI * 2); x.arc(166, 28, 3, 0, Math.PI * 2); x.fill();
@@ -5305,7 +5326,10 @@ function tapCopy() {
 function applyTapLabels() {
   const c = tapCopy();
   const setT = (id, t) => { const el = $(id); if (el) el.textContent = t; };
-  if (!($('btnTap') && $('btnTap').dataset.keepCustom)) setT('btnTap', c.btn);
+  if (!($('btnTap') && $('btnTap').dataset.keepCustom)) {
+    const cleanTapLabel = String(c.btn || '').replace(/^⏱\s*/, '');
+    setT($('btnTapLbl') ? 'btnTapLbl' : 'btnTap', cleanTapLabel);
+  }
   setT('tapTitle', c.title);
   setT('lblTapMode', c.mode);
   setT('lblTapRate', c.rate);
@@ -5816,7 +5840,25 @@ function updateTapTelemetry(t) {
 }
 // start from any line: playback begins a little before that line, earlier lines keep their times
 function startTap(from = 0, wordFrom = 0) {
-  if (!S.plan || !S.plan.lines.length) return;
+  const isFr = document.documentElement.lang === 'fr';
+  const isEn = document.documentElement.lang === 'en';
+  if (S.syncTask) {
+    toast(isFr
+      ? 'Synchronisation IA en cours : patientez un instant avant d’ouvrir le Tap Studio.'
+      : isEn
+      ? 'AI sync is currently running — please wait a moment before opening Tap Studio.'
+      : 'AI 同步進行中，請稍候再開啟點擊對拍。');
+    return;
+  }
+  if (!S.plan || !S.plan.lines.length) {
+    toast(isFr
+      ? 'Ajoutez d’abord au moins une ligne de paroles pour utiliser Synchro au Tap.'
+      : isEn
+      ? 'Add at least one lyric line first to use Tap Sync.'
+      : '請先輸入至少一行歌詞再使用點擊對拍。');
+    if ($('lyrics')) $('lyrics').focus();
+    return;
+  }
   from = J.clamp(from | 0, 0, S.plan.lines.length - 1);
   pushEdit();
   ensureTimingMaps();
@@ -5847,6 +5889,7 @@ function startTap(from = 0, wordFrom = 0) {
   applyTapLabels();
   $('tapPanel').hidden = false;
   $('btnTap').setAttribute('aria-pressed', 'true');
+  if (typeof syncAiActionButtonsState === 'function') syncAiActionButtonsState();
   $('tapPanel').classList.remove('compact');
   if ($('tapMode')) $('tapMode').value = opt.mode;
   if ($('tapRate')) $('tapRate').value = String(opt.rate);
@@ -6148,6 +6191,7 @@ function stopTap() {
   if (slow && S.playing) seek(S.t);             // back to normal speed
   $('tapPanel').hidden = true;
   $('btnTap').setAttribute('aria-pressed', 'false');
+  if (typeof syncAiActionButtonsState === 'function') syncAiActionButtonsState();
   refreshStage6Validation();
   replan();
   flushSave();
@@ -6256,11 +6300,12 @@ function syncUI() {
   syncThemeMeta();
   syncMainStudioLabels();
   syncKaraokeDeckMeta();
-  renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); applyExportLabels(); drawStyleGrid(); syncKaraokeBtn(); syncKaraokeControls(); syncTranslationControls(); syncAudioDetectPanel(); applyLeLabels(); syncLyricsEditor();
+  renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); applyExportLabels(); drawStyleGrid(); syncKaraokeBtn(); syncKaraokeControls(); syncTranslationControls(); syncAudioDetectPanel(); syncAiActionButtonsState(); applyLeLabels(); syncLyricsEditor();
 }
 function syncThemeMeta() {
-  const note = $('themeMetaNote'); if (!note) return;
   const thId = J.THEMES[S.project.themeId] ? S.project.themeId : '';
+  document.querySelectorAll('#easyPanel .theme-row').forEach(row => { row.dataset.theme = thId; });
+  const note = $('themeMetaNote'); if (!note) return;
   const lang = document.documentElement.lang || 'fr';
   if (!thId) {
     note.textContent = lang === 'fr'
@@ -6281,15 +6326,15 @@ function syncThemeMeta() {
   const hasSong = !!(S.audio && (S.audio.bpm || (S.audio.beats && S.audio.beats.length)));
   const bpmTxt = hasSong && S.audio.bpm ? `${Math.round(S.audio.bpm)} BPM` : '';
   const songTag = hasSong
-    ? (lang === 'fr' ? ` · ♪ Sync chanson${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
-      : lang === 'en' ? ` · ♪ Song-synced${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
-      : lang === 'zh-Hans' ? ` · ♪ 已适配歌曲节拍${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
-      : lang === 'zh-Hant' ? ` · ♪ 已適配歌曲節拍${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
-      : lang === 'ko' ? ` · ♪ 곡 비트 동기화${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
-      : ` · ♪ 曲と同期${bpmTxt ? ' (' + bpmTxt + ')' : ''}`)
+    ? (lang === 'fr' ? ` · Sync audio${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
+      : lang === 'en' ? ` · Song-synced${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
+      : lang === 'zh-Hans' ? ` · 节拍同步${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
+      : lang === 'zh-Hant' ? ` · 節拍同步${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
+      : lang === 'ko' ? ` · 곡 비트 동기화${bpmTxt ? ' (' + bpmTxt + ')' : ''}`
+      : ` · 曲と同期${bpmTxt ? ' (' + bpmTxt + ')' : ''}`)
     : '';
   note.textContent = (lang === 'fr'
-    ? `${T.name} · ${cnt} styles exclusifs · Actif : ${sName}`
+    ? `${T.name} · ${cnt} styles · Actif : ${sName}`
     : lang === 'en'
       ? `${T.name} · ${cnt} bespoke styles · Active: ${sName}`
       : lang === 'zh-Hans'
@@ -6709,16 +6754,60 @@ function toggleLiveVoiceRecognition() {
   return startLiveVoiceDictation();
 }
 
+function syncAiActionButtonsState() {
+  const bai = $('btnAiTranscribe');
+  const bvs = $('btnVocalSync');
+  const btap = $('btnTap');
+  const hasAudio = !!(S.audio && S.audio.buffer);
+  const rawTxt = String((S.project && S.project.lyrics) || ($('lyrics') && $('lyrics').value) || '').trim();
+  const isDefaultSample = rawTxt === String(J.SAMPLE_LYRICS || '').trim();
+  const hasRealLyrics = rawTxt.length > 0 && !isDefaultSample && !!(S.plan && S.plan.lines && S.plan.lines.length);
+  const activeKind = S.syncTask && S.syncTask.kind ? S.syncTask.kind : null;
+
+  if (bai) {
+    const busy = activeKind === 'ai_transcribe';
+    bai.classList.toggle('is-analyzing', busy);
+    bai.classList.toggle('is-ready', hasAudio && !activeKind);
+    bai.disabled = Boolean(activeKind);
+    bai.setAttribute('aria-busy', busy ? 'true' : 'false');
+  }
+  if (bvs) {
+    const busy = activeKind === 'vocal_sync';
+    bvs.classList.toggle('is-syncing', busy);
+    bvs.classList.toggle('is-ready', hasAudio && hasRealLyrics && !activeKind);
+    bvs.disabled = Boolean(activeKind);
+    bvs.setAttribute('aria-busy', busy ? 'true' : 'false');
+  }
+  if (btap) {
+    const hasLines = !!(S.plan && S.plan.lines && S.plan.lines.length);
+    btap.classList.toggle('is-ready', hasLines && !activeKind);
+    btap.setAttribute('aria-pressed', S.tap ? 'true' : 'false');
+    btap.disabled = Boolean(activeKind);
+  }
+}
+
 /* Reusable 7-stage Song Lyrics Detection + Streaming + Forced Alignment + Validation */
 async function runAiTranscription(opts = {}) {
   const bai = $('btnAiTranscribe');
+  const baiLbl = $('btnAiTranscribeLbl') || bai;
   const isFr = document.documentElement.lang === 'fr';
   const isEn = document.documentElement.lang === 'en';
   if (!S.audio) return false;
+  if (S.syncTask) {
+    if (!opts.auto) {
+      toast(isFr ? 'Une synchronisation est déjà en cours…' : isEn ? 'A synchronization task is already running…' : '同步任務正在執行中…');
+    }
+    return false;
+  }
+  if (S.tap) stopTap();
   if (activeVoiceController && activeVoiceController.isActive()) stopLiveVoiceDictation();
   hideAiVoiceActionBar();
 
-  const origText = bai ? bai.textContent : '';
+  const controller = typeof AbortController === 'function' ? new AbortController() : null;
+  S.syncTask = { kind: 'ai_transcribe', controller };
+  syncAiActionButtonsState();
+
+  const origText = baiLbl ? baiLbl.textContent : '';
   const stageLabels = isFr ? {
     1: '1/7 Prétraitement audio…',
     2: '2/7 Isolation vocale…',
@@ -6767,7 +6856,7 @@ async function runAiTranscription(opts = {}) {
   let aiDone = false;
   const onStage = (stageNum) => {
     const lbl = stageLabels[stageNum] || `${stageNum}/7`;
-    if (bai && stageLabels[stageNum]) bai.textContent = `✨ ${lbl}`;
+    if (baiLbl && stageLabels[stageNum]) baiLbl.textContent = lbl;
     setAiProgress(stageNum, lbl);
     if (stageNum >= 7) aiDone = true;
   };
@@ -6798,8 +6887,6 @@ async function runAiTranscription(opts = {}) {
   };
 
   if (bai) {
-    bai.classList.add('is-analyzing');
-    bai.disabled = true;
     onStage(1);
   }
   if (!opts.quiet) {
@@ -6812,7 +6899,10 @@ async function runAiTranscription(opts = {}) {
       const hintTxt = `${S.project.title || ''} ${S.project.artist || ''} ${(S.audio && S.audio.fileName) || ''}`;
       if (/[\u4e00-\u9fff]/.test(hintTxt)) lang = 'zh-Hans';
     }
-    const result = await J.aiTranscribeMusic(S.audio, lang, onStage, onPartialResult);
+    const result = await J.aiTranscribeMusic(S.audio, lang, onStage, onPartialResult, {
+      signal: controller ? controller.signal : undefined,
+    });
+    if (result && result.aborted) return false;
 
     if (result && result.success && (result.isInstrumental || (result.lines && result.lines.length))) {
       pushEdit();
@@ -6920,6 +7010,7 @@ async function runAiTranscription(opts = {}) {
       replan();
       flushSave();
       syncUI();
+      if (typeof syncQualityControlPanel === 'function') syncQualityControlPanel();
       seek(0);
       recordWork('ai_transcribe', 'sync', `${rows.length} ligne(s) · ${result.language || 'auto'}`);
 
@@ -7042,11 +7133,9 @@ async function runAiTranscription(opts = {}) {
       toast(isFr ? '🎙️ Erreur réseau IA — Reconnaissance vocale en direct prête.' : isEn ? '🎙️ Network error — Live Voice Recognition ready.' : '🎙️ 連線錯誤 — 可改用即時麥克風辨識。');
     }
   } finally {
-    if (bai) {
-      bai.classList.remove('is-analyzing');
-      bai.disabled = false;
-      bai.textContent = origText;
-    }
+    if (S.syncTask && S.syncTask.controller === controller) S.syncTask = null;
+    if (baiLbl) baiLbl.textContent = origText;
+    syncAiActionButtonsState();
     if (liveBox && !(activeVoiceController && activeVoiceController.isActive())) {
       liveBox.hidden = true;
       liveBox.innerHTML = '';
@@ -7055,7 +7144,7 @@ async function runAiTranscription(opts = {}) {
     if (pBox && !(activeVoiceController && activeVoiceController.isActive())) {
       if (aiDone) {
         setTimeout(() => {
-          if (!($('btnAiTranscribe') && $('btnAiTranscribe').classList.contains('is-analyzing')) && !(activeVoiceController && activeVoiceController.isActive())) {
+          if (!S.syncTask && !(activeVoiceController && activeVoiceController.isActive())) {
             pBox.hidden = true;
           }
         }, 650);
@@ -7081,6 +7170,7 @@ function bind() {
       });
     }
     clearQcAutoReport();
+    syncAiActionButtonsState();
     replanSoon(260);
   });
   const btnKh = $('btnKaraokeHud');
@@ -7254,13 +7344,18 @@ function bind() {
       if (!S.audio) {
         showAiVoiceActionBar({
           message: isFr
-            ? '⚡ SYNCRO VOIX ET PAROLE : importez un fichier audio pour coordonner en temps réel vos paroles sur la voix, OU activez la Reconnaissance Vocale en direct au micro :'
+            ? 'Synchro Voix & Paroles : importez un fichier audio pour coordonner en temps réel vos paroles sur la voix, ou activez la Reconnaissance Vocale en direct au micro :'
             : isEn
-            ? '⚡ Voice Sync: load an audio file to align lyrics to the singing voice, OR start Live Voice Recognition with your microphone to generate & sync lyrics instantaneously:'
-            : '⚡ 人聲同步：請先匯入音樂檔案進行人聲逐詞對齊，或立即使用「即時麥克風語音辨識」邊唱邊自動產生同步歌詞：',
+            ? 'Voice Sync: load an audio file to align lyrics to the singing voice, or start Live Voice Recognition with your microphone to generate & sync lyrics instantaneously:'
+            : '人聲同步：請先匯入音樂檔案進行人聲逐詞對齊，或立即使用「即時麥克風語音辨識」邊唱邊自動產生同步歌詞：',
           showLoadAudio: true,
         });
         toast(isFr ? 'Choisissez une chanson ou démarrez la Voix en direct !' : isEn ? 'Load a song or start Live Voice Mic below!' : '請選擇音樂或開啟即時麥克風！');
+        return;
+      }
+
+      if (S.syncTask) {
+        toast(isFr ? 'Une synchronisation est déjà en cours…' : isEn ? 'A synchronization task is already running…' : '同步任務正在執行中…');
         return;
       }
 
@@ -7269,27 +7364,30 @@ function bind() {
       const isDefaultSample = rawTxt === String(J.SAMPLE_LYRICS || '').trim();
       if (!rawTxt || isDefaultSample || !(S.plan && S.plan.lines && S.plan.lines.length)) {
         toast(isFr
-          ? '⚡ Aucune parole personnalisée : lancement de la détection vocale IA automatique…'
+          ? 'Aucune parole personnalisée : lancement de la détection vocale IA automatique…'
           : isEn
-          ? '⚡ No custom lyrics yet: running automatic AI voice & lyrics detection…'
-          : '⚡ 尚未有自訂歌詞：自動啟動 AI 歌聲識詞與同步…');
+          ? 'No custom lyrics yet: running automatic AI voice & lyrics detection…'
+          : '尚未有自訂歌詞：自動啟動 AI 歌聲識詞與同步…');
         await runAiTranscription();
         return;
       }
 
-      // Case 3: Audio + real lyrics -> Real-Time Streaming SYNCRO VOIX ET PAROLE
+      // Case 3: Audio + real lyrics -> Real-Time Streaming Synchro Voix & Paroles
+      if (S.tap) stopTap();
       if (activeVoiceController && activeVoiceController.isActive()) stopLiveVoiceDictation();
       hideAiVoiceActionBar();
-      const origTxt = bvs.textContent;
-      bvs.classList.add('is-syncing');
-      bvs.disabled = true;
+      const bvsLbl = $('btnVocalSyncLbl') || bvs;
+      const origTxt = bvsLbl.textContent;
+      const controller = typeof AbortController === 'function' ? new AbortController() : null;
+      S.syncTask = { kind: 'vocal_sync', controller };
+      syncAiActionButtonsState();
 
       const stageCopy = isFr
         ? {
             1: '1/4 Analyse orthographe & piste vocale…',
             2: '2/4 Écoute & lien temps réel voix-paroles…',
             3: '3/4 Coordination acoustique 10 ms instant par instant…',
-            4: '4/4 SYNCRO VOIX ET PAROLE prête !',
+            4: '4/4 Synchro Voix & Paroles prête !',
           }
         : isEn
         ? { 1: '1/4 Spelling check & vocal stem…', 2: '2/4 Real-time voice-lyric linking…', 3: '3/4 10ms Viterbi tuning…', 4: '4/4 Voice Sync & fixes ready!' }
@@ -7352,7 +7450,7 @@ function bind() {
             sp.classList.toggle('is-cur', n === Math.min(7, Math.max(1, Math.ceil((pct / 100) * 7))));
           });
         }
-        bvs.textContent = `⚡ ${pct}%`;
+        bvsLbl.textContent = isFr ? `Synchro · ${pct}%` : isEn ? `Sync · ${pct}%` : `同步 · ${pct}%`;
       };
 
       const onLiveSyncEvent = (evt) => {
@@ -7395,7 +7493,7 @@ function bind() {
       };
 
       setSyncProg(1, stageCopy[1], { pct: 10 });
-      toast(isFr ? '⚡ SYNCRO VOIX ET PAROLE en temps réel…' : isEn ? '⚡ Real-time Voice Sync running…' : '⚡ 正在即時執行人聲與歌詞精準對齊…');
+      toast(isFr ? 'Synchro Voix & Paroles en temps réel…' : isEn ? 'Real-time Voice Sync running…' : '正在即時執行人聲與歌詞精準對齊…');
       pushEdit();
 
       let syncDone = false;
@@ -7405,7 +7503,12 @@ function bind() {
         if ((!alignLangHint || alignLangHint === 'auto') && /[\u4e00-\u9fff]/.test(`${S.project.lyrics || ''} ${S.project.title || ''} ${S.project.artist || ''} ${(S.audio && S.audio.fileName) || ''}`)) {
           alignLangHint = 'zh-Hans';
         }
-        const aligned = await J.aiAlignVocals(S.audio, origPlanLines, alignLangHint, setSyncProg, onLiveSyncEvent);
+        const aligned = await J.aiAlignVocals(S.audio, origPlanLines, alignLangHint, setSyncProg, onLiveSyncEvent, {
+          signal: controller ? controller.signal : undefined,
+          existingWordTimes: S.project.timing && S.project.timing.wordTimes,
+          existingLineTimes: S.project.timing && S.project.timing.lineTimes,
+        });
+        if (aligned && aligned.aborted) return;
 
         // Apply automatic orthography & voice-confirmed spelling fixes directly to lyrics editor
         let appliedLyricsChanged = false;
@@ -7465,6 +7568,7 @@ function bind() {
           }
 
           replan(); flushSave(); syncUI();
+          if (typeof syncQualityControlPanel === 'function') syncQualityControlPanel();
           const lineCount = Object.keys(times).length;
           const cohNote = aligned && aligned.coherenceScore
             ? ` · ${aligned.coherenceScore}% (±${aligned.avgAbsErrMs || 0}ms)`
@@ -7475,18 +7579,18 @@ function bind() {
           const fixSamples = fixList.slice(0, 3).map(c => `${c.original} → ${c.corrected}`).join(', ');
           const fixNote = fixCount > 0
             ? (isFr
-                ? ` · ✨ ${fixCount} faute${fixCount > 1 ? 's' : ''} corrigée${fixCount > 1 ? 's' : ''}${fixSamples ? ' (' + fixSamples + ')' : ''}`
+                ? ` · ${fixCount} faute${fixCount > 1 ? 's' : ''} corrigée${fixCount > 1 ? 's' : ''}${fixSamples ? ' (' + fixSamples + ')' : ''}`
                 : isEn
-                ? ` · ✨ ${fixCount} fix${fixCount > 1 ? 'es' : ''}${fixSamples ? ' (' + fixSamples + ')' : ''}`
-                : ` · ✨ 已自動訂正 ${fixCount} 處錯字${fixSamples ? '（' + fixSamples + '）' : ''}`)
+                ? ` · ${fixCount} fix${fixCount > 1 ? 'es' : ''}${fixSamples ? ' (' + fixSamples + ')' : ''}`
+                : ` · 已自動訂正 ${fixCount} 處錯字${fixSamples ? '（' + fixSamples + '）' : ''}`)
             : '';
           recordWork('vocal_sync', 'sync', `${lineCount} lignes${cohNote}${fixCount ? ` · ${fixCount} corrigées` : ''}`);
 
           toast(isFr
-            ? `🎤 SYNCRO VOIX ET PAROLE${isDtw ? ' Neuronale' : ''} réussie (${lineCount} lignes${cohNote})${fixNote} !`
+            ? `Synchro Voix & Paroles${isDtw ? ' Neuronale' : ''} réussie (${lineCount} lignes${cohNote})${fixNote} !`
             : isEn
-            ? `🎤 ${isDtw ? 'Neural ' : ''}Voice Sync complete (${lineCount} lines${cohNote})${fixNote}!`
-            : `🎤 ${isDtw ? '類神經' : ''}人聲同步完成（${lineCount} 句${cohNote}）${fixNote}！`);
+            ? `${isDtw ? 'Neural ' : ''}Voice Sync complete (${lineCount} lines${cohNote})${fixNote}!`
+            : `${isDtw ? '類神經' : ''}人聲同步完成（${lineCount} 句${cohNote}）${fixNote}！`);
 
           const reformList = Array.isArray(aligned && aligned.reformulations) ? aligned.reformulations : [];
           const problemList = Array.isArray(aligned && aligned.unresolvableProblems) ? aligned.unresolvableProblems : [];
@@ -7594,10 +7698,10 @@ function bind() {
             const diagSummaryMsg = (() => {
               if (reformList.length && problemList.length) {
                 return isFr
-                  ? `🧠 Diagnostic SYNCRO VOIX ET PAROLE : ${reformList.length} différence(s) reformulable(s) par IA et ${problemList.length} passage(s) complexe(s) à vérifier :`
+                  ? `Diagnostic Synchro Voix & Paroles : ${reformList.length} différence(s) reformulable(s) par IA et ${problemList.length} passage(s) complexe(s) à vérifier :`
                   : isEn
-                  ? `🧠 Voice Sync Diagnostic: ${reformList.length} AI reformulation(s) ready and ${problemList.length} complex section(s) flagged:`
-                  : `🧠 人聲同步診斷：發現 ${reformList.length} 處 AI 可重構差異與 ${problemList.length} 處困難片段：`;
+                  ? `Voice Sync Diagnostic: ${reformList.length} AI reformulation(s) ready and ${problemList.length} complex section(s) flagged:`
+                  : `人聲同步診斷：發現 ${reformList.length} 處 AI 可重構差異與 ${problemList.length} 處困難片段：`;
               }
               if (reformList.length) {
                 return isFr
@@ -7688,12 +7792,12 @@ function bind() {
       } catch (err) {
         toast((isFr ? 'Erreur de synchro : ' : isEn ? 'Sync error: ' : '同步出错: ') + (err && err.message ? err.message : ''));
       } finally {
-        bvs.classList.remove('is-syncing');
-        bvs.disabled = false;
-        bvs.textContent = origTxt;
+        if (S.syncTask && S.syncTask.controller === controller) S.syncTask = null;
+        bvsLbl.textContent = origTxt;
+        syncAiActionButtonsState();
         if (liveEl) liveEl.hidden = true;
         if (pBox && !(activeVoiceController && activeVoiceController.isActive())) {
-          setTimeout(() => { if (!bvs.classList.contains('is-syncing')) pBox.hidden = true; }, syncDone ? 650 : 200);
+          setTimeout(() => { if (!S.syncTask) pBox.hidden = true; }, syncDone ? 650 : 200);
         }
       }
     });
@@ -8030,10 +8134,98 @@ function bind() {
   $('eMood').addEventListener('click', () => rerollPart('mood'));
   $('eCut').addEventListener('click', () => rerollPart('cut'));
   $('ePalette').addEventListener('click', () => { randomPalette(); restartPreview(); });
-  // 利用について（出力物の権利・ライセンス）
+  // À propos (présentation, droits, confidentialité & licences)
   const dlg = $('termsDlg');
-  const openTerms = () => { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); };
+  const applyTermsCopy = () => {
+    const lang = document.documentElement.lang || 'fr';
+    const setEl = (id, val) => { const el = $(id); if (el && val != null) el.textContent = val; };
+    const copy = lang === 'en' ? {
+      title: 'About Alexura Motion Studio',
+      meta: 'Version @VERSION@ · Lyric Video & Vocal Sync Studio · MIT License',
+      lead: 'Alexura Motion Studio turns songs and lyrics into animated lyric videos, live karaoke prompters and precision motion projects right in your browser — with acoustic vocal alignment, curated visual themes and export up to 4K 60 fps.',
+      rT: 'Creation & export rights',
+      rB: 'All exported videos (MP4), transparent PNG sequences, subtitles (LRC, SRT, VTT, JSON) and After Effects project data belong 100% to you, including for commercial use. Imported audio and lyrics remain the property of their rights holders.',
+      pT: 'Privacy & data processing',
+      pB: 'Audio playback, Canvas/WebCodecs video rendering, MP4 export and local drafts run 100% in your browser. Connected features (Cloud AI transcription/alignment, Google Firebase save, studio weather) only run when explicitly triggered.',
+      tT: 'Vocal sync & creative engine',
+      tB: '10 ms acoustic vocal onset alignment, guided Tap Sync studio, progressive word-by-word karaoke prompter and 17+ curated visual universes (Trap Soul, R&B, Hip-Hop, Pop, Cinematic, Art & Motion).',
+      cT: 'Professional formats & workflow',
+      cB: 'Direct-to-disk MP4 export (Chrome / Edge recommended), transparent PNG layers, green/black key backgrounds, word-level Enhanced LRC and structured export for Adobe After Effects.',
+      ossSum: 'MIT License & open-source components',
+      ossDeps: 'MP4 export: mp4-muxer (MIT License) · Local speech engine: Transformers.js / Whisper · Typefaces: Google Fonts (SIL Open Font License 1.1) · Optional cloud sync: Firebase SDK.',
+      noticeBtn: 'Open User Guide',
+    } : lang === 'ja' ? {
+      title: 'Alexura Motion Studio について',
+      meta: 'バージョン @VERSION@ · 歌詞モーション＆ボーカル同期スタジオ · MIT ライセンス',
+      lead: 'Alexura Motion Studio は、楽曲と歌詞からアニメーション歌詞動画やリアルタイムカラオケをブラウザ上で制作し、最大 4K 60fps の MP4 や After Effects 用データとして書き出せるスタジオです。',
+      rT: '制作物と商用利用の権利',
+      rB: 'このツールで書き出した動画（MP4）・透過 PNG・字幕（LRC / SRT / VTT / JSON）・AE 用データの権利は制作者本人に帰属します。使用した楽曲や歌詞の権利は各権利者に帰属します。',
+      pT: 'プライバシーと処理について',
+      pB: '音声再生・映像描画・MP4 書き出し・ローカル下書きはお使いのブラウザ内で完結します。クラウド AI 解析・Google Firebase 保存・天気機能はユーザーが実行した時のみ通信します。',
+      tT: 'ボーカル同期と演出エンジン',
+      tB: '10ms 単位の声頭アタック検出、タップ同期スタジオ、単語単位カラオケプロンプター、17 以上の専用テーマ（Trap Soul / R&B / Hip-Hop / Pop / Cinematic / Art & Motion）を搭載しています。',
+      cT: '対応フォーマットとプロ仕様',
+      cB: 'ディスク直接書き込み対応 MP4（Chrome / Edge 推奨）、背景透過 PNG 連番、グリーン／ブラックバック合成、単語同期 Enhanced LRC、After Effects 構成書き出しに対応。',
+      ossSum: 'MIT ライセンス・使用オープンソース',
+      ossDeps: 'MP4 書き出し：mp4-muxer（MIT License） · ローカル音声認識：Transformers.js / Whisper · 書体：Google Fonts（SIL OFL 1.1） · 任意保存：Firebase SDK',
+      noticeBtn: '使い方ガイドを開く',
+    } : (lang === 'zh-Hans' || lang === 'zh-Hant') ? {
+      title: lang === 'zh-Hans' ? '关于 Alexura Motion Studio' : '關於 Alexura Motion Studio',
+      meta: lang === 'zh-Hans' ? '版本 @VERSION@ · 歌词动态视频与人声同步工作室 · MIT 许可' : '版本 @VERSION@ · 歌詞動態影片與人聲同步工作室 · MIT 授權',
+      lead: lang === 'zh-Hans'
+        ? 'Alexura Motion Studio 可直接在浏览器中将歌曲与歌词制作成动态歌词 MV、实时卡拉 OK 提词器与高精度排版作品，支持人声智能对齐与最高 4K 60fps MP4 导出。'
+        : 'Alexura Motion Studio 可直接在瀏覽器中將歌曲與歌詞製作成動態歌詞 MV、即時卡拉 OK 提詞器與高精度排版作品，支援人聲智慧對齊與最高 4K 60fps MP4 匯出。',
+      rT: lang === 'zh-Hans' ? '创作成果与版权归属' : '創作成果與版權歸屬',
+      rB: lang === 'zh-Hans'
+        ? '您导出的全部视频（MP4）、透明 PNG 序列、字幕（LRC/SRT/VTT/JSON）及 AE 工程数据均完全归创作者所有，可用于商业发布；所用歌曲与歌词版权仍归原权利人所有。'
+        : '您匯出的全部影片（MP4）、透明 PNG 序列、字幕（LRC/SRT/VTT/JSON）與 AE 工程資料均完全歸創作者所有，可用於商業發布；所用歌曲與歌詞版權仍歸原權利人所有。',
+      pT: lang === 'zh-Hans' ? '隐私与数据处理' : '隱私與資料處理',
+      pB: lang === 'zh-Hans'
+        ? '音频播放、画面渲染、MP4 导出与本地草稿均在您的浏览器本地完成；仅在您主动触发时才会调用云端 AI 识别、Firebase 云端保存或天气组件。'
+        : '音訊播放、畫面算圖、MP4 匯出與本地草稿均在您的瀏覽器本地完成；僅在您主動觸發時才會呼叫雲端 AI 辨識、Firebase 雲端儲存或天氣模組。',
+      tT: lang === 'zh-Hans' ? '人声同步与视觉引擎' : '人聲同步與視覺引擎',
+      tB: lang === 'zh-Hans'
+        ? '提供 10ms 声学人声起音对齐、敲击对拍工作室、逐词渐进卡拉 OK 与 17+ 专属艺术主题（Trap Soul、R&B、Hip-Hop、Pop、Cinematic、Art & Motion）。'
+        : '提供 10ms 聲學人聲起音對齊、點擊對拍工作室、逐詞漸進卡拉 OK 與 17+ 專屬藝術主題（Trap Soul、R&B、Hip-Hop、Pop、Cinematic、Art & Motion）。',
+      cT: lang === 'zh-Hans' ? '专业导出格式' : '專業匯出格式',
+      cB: lang === 'zh-Hans'
+        ? '支持直写磁盘的大文件 MP4（推荐 Chrome / Edge）、透明背景 PNG 分层、绿幕/黑底抠像、逐词 Enhanced LRC 与 Adobe After Effects 导出。'
+        : '支援直寫磁碟的大檔案 MP4（建議 Chrome / Edge）、透明背景 PNG 分層、綠幕/黑底去背、逐詞 Enhanced LRC 與 Adobe After Effects 匯出。',
+      ossSum: lang === 'zh-Hans' ? 'MIT 许可与开源组件' : 'MIT 授權與開源元件',
+      ossDeps: 'MP4 : mp4-muxer (MIT) · Whisper : Transformers.js · Fonts : Google Fonts (SIL OFL 1.1) · Cloud : Firebase SDK',
+      noticeBtn: lang === 'zh-Hans' ? '查看使用指南' : '查看使用指南',
+    } : null;
+
+    if (copy) {
+      setEl('termsTitle', copy.title);
+      setEl('termsMetaLine', copy.meta);
+      setEl('termsLead', copy.lead);
+      setEl('termsRightsTitle', copy.rT);
+      setEl('termsRightsBody', copy.rB);
+      setEl('termsPrivacyTitle', copy.pT);
+      setEl('termsPrivacyBody', copy.pB);
+      setEl('termsTechTitle', copy.tT);
+      setEl('termsTechBody', copy.tB);
+      setEl('termsCompatTitle', copy.cT);
+      setEl('termsCompatBody', copy.cB);
+      setEl('termsOssSummary', copy.ossSum);
+      setEl('termsOssDeps', copy.ossDeps);
+      setEl('btnTermsNotice', copy.noticeBtn);
+    }
+  };
+  applyTermsCopy();
+  const openTerms = () => {
+    applyTermsCopy();
+    if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', '');
+  };
   document.querySelectorAll('.terms-open').forEach(b => b.addEventListener('click', openTerms));
+  if ($('btnTermsNotice')) {
+    $('btnTermsNotice').addEventListener('click', () => {
+      if (dlg.close && dlg.open) dlg.close();
+      else dlg.removeAttribute('open');
+      openNotice();
+    });
+  }
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close ? dlg.close() : dlg.removeAttribute('open'); });   // click on the backdrop
   $('btnSave').addEventListener('click', () => {
     const fn = baseName() + '.jizura.json';
@@ -8233,7 +8425,7 @@ async function loadAudioFile(f, restored) {
     }
     syncUI(); replan();
     return true;
-  } catch (err) { if (my !== audioSeq) return false; $('audioName').textContent = '読み込めませんでした: ' + err.message; S.audio = null; syncAudioDetectPanel(); return false; }
+  } catch (err) { if (my !== audioSeq) return false; $('audioName').textContent = '読み込めませんでした: ' + err.message; S.audio = null; syncAudioDetectPanel(); syncAiActionButtonsState(); return false; }
 }
 
 /* ---------------- かんたんモードの案内ツアー ---------------- */
@@ -10027,7 +10219,7 @@ function getNoticeContent() {
         ],
         steps: [
           { num: 'Étape 01', title: 'Mettre le son et le texte', desc: 'Importez votre MP3/WAV puis collez vos paroles — ou laissez l’IA écouter la voix et écrire les paroles toute seule.' },
-          { num: 'Étape 02', title: 'Caler sur le chanteur', desc: 'Cliquez sur « SYNCRO VOIX ET PAROLE » pour une coordination automatique en temps réel, ou tapez au rythme du chant dans « Synchro au tap ».' },
+          { num: 'Étape 02', title: 'Caler sur le chanteur', desc: 'Cliquez sur « Synchro Voix & Paroles » pour une coordination automatique en temps réel, ou tapez au rythme du chant dans « Synchro au Tap ».' },
           { num: 'Étape 03', title: 'Choisir le look et exporter', desc: 'Choisissez un Thème (Cinematic, Art & Motion…), appuyez sur Aléatoire (touche R) puis cliquez sur « Exporter en MP4 ».' },
         ],
         subh: 'À quoi sert chaque bouton de la barre du haut ?',
@@ -10117,11 +10309,11 @@ function getNoticeContent() {
         num: '03',
         nav: 'Audio, IA & Synchro au Tap',
         title: '03. Synchroniser parfaitement chaque mot sur la voix du chanteur',
-        lead: 'Pour que les paroles s’allument exactement quand le chanteur chante, Alexura vous donne 3 outils simples : l’IA qui écrit et cale tout, « SYNCRO VOIX ET PAROLE » en temps réel, ou le studio « Synchro au Tap » très ludique.',
+        lead: 'Pour que les paroles s’allument exactement quand le chanteur chante, Alexura vous donne 3 outils simples : l’IA qui écrit et cale tout, « Synchro Voix & Paroles » en temps réel, ou le studio « Synchro au Tap » très ludique.',
         gallery: [
           {
             src: imgs.sync,
-            title: 'Photo 5 — Comment l’IA et « SYNCRO VOIX ET PAROLE » repèrent le chant',
+            title: 'Photo 5 — Comment l’IA et « Synchro Voix & Paroles » repèrent le chant',
             alt: 'Illustration de l’onde sonore vocale avec détection d’attaques à 10 ms et barres d’alignement de chaque mot',
             caption: 'Alexura isole la voix (en vert émeraude) du reste des instruments et coordonne chaque mot en temps réel.',
           },
@@ -10140,25 +10332,25 @@ function getNoticeContent() {
             desc: 'Ouvre votre musique (MP3, WAV, M4A, AAC, FLAC, OGG ou MP4) directement dans le navigateur. Alexura calcule tout de suite le tempo (BPM) et repère où le chanteur chante.',
           },
           {
-            label: '✨ Détecter les paroles par IA',
+            label: 'Détecter les paroles par IA',
             zone: 'Colonne gauche · Audio',
             desc: 'Vous n’avez pas le texte de la chanson ? Cliquez ici : l’IA écoute le chanteur, sépare sa voix de la musique, écrit toutes les paroles (même en plusieurs langues) et cale chaque mot toute seule.',
             photo: { src: imgs.sync, title: 'Voir l’alignement acoustique sur la Photo 5', caption: 'Chaque mot est calé sur le vrai pic d’énergie de la voix humaine.' },
           },
           {
-            label: '⚡ SYNCRO VOIX ET PAROLE',
+            label: 'Synchro Voix & Paroles',
             zone: 'Colonne gauche · Audio',
-            desc: 'Vous avez déjà collé vos paroles dans la boîte ? Cliquez simplement sur <strong>⚡ SYNCRO VOIX ET PAROLE</strong> : Alexura analyse en temps réel la voix et vos paroles pour placer automatiquement chaque phrase et chaque mot avec une précision millimétrique à chaque instant.',
+            desc: 'Vous avez déjà collé vos paroles dans la boîte ? Cliquez simplement sur <strong>Synchro Voix & Paroles</strong> : Alexura analyse en temps réel la voix et vos paroles pour placer automatiquement chaque phrase et chaque mot avec une précision millimétrique à chaque instant.',
             example: '<strong>Quand l’utiliser ?</strong> Juste après avoir importé le MP3 et collé le texte. La coordination temps réel calibre chaque syllabe sur la voix.',
           },
           {
-            label: '🔬 Contrôle Qualité & Éditeur mot à mot',
+            label: 'Contrôle Qualité & Éditeur mot à mot',
             zone: 'Sous les boutons Audio',
             desc: 'Affiche chaque mot en vert (sûr) ou en orange (à vérifier à l’oreille). Cliquez sur un mot pour écouter uniquement ce mot (<strong>▶ Mot</strong>), l’avancer ou le reculer de <strong>25 ms</strong>, le verrouiller avec ✓ ou insérer un mot oublié (<strong>+ Avant / + Après</strong>).',
             example: '<strong>Exemple concret :</strong> Un mot apparaît un peu tôt ? Cliquez dessus → appuyez deux fois sur <strong>+25ms</strong> → réécoutez avec <strong>▶ Phrase</strong> → cochez <strong>Validé</strong> pour le figer.',
           },
         ],
-        subh2: 'Toutes les touches du Studio « ⏱ Synchro au tap » expliquées simplement',
+        subh2: 'Toutes les touches du Studio « Synchro au Tap » expliquées simplement',
         items2: [
           {
             label: 'TAP [Espace] & Mode (Phrase / Mot par mot / Coupes [Tab])',
@@ -10346,7 +10538,7 @@ function getNoticeContent() {
             src: imgs.tap,
             title: 'Étape 2 — Caler au millimètre',
             alt: 'Radar Tap Studio étape 2',
-            caption: 'SYNCRO VOIX ET PAROLE ou Tap Studio [Espace], puis ±10 ms à l’oreille.',
+            caption: 'Synchro Voix & Paroles ou Tap Studio [Espace], puis ±10 ms à l’oreille.',
           },
           {
             src: imgs.exportImg,
@@ -10363,7 +10555,7 @@ function getNoticeContent() {
           { label: 'Espace · E · P · S · Retour · Tab · Échap', zone: 'Dans Synchro au Tap', desc: '<span class="notice-kbd">Espace</span> = Tapper · <span class="notice-kbd">E</span> = Marquer la fin · <span class="notice-kbd">P</span> = Pause · <span class="notice-kbd">S</span> = Passer · <span class="notice-kbd">Retour</span> = Annuler le dernier tap · <span class="notice-kbd">Tab</span> = Couper un plan · <span class="notice-kbd">Échap</span> = Enregistrer et quitter.' },
         ],
         steps: [
-          { num: 'Parcours 1', title: 'Clip express en 2 minutes', desc: '1. Importez le MP3 → 2. Collez les paroles → 3. Cliquez « SYNCRO VOIX ET PAROLE » → 4. Choisissez « Music Video » ou « Art & Motion » → 5. Touche R jusqu’au coup de cœur → 6. Exporter en MP4 1080p.' },
+          { num: 'Parcours 1', title: 'Clip express en 2 minutes', desc: '1. Importez le MP3 → 2. Collez les paroles → 3. Cliquez « Synchro Voix & Paroles » → 4. Choisissez « Music Video » ou « Art & Motion » → 5. Touche R jusqu’au coup de cœur → 6. Exporter en MP4 1080p.' },
           { num: 'Parcours 2', title: 'Karaoké ultra précis', desc: '1. Importez l’audio → 2. Cliquez « Détecter les paroles par IA » → 3. Vérifiez les rares mots orange → 4. Ajustez Chant↔Affichage (±10 ms) → 5. Exporter MP4 + Enhanced LRC.' },
           { num: 'Parcours 3', title: 'Montage Reel / TikTok / Chanteur', desc: '1. Format 9:16 → 2. Cochez « Libérer le centre » ou « Fond vert » (ou PNG transparent) → 3. Passez à 60 fps → 4. Posez directement sur votre vidéo dans CapCut ou Premiere.' },
         ],
@@ -11460,9 +11652,20 @@ if (bgJobPill) {
 if (modBtn) {
   modBtn.addEventListener('click', () => {
     if (window.AlexuraReactStudio && typeof window.AlexuraReactStudio.open === 'function') {
-      window.AlexuraReactStudio.open();
+      window.AlexuraReactStudio.open('upload');
     } else {
       toast('Module Studio React en cours de chargement…');
+    }
+  });
+}
+
+const skillsAdminBtn = $('btnSkillsAdmin');
+if (skillsAdminBtn) {
+  skillsAdminBtn.addEventListener('click', () => {
+    if (window.AlexuraReactStudio && typeof window.AlexuraReactStudio.open === 'function') {
+      window.AlexuraReactStudio.open('skills');
+    } else {
+      toast('Interface Skills IA en cours de chargement…');
     }
   });
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Layers, Music2, RefreshCw, ServerCog, UploadCloud, X } from 'lucide-react';
+import { Layers, Music2, Puzzle, RefreshCw, ServerCog, UploadCloud, X } from 'lucide-react';
 import type {
   AdapterReportMap,
   AudioAssetRecord,
@@ -16,13 +16,20 @@ import { WaveformTimelinePlaceholder } from '@/components/WaveformTimelinePlaceh
 import { UploadScreen } from '@/components/UploadScreen';
 import { SynchronizedLyricsDisplay } from '@/components/SynchronizedLyricsDisplay';
 import { PipelineAdaptersPanel } from '@/components/PipelineAdaptersPanel';
+import { SkillsAdminPanel } from '@/components/SkillsAdminPanel';
+
+export type StudioTabId = 'upload' | 'studio' | 'adapters' | 'skills';
 
 export interface SyncEngineAppProps {
   onClose?: () => void;
   standalone?: boolean;
+  initialTab?: StudioTabId;
 }
 
-export const App: React.FC<SyncEngineAppProps> = ({ onClose }) => {
+export const App: React.FC<SyncEngineAppProps> = ({
+  onClose,
+  initialTab = 'upload',
+}) => {
   const clockRef = useRef<HtmlAudioPlaybackClock | null>(null);
   if (!clockRef.current) {
     clockRef.current = new HtmlAudioPlaybackClock();
@@ -31,7 +38,11 @@ export const App: React.FC<SyncEngineAppProps> = ({ onClose }) => {
   const [playback, setPlayback] = useState<PlaybackSnapshot>(() =>
     clockRef.current!.getSnapshot(),
   );
-  const [activeTab, setActiveTab] = useState<'upload' | 'studio' | 'adapters'>('upload');
+  const [activeTab, setActiveTab] = useState<StudioTabId>(initialTab);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   const [adapters, setAdapters] = useState<AdapterReportMap | null>(null);
   const [uploadedAudio, setUploadedAudio] = useState<AudioAssetRecord | null>(null);
@@ -198,19 +209,19 @@ export const App: React.FC<SyncEngineAppProps> = ({ onClose }) => {
   const activeAudioUrl = uploadedAudio?.audioUrl || (lyricsDoc?.audioId ? `/api/v1/audio/${encodeURIComponent(lyricsDoc.audioId)}/stream` : null);
 
   return (
-    <div className="axr-studio-scope min-h-screen bg-[#09090b] text-zinc-100 flex flex-col">
-      <header className="sticky top-0 z-30 border-b border-white/8 bg-[#09090b]/92 backdrop-blur-md">
+    <div className="axr-studio-scope min-h-screen text-slate-100 flex flex-col">
+      <header className="sticky top-0 z-30 border-b border-slate-200/10 bg-[#070a12]/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-sky-400/30 bg-sky-400/12 text-sky-400">
+            <div className="flex h-8.5 w-8.5 items-center justify-center rounded-lg border border-[#deb96c]/40 bg-gradient-to-br from-[#12203a] via-[#0e1524] to-[#1a1622] text-[#f3deb0] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_4px_12px_rgba(0,0,0,0.4)]">
               <Music2 className="h-4 w-4" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold tracking-tight text-zinc-100">
+              <h1 className="text-sm font-semibold tracking-tight text-slate-50">
                 Alexura · AI Lyrics Sync Engine
               </h1>
-              <p className="text-[11px] text-zinc-500">
-                Phase 1 Foundation · Normalized Schema &amp; Modular Adapters
+              <p className="text-[11px] text-slate-400">
+                Studio Atelier · Normalized Schema &amp; Master Skills Architecture
               </p>
             </div>
           </div>
@@ -218,7 +229,7 @@ export const App: React.FC<SyncEngineAppProps> = ({ onClose }) => {
           <div className="flex items-center gap-2.5">
             <Tabs
               value={activeTab}
-              onValueChange={(val) => setActiveTab(val as 'upload' | 'studio' | 'adapters')}
+              onValueChange={(val) => setActiveTab(val as StudioTabId)}
             >
               <TabsList>
                 <TabsTrigger value="upload">
@@ -232,6 +243,10 @@ export const App: React.FC<SyncEngineAppProps> = ({ onClose }) => {
                 <TabsTrigger value="adapters">
                   <ServerCog className="h-3.5 w-3.5" />
                   <span>AI Adapters</span>
+                </TabsTrigger>
+                <TabsTrigger value="skills">
+                  <Puzzle className="h-3.5 w-3.5" />
+                  <span>Master Skills</span>
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -276,7 +291,7 @@ export const App: React.FC<SyncEngineAppProps> = ({ onClose }) => {
 
         <Tabs
           value={activeTab}
-          onValueChange={(val) => setActiveTab(val as 'upload' | 'studio' | 'adapters')}
+          onValueChange={(val) => setActiveTab(val as StudioTabId)}
         >
           <TabsContent value="upload" className="mt-0">
             <UploadScreen
@@ -303,14 +318,14 @@ export const App: React.FC<SyncEngineAppProps> = ({ onClose }) => {
 
           <TabsContent value="studio" className="mt-0">
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-              <aside className="lg:col-span-4 rounded-xl border border-white/9 bg-[#111114] p-4 space-y-3 h-fit">
+              <aside className="lg:col-span-4 rounded-xl border border-slate-200/10 bg-gradient-to-b from-[#101521]/95 to-[#0b0f18]/98 p-4 space-y-3 h-fit shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_10px_28px_-14px_rgba(0,0,0,0.65)]">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-zinc-200">
+                  <span className="text-xs font-semibold text-slate-100">
                     Saved Lyrics Documents
                   </span>
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="secondary"
                     size="icon"
                     className="h-7 w-7"
                     onClick={() => void refreshSavedDocuments()}
@@ -321,7 +336,7 @@ export const App: React.FC<SyncEngineAppProps> = ({ onClose }) => {
                 </div>
 
                 {savedDocs.length === 0 ? (
-                  <p className="text-xs text-zinc-500 py-4">
+                  <p className="text-xs text-slate-500 py-4">
                     No saved normalized documents yet. Upload an audio track to initialize one.
                   </p>
                 ) : (
@@ -331,14 +346,14 @@ export const App: React.FC<SyncEngineAppProps> = ({ onClose }) => {
                         key={doc.documentId}
                         type="button"
                         onClick={() => void handleLoadSavedDocument(doc)}
-                        className={`w-full rounded-lg border px-3 py-2 text-left transition-colors cursor-pointer ${
+                        className={`w-full rounded-lg border px-3 py-2 text-left transition-[background,border-color,color] duration-150 cursor-pointer ${
                           lyricsDoc?.documentId === doc.documentId
-                            ? 'border-sky-400/50 bg-sky-400/10 text-white'
-                            : 'border-white/7 bg-zinc-950/70 text-zinc-300 hover:border-white/15'
+                            ? 'border-sky-400/55 bg-gradient-to-r from-sky-500/18 to-indigo-500/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
+                            : 'border-slate-200/8 bg-[#080b12]/80 text-slate-300 hover:border-slate-200/20 hover:bg-[#101624]'
                         }`}
                       >
                         <div className="truncate text-xs font-medium">{doc.title}</div>
-                        <div className="axr-tc mt-0.5 text-[10px] text-zinc-500">
+                        <div className="axr-tc mt-0.5 text-[10px] text-slate-400">
                           {doc.segments.length} segments · {doc.alignmentStatus}
                         </div>
                       </button>
@@ -361,6 +376,10 @@ export const App: React.FC<SyncEngineAppProps> = ({ onClose }) => {
 
           <TabsContent value="adapters" className="mt-0">
             <PipelineAdaptersPanel adapters={adapters} />
+          </TabsContent>
+
+          <TabsContent value="skills" className="mt-0">
+            <SkillsAdminPanel />
           </TabsContent>
         </Tabs>
       </main>
