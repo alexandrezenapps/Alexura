@@ -13,6 +13,11 @@ import {
 } from './server/services/whisperEngine.ts';
 import { analyzeAndFixOrthography } from './server/services/lyricSpellReconciler.ts';
 import { reconcileAndReformulateLyrics } from './server/services/aiLyricReformulator.ts';
+import {
+  remapAnalysisTimestampToOriginal,
+  validateAnalysisSegmentMapping,
+  type AnalysisSegmentMapping,
+} from './frontend/src/types/lyrics.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,7 +48,7 @@ app.use(express.json({ limit: '35mb' }));
 // Allow cross-origin calls on /api/*
 app.use('/api', (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-File-Name, X-Chunk-Index');
   if (req.method === 'OPTIONS') {
     return res.status(204).end();
@@ -1572,12 +1577,46 @@ app.post('/api/reanalyze-segment', async (req, res) => {
     existingWords,
     qualityConditions,
     lang,
+    segmentMapping,
   } = req.body || {};
   if (!audioBase64) {
     return res.status(200).json({ success: false, reason: 'missing_audio' });
   }
-  const offsetSec = Math.max(0, Number(startSec) || 0);
-  const segDur = Math.max(0.2, (Number(endSec) || offsetSec + 2) - offsetSec);
+  const hasSegMap = Boolean(
+    segmentMapping &&
+      typeof segmentMapping === 'object' &&
+      validateAnalysisSegmentMapping(segmentMapping as AnalysisSegmentMapping).length === 0,
+  );
+  const validSegMap = hasSegMap ? (segmentMapping as AnalysisSegmentMapping) : null;
+  const offsetSec = validSegMap
+    ? validSegMap.original_start
+    : Math.max(0, Number(startSec) || 0);
+  const segDur = validSegMap
+    ? Math.max(0.2, validSegMap.analysis_end - validSegMap.analysis_start)
+    : Math.max(0.2, (Number(endSec) || offsetSec + 2) - offsetSec);
+
+  const remapNormalizedLines = (rawLines: any[]) => {
+    const base = normalizeKaraokeLines(rawLines, 0);
+    if (!validSegMap) return normalizeKaraokeLines(rawLines, offsetSec);
+    const mapT = (t: number) =>
+      remapAnalysisTimestampToOriginal(validSegMap.analysis_start + Math.max(0, Number(t) || 0), validSegMap);
+    return base.map((ln: any) => ({
+      ...ln,
+      start: mapT(ln.start),
+      end: mapT(ln.end),
+      words: (ln.words || []).map((w: any) => ({
+        ...w,
+        start: mapT(w.start),
+        end: mapT(w.end),
+        phonemes: Array.isArray(w.phonemes)
+          ? w.phonemes.map((ph: any) => ({ ...ph, start: mapT(ph.start), end: mapT(ph.end) }))
+          : undefined,
+        chars: Array.isArray(w.chars)
+          ? w.chars.map((ch: any) => ({ ...ch, start: mapT(ch.start), end: mapT(ch.end) }))
+          : undefined,
+      })),
+    }));
+  };
 
   const runWhisperReanalyzeFallback = async () => {
     try {
@@ -1585,15 +1624,18 @@ app.post('/api/reanalyze-segment', async (req, res) => {
         audioBase64,
         separatedVocalBase64,
         lang: lang || 'auto',
-        chunkStartSec: offsetSec,
+        chunkStartSec: validSegMap ? 0 : offsetSec,
         chunkDurationSec: segDur,
       });
-      const lines = normalizeKaraokeLines(wRes.lines, 0);
+      const lines = validSegMap
+        ? remapNormalizedLines(wRes.lines)
+        : normalizeKaraokeLines(wRes.lines, 0);
       return res.json({
         success: true,
         engine: wRes.engine,
         lines,
         focusTranscript: wRes.rawTranscript,
+        ...(validSegMap ? { segmentMapping: validSegMap } : {}),
       });
     } catch (wErr: any) {
       return res.status(200).json({
@@ -1706,8 +1748,13 @@ Rules:
     });
 
     const parsed = JSON.parse(alignResp.text || '{}');
-    const lines = normalizeKaraokeLines(Array.isArray(parsed.lines) ? parsed.lines : [], offsetSec);
-    return res.json({ success: true, lines, focusTranscript });
+    const lines = remapNormalizedLines(Array.isArray(parsed.lines) ? parsed.lines : []);
+    return res.json({
+      success: true,
+      lines,
+      focusTranscript,
+      ...(validSegMap ? { segmentMapping: validSegMap } : {}),
+    });
   } catch (err: any) {
     const msg = err?.message || String(err || '');
     const isBilling = msg.includes('billing') || msg.includes('free tier') || err?.status === 'PERMISSION_DENIED' || err?.code === 403;
@@ -2973,6 +3020,11 @@ for (const ed of editions) {
     res.sendFile(path.join(__dirname, ed, 'index.html'));
   });
 }
+
+// Return structured JSON 404 for unknown /api/* routes instead of HTML fallback
+app.use('/api', (_req, res) => {
+  res.status(404).json({ success: false, detail: 'api_endpoint_not_found' });
+});
 
 // Serve static assets from the project root without auto-serving index.html on root
 app.use(express.static(__dirname, {

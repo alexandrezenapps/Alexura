@@ -8154,6 +8154,7 @@ function bind() {
       ossSum: 'MIT License & open-source components',
       ossDeps: 'MP4 export: mp4-muxer (MIT License) · Local speech engine: Transformers.js / Whisper · Typefaces: Google Fonts (SIL Open Font License 1.1) · Optional cloud sync: Firebase SDK.',
       noticeBtn: 'Open User Guide',
+      closeBtn: 'Close',
     } : lang === 'ja' ? {
       title: 'Alexura Motion Studio について',
       meta: 'バージョン @VERSION@ · 歌詞モーション＆ボーカル同期スタジオ · MIT ライセンス',
@@ -8169,6 +8170,7 @@ function bind() {
       ossSum: 'MIT ライセンス・使用オープンソース',
       ossDeps: 'MP4 書き出し：mp4-muxer（MIT License） · ローカル音声認識：Transformers.js / Whisper · 書体：Google Fonts（SIL OFL 1.1） · 任意保存：Firebase SDK',
       noticeBtn: '使い方ガイドを開く',
+      closeBtn: '閉じる',
     } : (lang === 'zh-Hans' || lang === 'zh-Hant') ? {
       title: lang === 'zh-Hans' ? '关于 Alexura Motion Studio' : '關於 Alexura Motion Studio',
       meta: lang === 'zh-Hans' ? '版本 @VERSION@ · 歌词动态视频与人声同步工作室 · MIT 许可' : '版本 @VERSION@ · 歌詞動態影片與人聲同步工作室 · MIT 授權',
@@ -8194,6 +8196,7 @@ function bind() {
       ossSum: lang === 'zh-Hans' ? 'MIT 许可与开源组件' : 'MIT 授權與開源元件',
       ossDeps: 'MP4 : mp4-muxer (MIT) · Whisper : Transformers.js · Fonts : Google Fonts (SIL OFL 1.1) · Cloud : Firebase SDK',
       noticeBtn: lang === 'zh-Hans' ? '查看使用指南' : '查看使用指南',
+      closeBtn: lang === 'zh-Hans' ? '关闭' : '關閉',
     } : null;
 
     if (copy) {
@@ -8211,6 +8214,9 @@ function bind() {
       setEl('termsOssSummary', copy.ossSum);
       setEl('termsOssDeps', copy.ossDeps);
       setEl('btnTermsNotice', copy.noticeBtn);
+      setEl('btnTermsClose', copy.closeBtn);
+    } else {
+      setEl('btnTermsClose', 'Fermer');
     }
   };
   applyTermsCopy();

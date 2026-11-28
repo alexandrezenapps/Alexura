@@ -9,10 +9,11 @@ import {
   XCircle,
 } from 'lucide-react';
 import {
+  DEFAULT_JOB_STEP_MESSAGES,
   PIPELINE_STAGE_ORDER,
   type AudioAssetRecord,
   type ProcessingJob,
-  type ProcessingPipelineState,
+  type ProcessingStatus,
 } from '@/types/lyrics';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,7 @@ interface UploadScreenProps {
   onOpenStage?: () => void;
 }
 
-const STAGE_LABELS: Record<ProcessingPipelineState, string> = {
+const STAGE_LABELS: Record<ProcessingStatus, string> = {
   queued: 'Queued',
   validating: 'Validating',
   analyzing: 'Analyzing',
@@ -91,7 +92,19 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
     }
   };
 
-  const currentStageIdx = activeJob ? PIPELINE_STAGE_ORDER.indexOf(activeJob.state) : -1;
+  const activeStatus: ProcessingStatus | null = activeJob
+    ? (activeJob.status ?? activeJob.state)
+    : null;
+  const activeProgress = activeJob
+    ? (activeJob.progress ?? activeJob.progressPercent)
+    : 0;
+  const activeStep =
+    activeJob && activeStatus
+      ? activeJob.currentStep?.trim() ||
+        activeJob.transitions[activeJob.transitions.length - 1]?.message?.trim() ||
+        DEFAULT_JOB_STEP_MESSAGES[activeStatus]
+      : '';
+  const currentStageIdx = activeStatus ? PIPELINE_STAGE_ORDER.indexOf(activeStatus) : -1;
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
@@ -134,7 +147,7 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
             <input
               ref={inputRef}
               type="file"
-              accept=".wav,.mp3,.m4a,.aac,.flac,.ogg,.webm,audio/*"
+              accept=".wav,.mp3,.m4a,.aac,.flac,.ogg,.opus,.webm,audio/*"
               className="hidden"
               onChange={(e) => {
                 handleFiles(e.target.files);
@@ -154,7 +167,7 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
                 : 'Drop audio file here or browse from studio storage'}
             </p>
             <p className="mt-1 text-[11px] text-slate-400">
-              WAV, MP3, FLAC, M4A, AAC, OGG, WebM · Preserved 1:1 on backend disk
+              WAV, MP3, FLAC, M4A, AAC, OGG, OPUS, WebM · Preserved 1:1 on backend disk
             </p>
           </div>
 
@@ -234,7 +247,8 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
                 Include Vocal Separation Stage (Phase 1 Stub Adapter)
               </div>
               <div className="text-[11px] text-slate-400">
-                Routes job through `separating_vocals` state without altering original audio.
+                Routes job through <code className="axr-tc text-slate-300">separating_vocals</code>{' '}
+                state without altering original audio.
               </div>
             </div>
             <input
@@ -268,7 +282,7 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
               )}
             </Button>
 
-            {activeJob?.state === 'completed' && onOpenStage && (
+            {activeStatus === 'completed' && onOpenStage && (
               <Button type="button" variant="emerald" onClick={onOpenStage}>
                 <PlayCircle className="h-3.5 w-3.5" />
                 <span>Open Player &amp; Lyrics View</span>
@@ -302,22 +316,27 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
               <span className="text-slate-400">
                 Status:{' '}
                 <span className="axr-tc font-medium text-slate-100">
-                  {activeJob ? activeJob.state : 'idle'}
+                  {activeStatus || 'idle'}
                 </span>
               </span>
-              <span className="axr-tc text-sky-300">
-                {activeJob ? `${activeJob.progressPercent}%` : '0%'}
+              <span className="axr-tc tabular-nums text-sky-300">
+                {activeJob ? `${activeProgress}%` : '0%'}
               </span>
             </div>
-            <Progress value={activeJob?.progressPercent || 0} />
+            {activeStep && (
+              <p className="text-[11px] text-slate-400 truncate" title={activeStep}>
+                {activeStep}
+              </p>
+            )}
+            <Progress value={activeProgress} />
           </div>
 
           <ol className="space-y-1.5 pt-1">
             {PIPELINE_STAGE_ORDER.map((stage, idx) => {
-              const isCurrent = activeJob?.state === stage;
-              const isFailed = activeJob?.state === 'failed';
+              const isCurrent = activeStatus === stage;
+              const isFailed = activeStatus === 'failed';
               const isDone =
-                activeJob?.state === 'completed' ||
+                activeStatus === 'completed' ||
                 (currentStageIdx > idx && !isFailed);
               return (
                 <li
@@ -337,7 +356,9 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
                     ) : isCurrent ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin text-sky-400" />
                     ) : (
-                      <span className="h-2 w-2 rounded-full bg-slate-700" />
+                      <span className="axr-tc inline-flex w-3.5 justify-center text-[10px] text-slate-500">
+                        {String(idx + 1).padStart(2, '0')}
+                      </span>
                     )}
                     <span className="font-medium">{STAGE_LABELS[stage]}</span>
                   </div>
@@ -345,7 +366,7 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({
                 </li>
               );
             })}
-            {activeJob?.state === 'failed' && (
+            {activeStatus === 'failed' && (
               <li className="flex items-center justify-between rounded-lg border border-red-400/45 bg-red-500/12 px-3 py-2 text-xs text-red-200">
                 <div className="flex items-center gap-2">
                   <XCircle className="h-3.5 w-3.5 text-red-400" />

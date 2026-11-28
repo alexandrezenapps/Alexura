@@ -68,14 +68,20 @@ class PipelineOrchestrator:
         }
 
     def create_queued_job(self, req: AnalyzeSongRequest) -> ProcessingJob:
+        from ..core.state_machine import DEFAULT_JOB_STEP_MESSAGES
+
         doc_id = f"lyr_{uuid.uuid4().hex[:14]}"
         job_id = f"job_{uuid.uuid4().hex[:14]}"
         job = ProcessingJob(
             jobId=job_id,
             audioId=req.audioId,
+            songId=req.audioId,
             documentId=doc_id,
             state=ProcessingPipelineState.QUEUED,
+            status=ProcessingPipelineState.QUEUED,
             progressPercent=0,
+            progress=0,
+            currentStep=DEFAULT_JOB_STEP_MESSAGES[ProcessingPipelineState.QUEUED],
             languageHint=req.languageHint,
             enableVocalSeparation=req.enableVocalSeparation,
             phaseMode="phase_1_architecture_foundation",

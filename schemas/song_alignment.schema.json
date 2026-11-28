@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexura.studio/schemas/song_alignment.schema.json",
+  "title": "CanonicalSongAlignmentDocument",
+  "description": "Canonical song alignment JSON payload (song_id, audio_duration, segments -> words -> units) strictly anchored in seconds on the original audio timeline.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "song_id",
+    "audio_duration",
+    "language",
+    "transcription_status",
+    "alignment_status",
+    "alignment_version",
+    "segments"
+  ],
+  "properties": {
+    "song_id": { "type": "string", "minLength": 1 },
+    "audio_duration": { "type": "number", "minimum": 0 },
+    "language": { "type": "string", "minLength": 1 },
+    "transcription_status": {
+      "type": "string",
+      "enum": ["pending", "in_progress", "completed", "failed", "manual"]
+    },
+    "alignment_status": {
+      "type": "string",
+      "enum": ["unaligned", "partial", "completed", "validated", "failed"]
+    },
+    "alignment_version": { "type": "string", "minLength": 1 },
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text", "start", "end", "words"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "text": { "type": "string" },
+          "start": { "type": ["number", "null"], "minimum": 0 },
+          "end": { "type": ["number", "null"], "minimum": 0 },
+          "words": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "text", "start", "end"],
+              "properties": {
+                "id": { "type": "string", "minLength": 1 },
+                "text": { "type": "string", "minLength": 1 },
+                "start": { "type": ["number", "null"], "minimum": 0 },
+                "end": { "type": ["number", "null"], "minimum": 0 },
+                "confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+                "alignment_confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+                "units": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["text", "start", "end"],
+                    "properties": {
+                      "text": { "type": "string", "minLength": 1 },
+                      "start": { "type": ["number", "null"], "minimum": 0 },
+                      "end": { "type": ["number", "null"], "minimum": 0 }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

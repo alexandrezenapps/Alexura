@@ -1,0 +1,13 @@
+{
+  "audioId": "aud_9d233f39b0d95cc5",
+  "filename": "audit_test.wav",
+  "mimeType": "audio/wav",
+  "byteSize": 12844,
+  "sha256": "0aabf7fa0efffdd91521404d37ceccf96d8c0e2122a51b0dca42bd9ef1aacd00",
+  "durationSeconds": 0,
+  "sampleRateHz": 0,
+  "channels": 0,
+  "storagePath": "/app/applet/88888/audio/aud_9d233f39b0d95cc5.wav",
+  "audioUrl": "/api/v1/audio/aud_9d233f39b0d95cc5/stream",
+  "createdAt": "2026-11-28T16:07:21.771Z"
+}

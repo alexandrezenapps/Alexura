@@ -85,7 +85,9 @@ class LyricWord(BaseModel):
         description="End timestamp in seconds relative to original audio, or null when unaligned.",
     )
     confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    alignmentConfidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     alignmentState: ElementAlignmentState = "unaligned"
+    reviewRequired: Optional[bool] = None
     speaker: Optional[str] = None
     flags: List[str] = Field(default_factory=list)
     units: List[LyricUnit] = Field(default_factory=list)
@@ -129,6 +131,7 @@ class LyricsDocument(BaseModel):
     preservesOriginalAudio: Literal[True] = True
     alignmentStatus: DocumentAlignmentStatus = "phase1_placeholder"
     source: DocumentSource = "phase1_stub"
+    version: int = Field(default=1, ge=1)
     metadata: Dict[str, Any] = Field(default_factory=dict)
     segments: List[LyricSegment] = Field(default_factory=list)
     createdAt: str = Field(default_factory=_utc_now_iso)
@@ -149,3 +152,89 @@ class LyricsUpdateRequest(BaseModel):
     primaryLanguage: Optional[str] = Field(default=None, max_length=32)
     alignmentStatus: Optional[DocumentAlignmentStatus] = None
     segments: List[LyricSegment]
+
+
+class AnalysisSegmentMapping(BaseModel):
+    analysis_segment_id: str = Field(..., min_length=1)
+    analysis_start: float = Field(..., ge=0.0)
+    analysis_end: float = Field(..., ge=0.0)
+    original_start: float = Field(..., ge=0.0)
+    original_end: float = Field(..., ge=0.0)
+
+    @model_validator(mode="after")
+    def validate_spans(self) -> "AnalysisSegmentMapping":
+        if self.analysis_end <= self.analysis_start:
+            raise ValueError("analysis_end must be > analysis_start")
+        if self.original_end <= self.original_start:
+            raise ValueError("original_end must be > original_start")
+        return self
+
+
+class CanonicalAlignmentUnit(BaseModel):
+    text: str = Field(..., min_length=1)
+    start: Optional[float] = Field(default=None, ge=0.0)
+    end: Optional[float] = Field(default=None, ge=0.0)
+
+
+class CanonicalAlignmentWord(BaseModel):
+    id: str = Field(..., min_length=1)
+    text: str = Field(..., min_length=1)
+    start: Optional[float] = Field(default=None, ge=0.0)
+    end: Optional[float] = Field(default=None, ge=0.0)
+    confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    alignment_confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    units: List[CanonicalAlignmentUnit] = Field(default_factory=list)
+
+
+class CanonicalAlignmentSegment(BaseModel):
+    id: str = Field(..., min_length=1)
+    text: str = Field(default="")
+    start: Optional[float] = Field(default=None, ge=0.0)
+    end: Optional[float] = Field(default=None, ge=0.0)
+    words: List[CanonicalAlignmentWord] = Field(default_factory=list)
+
+
+class CanonicalSongAlignmentDocument(BaseModel):
+    song_id: str = Field(..., min_length=1)
+    audio_duration: float = Field(..., ge=0.0)
+    language: str = Field(default="auto", min_length=1)
+    transcription_status: Literal["pending", "in_progress", "completed", "failed", "manual"] = "completed"
+    alignment_status: Literal["unaligned", "partial", "completed", "validated", "failed"] = "unaligned"
+    alignment_version: str = Field(default="v1", min_length=1)
+    segments: List[CanonicalAlignmentSegment] = Field(default_factory=list)
+
+
+class AlignedLyricUnit(BaseModel):
+    id: str = Field(..., min_length=1)
+    text: str = Field(..., min_length=1)
+    start: float = Field(..., ge=0.0)
+    end: float = Field(..., ge=0.0)
+    confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+
+
+class AlignedLyricWord(BaseModel):
+    id: str = Field(..., min_length=1)
+    text: str = Field(..., min_length=1)
+    start: float = Field(..., ge=0.0)
+    end: float = Field(..., ge=0.0)
+    confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    alignmentConfidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    units: Optional[List[AlignedLyricUnit]] = None
+    reviewRequired: Optional[bool] = None
+
+
+class AlignedLyricSegment(BaseModel):
+    id: str = Field(..., min_length=1)
+    text: str = Field(default="")
+    start: float = Field(..., ge=0.0)
+    end: float = Field(..., ge=0.0)
+    words: List[AlignedLyricWord] = Field(default_factory=list)
+
+
+class AlignedLyricsDocument(BaseModel):
+    songId: str = Field(..., min_length=1)
+    duration: float = Field(..., ge=0.0)
+    language: str = Field(default="auto", min_length=1)
+    segments: List[AlignedLyricSegment] = Field(default_factory=list)
+    version: int = Field(default=1, ge=1)
+

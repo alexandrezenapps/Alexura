@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "1.0.0",
+  "documentId": "lyr_song_love_test",
+  "audioId": "song_love_test",
+  "jobId": null,
+  "title": "song_love_test",
+  "artist": "",
+  "primaryLanguage": "en",
+  "detectedLanguages": [
+    "en"
+  ],
+  "durationSeconds": 185.42,
+  "timelineOriginSeconds": 0,
+  "preservesOriginalAudio": true,
+  "alignmentStatus": "aligned",
+  "source": "forced_alignment_adapter",
+  "version": 2,
+  "metadata": {
+    "version": 2,
+    "aligned_contract": "camelCase_v1"
+  },
+  "segments": [
+    {
+      "segmentId": "seg_001",
+      "index": 0,
+      "text": "love",
+      "startSeconds": 32.1,
+      "endSeconds": 33,
+      "language": "en",
+      "sectionType": "verse",
+      "vocalType": "lead",
+      "speaker": "Lead",
+      "confidence": null,
+      "alignmentState": "aligned",
+      "isPlaceholder": false,
+      "words": [
+        {
+          "wordId": "word_005",
+          "text": "love",
+          "startSeconds": 32.417,
+          "endSeconds": 32.891,
+          "confidence": 0.98,
+          "alignmentConfidence": 0.95,
+          "alignmentState": "aligned",
+          "reviewRequired": true,
+          "speaker": "Lead",
+          "flags": [
+            "review_required"
+          ],
+          "units": [
+            {
+              "unitId": "word_005_u01",
+              "text": "lo",
+              "unitType": "character",
+              "startSeconds": 32.417,
+              "endSeconds": 32.65,
+              "confidence": 0.96,
+              "alignmentState": "aligned"
+            },
+            {
+              "unitId": "word_005_u02",
+              "text": "ve",
+              "unitType": "character",
+              "startSeconds": 32.651,
+              "endSeconds": 32.891,
+              "confidence": 0.97,
+              "alignmentState": "aligned"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "createdAt": "2026-11-28T16:11:42.078Z",
+  "updatedAt": "2026-11-28T16:11:42.088Z"
+}

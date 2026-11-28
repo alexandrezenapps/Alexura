@@ -21,6 +21,9 @@ class ProcessingPipelineState(str, Enum):
     FAILED = "failed"
 
 
+ProcessingStatus = ProcessingPipelineState
+
+
 PIPELINE_STAGE_ORDER: Tuple[ProcessingPipelineState, ...] = (
     ProcessingPipelineState.QUEUED,
     ProcessingPipelineState.VALIDATING,
@@ -42,6 +45,18 @@ STAGE_PROGRESS_PERCENT: Dict[ProcessingPipelineState, int] = {
     ProcessingPipelineState.VALIDATING_ALIGNMENT: 92,
     ProcessingPipelineState.COMPLETED: 100,
     ProcessingPipelineState.FAILED: 100,
+}
+
+DEFAULT_JOB_STEP_MESSAGES: Dict[ProcessingPipelineState, str] = {
+    ProcessingPipelineState.QUEUED: "Queued for processing",
+    ProcessingPipelineState.VALIDATING: "Validating uploaded audio",
+    ProcessingPipelineState.ANALYZING: "Analyzing audio timeline",
+    ProcessingPipelineState.SEPARATING_VOCALS: "Separating vocal stems",
+    ProcessingPipelineState.TRANSCRIBING: "Transcribing singing lyrics",
+    ProcessingPipelineState.ALIGNING: "Aligning word boundaries",
+    ProcessingPipelineState.VALIDATING_ALIGNMENT: "Validating alignment bounds",
+    ProcessingPipelineState.COMPLETED: "Processing completed",
+    ProcessingPipelineState.FAILED: "Processing failed",
 }
 
 # Explicit finite-state-machine transitions:

@@ -13,6 +13,7 @@ export interface PlaybackSnapshot {
   loop: boolean;
   ready: boolean;
   sourceLabel: string;
+  error: string | null;
 }
 
 export function formatSeconds(seconds: number | null | undefined): string {
@@ -29,6 +30,7 @@ export class HtmlAudioPlaybackClock {
   private audioEl: HTMLAudioElement | null = null;
   private objectUrl: string | null = null;
   private sourceLabel = '';
+  private loadError: string | null = null;
   private rafId = 0;
   private listeners = new Set<(snap: PlaybackSnapshot) => void>();
 
@@ -44,7 +46,12 @@ export class HtmlAudioPlaybackClock {
 
   private bindEvents(el: HTMLAudioElement): void {
     const notify = () => this.emit();
+    const clearErrAndNotify = () => {
+      this.loadError = null;
+      this.emit();
+    };
     el.addEventListener('play', () => {
+      this.loadError = null;
       this.startLoop();
       notify();
     });
@@ -56,11 +63,23 @@ export class HtmlAudioPlaybackClock {
       this.stopLoop();
       notify();
     });
-    el.addEventListener('loadedmetadata', notify);
+    el.addEventListener('loadedmetadata', clearErrAndNotify);
+    el.addEventListener('loadeddata', clearErrAndNotify);
+    el.addEventListener('canplay', clearErrAndNotify);
+    el.addEventListener('durationchange', notify);
     el.addEventListener('timeupdate', notify);
     el.addEventListener('seeked', notify);
     el.addEventListener('ratechange', notify);
     el.addEventListener('volumechange', notify);
+    el.addEventListener('error', () => {
+      this.stopLoop();
+      const code = el.error?.code;
+      this.loadError =
+        code === 4
+          ? 'Format audio non supporté par ce navigateur.'
+          : 'Impossible de charger la source audio.';
+      notify();
+    });
   }
 
   private startLoop(): void {
@@ -100,16 +119,19 @@ export class HtmlAudioPlaybackClock {
 
   getSnapshot(): PlaybackSnapshot {
     const el = this.audioEl;
+    const hasDuration = Boolean(el && Number.isFinite(el.duration) && el.duration > 0);
+    const hasMeta = Boolean(el && el.readyState >= 1);
     return {
       playing: Boolean(el && !el.paused && !el.ended),
       currentTime: el && Number.isFinite(el.currentTime) ? el.currentTime : 0,
-      duration: el && Number.isFinite(el.duration) ? el.duration : 0,
+      duration: hasDuration && el ? el.duration : 0,
       playbackRate: el ? el.playbackRate : 1,
       volume: el ? el.volume : 1,
       muted: el ? el.muted : false,
       loop: el ? el.loop : false,
-      ready: Boolean(el && el.src && Number.isFinite(el.duration) && el.duration > 0),
+      ready: Boolean(el && el.src && !this.loadError && (hasDuration || hasMeta)),
       sourceLabel: this.sourceLabel,
+      error: this.loadError,
     };
   }
 
@@ -122,6 +144,7 @@ export class HtmlAudioPlaybackClock {
     const url = URL.createObjectURL(file);
     this.objectUrl = url;
     this.sourceLabel = file.name;
+    this.loadError = null;
     this.audioEl.src = url;
     this.audioEl.load();
     this.emit();
@@ -134,6 +157,7 @@ export class HtmlAudioPlaybackClock {
       this.objectUrl = null;
     }
     this.sourceLabel = label;
+    this.loadError = null;
     this.audioEl.src = url;
     this.audioEl.load();
     this.emit();
@@ -141,6 +165,7 @@ export class HtmlAudioPlaybackClock {
 
   async play(): Promise<void> {
     if (!this.audioEl || !this.audioEl.src) return;
+    this.loadError = null;
     await this.audioEl.play();
   }
 
@@ -151,7 +176,10 @@ export class HtmlAudioPlaybackClock {
   toggle(): void {
     if (!this.audioEl) return;
     if (this.audioEl.paused) {
-      void this.play().catch(() => {});
+      void this.play().catch((err) => {
+        this.loadError = err instanceof Error ? err.message : 'Lecture audio bloquée par le navigateur.';
+        this.emit();
+      });
     } else {
       this.pause();
     }

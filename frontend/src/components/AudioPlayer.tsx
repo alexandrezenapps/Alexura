@@ -52,7 +52,14 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             {title || snapshot.sourceLabel || 'No Audio Loaded'}
           </div>
           <div className="truncate text-[11px] text-slate-400">
-            {artist || (snapshot.ready ? 'Original Audio Timeline · HTML5 Audio API' : 'Upload or select a track to activate transport')}
+            {snapshot.error ? (
+              <span className="text-red-300">{snapshot.error}</span>
+            ) : (
+              artist ||
+              (snapshot.ready
+                ? 'Original Audio Timeline · HTML5 Audio API'
+                : 'Upload or select a track to activate transport')
+            )}
           </div>
         </div>
 

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexura.studio/schemas/processing_job.schema.json",
+  "title": "ProcessingJob",
+  "description": "Canonical ProcessingStatus and ProcessingJob progress contract for AI lyrics sync pipelines.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["jobId", "songId", "status", "progress", "currentStep"],
+  "properties": {
+    "jobId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "songId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "validating",
+        "analyzing",
+        "separating_vocals",
+        "transcribing",
+        "aligning",
+        "validating_alignment",
+        "completed",
+        "failed"
+      ]
+    },
+    "progress": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "currentStep": {
+      "type": "string",
+      "minLength": 1
+    },
+    "error": {
+      "type": "string"
+    }
+  },
+  "examples": [
+    {
+      "jobId": "job_001",
+      "songId": "song_001",
+      "status": "aligning",
+      "progress": 72,
+      "currentStep": "Aligning word boundaries"
+    }
+  ]
+}

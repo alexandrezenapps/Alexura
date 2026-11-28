@@ -1,0 +1,426 @@
+{
+  "schemaVersion": "1.0.0",
+  "documentId": "lyr_8ff183df40694e",
+  "audioId": "aud_2402048475607420",
+  "jobId": "job_bf4a99234b23cf",
+  "title": "Smoke Track",
+  "artist": "Audit",
+  "primaryLanguage": "fr",
+  "detectedLanguages": [
+    "fr"
+  ],
+  "durationSeconds": 1,
+  "timelineOriginSeconds": 0,
+  "preservesOriginalAudio": true,
+  "alignmentStatus": "partial_manual",
+  "source": "manual_editor",
+  "metadata": {
+    "phase": "phase_1_foundation",
+    "adapters": {
+      "vocalSeparation": {
+        "name": "VocalSeparationAdapter",
+        "adapterClass": "UnconfiguredVocalSeparationAdapter",
+        "implementation": "phase1_interface_only",
+        "status": "unconfigured_adapter",
+        "isImplementedForProduction": false,
+        "note": "Phase 1 stub adapter. Original audio timeline preserved untouched; Demucs/MDX connects in Phase 2.",
+        "phaseTarget": "Phase 2 (Demucs / MDX-Net)"
+      },
+      "singingAsr": {
+        "name": "SingingASRAdapter",
+        "adapterClass": "UnconfiguredSingingASRAdapter",
+        "implementation": "phase1_interface_only",
+        "status": "unconfigured_adapter",
+        "isImplementedForProduction": false,
+        "note": "Phase 1 stub adapter. Does not fabricate lyrics recognition; structured draft segments only.",
+        "phaseTarget": "Phase 2 (Gemini Audio + Singing ASR)"
+      },
+      "forcedAlignment": {
+        "name": "ForcedAlignmentAdapter",
+        "adapterClass": "UnconfiguredForcedAlignmentAdapter",
+        "implementation": "phase1_interface_only",
+        "status": "unconfigured_adapter",
+        "isImplementedForProduction": false,
+        "note": "Phase 1 stub adapter. Tokenizes LyricWord & LyricUnit with strictly null timestamps (zero fake timings).",
+        "phaseTarget": "Phase 2 (CTC Forced Alignment)"
+      },
+      "lyricsValidation": {
+        "name": "LyricsValidationService",
+        "adapterClass": "LyricsValidationService",
+        "implementation": "schema_and_timestamp_validator",
+        "status": "ready",
+        "isImplementedForProduction": true,
+        "note": "Active normalized schema, monotonic timestamp, and second-based invariant validator.",
+        "phaseTarget": "Phase 1 + Phase 2"
+      },
+      "secretsProtected": true,
+      "geminiServerConfigured": true,
+      "asrRouting": {
+        "interfaceClass": "SingingASRAdapter.transcribe(audio_path, language)",
+        "primaryModel": "GeminiASRAdapter",
+        "fallbackModels": [
+          "WhisperSingingAdapter",
+          "LocalSingingASRAdapter",
+          "CustomModelAdapter"
+        ],
+        "stages": [
+          "1. Primary recognition (lyrics + language detection)",
+          "2. Quality check (completeness, repetition, gaps, confidence)",
+          "3. Conditional secondary model fallback on low confidence",
+          "4. Confirmed lyrics -> independent forced alignment input"
+        ]
+      }
+    },
+    "version": 2
+  },
+  "segments": [
+    {
+      "segmentId": "seg_000",
+      "index": 0,
+      "text": "Bonjour le monde",
+      "startSeconds": 0.1,
+      "endSeconds": 0.5,
+      "language": "fr",
+      "sectionType": "verse",
+      "vocalType": "lead",
+      "speaker": "Lead",
+      "confidence": null,
+      "alignmentState": "manual",
+      "isPlaceholder": false,
+      "words": [
+        {
+          "wordId": "seg_000_w000",
+          "text": "Bonjour",
+          "startSeconds": null,
+          "endSeconds": null,
+          "confidence": null,
+          "alignmentState": "unaligned",
+          "speaker": "Lead",
+          "flags": [
+            "unaligned_phase1"
+          ],
+          "units": [
+            {
+              "unitId": "seg_000_w000_u00",
+              "text": "B",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_000_w000_u01",
+              "text": "o",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_000_w000_u02",
+              "text": "n",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_000_w000_u03",
+              "text": "j",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_000_w000_u04",
+              "text": "o",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_000_w000_u05",
+              "text": "u",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_000_w000_u06",
+              "text": "r",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            }
+          ]
+        },
+        {
+          "wordId": "seg_000_w001",
+          "text": "le",
+          "startSeconds": null,
+          "endSeconds": null,
+          "confidence": null,
+          "alignmentState": "unaligned",
+          "speaker": "Lead",
+          "flags": [
+            "unaligned_phase1"
+          ],
+          "units": [
+            {
+              "unitId": "seg_000_w001_u00",
+              "text": "l",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_000_w001_u01",
+              "text": "e",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            }
+          ]
+        },
+        {
+          "wordId": "seg_000_w002",
+          "text": "monde",
+          "startSeconds": null,
+          "endSeconds": null,
+          "confidence": null,
+          "alignmentState": "unaligned",
+          "speaker": "Lead",
+          "flags": [
+            "unaligned_phase1"
+          ],
+          "units": [
+            {
+              "unitId": "seg_000_w002_u00",
+              "text": "m",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_000_w002_u01",
+              "text": "o",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_000_w002_u02",
+              "text": "n",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_000_w002_u03",
+              "text": "d",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_000_w002_u04",
+              "text": "e",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "segmentId": "seg_001",
+      "index": 1,
+      "text": "Deuxième ligne",
+      "startSeconds": 0.6,
+      "endSeconds": 0.95,
+      "language": "fr",
+      "sectionType": "verse",
+      "vocalType": "lead",
+      "speaker": "Lead",
+      "confidence": null,
+      "alignmentState": "manual",
+      "isPlaceholder": false,
+      "words": [
+        {
+          "wordId": "seg_001_w000",
+          "text": "Deuxième",
+          "startSeconds": null,
+          "endSeconds": null,
+          "confidence": null,
+          "alignmentState": "unaligned",
+          "speaker": "Lead",
+          "flags": [
+            "unaligned_phase1"
+          ],
+          "units": [
+            {
+              "unitId": "seg_001_w000_u00",
+              "text": "D",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_001_w000_u01",
+              "text": "e",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_001_w000_u02",
+              "text": "u",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_001_w000_u03",
+              "text": "x",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_001_w000_u04",
+              "text": "i",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_001_w000_u05",
+              "text": "è",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_001_w000_u06",
+              "text": "m",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_001_w000_u07",
+              "text": "e",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            }
+          ]
+        },
+        {
+          "wordId": "seg_001_w001",
+          "text": "ligne",
+          "startSeconds": null,
+          "endSeconds": null,
+          "confidence": null,
+          "alignmentState": "unaligned",
+          "speaker": "Lead",
+          "flags": [
+            "unaligned_phase1"
+          ],
+          "units": [
+            {
+              "unitId": "seg_001_w001_u00",
+              "text": "l",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_001_w001_u01",
+              "text": "i",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_001_w001_u02",
+              "text": "g",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_001_w001_u03",
+              "text": "n",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            },
+            {
+              "unitId": "seg_001_w001_u04",
+              "text": "e",
+              "unitType": "character",
+              "startSeconds": null,
+              "endSeconds": null,
+              "confidence": null,
+              "alignmentState": "unaligned"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "createdAt": "2026-11-28T16:12:05.774Z",
+  "updatedAt": "2026-11-28T16:12:05.799Z",
+  "version": 2
+}

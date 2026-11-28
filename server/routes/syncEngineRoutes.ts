@@ -9,10 +9,25 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
+  DEFAULT_JOB_STEP_MESSAGES,
+  fromAlignedLyricsDocument,
+  fromCanonicalSongAlignment,
+  remapAnalysisTimestampToOriginal,
+  remapSegmentAlignmentToOriginal,
+  toAlignedLyricsDocument,
+  toCanonicalProcessingJob,
+  toCanonicalSongAlignment,
   transitionProcessingJob,
+  validateAlignedLyricsDocument,
+  validateAnalysisSegmentMapping,
+  validateCanonicalSongAlignment,
   validateLyricsDocument,
   type AdapterReportMap,
+  type AlignedLyricsDocument,
+  type AnalysisSegmentMapping,
   type AudioAssetRecord,
+  type CanonicalAlignmentSegment,
+  type CanonicalSongAlignmentDocument,
   type LyricSegment,
   type LyricUnit,
   type LyricWord,
@@ -26,8 +41,22 @@ const DATA_ROOT = path.resolve(
 const AUDIO_DIR = path.join(DATA_ROOT, 'audio');
 const JOBS_DIR = path.join(DATA_ROOT, 'jobs');
 const LYRICS_DIR = path.join(DATA_ROOT, 'lyrics');
-const ALLOWED_EXTS = new Set(['.wav', '.mp3', '.m4a', '.aac', '.flac', '.ogg', '.webm']);
+const ALLOWED_EXTS = new Set(['.wav', '.mp3', '.m4a', '.aac', '.flac', '.ogg', '.opus', '.webm']);
 const MAX_UPLOAD_BYTES = Math.max(10, Number(process.env.MAX_UPLOAD_MB || 100)) * 1024 * 1024;
+const CONTENT_TYPES: Record<string, string> = {
+  '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.m4a': 'audio/mp4',
+  '.aac': 'audio/aac',
+  '.flac': 'audio/flac',
+  '.ogg': 'audio/ogg',
+  '.opus': 'audio/ogg',
+  '.webm': 'audio/webm',
+};
+
+function getMediaType(ext: string): string {
+  return CONTENT_TYPES[ext.toLowerCase()] || 'application/octet-stream';
+}
 
 function ensureDirs(): void {
   fs.mkdirSync(AUDIO_DIR, { recursive: true });
@@ -46,22 +75,249 @@ function safeChild(dir: string, filename: string): string {
 
 function hasValidAudioMagic(head: Buffer, ext: string): boolean {
   if (head.length < 4) return false;
+  const extL = ext.toLowerCase();
   if (head.subarray(0, 4).equals(Buffer.from('RIFF')) && head.length >= 12 && head.subarray(8, 12).equals(Buffer.from('WAVE'))) {
-    return true;
+    return extL === '.wav';
   }
   if (head.subarray(0, 3).equals(Buffer.from('ID3')) || (head[0] === 0xff && (head[1] & 0xe0) === 0xe0)) {
-    return true;
+    return extL === '.mp3' || extL === '.aac';
   }
-  if (head.subarray(0, 4).equals(Buffer.from('fLaC')) || head.subarray(0, 4).equals(Buffer.from('OggS'))) {
-    return true;
+  if (head.subarray(0, 4).equals(Buffer.from('fLaC'))) {
+    return extL === '.flac';
+  }
+  if (head.subarray(0, 4).equals(Buffer.from('OggS'))) {
+    return extL === '.ogg' || extL === '.opus';
   }
   if (head.length >= 8 && head.subarray(4, 8).equals(Buffer.from('ftyp'))) {
-    return true;
+    return extL === '.m4a' || extL === '.aac';
   }
-  if (head[0] === 0x1a && head[1] === 0x45 && head[2] === 0xdf && head[3] === 0xa3 && ext === '.webm') {
+  if (head[0] === 0x1a && head[1] === 0x45 && head[2] === 0xdf && head[3] === 0xa3 && extL === '.webm') {
     return true;
   }
   return false;
+}
+
+interface ExtractedAudioMeta {
+  durationSeconds: number;
+  sampleRateHz: number;
+  channels: number;
+  bitDepth: number;
+  codecContainer: string;
+  waveformPeaks: number[];
+}
+
+function extractWavMetadata(buf: Buffer): ExtractedAudioMeta {
+  const fallback: ExtractedAudioMeta = {
+    durationSeconds: 0,
+    sampleRateHz: 0,
+    channels: 0,
+    bitDepth: 0,
+    codecContainer: 'wav',
+    waveformPeaks: [],
+  };
+  if (buf.length < 44 || !buf.subarray(0, 4).equals(Buffer.from('RIFF')) || !buf.subarray(8, 12).equals(Buffer.from('WAVE'))) {
+    return fallback;
+  }
+  let channels = 0;
+  let sampleRateHz = 0;
+  let bitDepth = 0;
+  let audioFormat = 1;
+  let dataStart = -1;
+  let dataSize = 0;
+
+  let offset = 12;
+  while (offset + 8 <= buf.length) {
+    const chunkId = buf.subarray(offset, offset + 4).toString('ascii');
+    const chunkSize = buf.readUInt32LE(offset + 4);
+    const bodyStart = offset + 8;
+    const bodyEnd = Math.min(buf.length, bodyStart + chunkSize);
+    if (chunkId === 'fmt ' && bodyStart + 16 <= buf.length) {
+      audioFormat = buf.readUInt16LE(bodyStart);
+      channels = buf.readUInt16LE(bodyStart + 2);
+      sampleRateHz = buf.readUInt32LE(bodyStart + 4);
+      bitDepth = buf.readUInt16LE(bodyStart + 14);
+    } else if (chunkId === 'data') {
+      dataStart = bodyStart;
+      dataSize = Math.max(0, bodyEnd - bodyStart);
+      break;
+    }
+    offset = bodyStart + chunkSize + (chunkSize % 2);
+  }
+
+  const sampleWidth = bitDepth > 0 ? Math.floor(bitDepth / 8) : 0;
+  const frameBytes = channels * sampleWidth;
+  if (frameBytes <= 0 || sampleRateHz <= 0 || dataStart < 0 || dataSize <= 0) {
+    return {
+      ...fallback,
+      sampleRateHz,
+      channels,
+      bitDepth,
+    };
+  }
+
+  const totalFrames = Math.floor(dataSize / frameBytes);
+  const durationSeconds = Math.round((totalFrames / sampleRateHz) * 1000) / 1000;
+  const waveformPeaks: number[] = [];
+
+  if (audioFormat === 1 && (sampleWidth === 1 || sampleWidth === 2 || sampleWidth === 4) && totalFrames > 0) {
+    const numBins = Math.min(96, totalFrames);
+    const stride = Math.max(1, Math.floor(totalFrames / 2048));
+    for (let b = 0; b < numBins; b += 1) {
+      const startF = Math.floor((b * totalFrames) / numBins);
+      const endF = Math.max(startF + 1, Math.floor(((b + 1) * totalFrames) / numBins));
+      let binMax = 0;
+      for (let f = startF; f < endF; f += stride) {
+        for (let c = 0; c < channels; c += 1) {
+          const byteOff = dataStart + f * frameBytes + c * sampleWidth;
+          if (byteOff + sampleWidth > buf.length) break;
+          let amp = 0;
+          if (sampleWidth === 1) {
+            amp = Math.abs((buf.readUInt8(byteOff) - 128) / 128);
+          } else if (sampleWidth === 2) {
+            amp = Math.abs(buf.readInt16LE(byteOff) / 32768);
+          } else {
+            amp = Math.abs(buf.readInt32LE(byteOff) / 2147483648);
+          }
+          if (amp > binMax) binMax = amp;
+        }
+      }
+      waveformPeaks.push(Math.round(Math.min(1, binMax) * 10000) / 10000);
+    }
+  }
+
+  return {
+    durationSeconds,
+    sampleRateHz,
+    channels,
+    bitDepth,
+    codecContainer: 'wav',
+    waveformPeaks,
+  };
+}
+
+function extractFlacMetadata(buf: Buffer): ExtractedAudioMeta {
+  const fallback: ExtractedAudioMeta = {
+    durationSeconds: 0,
+    sampleRateHz: 0,
+    channels: 0,
+    bitDepth: 0,
+    codecContainer: 'flac',
+    waveformPeaks: [],
+  };
+  if (buf.length < 42 || !buf.subarray(0, 4).equals(Buffer.from('fLaC'))) return fallback;
+  if ((buf[4] & 0x7f) !== 0) return fallback;
+  const packed = buf.readBigUInt64BE(18);
+  const sampleRateHz = Number((packed >> 44n) & 0xfffffn);
+  const channels = Number((packed >> 41n) & 0x7n) + 1;
+  const bitDepth = Number((packed >> 36n) & 0x1fn) + 1;
+  const totalSamples = Number(packed & 0xfffffffffn);
+  const durationSeconds = sampleRateHz > 0 ? Math.round((totalSamples / sampleRateHz) * 1000) / 1000 : 0;
+  return {
+    durationSeconds: Math.max(0, durationSeconds),
+    sampleRateHz,
+    channels,
+    bitDepth,
+    codecContainer: 'flac',
+    waveformPeaks: [],
+  };
+}
+
+function extractOggMetadata(buf: Buffer, extL: string): ExtractedAudioMeta {
+  const opusIdx = buf.indexOf(Buffer.from('OpusHead'));
+  if (opusIdx !== -1 && opusIdx + 16 <= buf.length) {
+    return {
+      durationSeconds: 0,
+      sampleRateHz: buf.readUInt32LE(opusIdx + 12) || 48000,
+      channels: buf[opusIdx + 9] || 0,
+      bitDepth: 0,
+      codecContainer: 'opus',
+      waveformPeaks: [],
+    };
+  }
+  const vorbisIdx = buf.indexOf(Buffer.from('\x01vorbis'));
+  if (vorbisIdx !== -1 && vorbisIdx + 16 <= buf.length) {
+    return {
+      durationSeconds: 0,
+      sampleRateHz: buf.readUInt32LE(vorbisIdx + 12) || 0,
+      channels: buf[vorbisIdx + 11] || 0,
+      bitDepth: 0,
+      codecContainer: 'ogg',
+      waveformPeaks: [],
+    };
+  }
+  return {
+    durationSeconds: 0,
+    sampleRateHz: 0,
+    channels: 0,
+    bitDepth: 0,
+    codecContainer: extL.replace(/^\./, '') || 'ogg',
+    waveformPeaks: [],
+  };
+}
+
+const MP3_SAMPLE_RATES: Record<number, Record<number, number>> = {
+  3: { 0: 44100, 1: 48000, 2: 32000 },
+  2: { 0: 22050, 1: 24000, 2: 16000 },
+  0: { 0: 11025, 1: 12000, 2: 8000 },
+};
+
+function extractMp3Metadata(buf: Buffer): ExtractedAudioMeta {
+  let offset = 0;
+  if (buf.length >= 10 && buf.subarray(0, 3).equals(Buffer.from('ID3'))) {
+    const tagSize =
+      ((buf[6] & 0x7f) << 21) |
+      ((buf[7] & 0x7f) << 14) |
+      ((buf[8] & 0x7f) << 7) |
+      (buf[9] & 0x7f);
+    offset = Math.min(buf.length, 10 + tagSize);
+  }
+  const scanLimit = Math.min(buf.length - 4, offset + 4096);
+  for (let pos = offset; pos < scanLimit; pos += 1) {
+    const b0 = buf[pos];
+    const b1 = buf[pos + 1];
+    const b2 = buf[pos + 2];
+    const b3 = buf[pos + 3];
+    if (b0 === 0xff && (b1 & 0xe0) === 0xe0) {
+      const versionId = (b1 >> 3) & 0x03;
+      const srIdx = (b2 >> 2) & 0x03;
+      const channelMode = (b3 >> 6) & 0x03;
+      const sr = MP3_SAMPLE_RATES[versionId]?.[srIdx] || 0;
+      if (sr > 0) {
+        return {
+          durationSeconds: 0,
+          sampleRateHz: sr,
+          channels: channelMode === 3 ? 1 : 2,
+          bitDepth: 0,
+          codecContainer: 'mp3',
+          waveformPeaks: [],
+        };
+      }
+    }
+  }
+  return {
+    durationSeconds: 0,
+    sampleRateHz: 0,
+    channels: 0,
+    bitDepth: 0,
+    codecContainer: 'mp3',
+    waveformPeaks: [],
+  };
+}
+
+function extractAudioMetadata(buf: Buffer, ext: string): ExtractedAudioMeta {
+  const extL = ext.toLowerCase();
+  if (extL === '.wav') return extractWavMetadata(buf);
+  if (extL === '.flac') return extractFlacMetadata(buf);
+  if (extL === '.ogg' || extL === '.opus') return extractOggMetadata(buf, extL);
+  if (extL === '.mp3') return extractMp3Metadata(buf);
+  return {
+    durationSeconds: 0,
+    sampleRateHz: 0,
+    channels: 0,
+    bitDepth: 0,
+    codecContainer: extL.replace(/^\./, '') || 'unknown',
+    waveformPeaks: [],
+  };
 }
 
 function parseMultipartSingleFile(body: Buffer, contentType: string): {
@@ -143,6 +399,21 @@ function buildPhase1AdaptersReport(): AdapterReportMap {
     },
     secretsProtected: true,
     geminiServerConfigured: geminiConfigured,
+    asrRouting: {
+      interfaceClass: 'SingingASRAdapter.transcribe(audio_path, language)',
+      primaryModel: 'GeminiASRAdapter',
+      fallbackModels: [
+        'WhisperSingingAdapter',
+        'LocalSingingASRAdapter',
+        'CustomModelAdapter',
+      ],
+      stages: [
+        '1. Primary recognition (lyrics + language detection)',
+        '2. Quality check (completeness, repetition, gaps, confidence)',
+        '3. Conditional secondary model fallback on low confidence',
+        '4. Confirmed lyrics -> independent forced alignment input',
+      ],
+    },
   };
 }
 
@@ -385,6 +656,38 @@ export function createSyncEngineV1Router(): express.Router {
     res.type('application/json').send(fs.readFileSync(schemaPath, 'utf8'));
   });
 
+  router.get('/schemas/segment-mapping', (_req, res) => {
+    const schemaPath = path.resolve(process.cwd(), 'schemas', 'segment_mapping.schema.json');
+    if (!fs.existsSync(schemaPath)) {
+      return res.status(404).json({ success: false, error: 'schema_not_found' });
+    }
+    res.type('application/json').send(fs.readFileSync(schemaPath, 'utf8'));
+  });
+
+  router.get('/schemas/song-alignment', (_req, res) => {
+    const schemaPath = path.resolve(process.cwd(), 'schemas', 'song_alignment.schema.json');
+    if (!fs.existsSync(schemaPath)) {
+      return res.status(404).json({ success: false, error: 'schema_not_found' });
+    }
+    res.type('application/json').send(fs.readFileSync(schemaPath, 'utf8'));
+  });
+
+  router.get('/schemas/processing-job', (_req, res) => {
+    const schemaPath = path.resolve(process.cwd(), 'schemas', 'processing_job.schema.json');
+    if (!fs.existsSync(schemaPath)) {
+      return res.status(404).json({ success: false, error: 'schema_not_found' });
+    }
+    res.type('application/json').send(fs.readFileSync(schemaPath, 'utf8'));
+  });
+
+  router.get('/schemas/aligned-lyrics', (_req, res) => {
+    const schemaPath = path.resolve(process.cwd(), 'schemas', 'aligned_lyrics.schema.json');
+    if (!fs.existsSync(schemaPath)) {
+      return res.status(404).json({ success: false, error: 'schema_not_found' });
+    }
+    res.type('application/json').send(fs.readFileSync(schemaPath, 'utf8'));
+  });
+
   router.post(
     '/audio/upload',
     express.raw({ type: '*/*', limit: '105mb' }),
@@ -427,15 +730,24 @@ export function createSyncEngineV1Router(): express.Router {
         const storagePath = safeChild(AUDIO_DIR, `${audioId}${ext}`);
         fs.writeFileSync(storagePath, fileBuf);
 
+        const extracted = extractAudioMetadata(fileBuf, ext);
+        const resolvedMime =
+          mimeType && mimeType !== 'application/octet-stream'
+            ? mimeType
+            : getMediaType(ext);
+
         const asset: AudioAssetRecord & { storagePath: string } = {
           audioId,
           filename: safeName,
-          mimeType,
+          mimeType: resolvedMime,
           byteSize: fileBuf.length,
           sha256: crypto.createHash('sha256').update(fileBuf).digest('hex'),
-          durationSeconds: 0,
-          sampleRateHz: 0,
-          channels: 0,
+          durationSeconds: extracted.durationSeconds,
+          sampleRateHz: extracted.sampleRateHz,
+          channels: extracted.channels,
+          bitDepth: extracted.bitDepth,
+          codecContainer: extracted.codecContainer,
+          waveformPeaks: extracted.waveformPeaks,
           storagePath,
           audioUrl: `/api/v1/audio/${audioId}/stream`,
           createdAt: new Date().toISOString(),
@@ -454,6 +766,23 @@ export function createSyncEngineV1Router(): express.Router {
     },
   );
 
+  router.get('/audio', (_req, res) => {
+    ensureDirs();
+    const files = fs
+      .readdirSync(AUDIO_DIR)
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => path.join(AUDIO_DIR, f))
+      .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)
+      .slice(0, 25);
+    const items = files.map((f) => {
+      const { storagePath: _hidden, ...publicAsset } = JSON.parse(
+        fs.readFileSync(f, 'utf8'),
+      );
+      return publicAsset;
+    });
+    return res.json({ success: true, items });
+  });
+
   router.get('/audio/:audioId', (req, res) => {
     try {
       const metaPath = safeChild(AUDIO_DIR, `${req.params.audioId}.json`);
@@ -464,6 +793,24 @@ export function createSyncEngineV1Router(): express.Router {
         fs.readFileSync(metaPath, 'utf8'),
       );
       return res.json({ success: true, audio: publicAsset });
+    } catch {
+      return res.status(404).json({ success: false, detail: 'audio_not_found' });
+    }
+  });
+
+  router.delete('/audio/:audioId', (req, res) => {
+    try {
+      const metaPath = safeChild(AUDIO_DIR, `${req.params.audioId}.json`);
+      if (!fs.existsSync(metaPath)) {
+        return res.status(404).json({ success: false, detail: 'audio_not_found' });
+      }
+      const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+      const audioPath = path.resolve(String(meta.storagePath || ''));
+      if (audioPath.startsWith(path.resolve(AUDIO_DIR) + path.sep) && fs.existsSync(audioPath)) {
+        fs.unlinkSync(audioPath);
+      }
+      fs.unlinkSync(metaPath);
+      return res.json({ success: true, deleted: req.params.audioId });
     } catch {
       return res.status(404).json({ success: false, detail: 'audio_not_found' });
     }
@@ -482,8 +829,14 @@ export function createSyncEngineV1Router(): express.Router {
       }
       const stat = fs.statSync(audioPath);
       const total = stat.size;
+      const ext = path.extname(audioPath).toLowerCase();
       res.setHeader('Accept-Ranges', 'bytes');
-      res.setHeader('Content-Type', meta.mimeType || 'audio/mpeg');
+      res.setHeader(
+        'Content-Type',
+        meta.mimeType && meta.mimeType !== 'application/octet-stream'
+          ? meta.mimeType
+          : getMediaType(ext),
+      );
       const range = req.headers.range;
       if (range && range.startsWith('bytes=')) {
         const parts = range.replace(/bytes=/, '').split('-');
@@ -523,9 +876,13 @@ export function createSyncEngineV1Router(): express.Router {
       const job: ProcessingJob = {
         jobId: `job_${crypto.randomBytes(7).toString('hex')}`,
         audioId,
+        songId: audioId,
         documentId: `lyr_${crypto.randomBytes(7).toString('hex')}`,
         state: 'queued',
+        status: 'queued',
         progressPercent: 0,
+        progress: 0,
+        currentStep: DEFAULT_JOB_STEP_MESSAGES.queued,
         languageHint: String(languageHint || 'auto').slice(0, 32),
         enableVocalSeparation: enableVocalSeparation !== false,
         phaseMode: 'phase_1_architecture_foundation',
@@ -552,7 +909,7 @@ export function createSyncEngineV1Router(): express.Router {
     }
   });
 
-  router.get('/jobs', (_req, res) => {
+  router.get('/jobs', (req, res) => {
     ensureDirs();
     const files = fs
       .readdirSync(JOBS_DIR)
@@ -560,7 +917,11 @@ export function createSyncEngineV1Router(): express.Router {
       .map((f) => path.join(JOBS_DIR, f))
       .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)
       .slice(0, 25);
-    const jobs = files.map((f) => JSON.parse(fs.readFileSync(f, 'utf8')));
+    const rawJobs = files.map((f) => JSON.parse(fs.readFileSync(f, 'utf8')) as ProcessingJob);
+    const jobs =
+      req.query.format === 'canonical'
+        ? rawJobs.map((j) => toCanonicalProcessingJob(j))
+        : rawJobs;
     res.json({ success: true, jobs });
   });
 
@@ -570,7 +931,24 @@ export function createSyncEngineV1Router(): express.Router {
       if (!fs.existsSync(p)) {
         return res.status(404).json({ success: false, detail: 'job_not_found' });
       }
-      return res.json({ success: true, job: JSON.parse(fs.readFileSync(p, 'utf8')) });
+      const raw = JSON.parse(fs.readFileSync(p, 'utf8')) as ProcessingJob;
+      if (req.query.format === 'canonical') {
+        return res.json(toCanonicalProcessingJob(raw));
+      }
+      return res.json({ success: true, job: raw });
+    } catch {
+      return res.status(404).json({ success: false, detail: 'job_not_found' });
+    }
+  });
+
+  router.get('/jobs/:jobId/canonical', (req, res) => {
+    try {
+      const p = safeChild(JOBS_DIR, `${req.params.jobId}.json`);
+      if (!fs.existsSync(p)) {
+        return res.status(404).json({ success: false, detail: 'job_not_found' });
+      }
+      const raw = JSON.parse(fs.readFileSync(p, 'utf8')) as ProcessingJob;
+      return res.json(toCanonicalProcessingJob(raw));
     } catch {
       return res.status(404).json({ success: false, detail: 'job_not_found' });
     }
@@ -612,6 +990,10 @@ export function createSyncEngineV1Router(): express.Router {
         return res.status(422).json({ success: false, detail: 'segments must be an array' });
       }
 
+      const nextVersion = Math.max(
+        1,
+        Number(existing.version ?? existing.metadata?.version ?? 1) + 1,
+      );
       const updated: LyricsDocument = {
         ...existing,
         title: typeof body.title === 'string' ? body.title.slice(0, 240) : existing.title,
@@ -623,6 +1005,11 @@ export function createSyncEngineV1Router(): express.Router {
         alignmentStatus:
           typeof body.alignmentStatus === 'string' ? body.alignmentStatus : 'partial_manual',
         source: 'manual_editor',
+        version: nextVersion,
+        metadata: {
+          ...(existing.metadata || {}),
+          version: nextVersion,
+        },
         segments: body.segments,
         updatedAt: new Date().toISOString(),
       };
@@ -640,6 +1027,231 @@ export function createSyncEngineV1Router(): express.Router {
       return res.json({ success: true, document: updated });
     } catch (err: any) {
       return res.status(500).json({ success: false, detail: err?.message || 'lyrics_update_failed' });
+    }
+  });
+
+  router.post('/jobs/remap-segment', (req, res) => {
+    try {
+      const body = req.body || {};
+      const mapping = body.mapping as AnalysisSegmentMapping | undefined;
+      if (!mapping) {
+        return res.status(400).json({ success: false, detail: 'missing_segment_mapping' });
+      }
+      const duration =
+        typeof body.audioDuration === 'number' ? Number(body.audioDuration) : undefined;
+      const issues = validateAnalysisSegmentMapping(mapping, duration);
+      if (issues.length > 0) {
+        return res.status(422).json({
+          success: false,
+          detail: `${issues[0].path}: ${issues[0].message}`,
+          issues,
+        });
+      }
+
+      if (body.segment) {
+        const remapped = remapSegmentAlignmentToOriginal(
+          body.segment as CanonicalAlignmentSegment,
+          mapping,
+        );
+        return res.json({ success: true, mapping, segment: remapped });
+      }
+
+      if (Array.isArray(body.segments)) {
+        const remappedSegments = (body.segments as CanonicalAlignmentSegment[]).map((seg) =>
+          remapSegmentAlignmentToOriginal(seg, mapping),
+        );
+        return res.json({ success: true, mapping, segments: remappedSegments });
+      }
+
+      if (typeof body.analysisTimestamp === 'number') {
+        const originalTimestamp = remapAnalysisTimestampToOriginal(
+          body.analysisTimestamp,
+          mapping,
+        );
+        return res.json({ success: true, mapping, original_timestamp: originalTimestamp });
+      }
+
+      return res.json({
+        success: true,
+        mapping,
+        offset_seconds: +(mapping.original_start - mapping.analysis_start).toFixed(3),
+      });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, detail: err?.message || 'remap_failed' });
+    }
+  });
+
+  router.get('/lyrics/:documentId/canonical', (req, res) => {
+    try {
+      const p = safeChild(LYRICS_DIR, `${req.params.documentId}.json`);
+      if (!fs.existsSync(p)) {
+        return res.status(404).json({ success: false, detail: 'lyrics_document_not_found' });
+      }
+      const doc = JSON.parse(fs.readFileSync(p, 'utf8')) as LyricsDocument;
+      return res.json(toCanonicalSongAlignment(doc));
+    } catch {
+      return res.status(404).json({ success: false, detail: 'lyrics_document_not_found' });
+    }
+  });
+
+  router.put('/lyrics/:documentId/canonical', (req, res) => {
+    try {
+      const p = safeChild(LYRICS_DIR, `${req.params.documentId}.json`);
+      if (!fs.existsSync(p)) {
+        return res.status(404).json({ success: false, detail: 'lyrics_document_not_found' });
+      }
+      const existing = JSON.parse(fs.readFileSync(p, 'utf8')) as LyricsDocument;
+      const canonical = req.body as CanonicalSongAlignmentDocument;
+      const check = validateCanonicalSongAlignment(canonical);
+      if (!check.valid) {
+        return res.status(422).json({
+          success: false,
+          detail: `${check.issues[0].path}: ${check.issues[0].message}`,
+          issues: check.issues,
+        });
+      }
+      const converted = fromCanonicalSongAlignment(canonical, {
+        documentId: existing.documentId,
+        audioId: existing.audioId,
+        title: existing.title,
+        artist: existing.artist,
+      });
+      converted.createdAt = existing.createdAt;
+      converted.jobId = existing.jobId;
+      fs.writeFileSync(p, JSON.stringify(converted, null, 2));
+      return res.json({
+        success: true,
+        document: converted,
+        canonical: toCanonicalSongAlignment(converted),
+      });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, detail: err?.message || 'canonical_update_failed' });
+    }
+  });
+
+  router.post('/lyrics/import-aligned', (req, res) => {
+    try {
+      ensureDirs();
+      const aligned = req.body as AlignedLyricsDocument;
+      const check = validateAlignedLyricsDocument(aligned);
+      if (!check.valid) {
+        return res.status(422).json({
+          success: false,
+          detail: `${check.issues[0].path}: ${check.issues[0].message}`,
+          issues: check.issues,
+        });
+      }
+      const safeSongId = String(aligned.songId).replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 80);
+      const docId = `lyr_${safeSongId || crypto.randomBytes(6).toString('hex')}`;
+      const converted = fromAlignedLyricsDocument(aligned, {
+        documentId: docId,
+        audioId: aligned.songId,
+      });
+      fs.writeFileSync(safeChild(LYRICS_DIR, `${converted.documentId}.json`), JSON.stringify(converted, null, 2));
+      return res.status(201).json({
+        success: true,
+        document: converted,
+        aligned: toAlignedLyricsDocument(converted),
+      });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, detail: err?.message || 'aligned_import_failed' });
+    }
+  });
+
+  router.get('/lyrics/:documentId/aligned', (req, res) => {
+    try {
+      const p = safeChild(LYRICS_DIR, `${req.params.documentId}.json`);
+      if (!fs.existsSync(p)) {
+        return res.status(404).json({ success: false, detail: 'lyrics_document_not_found' });
+      }
+      const doc = JSON.parse(fs.readFileSync(p, 'utf8')) as LyricsDocument;
+      return res.json(toAlignedLyricsDocument(doc));
+    } catch {
+      return res.status(404).json({ success: false, detail: 'lyrics_document_not_found' });
+    }
+  });
+
+  router.put('/lyrics/:documentId/aligned', (req, res) => {
+    try {
+      const p = safeChild(LYRICS_DIR, `${req.params.documentId}.json`);
+      if (!fs.existsSync(p)) {
+        return res.status(404).json({ success: false, detail: 'lyrics_document_not_found' });
+      }
+      const existing = JSON.parse(fs.readFileSync(p, 'utf8')) as LyricsDocument;
+      const aligned = req.body as AlignedLyricsDocument;
+      const check = validateAlignedLyricsDocument(aligned);
+      if (!check.valid) {
+        return res.status(422).json({
+          success: false,
+          detail: `${check.issues[0].path}: ${check.issues[0].message}`,
+          issues: check.issues,
+        });
+      }
+      const existingVer = Number(existing.version ?? existing.metadata?.version ?? 1);
+      const nextVer = Math.max(existingVer + 1, aligned.version || 1);
+      const converted = fromAlignedLyricsDocument(
+        { ...aligned, version: nextVer },
+        {
+          documentId: existing.documentId,
+          audioId: existing.audioId,
+          title: existing.title,
+          artist: existing.artist,
+        },
+      );
+      converted.createdAt = existing.createdAt;
+      converted.jobId = existing.jobId;
+      fs.writeFileSync(p, JSON.stringify(converted, null, 2));
+      return res.json({
+        success: true,
+        document: converted,
+        aligned: toAlignedLyricsDocument(converted),
+      });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, detail: err?.message || 'aligned_update_failed' });
+    }
+  });
+
+  router.get('/projects', (_req, res) => {
+    ensureDirs();
+    const files = fs
+      .readdirSync(LYRICS_DIR)
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => path.join(LYRICS_DIR, f))
+      .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)
+      .slice(0, 25);
+    const projects = files.map((f) => {
+      const doc = JSON.parse(fs.readFileSync(f, 'utf8')) as LyricsDocument;
+      return {
+        documentId: doc.documentId,
+        song_id: doc.audioId || doc.documentId,
+        songId: doc.audioId || doc.documentId,
+        title: doc.title,
+        artist: doc.artist,
+        language: doc.primaryLanguage,
+        durationSeconds: doc.durationSeconds,
+        alignmentStatus: doc.alignmentStatus,
+        version: Number(doc.version ?? doc.metadata?.version ?? 1),
+        updatedAt: doc.updatedAt,
+      };
+    });
+    return res.json({ success: true, projects });
+  });
+
+  router.get('/projects/:documentId', (req, res) => {
+    try {
+      const p = safeChild(LYRICS_DIR, `${req.params.documentId}.json`);
+      if (!fs.existsSync(p)) {
+        return res.status(404).json({ success: false, detail: 'project_not_found' });
+      }
+      const doc = JSON.parse(fs.readFileSync(p, 'utf8')) as LyricsDocument;
+      return res.json({
+        success: true,
+        document: doc,
+        song_alignment: toCanonicalSongAlignment(doc),
+        aligned_lyrics: toAlignedLyricsDocument(doc),
+      });
+    } catch {
+      return res.status(404).json({ success: false, detail: 'project_not_found' });
     }
   });
 

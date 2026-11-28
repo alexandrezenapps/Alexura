@@ -18,6 +18,7 @@ interface SynchronizedLyricsDisplayProps {
   saving?: boolean;
   onSeek: (seconds: number) => void;
   onSaveDocument?: (segments: LyricSegment[]) => void;
+  onToggleWordReview?: (segmentId: string, wordId: string) => void;
 }
 
 export const SynchronizedLyricsDisplay: React.FC<SynchronizedLyricsDisplayProps> = ({
@@ -26,6 +27,7 @@ export const SynchronizedLyricsDisplay: React.FC<SynchronizedLyricsDisplayProps>
   saving = false,
   onSeek,
   onSaveDocument,
+  onToggleWordReview,
 }) => {
   const [editMode, setEditMode] = useState(false);
   const [draftSegments, setDraftSegments] = useState<LyricSegment[]>([]);
@@ -270,23 +272,67 @@ export const SynchronizedLyricsDisplay: React.FC<SynchronizedLyricsDisplayProps>
                               word.endSeconds !== null &&
                               currentTimeSeconds >= word.startSeconds &&
                               currentTimeSeconds <= word.endSeconds;
+                            const canSeekWord = word.startSeconds !== null;
+                            const alignConf = word.alignmentConfidence ?? word.confidence;
+                            const needsReview = Boolean(word.reviewRequired);
                             return (
-                              <span
-                                key={word.wordId}
-                                title={
-                                  word.startSeconds !== null
-                                    ? `${word.startSeconds.toFixed(2)}s - ${word.endSeconds?.toFixed(2)}s`
-                                    : 'Unaligned word (Phase 1 — no fake timestamp)'
-                                }
-                                className={cn(
-                                  'rounded px-1.5 py-0.5 text-xs border transition-colors',
-                                  wordActive
-                                    ? 'border-sky-400/65 bg-sky-500/24 text-white'
-                                    : 'border-slate-200/8 bg-[#101624] text-slate-300',
+                              <div key={word.wordId} className="inline-flex items-center">
+                                <button
+                                  type="button"
+                                  disabled={!canSeekWord}
+                                  onClick={() => {
+                                    if (word.startSeconds !== null) onSeek(word.startSeconds);
+                                  }}
+                                  title={
+                                    word.startSeconds !== null
+                                      ? `${word.wordId}: ${word.startSeconds.toFixed(3)}s - ${word.endSeconds?.toFixed(3)}s${
+                                          typeof alignConf === 'number'
+                                            ? ` · align ${(alignConf * 100).toFixed(0)}%`
+                                            : ''
+                                        }${needsReview ? ' · reviewRequired' : ''}`
+                                      : 'Unaligned word (Phase 1 — no fake timestamp)'
+                                  }
+                                  className={cn(
+                                    'px-1.5 py-0.5 text-xs border transition-colors',
+                                    onToggleWordReview ? 'rounded-l' : 'rounded',
+                                    canSeekWord
+                                      ? 'cursor-pointer hover:border-sky-400/50'
+                                      : 'cursor-default',
+                                    wordActive
+                                      ? 'border-sky-400/65 bg-sky-500/24 text-white'
+                                      : needsReview
+                                        ? 'border-amber-400/55 bg-amber-500/12 text-amber-200'
+                                        : 'border-slate-200/8 bg-[#101624] text-slate-300',
+                                  )}
+                                >
+                                  <span>{word.text}</span>
+                                  {typeof alignConf === 'number' && (
+                                    <span className="ml-1 text-[10px] opacity-65 axr-tc">
+                                      {Math.round(alignConf * 100)}%
+                                    </span>
+                                  )}
+                                </button>
+                                {onToggleWordReview && (
+                                  <button
+                                    type="button"
+                                    disabled={saving}
+                                    onClick={() => onToggleWordReview(seg.segmentId, word.wordId)}
+                                    title={
+                                      needsReview
+                                        ? 'Mark alignment reviewed'
+                                        : 'Flag word for manual review'
+                                    }
+                                    className={cn(
+                                      'rounded-r border border-l-0 px-1 py-0.5 text-[10px] transition-colors cursor-pointer',
+                                      needsReview
+                                        ? 'border-amber-400/55 bg-amber-500/20 text-amber-200 hover:bg-amber-500/30'
+                                        : 'border-slate-200/8 bg-[#0b101b] text-slate-500 hover:text-slate-200',
+                                    )}
+                                  >
+                                    {needsReview ? '!' : '✓'}
+                                  </button>
                                 )}
-                              >
-                                {word.text}
-                              </span>
+                              </div>
                             );
                           })}
                         </div>
@@ -303,7 +349,8 @@ export const SynchronizedLyricsDisplay: React.FC<SynchronizedLyricsDisplayProps>
           <div className="flex items-center justify-between border-t border-slate-200/8 pt-2.5 text-[11px] text-slate-400">
             <span className="flex items-center gap-1.5">
               <Check className="h-3.5 w-3.5 text-emerald-400" />
-              No fabricated word timestamps — unaligned tokens show `--:--.--`
+              No fabricated word timestamps — unaligned tokens show{' '}
+              <code className="axr-tc text-slate-300">--:--.--</code>
             </span>
             <span className="axr-tc">schema v{document.schemaVersion}</span>
           </div>

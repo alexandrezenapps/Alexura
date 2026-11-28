@@ -27,8 +27,9 @@ export const PipelineAdaptersPanel: React.FC<PipelineAdaptersPanelProps> = ({ ad
             API Keys &amp; Secrets Isolated on Backend
           </div>
           <p className="text-[11px] text-slate-400">
-            `GEMINI_API_KEY` and Phase 2 inference URLs are stored strictly in backend environment
-            variables. Frontend bundle never accesses provider credentials.
+            <code className="axr-tc text-slate-200">GEMINI_API_KEY</code> and Phase 2 inference URLs
+            are stored strictly in backend environment variables. Frontend bundle never accesses
+            provider credentials.
           </p>
         </div>
       </Alert>
@@ -75,6 +76,31 @@ export const PipelineAdaptersPanel: React.FC<PipelineAdaptersPanelProps> = ({ ad
           ))
         )}
       </div>
+
+      {adapters?.asrRouting && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <ServerCog className="h-4 w-4 text-[#e8c97a]" />
+              <span>Unified ASR Model Routing Strategy</span>
+            </CardTitle>
+            <CardDescription className="axr-tc text-[11px]">
+              {adapters.asrRouting.interfaceClass} · Primary: {adapters.asrRouting.primaryModel} · Fallbacks:{' '}
+              {adapters.asrRouting.fallbackModels.join(', ')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 gap-2 sm:grid-cols-2 text-xs text-slate-300">
+            {adapters.asrRouting.stages.map((stage) => (
+              <div
+                key={stage}
+                className="rounded-lg border border-slate-200/8 bg-[#080b12]/80 px-3 py-2"
+              >
+                {stage}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

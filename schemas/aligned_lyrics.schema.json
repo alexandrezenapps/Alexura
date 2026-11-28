@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexura.app/schemas/aligned_lyrics.schema.json",
+  "title": "AlignedLyricsDocument",
+  "description": "CamelCase aligned LyricsDocument schema with word/unit millisecond timestamps (seconds relative to original audio), alignmentConfidence, reviewRequired, and optimistic version.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["songId", "duration", "language", "segments", "version"],
+  "properties": {
+    "songId": { "type": "string", "minLength": 1 },
+    "duration": { "type": "number", "minimum": 0 },
+    "language": { "type": "string", "minLength": 1 },
+    "version": { "type": "integer", "minimum": 1 },
+    "segments": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/LyricSegment" }
+    }
+  },
+  "$defs": {
+    "LyricUnit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "text", "start", "end"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "text": { "type": "string", "minLength": 1 },
+        "start": { "type": "number", "minimum": 0 },
+        "end": { "type": "number", "minimum": 0 },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "LyricWord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "text", "start", "end"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "text": { "type": "string", "minLength": 1 },
+        "start": { "type": "number", "minimum": 0 },
+        "end": { "type": "number", "minimum": 0 },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "alignmentConfidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "units": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/LyricUnit" }
+        },
+        "reviewRequired": { "type": "boolean" }
+      }
+    },
+    "LyricSegment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "text", "start", "end", "words"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "text": { "type": "string" },
+        "start": { "type": "number", "minimum": 0 },
+        "end": { "type": "number", "minimum": 0 },
+        "words": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/LyricWord" }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "songId": "song_001",
+      "duration": 185.42,
+      "language": "en",
+      "version": 1,
+      "segments": [
+        {
+          "id": "seg_001",
+          "text": "I love you",
+          "start": 32.11,
+          "end": 33.42,
+          "words": [
+            {
+              "id": "word_005",
+              "text": "love",
+              "start": 32.417,
+              "end": 32.891,
+              "confidence": 0.96,
+              "alignmentConfidence": 0.94,
+              "reviewRequired": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

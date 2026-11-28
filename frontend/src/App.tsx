@@ -2,19 +2,21 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Layers, Music2, Puzzle, RefreshCw, ServerCog, UploadCloud, X } from 'lucide-react';
 import type {
   AdapterReportMap,
+  AlignedLyricsDocument,
   AudioAssetRecord,
   LyricSegment,
   LyricsDocument,
   ProcessingJob,
 } from '@/types/lyrics';
-import { HtmlAudioPlaybackClock, type PlaybackSnapshot } from '@/services/playbackClock';
-import { syncEngineApi } from '@/services/syncEngineApi';
+import { useAudioPlayer } from '@/hooks/useAudioPlayer';
+import { lyricsApi } from '@/services/lyricsApi';
+import { apiUrl } from '@/services/syncEngineApi';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AudioPlayer } from '@/components/AudioPlayer';
-import { WaveformTimelinePlaceholder } from '@/components/WaveformTimelinePlaceholder';
-import { UploadScreen } from '@/components/UploadScreen';
-import { SynchronizedLyricsDisplay } from '@/components/SynchronizedLyricsDisplay';
+import { AudioUploader } from '@/components/AudioUploader';
+import { KaraokePlayer } from '@/components/KaraokePlayer';
+import { WaveformTimeline } from '@/components/WaveformTimeline';
+import { LyricsDisplay } from '@/components/LyricsDisplay';
 import { PipelineAdaptersPanel } from '@/components/PipelineAdaptersPanel';
 import { SkillsAdminPanel } from '@/components/SkillsAdminPanel';
 
@@ -30,14 +32,8 @@ export const App: React.FC<SyncEngineAppProps> = ({
   onClose,
   initialTab = 'upload',
 }) => {
-  const clockRef = useRef<HtmlAudioPlaybackClock | null>(null);
-  if (!clockRef.current) {
-    clockRef.current = new HtmlAudioPlaybackClock();
-  }
-
-  const [playback, setPlayback] = useState<PlaybackSnapshot>(() =>
-    clockRef.current!.getSnapshot(),
-  );
+  const player = useAudioPlayer();
+  const playback = player.snapshot;
   const [activeTab, setActiveTab] = useState<StudioTabId>(initialTab);
 
   useEffect(() => {
@@ -72,7 +68,7 @@ export const App: React.FC<SyncEngineAppProps> = ({
 
   const refreshSavedDocuments = async () => {
     try {
-      const docs = await syncEngineApi.listLyricsDocuments();
+      const docs = await lyricsApi.listLyricsDocuments();
       setSavedDocs(docs);
     } catch {
       // Non-fatal
@@ -80,10 +76,7 @@ export const App: React.FC<SyncEngineAppProps> = ({
   };
 
   useEffect(() => {
-    const clock = clockRef.current!;
-    const unsub = clock.subscribe(setPlayback);
-
-    void syncEngineApi
+    void lyricsApi
       .getAdapters()
       .then(setAdapters)
       .catch(() => {});
@@ -91,22 +84,22 @@ export const App: React.FC<SyncEngineAppProps> = ({
 
     return () => {
       stopPolling();
-      unsub();
-      clock.destroy();
     };
   }, []);
 
   const handleUploadFile = async (file: File) => {
     setErrorMsg(null);
     setUploading(true);
+    stopPolling();
+    setAnalyzing(false);
     try {
-      clockRef.current!.loadFromFile(file);
-      if (!title.trim()) {
-        setTitle(file.name.replace(/\.[^.]+$/, ''));
-      }
-      const audio = await syncEngineApi.uploadAudio(file);
+      player.pause();
+      player.loadFromFile(file);
+      setTitle(file.name.replace(/\.[^.]+$/, ''));
+      const audio = await lyricsApi.uploadAudio(file);
       setUploadedAudio(audio);
       setActiveJob(null);
+      setLyricsDoc((prev) => (prev && prev.audioId === audio.audioId ? prev : null));
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Audio upload failed.');
     } finally {
@@ -118,13 +111,13 @@ export const App: React.FC<SyncEngineAppProps> = ({
     stopPolling();
     const check = async () => {
       try {
-        const latest = await syncEngineApi.getJobStatus(jobId);
+        const latest = await lyricsApi.getJobStatus(jobId);
         setActiveJob(latest);
         if (latest.state === 'completed') {
           stopPolling();
           setAnalyzing(false);
           if (latest.documentId) {
-            const doc = await syncEngineApi.getLyricsDocument(latest.documentId);
+            const doc = await lyricsApi.getLyricsDocument(latest.documentId);
             setLyricsDoc(doc);
             void refreshSavedDocuments();
           }
@@ -153,7 +146,7 @@ export const App: React.FC<SyncEngineAppProps> = ({
     setErrorMsg(null);
     setAnalyzing(true);
     try {
-      const queued = await syncEngineApi.analyzeSong({
+      const queued = await lyricsApi.analyzeSong({
         audioId: uploadedAudio.audioId,
         title: title.trim() || uploadedAudio.filename,
         artist: artist.trim(),
@@ -176,8 +169,9 @@ export const App: React.FC<SyncEngineAppProps> = ({
     setArtist(doc.artist);
     setLanguageHint(doc.primaryLanguage || 'auto');
     if (doc.audioId) {
-      clockRef.current!.loadFromUrl(
-        `/api/v1/audio/${encodeURIComponent(doc.audioId)}/stream`,
+      setUploadedAudio((prev) => (prev && prev.audioId === doc.audioId ? prev : null));
+      player.loadFromUrl(
+        apiUrl(`/api/v1/audio/${encodeURIComponent(doc.audioId)}/stream`),
         doc.title,
       );
     }
@@ -189,7 +183,7 @@ export const App: React.FC<SyncEngineAppProps> = ({
     setSavingLyrics(true);
     setErrorMsg(null);
     try {
-      const updated = await syncEngineApi.updateLyricsDocument(lyricsDoc.documentId, {
+      const updated = await lyricsApi.updateLyricsDocument(lyricsDoc.documentId, {
         title: title.trim() || lyricsDoc.title,
         artist: artist.trim(),
         primaryLanguage: languageHint,
@@ -204,9 +198,44 @@ export const App: React.FC<SyncEngineAppProps> = ({
     }
   };
 
+  const handleToggleWordReview = async (segmentId: string, wordId: string) => {
+    if (!lyricsDoc) return;
+    const nextSegments = lyricsDoc.segments.map((seg) =>
+      seg.segmentId !== segmentId
+        ? seg
+        : {
+            ...seg,
+            words: seg.words.map((w) =>
+              w.wordId !== wordId
+                ? w
+                : {
+                    ...w,
+                    reviewRequired: !w.reviewRequired,
+                    flags: !w.reviewRequired
+                      ? Array.from(new Set([...(w.flags || []), 'review_required']))
+                      : (w.flags || []).filter((f) => f !== 'review_required'),
+                  },
+            ),
+          },
+    );
+    await handleSaveDocument(nextSegments);
+  };
+
+  const handleImportAligned = async (aligned: AlignedLyricsDocument) => {
+    setErrorMsg(null);
+    const res = await lyricsApi.importAlignedLyrics(aligned);
+    setLyricsDoc(res.document);
+    setTitle(res.document.title);
+    setArtist(res.document.artist);
+    setLanguageHint(res.document.primaryLanguage || 'auto');
+    void refreshSavedDocuments();
+  };
+
   const activeDuration =
     playback.duration || uploadedAudio?.durationSeconds || lyricsDoc?.durationSeconds || 0;
-  const activeAudioUrl = uploadedAudio?.audioUrl || (lyricsDoc?.audioId ? `/api/v1/audio/${encodeURIComponent(lyricsDoc.audioId)}/stream` : null);
+  const activeAudioUrl =
+    uploadedAudio?.audioUrl ||
+    (lyricsDoc?.audioId ? apiUrl(`/api/v1/audio/${encodeURIComponent(lyricsDoc.audioId)}/stream`) : null);
 
   return (
     <div className="axr-studio-scope min-h-screen text-slate-100 flex flex-col">
@@ -257,7 +286,7 @@ export const App: React.FC<SyncEngineAppProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  clockRef.current?.pause();
+                  player.pause();
                   onClose();
                 }}
               >
@@ -270,23 +299,30 @@ export const App: React.FC<SyncEngineAppProps> = ({
       </header>
 
       <main className="mx-auto w-full max-w-7xl flex-1 space-y-5 px-4 py-5 sm:px-6">
-        <AudioPlayer
+        <KaraokePlayer
           snapshot={playback}
+          document={lyricsDoc}
           title={title || lyricsDoc?.title || uploadedAudio?.filename || ''}
           artist={artist || lyricsDoc?.artist || ''}
-          onTogglePlay={() => clockRef.current?.toggle()}
-          onSeek={(sec) => clockRef.current?.seek(sec)}
-          onRateChange={(r) => clockRef.current?.setPlaybackRate(r)}
-          onVolumeChange={(v) => clockRef.current?.setVolume(v)}
-          onToggleMute={() => clockRef.current?.toggleMute()}
-          onToggleLoop={() => clockRef.current?.setLoop(!playback.loop)}
+          onTogglePlay={player.toggle}
+          onSeek={player.seek}
+          onRateChange={player.setPlaybackRate}
+          onVolumeChange={player.setVolume}
+          onToggleMute={player.toggleMute}
+          onToggleLoop={() => player.setLoop(!playback.loop)}
         />
 
-        <WaveformTimelinePlaceholder
+        <WaveformTimeline
           audioUrl={activeAudioUrl}
           durationSeconds={activeDuration}
           currentTimeSeconds={playback.currentTime}
-          onSeek={(sec) => clockRef.current?.seek(sec)}
+          peaks={
+            uploadedAudio && (!lyricsDoc || lyricsDoc.audioId === uploadedAudio.audioId)
+              ? uploadedAudio.waveformPeaks
+              : undefined
+          }
+          segments={lyricsDoc?.segments}
+          onSeek={player.seek}
         />
 
         <Tabs
@@ -294,7 +330,7 @@ export const App: React.FC<SyncEngineAppProps> = ({
           onValueChange={(val) => setActiveTab(val as StudioTabId)}
         >
           <TabsContent value="upload" className="mt-0">
-            <UploadScreen
+            <AudioUploader
               uploadedAudio={uploadedAudio}
               activeJob={activeJob}
               title={title}
@@ -363,12 +399,16 @@ export const App: React.FC<SyncEngineAppProps> = ({
               </aside>
 
               <div className="lg:col-span-8">
-                <SynchronizedLyricsDisplay
+                <LyricsDisplay
                   document={lyricsDoc}
                   currentTimeSeconds={playback.currentTime}
                   saving={savingLyrics}
-                  onSeek={(sec) => clockRef.current?.seek(sec)}
+                  onSeek={player.seek}
                   onSaveDocument={(segments) => void handleSaveDocument(segments)}
+                  onToggleWordReview={(segmentId, wordId) =>
+                    void handleToggleWordReview(segmentId, wordId)
+                  }
+                  onImportAligned={handleImportAligned}
                 />
               </div>
             </div>

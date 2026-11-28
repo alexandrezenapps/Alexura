@@ -1,0 +1,116 @@
+{
+  "jobId": "job_bf4a99234b23cf",
+  "audioId": "aud_2402048475607420",
+  "songId": "aud_2402048475607420",
+  "documentId": "lyr_8ff183df40694e",
+  "state": "completed",
+  "status": "completed",
+  "progressPercent": 100,
+  "progress": 100,
+  "currentStep": "Phase 1 pipeline completed cleanly without simulated timestamps.",
+  "languageHint": "fr",
+  "enableVocalSeparation": true,
+  "phaseMode": "phase_1_architecture_foundation",
+  "adapterReport": {
+    "vocalSeparation": {
+      "name": "VocalSeparationAdapter",
+      "adapterClass": "UnconfiguredVocalSeparationAdapter",
+      "implementation": "phase1_interface_only",
+      "status": "unconfigured_adapter",
+      "isImplementedForProduction": false,
+      "note": "Phase 1 stub adapter. Original audio timeline preserved untouched; Demucs/MDX connects in Phase 2.",
+      "phaseTarget": "Phase 2 (Demucs / MDX-Net)"
+    },
+    "singingAsr": {
+      "name": "SingingASRAdapter",
+      "adapterClass": "UnconfiguredSingingASRAdapter",
+      "implementation": "phase1_interface_only",
+      "status": "unconfigured_adapter",
+      "isImplementedForProduction": false,
+      "note": "Phase 1 stub adapter. Does not fabricate lyrics recognition; structured draft segments only.",
+      "phaseTarget": "Phase 2 (Gemini Audio + Singing ASR)"
+    },
+    "forcedAlignment": {
+      "name": "ForcedAlignmentAdapter",
+      "adapterClass": "UnconfiguredForcedAlignmentAdapter",
+      "implementation": "phase1_interface_only",
+      "status": "unconfigured_adapter",
+      "isImplementedForProduction": false,
+      "note": "Phase 1 stub adapter. Tokenizes LyricWord & LyricUnit with strictly null timestamps (zero fake timings).",
+      "phaseTarget": "Phase 2 (CTC Forced Alignment)"
+    },
+    "lyricsValidation": {
+      "name": "LyricsValidationService",
+      "adapterClass": "LyricsValidationService",
+      "implementation": "schema_and_timestamp_validator",
+      "status": "ready",
+      "isImplementedForProduction": true,
+      "note": "Active normalized schema, monotonic timestamp, and second-based invariant validator.",
+      "phaseTarget": "Phase 1 + Phase 2"
+    },
+    "secretsProtected": true,
+    "geminiServerConfigured": true,
+    "asrRouting": {
+      "interfaceClass": "SingingASRAdapter.transcribe(audio_path, language)",
+      "primaryModel": "GeminiASRAdapter",
+      "fallbackModels": [
+        "WhisperSingingAdapter",
+        "LocalSingingASRAdapter",
+        "CustomModelAdapter"
+      ],
+      "stages": [
+        "1. Primary recognition (lyrics + language detection)",
+        "2. Quality check (completeness, repetition, gaps, confidence)",
+        "3. Conditional secondary model fallback on low confidence",
+        "4. Confirmed lyrics -> independent forced alignment input"
+      ]
+    }
+  },
+  "transitions": [
+    {
+      "fromState": "queued",
+      "toState": "validating",
+      "message": "Validating uploaded audio asset.",
+      "timestamp": "2026-11-28T16:12:05.770Z"
+    },
+    {
+      "fromState": "validating",
+      "toState": "analyzing",
+      "message": "Phase 1 metadata & timeline preservation.",
+      "timestamp": "2026-11-28T16:12:05.772Z"
+    },
+    {
+      "fromState": "analyzing",
+      "toState": "separating_vocals",
+      "message": "Invoking VocalSeparationAdapter (Phase 1 stub).",
+      "timestamp": "2026-11-28T16:12:05.772Z"
+    },
+    {
+      "fromState": "separating_vocals",
+      "toState": "transcribing",
+      "message": "Invoking SingingASRAdapter (Phase 1 stub — no fake recognition).",
+      "timestamp": "2026-11-28T16:12:05.773Z"
+    },
+    {
+      "fromState": "transcribing",
+      "toState": "aligning",
+      "message": "Invoking ForcedAlignmentAdapter (Phase 1 tokenization — null timestamps).",
+      "timestamp": "2026-11-28T16:12:05.773Z"
+    },
+    {
+      "fromState": "aligning",
+      "toState": "validating_alignment",
+      "message": "Validating normalized LyricsDocument schema.",
+      "timestamp": "2026-11-28T16:12:05.773Z"
+    },
+    {
+      "fromState": "validating_alignment",
+      "toState": "completed",
+      "message": "Phase 1 pipeline completed cleanly without simulated timestamps.",
+      "timestamp": "2026-11-28T16:12:05.774Z"
+    }
+  ],
+  "error": null,
+  "createdAt": "2026-11-28T16:12:05.727Z",
+  "updatedAt": "2026-11-28T16:12:05.774Z"
+}

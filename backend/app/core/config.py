@@ -17,7 +17,9 @@ class Settings:
     api_version: str = "1.0.0"
     phase: str = "phase_1_foundation"
     log_level: str = os.environ.get("ALEXURA_LOG_LEVEL", "INFO")
-    data_dir: Path = Path(os.environ.get("ALEXURA_DATA_DIR", ".alexura_data/phase1")).resolve()
+    data_dir: Path = Path(
+        os.environ.get("ALEXURA_DATA_DIR") or str(Path(__file__).resolve().parents[2] / "storage")
+    ).resolve()
     max_upload_bytes: int = int(os.environ.get("MAX_UPLOAD_MB", "100")) * 1024 * 1024
     # Server-side secrets & external adapter URLs (never leaked to frontend)
     gemini_api_key: str = os.environ.get("GEMINI_API_KEY", "")

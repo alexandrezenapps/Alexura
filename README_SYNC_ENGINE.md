@@ -80,10 +80,15 @@ Open `http://localhost:3000/studio/` (or launch directly from Alexura `/fr/` via
 
 ### 3. Run the Python FastAPI Backend Standalone (Port 8000)
 ```bash
+cd backend
 python3 -m venv .venv
+# Windows: .venv\Scripts\activate
+# macOS / Linux:
 source .venv/bin/activate
-pip install -r backend/requirements.txt
-uvicorn backend.app.main:app --reload --port 8000
+
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn app.main:app --reload --port 8000
 ```
 
 ### 4. Run the Vite React Frontend Standalone (Port 5173)
